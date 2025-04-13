@@ -7,10 +7,12 @@
     <style>
         /* Base Styles */
         :root {
-            --text-color: #000;
+            --text-color: #171717;
             --bg-color: #fff;
-            --accent-color: #3182ce;
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --accent-color: #2563eb;
+            --muted-color: #6b7280;
+            --border-color: #e5e7eb;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         }
         
         * {
@@ -19,70 +21,86 @@
             padding: 0;
         }
         
+        html {
+            font-size: 16px;
+        }
+        
         body {
-            font-family: var(--font-main);
+            font-family: var(--font-sans);
             color: var(--text-color);
             background-color: var(--bg-color);
-            line-height: 1.5;
-            max-width: 860px;
+            line-height: 1.65;
+            max-width: 42rem;
             margin: 0 auto;
-            padding: 2rem 1.5rem;
+            padding: 3rem 1.5rem;
         }
         
         a {
-            color: var(--text-color);
+            color: var(--accent-color);
             text-decoration: none;
         }
         
         a:hover {
-            color: var(--accent-color);
+            text-decoration: underline;
+        }
+        
+        p {
+            margin-bottom: 1.5rem;
         }
         
         /* Header Styles */
         header {
-            padding: 1.5rem 0;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            margin-bottom: 3rem;
         }
         
-        .site-title {
-            font-size: 1.125rem;
+        .logo {
             font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+        
+        .logo a {
+            color: var(--text-color);
+        }
+        
+        .logo a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
         }
         
         nav ul {
             display: flex;
-            list-style: none;
             gap: 1.5rem;
+            list-style: none;
         }
         
-        nav ul li a {
+        nav a {
+            color: var(--text-color);
             font-size: 1rem;
-            font-weight: 500;
         }
         
-        /* Main Content Styles */
-        main {
-            padding: 2rem 0;
+        nav a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
         }
         
+        /* Introduction */
         .intro {
             margin-bottom: 4rem;
         }
         
-        .intro h1 {
-            font-size: 3rem;
+        .intro-title {
+            font-size: 2rem;
+            line-height: 1.3;
             font-weight: 700;
             margin-bottom: 1.5rem;
-            line-height: 1.2;
         }
         
         .intro p {
-            font-size: 1.5rem;
-            max-width: 42rem;
-            margin-bottom: 1.5rem;
-            font-weight: 400;
+            font-size: 1.125rem;
+            color: var(--text-color);
         }
         
         /* Section Styles */
@@ -91,184 +109,145 @@
         }
         
         .section-title {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 1.5rem;
             padding-bottom: 0.5rem;
-            border-bottom: 1px solid #eaeaea;
-        }
-        
-        /* Blog Section Styles */
-        .blog-list {
-            list-style: none;
-        }
-        
-        .blog-item {
-            margin-bottom: 2.5rem;
-        }
-        
-        .blog-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-        
-        .blog-meta {
-            font-size: 0.875rem;
-            color: #666;
-            margin-bottom: 0.75rem;
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .blog-date {
-            display: inline-block;
-        }
-        
-        .blog-tags {
-            display: inline-flex;
-            gap: 0.5rem;
-        }
-        
-        .blog-tag {
-            background-color: #f5f5f5;
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-            font-size: 0.75rem;
-        }
-        
-        .blog-excerpt {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 0.75rem;
-        }
-        
-        .read-more {
-            font-size: 0.875rem;
-            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
         }
         
         /* Projects Section */
-        .projects-list {
-            list-style: none;
-        }
-        
         .project-item {
             margin-bottom: 2rem;
         }
         
         .project-title {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
         
         .project-meta {
             font-size: 0.875rem;
-            color: #666;
-            margin-bottom: 0.5rem;
+            color: var(--muted-color);
+            margin-bottom: 0.75rem;
         }
         
         .project-description {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .project-links {
-            display: flex;
-            gap: 1rem;
+            margin-bottom: 0.75rem;
         }
         
         .project-links a {
             font-size: 0.875rem;
-            text-decoration: underline;
-            color: var(--accent-color);
+            margin-right: 1rem;
         }
         
-        /* Articles/Writing Section */
-        .articles-list {
+        /* Blog Section */
+        .blog-item {
+            margin-bottom: 2rem;
+        }
+        
+        .blog-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .blog-meta {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            margin-bottom: 0.75rem;
+        }
+        
+        .blog-excerpt {
+            margin-bottom: 0.5rem;
+        }
+        
+        .read-more {
+            font-size: 0.875rem;
+        }
+        
+        /* Writing Section */
+        .writing-list {
             list-style: none;
         }
         
-        .article-item {
+        .writing-item {
             display: flex;
-            margin-bottom: 1rem;
-            align-items: baseline;
+            margin-bottom: 0.75rem;
         }
         
-        .article-date {
+        .writing-date {
+            color: var(--muted-color);
             font-size: 0.875rem;
-            color: #666;
-            width: 7rem;
+            width: 5rem;
             flex-shrink: 0;
         }
         
-        .article-title {
+        .writing-title {
             font-size: 1rem;
         }
         
         /* Experience Section */
-        .experience-list {
-            list-style: none;
-        }
-        
         .experience-item {
             margin-bottom: 2rem;
         }
         
         .experience-title {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             font-weight: 600;
             margin-bottom: 0.25rem;
         }
         
         .experience-meta {
             font-size: 0.875rem;
-            color: #666;
-            margin-bottom: 0.5rem;
+            color: var(--muted-color);
+            margin-bottom: 0.75rem;
         }
         
-        .experience-description {
-            font-size: 1rem;
-        }
-        
-        /* Footer Styles */
+        /* Footer */
         footer {
-            padding: 2rem 0;
+            padding-top: 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
             font-size: 0.875rem;
-            color: #666;
-            border-top: 1px solid #eaeaea;
+            color: var(--muted-color);
         }
         
         .footer-links {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
             margin-bottom: 1rem;
         }
         
         .footer-links a {
-            color: #666;
+            color: var(--text-color);
         }
         
-        .footer-links a:hover {
-            color: var(--accent-color);
-        }
-        
-        @media (max-width: 768px) {
-            .intro h1 {
-                font-size: 2.5rem;
+        @media (max-width: 640px) {
+            body {
+                padding: 2rem 1rem;
             }
             
-            .intro p {
-                font-size: 1.25rem;
-            }
-            
-            .article-item {
+            header {
                 flex-direction: column;
-                margin-bottom: 1.5rem;
+                gap: 1rem;
             }
             
-            .article-date {
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .intro-title {
+                font-size: 1.75rem;
+            }
+            
+            .writing-item {
+                flex-direction: column;
+                margin-bottom: 1.25rem;
+            }
+            
+            .writing-date {
                 margin-bottom: 0.25rem;
             }
         }
@@ -276,175 +255,113 @@
 </head>
 <body>
     <header>
-        <div class="site-title">
+        <div class="logo">
             <a href="/">Your Name</a>
         </div>
         <nav>
             <ul>
                 <li><a href="#projects">Projects</a></li>
                 <li><a href="#blog">Blog</a></li>
-                <li><a href="#writing">Writing</a></li>
                 <li><a href="#experience">Experience</a></li>
                 <li><a href="mailto:your.email@example.com">Contact</a></li>
             </ul>
         </nav>
     </header>
     
-    <main>
-        <section class="intro">
-            <h1>Hello, I'm Your Name.</h1>
-            <p>I'm a [your profession] based in [your location]. I focus on [your specialty/interests]. Currently [what you're doing now].</p>
-            <p>Previously, I worked at [previous company/experience]. I graduated from [your education].</p>
-        </section>
+    <section class="intro">
+        <h1 class="intro-title">Hello, I'm Your Name.</h1>
+        <p>I'm a designer/developer based in Seoul. I focus on creating digital products with great user experiences. Currently working at Company as a Senior Designer.</p>
+        <p>Previously, I was at Previous Company working on their platform. I graduated from University with a degree in Design.</p>
+    </section>
+    
+    <section id="projects">
+        <h2 class="section-title">Projects</h2>
+        <div class="project-item">
+            <h3 class="project-title">Project Name</h3>
+            <div class="project-meta">React, TypeScript, Node.js · 2025</div>
+            <p class="project-description">A brief description of the project. This could include what problem it solves, your role, and any interesting challenges you overcame.</p>
+            <div class="project-links">
+                <a href="#">Demo</a>
+                <a href="#">GitHub</a>
+            </div>
+        </div>
         
-        <section id="projects">
-            <h2 class="section-title">Projects</h2>
-            <ul class="projects-list">
-                <li class="project-item">
-                    <h3 class="project-title">Project Name</h3>
-                    <div class="project-meta">Technology Stack · 2025</div>
-                    <p class="project-description">A brief description of the project, what problem it solves, and your role in developing it. Highlight any interesting technical challenges or achievements.</p>
-                    <div class="project-links">
-                        <a href="#" target="_blank">Demo</a>
-                        <a href="#" target="_blank">GitHub</a>
-                        <a href="#" target="_blank">Blog Post</a>
-                    </div>
-                </li>
-                
-                <li class="project-item">
-                    <h3 class="project-title">Project Name</h3>
-                    <div class="project-meta">Technology Stack · 2024</div>
-                    <p class="project-description">A brief description of the project, what problem it solves, and your role in developing it. Highlight any interesting technical challenges or achievements.</p>
-                    <div class="project-links">
-                        <a href="#" target="_blank">Demo</a>
-                        <a href="#" target="_blank">GitHub</a>
-                    </div>
-                </li>
-                
-                <li class="project-item">
-                    <h3 class="project-title">Project Name</h3>
-                    <div class="project-meta">Technology Stack · 2023</div>
-                    <p class="project-description">A brief description of the project, what problem it solves, and your role in developing it. Highlight any interesting technical challenges or achievements.</p>
-                    <div class="project-links">
-                        <a href="#" target="_blank">Demo</a>
-                        <a href="#" target="_blank">GitHub</a>
-                    </div>
-                </li>
-            </ul>
-        </section>
+        <div class="project-item">
+            <h3 class="project-title">Project Name</h3>
+            <div class="project-meta">React, GraphQL, Tailwind CSS · 2024</div>
+            <p class="project-description">A brief description of the project. This could include what problem it solves, your role, and any interesting challenges you overcame.</p>
+            <div class="project-links">
+                <a href="#">Demo</a>
+                <a href="#">GitHub</a>
+            </div>
+        </div>
         
-        <section id="blog">
-            <h2 class="section-title">Blog</h2>
-            <ul class="blog-list">
-                <li class="blog-item">
-                    <h3 class="blog-title"><a href="/blog/post-1.html">The Future of Web Development: My Thoughts on Recent Trends</a></h3>
-                    <div class="blog-meta">
-                        <span class="blog-date">April 10, 2025</span>
-                        <div class="blog-tags">
-                            <span class="blog-tag">Web Dev</span>
-                            <span class="blog-tag">JavaScript</span>
-                            <span class="blog-tag">Thoughts</span>
-                        </div>
-                    </div>
-                    <p class="blog-excerpt">
-                        Recently I've been thinking about how the web development landscape has changed over the past few years. From the rise of full-stack frameworks to the growing adoption of serverless architectures, there's a lot to unpack. In this post, I'll share my observations and what I think might be coming next...
-                    </p>
-                    <a href="/blog/post-1.html" class="read-more">Read more →</a>
-                </li>
-                
-                <li class="blog-item">
-                    <h3 class="blog-title"><a href="/blog/post-2.html">My Development Setup for 2025</a></h3>
-                    <div class="blog-meta">
-                        <span class="blog-date">March 15, 2025</span>
-                        <div class="blog-tags">
-                            <span class="blog-tag">Tools</span>
-                            <span class="blog-tag">Productivity</span>
-                        </div>
-                    </div>
-                    <p class="blog-excerpt">
-                        After years of tweaking and adjusting my development environment, I think I've finally found a setup that maximizes my productivity while keeping things simple. In this post, I'll walk through my hardware, software, and workflow choices...
-                    </p>
-                    <a href="/blog/post-2.html" class="read-more">Read more →</a>
-                </li>
-                
-                <li class="blog-item">
-                    <h3 class="blog-title"><a href="/blog/post-3.html">Lessons Learned from Building My Latest Project</a></h3>
-                    <div class="blog-meta">
-                        <span class="blog-date">February 28, 2025</span>
-                        <div class="blog-tags">
-                            <span class="blog-tag">Projects</span>
-                            <span class="blog-tag">Lessons</span>
-                        </div>
-                    </div>
-                    <p class="blog-excerpt">
-                        Last month I launched a side project I had been working on for several weeks. While the project itself was relatively small in scope, I encountered several interesting challenges along the way. Here's what I learned and how it's changed my approach...
-                    </p>
-                    <a href="/blog/post-3.html" class="read-more">Read more →</a>
-                </li>
-            </ul>
-            <p><a href="/blog" style="font-size: 0.9rem; color: var(--accent-color);">View all posts →</a></p>
-        </section>
+        <div class="project-item">
+            <h3 class="project-title">Project Name</h3>
+            <div class="project-meta">Vue.js, Firebase · 2023</div>
+            <p class="project-description">A brief description of the project. This could include what problem it solves, your role, and any interesting challenges you overcame.</p>
+            <div class="project-links">
+                <a href="#">Demo</a>
+                <a href="#">GitHub</a>
+            </div>
+        </div>
+    </section>
+    
+    <section id="blog">
+        <h2 class="section-title">Blog</h2>
+        <div class="blog-item">
+            <h3 class="blog-title"><a href="/blog/post-1">The Future of Web Development</a></h3>
+            <div class="blog-meta">April 10, 2025</div>
+            <p class="blog-excerpt">Recently I've been thinking about how the web development landscape has changed over the past few years. From the rise of full-stack frameworks to the growing adoption of serverless architectures...</p>
+            <a href="/blog/post-1" class="read-more">Read more →</a>
+        </div>
         
-        <section id="writing">
-            <h2 class="section-title">Writing</h2>
-            <ul class="articles-list">
-                <li class="article-item">
-                    <span class="article-date">Apr 2025</span>
-                    <a href="#" class="article-title">Title of your most recent article or blog post</a>
-                </li>
-                <li class="article-item">
-                    <span class="article-date">Mar 2025</span>
-                    <a href="#" class="article-title">Another interesting article you've written</a>
-                </li>
-                <li class="article-item">
-                    <span class="article-date">Feb 2025</span>
-                    <a href="#" class="article-title">A technical guide or tutorial you published</a>
-                </li>
-                <li class="article-item">
-                    <span class="article-date">Jan 2025</span>
-                    <a href="#" class="article-title">Thoughts on a relevant industry trend or technology</a>
-                </li>
-                <li class="article-item">
-                    <span class="article-date">Dec 2024</span>
-                    <a href="#" class="article-title">Year in review or retrospective on your work</a>
-                </li>
-            </ul>
-        </section>
+        <div class="blog-item">
+            <h3 class="blog-title"><a href="/blog/post-2">My Development Setup for 2025</a></h3>
+            <div class="blog-meta">March 15, 2025</div>
+            <p class="blog-excerpt">After years of tweaking and adjusting my development environment, I think I've finally found a setup that maximizes my productivity while keeping things simple...</p>
+            <a href="/blog/post-2" class="read-more">Read more →</a>
+        </div>
         
-        <section id="experience">
-            <h2 class="section-title">Experience</h2>
-            <ul class="experience-list">
-                <li class="experience-item">
-                    <h3 class="experience-title">Job Title at Company Name</h3>
-                    <div class="experience-meta">City, Country · Jan 2024 - Present</div>
-                    <p class="experience-description">Description of your responsibilities, achievements, and the skills you developed or applied in this role. Include specific projects or initiatives you led or contributed to significantly.</p>
-                </li>
-                
-                <li class="experience-item">
-                    <h3 class="experience-title">Previous Job Title at Previous Company</h3>
-                    <div class="experience-meta">City, Country · Jun 2022 - Dec 2023</div>
-                    <p class="experience-description">Description of your responsibilities, achievements, and the skills you developed or applied in this role. Include specific projects or initiatives you led or contributed to significantly.</p>
-                </li>
-                
-                <li class="experience-item">
-                    <h3 class="experience-title">Earlier Job Title at Earlier Company</h3>
-                    <div class="experience-meta">City, Country · Jan 2020 - May 2022</div>
-                    <p class="experience-description">Description of your responsibilities, achievements, and the skills you developed or applied in this role. Include specific projects or initiatives you led or contributed to significantly.</p>
-                </li>
-            </ul>
-        </section>
-    </main>
+        <div class="blog-item">
+            <h3 class="blog-title"><a href="/blog/post-3">Lessons from My Latest Project</a></h3>
+            <div class="blog-meta">February 28, 2025</div>
+            <p class="blog-excerpt">Last month I launched a side project I had been working on for several weeks. While the project itself was relatively small in scope, I encountered several interesting challenges...</p>
+            <a href="/blog/post-3" class="read-more">Read more →</a>
+        </div>
+        
+        <a href="/blog" style="font-size: 0.875rem; display: inline-block; margin-top: 1rem;">View all posts →</a>
+    </section>
+    
+    <section id="experience">
+        <h2 class="section-title">Experience</h2>
+        <div class="experience-item">
+            <h3 class="experience-title">Senior Designer at Company</h3>
+            <div class="experience-meta">Seoul, Korea · 2023 – Present</div>
+            <p>Responsible for leading the design of the company's main product. Working closely with product managers and engineers to deliver high-quality user experiences.</p>
+        </div>
+        
+        <div class="experience-item">
+            <h3 class="experience-title">Product Designer at Previous Company</h3>
+            <div class="experience-meta">Seoul, Korea · 2021 – 2023</div>
+            <p>Designed features for the mobile app and website. Conducted user research and usability testing to inform design decisions.</p>
+        </div>
+        
+        <div class="experience-item">
+            <h3 class="experience-title">UI Designer at First Company</h3>
+            <div class="experience-meta">Seoul, Korea · 2019 – 2021</div>
+            <p>Created user interfaces for web applications. Established the company's first design system.</p>
+        </div>
+    </section>
     
     <footer>
         <div class="footer-links">
-            <a href="https://github.com/yourusername" target="_blank">GitHub</a>
-            <a href="https://twitter.com/yourusername" target="_blank">Twitter</a>
-            <a href="https://linkedin.com/in/yourusername" target="_blank">LinkedIn</a>
+            <a href="https://github.com/yourusername">GitHub</a>
+            <a href="https://twitter.com/yourusername">Twitter</a>
+            <a href="https://linkedin.com/in/yourusername">LinkedIn</a>
             <a href="mailto:your.email@example.com">Email</a>
         </div>
-        <div class="copyright">
-            © 2025 Your Name. All rights reserved.
-        </div>
+        <div>© 2025 Your Name</div>
     </footer>
 </body>
 </html>
