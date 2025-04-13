@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Name - Personal Site</title>
+    <title>Your Name</title>
     <style>
+        /* Base Styles */
         :root {
-            --main-bg-color: #ffffff;
-            --main-text-color: #333333;
-            --accent-color: #3498db;
-            --secondary-color: #e74c3c;
-            --spacing: 2rem;
+            --text-color: #000;
+            --bg-color: #fff;
+            --accent-color: #3182ce;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         
         * {
@@ -20,366 +20,431 @@
         }
         
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--main-text-color);
-            background-color: var(--main-bg-color);
-            max-width: 1200px;
+            font-family: var(--font-main);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.5;
+            max-width: 860px;
             margin: 0 auto;
-            padding: 0 var(--spacing);
+            padding: 2rem 1.5rem;
         }
         
+        a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            color: var(--accent-color);
+        }
+        
+        /* Header Styles */
         header {
-            padding: var(--spacing) 0;
+            padding: 1.5rem 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-        
-        .logo a {
-            text-decoration: none;
-            color: var(--main-text-color);
+        .site-title {
+            font-size: 1.125rem;
+            font-weight: 600;
         }
         
         nav ul {
             display: flex;
             list-style: none;
+            gap: 1.5rem;
         }
         
-        nav ul li {
-            margin-left: 2rem;
-        }
-        
-        nav a {
-            text-decoration: none;
-            color: var(--main-text-color);
+        nav ul li a {
+            font-size: 1rem;
             font-weight: 500;
-            transition: color 0.3s ease;
         }
         
-        nav a:hover {
-            color: var(--accent-color);
+        /* Main Content Styles */
+        main {
+            padding: 2rem 0;
         }
         
-        .hero {
-            padding: calc(var(--spacing) * 3) 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+        .intro {
+            margin-bottom: 4rem;
         }
         
-        .hero h1 {
+        .intro h1 {
             font-size: 3rem;
-            margin-bottom: var(--spacing);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
             line-height: 1.2;
         }
         
-        .hero p {
-            font-size: 1.2rem;
-            max-width: 700px;
-            margin-bottom: var(--spacing);
+        .intro p {
+            font-size: 1.5rem;
+            max-width: 42rem;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
         }
         
-        .btn {
-            display: inline-block;
-            padding: 0.8rem 1.6rem;
-            background-color: var(--accent-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
+        /* Section Styles */
+        section {
+            margin-bottom: 4rem;
         }
         
-        .btn:hover {
-            background-color: var(--secondary-color);
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eaeaea;
         }
         
-        .projects {
-            padding: var(--spacing) 0;
+        /* Blog Section Styles */
+        .blog-list {
+            list-style: none;
         }
         
-        .section-header {
-            margin-bottom: var(--spacing);
-            text-align: center;
+        .blog-item {
+            margin-bottom: 2.5rem;
         }
         
-        .project-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: var(--spacing);
+        .blog-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
         }
         
-        .project-card {
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .project-image {
-            height: 200px;
-            background-color: #ddd;
+        .blog-meta {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 0.75rem;
             display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .project-content {
-            padding: 1.5rem;
-        }
-        
-        .project-content h3 {
-            margin-bottom: 0.5rem;
-        }
-        
-        .about {
-            padding: calc(var(--spacing) * 2) 0;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing);
-        }
-        
-        .about-image {
-            flex: 1;
-            height: 400px;
-            background-color: #ddd;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .about-content {
-            flex: 1;
-        }
-        
-        .about-content h2 {
-            margin-bottom: 1rem;
-        }
-        
-        .contact {
-            padding: calc(var(--spacing) * 2) 0;
-            text-align: center;
-        }
-        
-        .contact-form {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            text-align: left;
-        }
-        
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: inherit;
-        }
-        
-        .form-group textarea {
-            min-height: 150px;
-        }
-        
-        footer {
-            padding: var(--spacing) 0;
-            text-align: center;
-            border-top: 1px solid #eee;
-            margin-top: var(--spacing);
-        }
-        
-        .social-links {
-            display: flex;
-            justify-content: center;
             gap: 1rem;
-            margin-top: 1rem;
         }
         
-        .social-link {
+        .blog-date {
             display: inline-block;
-            width: 40px;
-            height: 40px;
-            background-color: #f9f9f9;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s ease;
         }
         
-        .social-link:hover {
-            background-color: var(--accent-color);
-            color: white;
+        .blog-tags {
+            display: inline-flex;
+            gap: 0.5rem;
+        }
+        
+        .blog-tag {
+            background-color: #f5f5f5;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+        }
+        
+        .blog-excerpt {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+        
+        .read-more {
+            font-size: 0.875rem;
+            color: var(--accent-color);
+        }
+        
+        /* Projects Section */
+        .projects-list {
+            list-style: none;
+        }
+        
+        .project-item {
+            margin-bottom: 2rem;
+        }
+        
+        .project-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .project-meta {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .project-description {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .project-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .project-links a {
+            font-size: 0.875rem;
+            text-decoration: underline;
+            color: var(--accent-color);
+        }
+        
+        /* Articles/Writing Section */
+        .articles-list {
+            list-style: none;
+        }
+        
+        .article-item {
+            display: flex;
+            margin-bottom: 1rem;
+            align-items: baseline;
+        }
+        
+        .article-date {
+            font-size: 0.875rem;
+            color: #666;
+            width: 7rem;
+            flex-shrink: 0;
+        }
+        
+        .article-title {
+            font-size: 1rem;
+        }
+        
+        /* Experience Section */
+        .experience-list {
+            list-style: none;
+        }
+        
+        .experience-item {
+            margin-bottom: 2rem;
+        }
+        
+        .experience-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .experience-meta {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .experience-description {
+            font-size: 1rem;
+        }
+        
+        /* Footer Styles */
+        footer {
+            padding: 2rem 0;
+            font-size: 0.875rem;
+            color: #666;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-links a {
+            color: #666;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent-color);
         }
         
         @media (max-width: 768px) {
-            header {
+            .intro h1 {
+                font-size: 2.5rem;
+            }
+            
+            .intro p {
+                font-size: 1.25rem;
+            }
+            
+            .article-item {
                 flex-direction: column;
-                align-items: flex-start;
+                margin-bottom: 1.5rem;
             }
             
-            nav ul {
-                margin-top: 1rem;
-            }
-            
-            nav ul li {
-                margin-left: 0;
-                margin-right: 1rem;
-            }
-            
-            .about {
-                flex-direction: column;
-            }
-            
-            .about-image {
-                width: 100%;
+            .article-date {
+                margin-bottom: 0.25rem;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">
-            <a href="#">YourName</a>
+        <div class="site-title">
+            <a href="/">Your Name</a>
         </div>
         <nav>
             <ul>
                 <li><a href="#projects">Projects</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="#writing">Writing</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="mailto:your.email@example.com">Contact</a></li>
             </ul>
         </nav>
     </header>
     
-    <section class="hero">
-        <h1>Hello, I'm Your Name</h1>
-        <p>I'm a designer / developer / creative based in Your City. I create beautiful, functional digital experiences.</p>
-        <a href="#projects" class="btn">View My Work</a>
-    </section>
-    
-    <section id="projects" class="projects">
-        <div class="section-header">
-            <h2>Featured Projects</h2>
-        </div>
-        <div class="project-grid">
-            <div class="project-card">
-                <div class="project-image">
-                    Project Image 1
-                </div>
-                <div class="project-content">
-                    <h3>Project Title</h3>
-                    <p>Short description of the project and what technologies or techniques were used.</p>
-                </div>
-            </div>
-            <div class="project-card">
-                <div class="project-image">
-                    Project Image 2
-                </div>
-                <div class="project-content">
-                    <h3>Project Title</h3>
-                    <p>Short description of the project and what technologies or techniques were used.</p>
-                </div>
-            </div>
-            <div class="project-card">
-                <div class="project-image">
-                    Project Image 3
-                </div>
-                <div class="project-content">
-                    <h3>Project Title</h3>
-                    <p>Short description of the project and what technologies or techniques were used.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <section id="about" class="about">
-        <div class="about-image">
-            Your Photo
-        </div>
-        <div class="about-content">
-            <h2>About Me</h2>
-            <p>Hello! I'm Your Name, a passionate designer/developer based in Your City. I specialize in creating meaningful digital experiences that solve real problems.</p>
-            <p>With X years of experience in the industry, I've worked with various clients across different sectors, helping them achieve their goals through thoughtful design and development.</p>
-            <p>When I'm not working, you can find me exploring nature, reading books, or experimenting with new technologies.</p>
-        </div>
-    </section>
-    
-    <section id="contact" class="contact">
-        <div class="section-header">
-            <h2>Get In Touch</h2>
-            <p>Have a project in mind or just want to say hello? Feel free to reach out!</p>
-        </div>
-        <div class="contact-form">
-            <form action="#" method="POST">
-                <div class="form-group">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" required></textarea>
-                </div>
-                <button type="submit" class="btn">Send Message</button>
-            </form>
-        </div>
-    </section>
+    <main>
+        <section class="intro">
+            <h1>Hello, I'm Your Name.</h1>
+            <p>I'm a [your profession] based in [your location]. I focus on [your specialty/interests]. Currently [what you're doing now].</p>
+            <p>Previously, I worked at [previous company/experience]. I graduated from [your education].</p>
+        </section>
+        
+        <section id="projects">
+            <h2 class="section-title">Projects</h2>
+            <ul class="projects-list">
+                <li class="project-item">
+                    <h3 class="project-title">Project Name</h3>
+                    <div class="project-meta">Technology Stack · 2025</div>
+                    <p class="project-description">A brief description of the project, what problem it solves, and your role in developing it. Highlight any interesting technical challenges or achievements.</p>
+                    <div class="project-links">
+                        <a href="#" target="_blank">Demo</a>
+                        <a href="#" target="_blank">GitHub</a>
+                        <a href="#" target="_blank">Blog Post</a>
+                    </div>
+                </li>
+                
+                <li class="project-item">
+                    <h3 class="project-title">Project Name</h3>
+                    <div class="project-meta">Technology Stack · 2024</div>
+                    <p class="project-description">A brief description of the project, what problem it solves, and your role in developing it. Highlight any interesting technical challenges or achievements.</p>
+                    <div class="project-links">
+                        <a href="#" target="_blank">Demo</a>
+                        <a href="#" target="_blank">GitHub</a>
+                    </div>
+                </li>
+                
+                <li class="project-item">
+                    <h3 class="project-title">Project Name</h3>
+                    <div class="project-meta">Technology Stack · 2023</div>
+                    <p class="project-description">A brief description of the project, what problem it solves, and your role in developing it. Highlight any interesting technical challenges or achievements.</p>
+                    <div class="project-links">
+                        <a href="#" target="_blank">Demo</a>
+                        <a href="#" target="_blank">GitHub</a>
+                    </div>
+                </li>
+            </ul>
+        </section>
+        
+        <section id="blog">
+            <h2 class="section-title">Blog</h2>
+            <ul class="blog-list">
+                <li class="blog-item">
+                    <h3 class="blog-title"><a href="/blog/post-1.html">The Future of Web Development: My Thoughts on Recent Trends</a></h3>
+                    <div class="blog-meta">
+                        <span class="blog-date">April 10, 2025</span>
+                        <div class="blog-tags">
+                            <span class="blog-tag">Web Dev</span>
+                            <span class="blog-tag">JavaScript</span>
+                            <span class="blog-tag">Thoughts</span>
+                        </div>
+                    </div>
+                    <p class="blog-excerpt">
+                        Recently I've been thinking about how the web development landscape has changed over the past few years. From the rise of full-stack frameworks to the growing adoption of serverless architectures, there's a lot to unpack. In this post, I'll share my observations and what I think might be coming next...
+                    </p>
+                    <a href="/blog/post-1.html" class="read-more">Read more →</a>
+                </li>
+                
+                <li class="blog-item">
+                    <h3 class="blog-title"><a href="/blog/post-2.html">My Development Setup for 2025</a></h3>
+                    <div class="blog-meta">
+                        <span class="blog-date">March 15, 2025</span>
+                        <div class="blog-tags">
+                            <span class="blog-tag">Tools</span>
+                            <span class="blog-tag">Productivity</span>
+                        </div>
+                    </div>
+                    <p class="blog-excerpt">
+                        After years of tweaking and adjusting my development environment, I think I've finally found a setup that maximizes my productivity while keeping things simple. In this post, I'll walk through my hardware, software, and workflow choices...
+                    </p>
+                    <a href="/blog/post-2.html" class="read-more">Read more →</a>
+                </li>
+                
+                <li class="blog-item">
+                    <h3 class="blog-title"><a href="/blog/post-3.html">Lessons Learned from Building My Latest Project</a></h3>
+                    <div class="blog-meta">
+                        <span class="blog-date">February 28, 2025</span>
+                        <div class="blog-tags">
+                            <span class="blog-tag">Projects</span>
+                            <span class="blog-tag">Lessons</span>
+                        </div>
+                    </div>
+                    <p class="blog-excerpt">
+                        Last month I launched a side project I had been working on for several weeks. While the project itself was relatively small in scope, I encountered several interesting challenges along the way. Here's what I learned and how it's changed my approach...
+                    </p>
+                    <a href="/blog/post-3.html" class="read-more">Read more →</a>
+                </li>
+            </ul>
+            <p><a href="/blog" style="font-size: 0.9rem; color: var(--accent-color);">View all posts →</a></p>
+        </section>
+        
+        <section id="writing">
+            <h2 class="section-title">Writing</h2>
+            <ul class="articles-list">
+                <li class="article-item">
+                    <span class="article-date">Apr 2025</span>
+                    <a href="#" class="article-title">Title of your most recent article or blog post</a>
+                </li>
+                <li class="article-item">
+                    <span class="article-date">Mar 2025</span>
+                    <a href="#" class="article-title">Another interesting article you've written</a>
+                </li>
+                <li class="article-item">
+                    <span class="article-date">Feb 2025</span>
+                    <a href="#" class="article-title">A technical guide or tutorial you published</a>
+                </li>
+                <li class="article-item">
+                    <span class="article-date">Jan 2025</span>
+                    <a href="#" class="article-title">Thoughts on a relevant industry trend or technology</a>
+                </li>
+                <li class="article-item">
+                    <span class="article-date">Dec 2024</span>
+                    <a href="#" class="article-title">Year in review or retrospective on your work</a>
+                </li>
+            </ul>
+        </section>
+        
+        <section id="experience">
+            <h2 class="section-title">Experience</h2>
+            <ul class="experience-list">
+                <li class="experience-item">
+                    <h3 class="experience-title">Job Title at Company Name</h3>
+                    <div class="experience-meta">City, Country · Jan 2024 - Present</div>
+                    <p class="experience-description">Description of your responsibilities, achievements, and the skills you developed or applied in this role. Include specific projects or initiatives you led or contributed to significantly.</p>
+                </li>
+                
+                <li class="experience-item">
+                    <h3 class="experience-title">Previous Job Title at Previous Company</h3>
+                    <div class="experience-meta">City, Country · Jun 2022 - Dec 2023</div>
+                    <p class="experience-description">Description of your responsibilities, achievements, and the skills you developed or applied in this role. Include specific projects or initiatives you led or contributed to significantly.</p>
+                </li>
+                
+                <li class="experience-item">
+                    <h3 class="experience-title">Earlier Job Title at Earlier Company</h3>
+                    <div class="experience-meta">City, Country · Jan 2020 - May 2022</div>
+                    <p class="experience-description">Description of your responsibilities, achievements, and the skills you developed or applied in this role. Include specific projects or initiatives you led or contributed to significantly.</p>
+                </li>
+            </ul>
+        </section>
+    </main>
     
     <footer>
-        <p>&copy; 2025 Your Name. All rights reserved.</p>
-        <div class="social-links">
-            <a href="#" class="social-link" aria-label="Twitter">T</a>
-            <a href="#" class="social-link" aria-label="Instagram">I</a>
-            <a href="#" class="social-link" aria-label="LinkedIn">L</a>
-            <a href="#" class="social-link" aria-label="GitHub">G</a>
+        <div class="footer-links">
+            <a href="https://github.com/yourusername" target="_blank">GitHub</a>
+            <a href="https://twitter.com/yourusername" target="_blank">Twitter</a>
+            <a href="https://linkedin.com/in/yourusername" target="_blank">LinkedIn</a>
+            <a href="mailto:your.email@example.com">Email</a>
+        </div>
+        <div class="copyright">
+            © 2025 Your Name. All rights reserved.
         </div>
     </footer>
-
-    <script>
-        // Simple JavaScript for enhanced interactivity
-        document.addEventListener('DOMContentLoaded', function() {
-            // Smooth scrolling for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    const targetId = this.getAttribute('href');
-                    const targetElement = document.querySelector(targetId);
-                    
-                    if (targetElement) {
-                        window.scrollTo({
-                            top: targetElement.offsetTop - 100,
-                            behavior: 'smooth'
-                        });
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 </html>
