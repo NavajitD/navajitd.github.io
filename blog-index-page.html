@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Your Name</title>
+    <style>
+        /* Base Styles */
+        :root {
+            --text-color: #000;
+            --bg-color: #fff;
+            --accent-color: #3182ce;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --secondary-text: #666;
+            --border-color: #eaeaea;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: var(--font-main);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        
+        a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            color: var(--accent-color);
+        }
+        
+        /* Header Styles */
+        header {
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .site-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .site-title a {
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .home-link {
+            font-size: 0.875rem;
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-bottom: 3rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .page-description {
+            font-size: 1.125rem;
+            color: var(--secondary-text);
+        }
+        
+        /* Blog List */
+        .blog-list {
+            list-style: none;
+        }
+        
+        .blog-item {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .blog-item:last-child {
+            border-bottom: none;
+        }
+        
+        .blog-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        
+        .blog-title a {
+            color: var(--text-color);
+        }
+        
+        .blog-title a:hover {
+            color: var(--accent-color);
+        }
+        
+        .blog-meta {
+            font-size: 0.875rem;
+            color: var(--secondary-text);
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .blog-date {
+            display: inline-block;
+        }
+        
+        .blog-tags {
+            display: inline-flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .blog-tag {
+            background-color: #f5f5f5;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+        }
+        
+        .blog-excerpt {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 0.75rem;
+        }
+        
+        .read-more {
+            font-size: 0.875rem;
+            color: var(--accent-color);
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .pagination a {
+            font-size: 0.875rem;
+            color: var(--accent-color);
+        }
+        
+        .page-prev:before {
+            content: "← ";
+        }
+        
+        .page-next:after {
+            content: " →";
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            color: var(--secondary-text);
+        }
+        
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .blog-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="site-title">
+            <a href="/blog">Blog</a>
+        </div>
+        <a href="/" class="home-link">← Back to Home</a>
+    </header>
+    
+    <div class="page-header">
+        <h1 class="page-title">Blog</h1>
+        <p class="page-description">Thoughts, ideas, and explorations on design, development, and technology.</p>
+    </div>
+    
+    <main>
+        <ul class="blog-list">
+            <li class="blog-item">
+                <h2 class="blog-title"><a href="/blog/post-1.html">The Future of Web Development: My Thoughts on Recent Trends</a></h2>
+                <div class="blog-meta">
+                    <span class="blog-date">April 10, 2025</span>
+                    <div class="blog-tags">
+                        <span class="blog-tag">Web Dev</span>
+                        <span class="blog-tag">JavaScript</span>
+                        <span class="blog-tag">Thoughts</span>
+                    </div>
+                </div>
+                <p class="blog-excerpt">
+                    Recently I've been thinking about how the web development landscape has changed over the past few years. From the rise of full-stack frameworks to the growing adoption of serverless architectures, there's a lot to unpack. In this post, I'll share my observations and what I think might be coming next...
+                </p>
+                <a href="/blog/post-1.html" class="read-more">Read more →</a>
+            </li>
+            
+            <li class="blog-item">
+                <h2 class="blog-title"><a href="/blog/post-2.html">My Development Setup for 2025</a></h2>
+                <div class="blog-meta">
+                    <span class="blog-date">March 15, 2025</span>
+                    <div class="blog-tags">
+                        <span class="blog-tag">Tools</span>
+                        <span class="blog-tag">Productivity</span>
+                    </div>
+                </div>
+                <p class="blog-excerpt">
+                    After years of tweaking and adjusting my development environment, I think I've finally found a setup that maximizes my productivity while keeping things simple. In this post, I'll walk through my hardware, software, and workflow choices...
+                </p>
+                <a href="/blog/post-2.html" class="read-more">Read more →</a>
+            </li>
+            
+            <li class="blog-item">
+                <h2 class="blog-title"><a href="/blog/post-3.html">Lessons Learned from Building My Latest Project</a></h2>
+                <div class="blog-meta">
+                    <span class="blog-date">February 28, 2025</span>
+                    <div class="blog-tags">
+                        <span class="blog-tag">Projects</span>
+                        <span class="blog-tag">Lessons</span>
+                    </div>
+                </div>
+                <p class="blog-excerpt">
+                    Last month I launched a side project I had been working on for several weeks. While the project itself was relatively small in scope, I encountered several interesting challenges along the way. Here's what I learned and how it's changed my approach...
+                </p>
+                <a href="/blog/post-3.html" class="read-more">Read more →</a>
+            </li>
+            
+            <li class="blog-item">
+                <h2 class="blog-title"><a href="/blog/post-4.html">Building Accessible Web Applications</a></h2>
+                <div class="blog-meta">
+                    <span class="blog-date">February 
