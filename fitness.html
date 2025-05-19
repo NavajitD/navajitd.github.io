@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Fitness - Navajit D</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        /* Base Styles */
+        :root {
+            --text-color: #171717;
+            --bg-color: #fff;
+            --accent-color: #2563eb;
+            --muted-color: #6b7280;
+            --border-color: #e5e7eb;
+            --font-sans: "Inconsolata", monospace;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html {
+            font-size: 16px;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.65;
+            max-width: 42rem;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+        
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        p {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+        
+        .logo {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+        
+        .logo a {
+            color: var(--text-color);
+        }
+        
+        .logo a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--muted-color);
+        }
+        
+        .sign-out-btn {
+            color: var(--accent-color);
+            cursor: pointer;
+            border: none;
+            background: none;
+            font: inherit;
+        }
+        
+        .sign-out-btn:hover {
+            text-decoration: underline;
+        }
+        
+        /* Authentication */
+        .auth-container {
+            text-align: center;
+            padding: 4rem 0;
+        }
+        
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .auth-description {
+            color: var(--muted-color);
+            margin-bottom: 2rem;
+        }
+        
+        #g_id_signin {
+            display: inline-block;
+            margin: 0 auto;
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-bottom: 3rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            line-height: 1.3;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .page-description {
+            font-size: 1.125rem;
+            color: var(--muted-color);
+        }
+        
+        /* Section Styles */
+        section {
+            margin-bottom: 4rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.05em;
+        }
+        
+        /* Form Styles */
+        .form-container {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        input[type="number"],
+        input[type="date"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        
+        input[type="number"]:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background: #1d4ed8;
+        }
+        
+        button:disabled {
+            background: var(--muted-color);
+            cursor: not-allowed;
+        }
+        
+        /* Filter Buttons */
+        .filter-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: #f3f4f6;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: var(--text-color);
+        }
+        
+        .filter-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+        
+        /* Charts */
+        .chart-container {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* AI Agent */
+        .ai-section {
+            background: #f0f9ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e0f2fe;
+        }
+        
+        .ai-button {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 1rem;
+        }
+        
+        .ai-button:hover {
+            background: #0284c7;
+        }
+        
+        .recommendations {
+            margin-top: 1rem;
+        }
+        
+        .recommendation-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--accent-color);
+        }
+        
+        .recommendation-time {
+            font-size: 0.75rem;
+            color: var(--muted-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            body {
+                padding: 2rem 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.75rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-controls {
+                flex-wrap: wrap;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+        <div class="auth-container">
+            <h1 class="auth-title">Fitness Tracking</h1>
+            <p class="auth-description">Sign in with your Google account to access your fitness data</p>
+            <div id="g_id_signin" 
+                 data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false"
+                 data-cancel_on_tap_outside="false">
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <header>
+            <div class="logo">
+                <a href="/">Navajit D</a>
+            </div>
+            <div class="user-info">
+                <span id="user-email"></span>
+                <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
+            </div>
+        </header>
+        
+        <div class="page-header">
+            <h1 class="page-title">Fitness Tracking</h1>
+            <p class="page-description">Track your weight, BMI, and health metrics over time.</p>
+        </div>
+        
+        <!-- Data Entry -->
+        <section>
+            <h2 class="section-title">Log New Entry</h2>
+            <div class="form-container">
+                <form id="fitness-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight">Weight (kg)</label>
+                            <input type="number" id="weight" name="weight" step="0.1" min="30" max="300" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="height">Height (cm)</label>
+                            <input type="number" id="height" name="height" step="0.1" min="100" max="250" required>
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="submit">Add Entry</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Current Stats -->
+        <section>
+            <h2 class="section-title">Current Stats</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="current-weight">--</div>
+                    <div class="stat-label">Current Weight (kg)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="current-bmi">--</div>
+                    <div class="stat-label">Current BMI</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-entries">--</div>
+                    <div class="stat-label">Total Entries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="weight-change">--</div>
+                    <div class="stat-label">30-Day Change (kg)</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Charts -->
+        <section>
+            <h2 class="section-title">Progress Charts</h2>
+            <div class="filter-controls">
+                <button class="filter-btn active" data-filter="6weeks">Last 6 Weeks</button>
+                <button class="filter-btn" data-filter="monthly">Monthly</button>
+                <button class="filter-btn" data-filter="yearly">Yearly</button>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Weight Progress</h3>
+                <div id="weight-chart"></div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">BMI Progress</h3>
+                <div id="bmi-chart"></div>
+            </div>
+        </section>
+        
+        <!-- AI Agent -->
+        <section>
+            <h2 class="section-title">AI Fitness Coach</h2>
+            <div class="ai-section">
+                <p>Get personalized fitness recommendations from your AI coach.</p>
+                <button class="ai-button" onclick="callAIAgent()">Call AI Coach</button>
+                
+                <div id="ai-widget-container"></div>
+                
+                <div class="recommendations">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.125rem; font-weight: 600;">Today's Recommendations</h3>
+                    <div id="recommendations-list">
+                        <p style="color: var(--muted-color); font-size: 0.875rem;">No recommendations yet. Call your AI coach to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ElevenLabs AI Agent -->
+    <elevenlabs-convai agent-id="agent_01jvkdtzphetdtm6r9vf3122c0"></elevenlabs-convai>
+    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+
+    <script>
+        // Global variables
+        let fitnessData = [];
+        let currentFilter = '6weeks';
+        let userEmail = null;
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStoredData();
+            updateCurrentStats();
+            updateCharts();
+            setupForm();
+            setupFilters();
+            setTodayDate();
+        });
+        
+        // Google Sign-In
+        window.handleCredentialResponse = function(response) {
+            const responsePayload = decodeJwtResponse(response.credential);
+            
+            // Check if the email matches the allowed email
+            if (responsePayload.email === 'navjitdebnath5@gmail.com') {
+                userEmail = responsePayload.email;
+                document.getElementById('user-email').textContent = responsePayload.email;
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                loadStoredData();
+                updateCurrentStats();
+                updateCharts();
+            } else {
+                alert('Access denied. This fitness tracker is private.');
+                signOut();
+            }
+        };
+        
+        function decodeJwtResponse(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+        
+        window.signOut = function() {
+            userEmail = null;
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+            google.accounts.id.disableAutoSelect();
+        };
+        
+        // Load data from localStorage
+        function loadStoredData() {
+            const stored = localStorage.getItem('fitnessData');
+            if (stored) {
+                fitnessData = JSON.parse(stored);
+                // Sort by date
+                fitnessData.sort((a, b) => new Date(a.date) - new Date(b.date));
+            }
+        }
+        
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('fitnessData', JSON.stringify(fitnessData));
+        }
+        
+        // Set today's date as default
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+        }
+        
+        // Setup form submission
+        function setupForm() {
+            document.getElementById('fitness-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const entry = {
+                    date: formData.get('date'),
+                    weight: parseFloat(formData.get('weight')),
+                    height: parseFloat(formData.get('height')),
+                    bmi: calculateBMI(parseFloat(formData.get('weight')), parseFloat(formData.get('height')))
+                };
+                
+                // Check if entry for this date already exists
+                const existingIndex = fitnessData.findIndex(item => item.date === entry.date);
+                if (existingIndex >= 0) {
+                    if (confirm('An entry for this date already exists. Do you want to update it?')) {
+                        fitnessData[existingIndex] = entry;
+                    } else {
+                        return;
+                    }
+                } else {
+                    fitnessData.push(entry);
+                }
+                
+                // Sort by date
+                fitnessData.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                saveData();
+                updateCurrentStats();
+                updateCharts();
+                
+                // Clear form except date
+                document.getElementById('weight').value = '';
+                document.getElementById('height').value = '';
+                
+                alert('Entry added successfully!');
+            });
+        }
+        
+        // Calculate BMI
+        function calculateBMI(weight, height) {
+            return weight / Math.pow(height / 100, 2);
+        }
+        
+        // Setup filter buttons
+        function setupFilters() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    updateCharts();
+                });
+            });
+        }
+        
+        // Filter data based on current filter
+        function getFilteredData() {
+            if (fitnessData.length === 0) return [];
+            
+            const now = new Date();
+            let startDate;
+            
+            switch (currentFilter) {
+                case '6weeks':
+                    startDate = new Date(now.getTime() - (6 * 7 * 24 * 60 * 60 * 1000));
+                    break;
+                case 'monthly':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+                    break;
+                case 'yearly':
+                    startDate = new Date(now.getFullYear() - 5, 0, 1);
+                    break;
+                default:
+                    return fitnessData;
+            }
+            
+            return fitnessData.filter(entry => new Date(entry.date) >= startDate);
+        }
+        
+        // Update current stats
+        function updateCurrentStats() {
+            if (fitnessData.length === 0) {
+                document.getElementById('current-weight').textContent = '--';
+                document.getElementById('current-bmi').textContent = '--';
+                document.getElementById('total-entries').textContent = '0';
+                document.getElementById('weight-change').textContent = '--';
+                return;
+            }
+            
+            const latest = fitnessData[fitnessData.length - 1];
+            document.getElementById('current-weight').textContent = latest.weight.toFixed(1);
+            document.getElementById('current-bmi').textContent = latest.bmi.toFixed(1);
+            document.getElementById('total-entries').textContent = fitnessData.length;
+            
+            // Calculate 30-day change
+            const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
+            const recentEntries = fitnessData.filter(entry => new Date(entry.date) > thirtyDaysAgo);
+            
+            if (recentEntries.length >= 2) {
+                const firstWeight = recentEntries[0].weight;
+                const lastWeight = recentEntries[recentEntries.length - 1].weight;
+                const change = lastWeight - firstWeight;
+                const changeText = change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
+                document.getElementById('weight-change').textContent = changeText;
+            } else {
+                document.getElementById('weight-change').textContent = '--';
+            }
+        }
+        
+        // Update charts
+        function updateCharts() {
+            const filteredData = getFilteredData();
+            
+            if (filteredData.length === 0) {
+                document.getElementById('weight-chart').innerHTML = '<p style="text-align: center; color: var(--muted-color);">No data available</p>';
+                document.getElementById('bmi-chart').innerHTML = '<p style="text-align: center; color: var(--muted-color);">No data available</p>';
+                return;
+            }
+            
+            // Prepare data for charts
+            const dates = filteredData.map(entry => entry.date);
+            const weights = filteredData.map(entry => entry.weight);
+            const bmis = filteredData.map(entry => entry.bmi);
+            
+            // Weight chart
+            const weightTrace = {
+                x: dates,
+                y: weights,
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: '#2563eb', width: 3 },
+                marker: { color: '#2563eb', size: 6 },
+                name: 'Weight (kg)'
+            };
+            
+            const weightLayout = {
+                title: false,
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'Weight (kg)' },
+                margin: { t: 20, r: 20, b: 40, l: 50 },
+                height: 300,
+                font: { family: 'Inconsolata, monospace' }
+            };
+            
+            Plotly.newPlot('weight-chart', [weightTrace], weightLayout, { responsive: true });
+            
+            // BMI chart with reference lines
+            const bmiTrace = {
+                x: dates,
+                y: bmis,
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: '#10b981', width: 3 },
+                marker: { color: '#10b981', size: 6 },
+                name: 'BMI'
+            };
+            
+            // BMI reference lines
+            const underweightLine = {
+                x: dates,
+                y: Array(dates.length).fill(18.5),
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#6b7280', width: 1, dash: 'dash' },
+                name: 'Underweight (18.5)',
+                showlegend: false
+            };
+            
+            const overweightLine = {
+                x: dates,
+                y: Array(dates.length).fill(25),
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#f59e0b', width: 1, dash: 'dash' },
+                name: 'Overweight (25)',
+                showlegend: false
+            };
+            
+            const obeseLine = {
+                x: dates,
+                y: Array(dates.length).fill(30),
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#ef4444', width: 1, dash: 'dash' },
+                name: 'Obese (30)',
+                showlegend: false
+            };
+            
+            const bmiLayout = {
+                title: false,
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'BMI' },
+                margin: { t: 20, r: 20, b: 40, l: 50 },
+                height: 300,
+                font: { family: 'Inconsolata, monospace' },
+                annotations: [
+                    {
+                        x: dates[Math.floor(dates.length / 2)],
+                        y: 18.5,
+                        text: 'Underweight',
+                        showarrow: false,
+                        font: { size: 10, color: '#6b7280' }
+                    },
+                    {
+                        x: dates[Math.floor(dates.length / 2)],
+                        y: 25,
+                        text: 'Overweight',
+                        showarrow: false,
+                        font: { size: 10, color: '#f59e0b' }
+                    },
+                    {
+                        x: dates[Math.floor(dates.length / 2)],
+                        y: 30,
+                        text: 'Obese',
+                        showarrow: false,
+                        font: { size: 10, color: '#ef4444' }
+                    }
+                ]
+            };
+            
+            Plotly.newPlot('bmi-chart', [bmiTrace, underweightLine, overweightLine, obeseLine], bmiLayout, { responsive: true });
+        }
+        
+        // AI Agent integration
+        function callAIAgent() {
+            const now = new Date();
+            const currentDay = now.toLocaleDateString('en-US', { 
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const currentTime = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+            
+            // Get the convai widget
+            const convaiWidget = document.querySelector('elevenlabs-convai');
+            if (convaiWidget) {
+                // Try to start conversation with context
+                try {
+                    convaiWidget.startConversation();
+                    
+                    // Add a recommendation to show that the agent was called
+                    addRecommendation(`AI Coach called on ${currentDay} at ${currentTime}. Waiting for recommendations...`);
+                } catch (error) {
+                    console.error('Error calling AI agent:', error);
+                    alert('There was an error calling the AI agent. Please try again.');
+                }
+            } else {
+                alert('AI agent not available. Please refresh the page.');
+            }
+        }
+        
+        // Add recommendation
+        function addRecommendation(text) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            
+            const recommendationsContainer = document.getElementById('recommendations-list');
+            
+            // Clear the "no recommendations" message if it exists
+            if (recommendationsContainer.innerHTML.includes('No recommendations yet')) {
+                recommendationsContainer.innerHTML = '';
+            }
+            
+            const recommendationElement = document.createElement('div');
+            recommendationElement.className = 'recommendation-item';
+            recommendationElement.innerHTML = `
+                <div class="recommendation-time">${timeString}</div>
+                <div>${text}</div>
+            `;
+            
+            recommendationsContainer.appendChild(recommendationElement);
+            
+            // Save recommendations to localStorage
+            const recommendations = JSON.parse(localStorage.getItem('dailyRecommendations') || '[]');
+            recommendations.push({
+                time: now.toISOString(),
+                text: text
+            });
+            localStorage.setItem('dailyRecommendations', JSON.stringify(recommendations));
+        }
+        
+        // Load daily recommendations
+        function loadDailyRecommendations() {
+            const today = new Date().toDateString();
+            const recommendations = JSON.parse(localStorage.getItem('dailyRecommendations') || '[]');
+            const todayRecommendations = recommendations.filter(rec => 
+                new Date(rec.time).toDateString() === today
+            );
+            
+            const container = document.getElementById('recommendations-list');
+            if (todayRecommendations.length === 0) {
+                container.innerHTML = '<p style="color: var(--muted-color); font-size: 0.875rem;">No recommendations yet. Call your AI coach to get started!</p>';
+            } else {
+                container.innerHTML = '';
+                todayRecommendations.forEach(rec => {
+                    const time = new Date(rec.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    const element = document.createElement('div');
+                    element.className = 'recommendation-item';
+                    element.innerHTML = `
+                        <div class="recommendation-time">${time}</div>
+                        <div>${rec.text}</div>
+                    `;
+                    container.appendChild(element);
+                });
+            }
+        }
+        
+        // Initialize recommendations on load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDailyRecommendations();
+        });
+        
+        // Mock function to simulate AI responses (for testing)
+        function simulateAIResponse() {
+            const responses = [
+                "Based on your recent weight trend, consider increasing your water intake and focusing on portion control.",
+                "Your BMI is in a healthy range. Keep up the good work with your current routine!",
+                "I notice some fluctuation in your weight. This is normal, but try to maintain consistency in your diet.",
+                "Consider adding more cardio exercises to your routine for better cardiovascular health.",
+                "Your progress shows dedication. Remember to get adequate sleep for optimal recovery."
+            ];
+            
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            setTimeout(() => {
+                addRecommendation(randomResponse);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
