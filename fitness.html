@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>Fitness - Navajit D</title>
+    
+    <!-- Open Graph meta tags for thumbnail -->
+    <meta property="og:title" content="Fitness Tracker - Navajit D">
+    <meta property="og:description" content="Personal fitness tracking dashboard with AI-powered recommendations">
+    <meta property="og:image" content="https://navajitd.github.io/assets/fitness-thumbnail.png">
+    <meta property="og:url" content="https://navajitd.github.io/fitness.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fitness Tracker - Navajit D">
+    <meta name="twitter:description" content="Personal fitness tracking dashboard with AI-powered recommendations">
+    <meta name="twitter:image" content="https://navajitd.github.io/assets/fitness-thumbnail.png">
+    
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
@@ -77,6 +89,27 @@
             text-decoration: none;
         }
         
+        nav ul {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+        
+        nav a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        nav a.current {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        
         .user-info {
             display: flex;
             align-items: center;
@@ -101,6 +134,10 @@
         .auth-container {
             text-align: center;
             padding: 4rem 0;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin: 2rem 0;
         }
         
         .auth-title {
@@ -112,11 +149,47 @@
         .auth-description {
             color: var(--muted-color);
             margin-bottom: 2rem;
+            font-size: 1.125rem;
+        }
+        
+        .auth-features {
+            text-align: left;
+            max-width: 300px;
+            margin: 0 auto 2rem;
+        }
+        
+        .auth-features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .auth-features li {
+            padding: 0.5rem 0;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .auth-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
         }
         
         #g_id_signin {
             display: inline-block;
             margin: 0 auto;
+        }
+        
+        .restricted-access {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            color: #dc2626;
+            font-size: 0.875rem;
         }
         
         /* Page Header */
@@ -336,6 +409,15 @@
                 padding: 2rem 1rem;
             }
             
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
             .page-title {
                 font-size: 1.75rem;
             }
@@ -362,14 +444,44 @@
 <body>
     <!-- Auth Screen -->
     <div id="auth-screen">
+        <!-- Keep the navigation even on auth screen -->
+        <header>
+            <div class="logo">
+                <a href="/">Navajit D</a>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/#projects">Projects</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="/#experience">Experience</a></li>
+                    <li><a href="/fitness.html" class="current">Fitness</a></li>
+                    <li><a href="mailto:navajit@example.com">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+        
         <div class="auth-container">
-            <h1 class="auth-title">Fitness Tracking</h1>
-            <p class="auth-description">Sign in with your Google account to access your fitness data</p>
+            <h1 class="auth-title">Fitness Tracking Dashboard</h1>
+            <p class="auth-description">Sign in to access your personal fitness data and AI coach</p>
+            
+            <div class="auth-features">
+                <ul>
+                    <li>Track weight and BMI over time</li>
+                    <li>Visualize progress with interactive charts</li>
+                    <li>Get AI-powered fitness recommendations</li>
+                    <li>Secure data storage</li>
+                </ul>
+            </div>
+            
             <div id="g_id_signin" 
                  data-client_id="1010970898291-q8nv22u1mbbv3mjvso048dcmsip8l9ev.apps.googleusercontent.com"
                  data-callback="handleCredentialResponse"
                  data-auto_prompt="false"
                  data-cancel_on_tap_outside="false">
+            </div>
+            
+            <div class="restricted-access">
+                <strong>Note:</strong> This is a private fitness tracker. Only authorized users can access the dashboard.
             </div>
         </div>
     </div>
@@ -380,6 +492,15 @@
             <div class="logo">
                 <a href="/">Navajit D</a>
             </div>
+            <nav>
+                <ul>
+                    <li><a href="/#projects">Projects</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="/#experience">Experience</a></li>
+                    <li><a href="/fitness.html" class="current">Fitness</a></li>
+                    <li><a href="mailto:navajit@example.com">Contact</a></li>
+                </ul>
+            </nav>
             <div class="user-info">
                 <span id="user-email"></span>
                 <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
@@ -447,9 +568,8 @@
         <section>
             <h2 class="section-title">Progress Charts</h2>
             <div class="filter-controls">
-                <button class="filter-btn active" data-filter="6weeks">Last 6 Weeks</button>
+                <button class="filter-btn active" data-filter="weekly">Weekly</button>
                 <button class="filter-btn" data-filter="monthly">Monthly</button>
-                <button class="filter-btn" data-filter="yearly">Yearly</button>
             </div>
             
             <div class="chart-container">
@@ -467,15 +587,15 @@
         <section>
             <h2 class="section-title">AI Fitness Coach</h2>
             <div class="ai-section">
-                <p>Get personalized fitness recommendations from your AI coach.</p>
-                <button class="ai-button" onclick="callAIAgent()">Call AI Coach</button>
+                <p>Get personalized fitness recommendations from your AI coach based on your progress data.</p>
+                <button class="ai-button" onclick="callAIAgent()">Talk to AI Coach</button>
                 
                 <div id="ai-widget-container"></div>
                 
                 <div class="recommendations">
                     <h3 style="margin-bottom: 1rem; font-size: 1.125rem; font-weight: 600;">Today's Recommendations</h3>
                     <div id="recommendations-list">
-                        <p style="color: var(--muted-color); font-size: 0.875rem;">No recommendations yet. Call your AI coach to get started!</p>
+                        <p style="color: var(--muted-color); font-size: 0.875rem;">No recommendations yet. Talk to your AI coach to get started!</p>
                     </div>
                 </div>
             </div>
@@ -489,7 +609,7 @@
     <script>
         // Global variables
         let fitnessData = [];
-        let currentFilter = '6weeks';
+        let currentFilter = 'weekly';
         let userEmail = null;
         
         // Initialize the app
@@ -515,8 +635,9 @@
                 loadStoredData();
                 updateCurrentStats();
                 updateCharts();
+                loadDailyRecommendations();
             } else {
-                alert('Access denied. This fitness tracker is private.');
+                alert('Access denied. This fitness tracker is restricted to authorized users only.');
                 signOut();
             }
         };
@@ -534,7 +655,9 @@
             userEmail = null;
             document.getElementById('auth-screen').classList.remove('hidden');
             document.getElementById('app').classList.add('hidden');
-            google.accounts.id.disableAutoSelect();
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
         };
         
         // Load data from localStorage
@@ -623,14 +746,11 @@
             let startDate;
             
             switch (currentFilter) {
-                case '6weeks':
-                    startDate = new Date(now.getTime() - (6 * 7 * 24 * 60 * 60 * 1000));
+                case 'weekly':
+                    startDate = new Date(now.getTime() - (12 * 7 * 24 * 60 * 60 * 1000)); // Last 12 weeks
                     break;
                 case 'monthly':
-                    startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-                    break;
-                case 'yearly':
-                    startDate = new Date(now.getFullYear() - 5, 0, 1);
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1); // Last 12 months
                     break;
                 default:
                     return fitnessData;
@@ -679,28 +799,39 @@
                 return;
             }
             
+            // Group data by week or month based on filter
+            let groupedData;
+            if (currentFilter === 'weekly') {
+                groupedData = groupDataByWeek(filteredData);
+            } else {
+                groupedData = groupDataByMonth(filteredData);
+            }
+            
             // Prepare data for charts
-            const dates = filteredData.map(entry => entry.date);
-            const weights = filteredData.map(entry => entry.weight);
-            const bmis = filteredData.map(entry => entry.bmi);
+            const labels = Object.keys(groupedData);
+            const weights = labels.map(label => groupedData[label].weight);
+            const bmis = labels.map(label => groupedData[label].bmi);
             
             // Weight chart
             const weightTrace = {
-                x: dates,
+                x: labels,
                 y: weights,
                 type: 'scatter',
                 mode: 'lines+markers',
                 line: { color: '#2563eb', width: 3 },
-                marker: { color: '#2563eb', size: 6 },
+                marker: { color: '#2563eb', size: 8 },
                 name: 'Weight (kg)'
             };
             
             const weightLayout = {
                 title: false,
-                xaxis: { title: 'Date' },
+                xaxis: { 
+                    title: currentFilter === 'weekly' ? 'Week' : 'Month',
+                    tickangle: -45
+                },
                 yaxis: { title: 'Weight (kg)' },
-                margin: { t: 20, r: 20, b: 40, l: 50 },
-                height: 300,
+                margin: { t: 20, r: 20, b: 60, l: 50 },
+                height: 400,
                 font: { family: 'Inconsolata, monospace' }
             };
             
@@ -708,19 +839,19 @@
             
             // BMI chart with reference lines
             const bmiTrace = {
-                x: dates,
+                x: labels,
                 y: bmis,
                 type: 'scatter',
                 mode: 'lines+markers',
                 line: { color: '#10b981', width: 3 },
-                marker: { color: '#10b981', size: 6 },
+                marker: { color: '#10b981', size: 8 },
                 name: 'BMI'
             };
             
             // BMI reference lines
             const underweightLine = {
-                x: dates,
-                y: Array(dates.length).fill(18.5),
+                x: labels,
+                y: Array(labels.length).fill(18.5),
                 type: 'scatter',
                 mode: 'lines',
                 line: { color: '#6b7280', width: 1, dash: 'dash' },
@@ -729,8 +860,8 @@
             };
             
             const overweightLine = {
-                x: dates,
-                y: Array(dates.length).fill(25),
+                x: labels,
+                y: Array(labels.length).fill(25),
                 type: 'scatter',
                 mode: 'lines',
                 line: { color: '#f59e0b', width: 1, dash: 'dash' },
@@ -739,8 +870,8 @@
             };
             
             const obeseLine = {
-                x: dates,
-                y: Array(dates.length).fill(30),
+                x: labels,
+                y: Array(labels.length).fill(30),
                 type: 'scatter',
                 mode: 'lines',
                 line: { color: '#ef4444', width: 1, dash: 'dash' },
@@ -750,37 +881,86 @@
             
             const bmiLayout = {
                 title: false,
-                xaxis: { title: 'Date' },
+                xaxis: { 
+                    title: currentFilter === 'weekly' ? 'Week' : 'Month',
+                    tickangle: -45
+                },
                 yaxis: { title: 'BMI' },
-                margin: { t: 20, r: 20, b: 40, l: 50 },
-                height: 300,
+                margin: { t: 20, r: 20, b: 60, l: 50 },
+                height: 400,
                 font: { family: 'Inconsolata, monospace' },
                 annotations: [
                     {
-                        x: dates[Math.floor(dates.length / 2)],
+                        x: labels[Math.floor(labels.length / 2)],
                         y: 18.5,
                         text: 'Underweight',
                         showarrow: false,
-                        font: { size: 10, color: '#6b7280' }
+                        font: { size: 10, color: '#6b7280' },
+                        yanchor: 'bottom'
                     },
                     {
-                        x: dates[Math.floor(dates.length / 2)],
+                        x: labels[Math.floor(labels.length / 2)],
                         y: 25,
                         text: 'Overweight',
                         showarrow: false,
-                        font: { size: 10, color: '#f59e0b' }
+                        font: { size: 10, color: '#f59e0b' },
+                        yanchor: 'bottom'
                     },
                     {
-                        x: dates[Math.floor(dates.length / 2)],
+                        x: labels[Math.floor(labels.length / 2)],
                         y: 30,
                         text: 'Obese',
                         showarrow: false,
-                        font: { size: 10, color: '#ef4444' }
+                        font: { size: 10, color: '#ef4444' },
+                        yanchor: 'bottom'
                     }
                 ]
             };
             
             Plotly.newPlot('bmi-chart', [bmiTrace, underweightLine, overweightLine, obeseLine], bmiLayout, { responsive: true });
+        }
+        
+        // Group data by week
+        function groupDataByWeek(data) {
+            const grouped = {};
+            
+            data.forEach(entry => {
+                const date = new Date(entry.date);
+                const weekStart = new Date(date);
+                weekStart.setDate(date.getDate() - date.getDay());
+                const weekKey = weekStart.toISOString().split('T')[0];
+                
+                if (!grouped[weekKey] || new Date(entry.date) > new Date(grouped[weekKey].date)) {
+                    grouped[weekKey] = entry;
+                }
+            });
+            
+            // Sort by week
+            const sortedKeys = Object.keys(grouped).sort();
+            const result = {};
+            sortedKeys.forEach(key => {
+                const date = new Date(key);
+                const weekLabel = `${date.getFullYear()}-W${Math.ceil((date.getTime() - new Date(date.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000))}`;
+                result[weekLabel] = grouped[key];
+            });
+            
+            return result;
+        }
+        
+        // Group data by month
+        function groupDataByMonth(data) {
+            const grouped = {};
+            
+            data.forEach(entry => {
+                const date = new Date(entry.date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                
+                if (!grouped[monthKey] || new Date(entry.date) > new Date(grouped[monthKey].date)) {
+                    grouped[monthKey] = entry;
+                }
+            });
+            
+            return grouped;
         }
         
         // AI Agent integration
@@ -801,12 +981,11 @@
             // Get the convai widget
             const convaiWidget = document.querySelector('elevenlabs-convai');
             if (convaiWidget) {
-                // Try to start conversation with context
                 try {
                     convaiWidget.startConversation();
                     
                     // Add a recommendation to show that the agent was called
-                    addRecommendation(`AI Coach called on ${currentDay} at ${currentTime}. Waiting for recommendations...`);
+                    addRecommendation(`AI Coach called on ${currentDay} at ${currentTime}. Starting conversation...`);
                 } catch (error) {
                     console.error('Error calling AI agent:', error);
                     alert('There was an error calling the AI agent. Please try again.');
@@ -856,7 +1035,7 @@
             
             const container = document.getElementById('recommendations-list');
             if (todayRecommendations.length === 0) {
-                container.innerHTML = '<p style="color: var(--muted-color); font-size: 0.875rem;">No recommendations yet. Call your AI coach to get started!</p>';
+                container.innerHTML = '<p style="color: var(--muted-color); font-size: 0.875rem;">No recommendations yet. Talk to your AI coach to get started!</p>';
             } else {
                 container.innerHTML = '';
                 todayRecommendations.forEach(rec => {
@@ -870,27 +1049,6 @@
                     container.appendChild(element);
                 });
             }
-        }
-        
-        // Initialize recommendations on load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDailyRecommendations();
-        });
-        
-        // Mock function to simulate AI responses (for testing)
-        function simulateAIResponse() {
-            const responses = [
-                "Based on your recent weight trend, consider increasing your water intake and focusing on portion control.",
-                "Your BMI is in a healthy range. Keep up the good work with your current routine!",
-                "I notice some fluctuation in your weight. This is normal, but try to maintain consistency in your diet.",
-                "Consider adding more cardio exercises to your routine for better cardiovascular health.",
-                "Your progress shows dedication. Remember to get adequate sleep for optimal recovery."
-            ];
-            
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            setTimeout(() => {
-                addRecommendation(randomResponse);
-            }, 2000);
         }
     </script>
 </body>
