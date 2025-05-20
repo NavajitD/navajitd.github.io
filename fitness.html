@@ -226,7 +226,7 @@
         /* Form Styles */
         .form-container {
             background: #f9fafb;
-            padding: 1.5rem;
+            padding: 1.5rem 1.5rem 1rem 1.5rem; /* Reduced bottom padding */
             border-radius: 8px;
             border: 1px solid var(--border-color);
             margin-bottom: 2rem;
@@ -374,7 +374,49 @@
             border: 1px solid #e5e7eb;
             margin-bottom: 1.5rem;
             overflow: hidden;
-            min-height: 700px;
+            min-height: 500px; /* More landscape - reduced from 700px */
+            position: relative;
+        }
+        
+        .voice-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .voice-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .voice-btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .voice-btn.listening {
+            background: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .voice-btn.speaking {
+            background: #10b981;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
         
         .recommendations {
@@ -399,7 +441,7 @@
         }
         
         /* Responsive */
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
             body {
                 padding: 2rem 1rem;
             }
@@ -427,6 +469,22 @@
             
             .stats-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .voice-controls {
+                top: 0.5rem;
+                right: 0.5rem;
+            }
+            
+            .voice-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
             }
         }
         
@@ -507,12 +565,9 @@
                     <li><a href="/#experience">Experience</a></li>
                     <li><a href="/fitness.html" class="current">Fitness</a></li>
                     <li><a href="mailto:navajit@example.com">Contact</a></li>
+                    <li><a href="#" onclick="signOut()">Sign Out</a></li>
                 </ul>
             </nav>
-            <div class="user-info">
-                <span id="user-email"></span>
-                <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
-            </div>
         </header>
         
         <div class="page-header">
@@ -562,10 +617,6 @@
                     <div class="stat-label">Current BMI</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="total-entries">--</div>
-                    <div class="stat-label">Total Entries</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-value" id="weight-change">--</div>
                     <div class="stat-label">30-Day Change (kg)</div>
                 </div>
@@ -580,14 +631,16 @@
                 <button class="filter-btn" data-filter="monthly">Monthly</button>
             </div>
             
-            <div class="chart-container">
-                <h3 class="chart-title">Weight Progress</h3>
-                <div id="weight-chart"></div>
-            </div>
-            
-            <div class="chart-container">
-                <h3 class="chart-title">BMI Progress</h3>
-                <div id="bmi-chart"></div>
+            <div class="charts-container">
+                <div class="chart-container">
+                    <h3 class="chart-title">Weight Progress</h3>
+                    <div id="weight-chart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">BMI Progress</h3>
+                    <div id="bmi-chart"></div>
+                </div>
             </div>
         </section>
         
@@ -599,10 +652,20 @@
                 
                 <!-- Chatbase AI Agent -->
                 <div class="chat-container">
+                    <!-- Voice Controls -->
+                    <div class="voice-controls">
+                        <button class="voice-btn" id="voice-input-btn" onclick="toggleVoiceInput()" title="Voice Input">
+                            🎤
+                        </button>
+                        <button class="voice-btn" id="voice-output-btn" onclick="toggleVoiceOutput()" title="Voice Output">
+                            🔊
+                        </button>
+                    </div>
+                    
                     <iframe
                         src="https://www.chatbase.co/chatbot-iframe/6PsfEElX5kLoAlV6eMQzw"
                         width="100%"
-                        style="height: 100%; min-height: 700px; border: none; border-radius: 8px;"
+                        style="height: 100%; min-height: 500px; border: none; border-radius: 8px;"
                         frameborder="0"
                         title="AI Fitness Coach">
                     </iframe>
@@ -638,6 +701,10 @@
         let fitnessData = [];
         let currentFilter = 'weekly';
         let userEmail = null;
+        let voiceInputEnabled = false;
+        let voiceOutputEnabled = true;
+        let recognition = null;
+        let speechSynthesis = window.speechSynthesis;
         
         // Initialize Google Sign-In when the page loads
         window.onload = function() {
@@ -899,7 +966,7 @@
                 },
                 yaxis: { title: 'Weight (kg)' },
                 margin: { t: 20, r: 20, b: 60, l: 50 },
-                height: 400,
+                height: 300, /* 4:3 aspect ratio for ~400px width */
                 font: { family: 'Inconsolata, monospace' }
             };
             
@@ -955,9 +1022,9 @@
                 },
                 yaxis: { title: 'BMI' },
                 margin: { t: 20, r: 20, b: 60, l: 50 },
-                height: 400,
+                height: 300, /* 4:3 aspect ratio for ~400px width */
                 font: { family: 'Inconsolata, monospace' },
-                annotations: [
+                annotations: labels.length > 0 ? [
                     {
                         x: labels[Math.floor(labels.length / 2)],
                         y: 18.5,
@@ -982,7 +1049,7 @@
                         font: { size: 10, color: '#ef4444' },
                         yanchor: 'bottom'
                     }
-                ]
+                ] : []
             };
             
             Plotly.newPlot('bmi-chart', [bmiTrace, underweightLine, overweightLine, obeseLine], bmiLayout, { responsive: true });
@@ -996,6 +1063,9 @@
                 const date = new Date(entry.date);
                 const weekStart = new Date(date);
                 weekStart.setDate(date.getDate() - date.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                
                 const weekKey = weekStart.toISOString().split('T')[0];
                 
                 if (!grouped[weekKey] || new Date(entry.date) > new Date(grouped[weekKey].date)) {
@@ -1003,12 +1073,26 @@
                 }
             });
             
-            // Sort by week
+            // Sort by week and create proper labels
             const sortedKeys = Object.keys(grouped).sort();
             const result = {};
             sortedKeys.forEach(key => {
-                const date = new Date(key);
-                const weekLabel = `${date.getFullYear()}-W${Math.ceil((date.getTime() - new Date(date.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000))}`;
+                const weekStart = new Date(key);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                
+                const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
+                const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+                const startDay = weekStart.getDate();
+                const endDay = weekEnd.getDate();
+                
+                let weekLabel;
+                if (startMonth === endMonth) {
+                    weekLabel = `${startMonth} ${startDay}-${endDay}`;
+                } else {
+                    weekLabel = `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+                }
+                
                 result[weekLabel] = grouped[key];
             });
             
@@ -1028,7 +1112,16 @@
                 }
             });
             
-            return grouped;
+            // Convert to month names
+            const result = {};
+            Object.keys(grouped).sort().forEach(key => {
+                const [year, month] = key.split('-');
+                const date = new Date(year, month - 1);
+                const monthLabel = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                result[monthLabel] = grouped[key];
+            });
+            
+            return result;
         }
         
         // AI Agent integration
