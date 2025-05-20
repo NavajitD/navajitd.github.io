@@ -531,7 +531,7 @@
             
             <!-- Alternative Sign-In Button -->
             <div id="manual-signin" style="margin-top: 1rem;">
-                <button onclick="manualGoogleSignIn()" 
+                <button id="alt-signin-btn" 
                         style="background: #4285f4; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0 auto;">
                     <svg width="20" height="20" viewBox="0 0 24 24">
                         <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -545,7 +545,7 @@
             
             <!-- Direct Access for Troubleshooting -->
             <div style="margin-top: 1rem;">
-                <button onclick="directAccess()" 
+                <button id="direct-access-btn"
                         style="background: #10b981; color: white; padding: 8px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">
                     🔧 Direct Access (For Testing)
                 </button>
@@ -558,6 +558,17 @@
             <div id="signin-diagnostics" style="margin-top: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 6px; text-align: left; font-size: 0.875rem; color: #374151;">
                 <h4 style="margin-bottom: 0.5rem;">Sign-In Diagnostics:</h4>
                 <div id="diagnostic-info">Checking Google Sign-In status...</div>
+            </div>
+            
+            <!-- Emergency Bypass -->
+            <div style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.5rem;">
+                    Emergency access (if buttons aren't working):
+                </p>
+                <a href="#" onclick="document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('app').classList.remove('hidden'); return false;" 
+                   style="font-size: 0.75rem; color: #10b981; text-decoration: underline;">
+                    Bypass authentication (temporary for testing)
+                </a>
             </div>
         </div>
     </div>
