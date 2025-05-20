@@ -110,24 +110,20 @@
             font-weight: 600;
         }
         
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 0.875rem;
-            color: var(--muted-color);
-        }
-        
-        .sign-out-btn {
-            color: var(--accent-color);
+        /* Modified: Removed the user-info div and integrated sign-out into nav */
+        .sign-out-link {
+            color: var(--text-color);
             cursor: pointer;
             border: none;
             background: none;
             font: inherit;
+            font-size: 1rem;
+            padding: 0;
         }
         
-        .sign-out-btn:hover {
-            text-decoration: underline;
+        .sign-out-link:hover {
+            color: var(--accent-color);
+            text-decoration: none;
         }
         
         /* Authentication */
@@ -223,17 +219,17 @@
             letter-spacing: 0.05em;
         }
         
-        /* Form Styles */
+        /* Form Styles - Modified to reduce bottom padding */
         .form-container {
             background: #f9fafb;
-            padding: 1.5rem;
+            padding: 1.5rem 1.5rem 1rem; /* Reduced bottom padding */
             border-radius: 8px;
             border: 1px solid var(--border-color);
             margin-bottom: 2rem;
         }
         
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem; /* Reduced from 1.5rem */
         }
         
         .form-group:last-child {
@@ -314,9 +310,15 @@
             border-color: var(--accent-color);
         }
         
-        /* Charts */
+        /* Modified: Charts in side-by-side layout */
+        .charts-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
         .chart-container {
-            margin-bottom: 2rem;
+            flex: 1;
             padding: 1rem;
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -330,10 +332,10 @@
             text-align: center;
         }
         
-        /* Stats */
+        /* Modified: Stats - single row with only 3 stats */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
             margin-bottom: 2rem;
         }
@@ -360,7 +362,7 @@
             letter-spacing: 0.05em;
         }
         
-        /* AI Agent - Simple container for iframe */
+        /* AI Agent - More landscape oriented */
         .ai-section {
             background: #f0f9ff;
             padding: 1.5rem;
@@ -368,13 +370,68 @@
             border: 1px solid #e0f2fe;
         }
         
+        /* Modified: More landscape oriented chat container */
         .chat-container {
             background: white;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
             margin-bottom: 1.5rem;
             overflow: hidden;
-            min-height: 700px;
+            min-height: 500px; /* Reduced height for more landscape orientation */
+        }
+        
+        /* Voice input UI */
+        .voice-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            align-items: center;
+        }
+        
+        .voice-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+        }
+        
+        .voice-btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .voice-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: #ef4444;
+        }
+        
+        .voice-status {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            flex: 1;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+            
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
         }
         
         .recommendations {
@@ -399,6 +456,16 @@
         }
         
         /* Responsive */
+        @media (max-width: 768px) {
+            .charts-row {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         @media (max-width: 640px) {
             body {
                 padding: 2rem 1rem;
@@ -423,10 +490,6 @@
             
             .filter-controls {
                 flex-wrap: wrap;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
             }
         }
         
@@ -507,12 +570,10 @@
                     <li><a href="/#experience">Experience</a></li>
                     <li><a href="/fitness.html" class="current">Fitness</a></li>
                     <li><a href="mailto:navajit@example.com">Contact</a></li>
+                    <!-- Modified: Added sign out as a nav link -->
+                    <li><a href="#" class="sign-out-link" onclick="signOut()">Sign Out</a></li>
                 </ul>
             </nav>
-            <div class="user-info">
-                <span id="user-email"></span>
-                <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
-            </div>
         </header>
         
         <div class="page-header">
@@ -520,7 +581,7 @@
             <p class="page-description">Track your weight, BMI, and health metrics over time.</p>
         </div>
         
-        <!-- Data Entry -->
+        <!-- Data Entry - Modified with reduced padding -->
         <section>
             <h2 class="section-title">Log New Entry</h2>
             <div class="form-container">
@@ -549,7 +610,7 @@
             </div>
         </section>
         
-        <!-- Current Stats -->
+        <!-- Modified: Current Stats - only 3 stats in a single row -->
         <section>
             <h2 class="section-title">Current Stats</h2>
             <div class="stats-grid">
@@ -562,17 +623,13 @@
                     <div class="stat-label">Current BMI</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="total-entries">--</div>
-                    <div class="stat-label">Total Entries</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-value" id="weight-change">--</div>
                     <div class="stat-label">30-Day Change (kg)</div>
                 </div>
             </div>
         </section>
         
-        <!-- Charts -->
+        <!-- Modified: Charts in side-by-side layout -->
         <section>
             <h2 class="section-title">Progress Charts</h2>
             <div class="filter-controls">
@@ -580,30 +637,46 @@
                 <button class="filter-btn" data-filter="monthly">Monthly</button>
             </div>
             
-            <div class="chart-container">
-                <h3 class="chart-title">Weight Progress</h3>
-                <div id="weight-chart"></div>
-            </div>
-            
-            <div class="chart-container">
-                <h3 class="chart-title">BMI Progress</h3>
-                <div id="bmi-chart"></div>
+            <!-- Modified: Charts in side-by-side layout -->
+            <div class="charts-row">
+                <div class="chart-container">
+                    <h3 class="chart-title">Weight Progress</h3>
+                    <div id="weight-chart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">BMI Progress</h3>
+                    <div id="bmi-chart"></div>
+                </div>
             </div>
         </section>
         
-        <!-- AI Agent -->
+        <!-- AI Agent - Modified with voice input capabilities -->
         <section>
             <h2 class="section-title">AI Fitness Coach</h2>
             <div class="ai-section">
                 <p>Chat with your AI fitness coach for personalized recommendations based on your progress data.</p>
                 
-                <!-- Chatbase AI Agent -->
+                <!-- Modified: Added voice controls -->
+                <div class="voice-controls">
+                    <button id="voice-input-btn" class="voice-btn" title="Click to speak">
+                        <i class="mic-icon">🎤</i>
+                    </button>
+                    <span id="voice-status" class="voice-status">Click the microphone to speak to your AI coach</span>
+                    
+                    <button id="voice-output-toggle" class="voice-btn" style="background-color: #10b981;" title="Toggle voice responses">
+                        <i id="speaker-icon">🔊</i>
+                    </button>
+                </div>
+                
+                <!-- Modified: More landscape oriented iframe -->
                 <div class="chat-container">
                     <iframe
                         src="https://www.chatbase.co/chatbot-iframe/6PsfEElX5kLoAlV6eMQzw"
                         width="100%"
-                        style="height: 100%; min-height: 700px; border: none; border-radius: 8px;"
+                        style="height: 100%; min-height: 500px; border: none; border-radius: 8px;"
                         frameborder="0"
+                        id="chat-iframe"
                         title="AI Fitness Coach">
                     </iframe>
                 </div>
@@ -620,8 +693,8 @@
                             <div>🏋️ Upload your latest fitness data before chatting for more personalized advice.</div>
                         </div>
                         <div class="recommendation-item">
-                            <div class="recommendation-time">Suggestion</div>
-                            <div>📈 Ask about workout routines tailored to your current fitness level.</div>
+                            <div class="recommendation-time">Voice Enabled</div>
+                            <div>🎤 Try speaking to your AI coach by clicking the microphone button!</div>
                         </div>
                     </div>
                 </div>
@@ -629,15 +702,14 @@
         </section>
     </div>
 
-    <!-- ElevenLabs AI Agent removed -->
-    <!-- <elevenlabs-convai agent-id="agent_01jvkdtzphetdtm6r9vf3122c0"></elevenlabs-convai>
-    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script> -->
-
     <script>
         // Global variables
         let fitnessData = [];
         let currentFilter = 'weekly';
         let userEmail = null;
+        let voiceEnabled = true;
+        let currentSpeech = null;
+        let recognition = null;
         
         // Initialize Google Sign-In when the page loads
         window.onload = function() {
@@ -688,16 +760,16 @@
             setupForm();
             setupFilters();
             setTodayDate();
+            setupVoiceControls();
         });
         
         // Google Sign-In
         window.handleCredentialResponse = function(response) {
             const responsePayload = decodeJwtResponse(response.credential);
             
-            // Check if the email matches the allowed email
+            // Check if the email matches the allowed email - kept as is per request
             if (responsePayload.email === 'navjitdebnath5@gmail.com') {
                 userEmail = responsePayload.email;
-                document.getElementById('user-email').textContent = responsePayload.email;
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
                 loadStoredData();
@@ -827,12 +899,11 @@
             return fitnessData.filter(entry => new Date(entry.date) >= startDate);
         }
         
-        // Update current stats
+        // Update current stats - Modified to only show 3 stats
         function updateCurrentStats() {
             if (fitnessData.length === 0) {
                 document.getElementById('current-weight').textContent = '--';
                 document.getElementById('current-bmi').textContent = '--';
-                document.getElementById('total-entries').textContent = '0';
                 document.getElementById('weight-change').textContent = '--';
                 return;
             }
@@ -840,7 +911,6 @@
             const latest = fitnessData[fitnessData.length - 1];
             document.getElementById('current-weight').textContent = latest.weight.toFixed(1);
             document.getElementById('current-bmi').textContent = latest.bmi.toFixed(1);
-            document.getElementById('total-entries').textContent = fitnessData.length;
             
             // Calculate 30-day change
             const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
@@ -857,7 +927,7 @@
             }
         }
         
-        // Update charts
+        // Modified: Update charts to be side-by-side with updated labels and averaging
         function updateCharts() {
             const filteredData = getFilteredData();
             
@@ -867,7 +937,7 @@
                 return;
             }
             
-            // Group data by week or month based on filter
+            // Group data by week or month based on filter with averaging
             let groupedData;
             if (currentFilter === 'weekly') {
                 groupedData = groupDataByWeek(filteredData);
@@ -877,12 +947,23 @@
             
             // Prepare data for charts
             const labels = Object.keys(groupedData);
+            const formattedLabels = labels.map(label => {
+                if (currentFilter === 'weekly') {
+                    return label; // Keep the week format
+                } else {
+                    // Format to month name (e.g., "May 2025")
+                    const [year, month] = label.split('-');
+                    const date = new Date(parseInt(year), parseInt(month) - 1);
+                    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+                }
+            });
+            
             const weights = labels.map(label => groupedData[label].weight);
             const bmis = labels.map(label => groupedData[label].bmi);
             
             // Weight chart
             const weightTrace = {
-                x: labels,
+                x: formattedLabels,
                 y: weights,
                 type: 'scatter',
                 mode: 'lines+markers',
@@ -899,7 +980,8 @@
                 },
                 yaxis: { title: 'Weight (kg)' },
                 margin: { t: 20, r: 20, b: 60, l: 50 },
-                height: 400,
+                height: 300, // Reduced height for 4:3 aspect ratio
+                width: 400, // Width for 4:3 aspect ratio
                 font: { family: 'Inconsolata, monospace' }
             };
             
@@ -907,7 +989,7 @@
             
             // BMI chart with reference lines
             const bmiTrace = {
-                x: labels,
+                x: formattedLabels,
                 y: bmis,
                 type: 'scatter',
                 mode: 'lines+markers',
@@ -918,8 +1000,8 @@
             
             // BMI reference lines
             const underweightLine = {
-                x: labels,
-                y: Array(labels.length).fill(18.5),
+                x: formattedLabels,
+                y: Array(formattedLabels.length).fill(18.5),
                 type: 'scatter',
                 mode: 'lines',
                 line: { color: '#6b7280', width: 1, dash: 'dash' },
@@ -928,8 +1010,8 @@
             };
             
             const overweightLine = {
-                x: labels,
-                y: Array(labels.length).fill(25),
+                x: formattedLabels,
+                y: Array(formattedLabels.length).fill(25),
                 type: 'scatter',
                 mode: 'lines',
                 line: { color: '#f59e0b', width: 1, dash: 'dash' },
@@ -938,8 +1020,8 @@
             };
             
             const obeseLine = {
-                x: labels,
-                y: Array(labels.length).fill(30),
+                x: formattedLabels,
+                y: Array(formattedLabels.length).fill(30),
                 type: 'scatter',
                 mode: 'lines',
                 line: { color: '#ef4444', width: 1, dash: 'dash' },
@@ -955,11 +1037,12 @@
                 },
                 yaxis: { title: 'BMI' },
                 margin: { t: 20, r: 20, b: 60, l: 50 },
-                height: 400,
+                height: 300, // Reduced height for 4:3 aspect ratio 
+                width: 400, // Width for 4:3 aspect ratio
                 font: { family: 'Inconsolata, monospace' },
                 annotations: [
                     {
-                        x: labels[Math.floor(labels.length / 2)],
+                        x: formattedLabels[Math.floor(formattedLabels.length / 2)],
                         y: 18.5,
                         text: 'Underweight',
                         showarrow: false,
@@ -967,7 +1050,7 @@
                         yanchor: 'bottom'
                     },
                     {
-                        x: labels[Math.floor(labels.length / 2)],
+                        x: formattedLabels[Math.floor(formattedLabels.length / 2)],
                         y: 25,
                         text: 'Overweight',
                         showarrow: false,
@@ -975,7 +1058,7 @@
                         yanchor: 'bottom'
                     },
                     {
-                        x: labels[Math.floor(labels.length / 2)],
+                        x: formattedLabels[Math.floor(formattedLabels.length / 2)],
                         y: 30,
                         text: 'Obese',
                         showarrow: false,
@@ -988,19 +1071,35 @@
             Plotly.newPlot('bmi-chart', [bmiTrace, underweightLine, overweightLine, obeseLine], bmiLayout, { responsive: true });
         }
         
-        // Group data by week
+        // Modified: Group data by week with averaging
         function groupDataByWeek(data) {
             const grouped = {};
             
+            // First, group all entries by week
             data.forEach(entry => {
                 const date = new Date(entry.date);
                 const weekStart = new Date(date);
                 weekStart.setDate(date.getDate() - date.getDay());
                 const weekKey = weekStart.toISOString().split('T')[0];
                 
-                if (!grouped[weekKey] || new Date(entry.date) > new Date(grouped[weekKey].date)) {
-                    grouped[weekKey] = entry;
+                if (!grouped[weekKey]) {
+                    grouped[weekKey] = {
+                        entries: [],
+                        date: weekKey
+                    };
                 }
+                
+                grouped[weekKey].entries.push(entry);
+            });
+            
+            // Then calculate averages for each week
+            Object.keys(grouped).forEach(key => {
+                const entries = grouped[key].entries;
+                const totalWeight = entries.reduce((sum, entry) => sum + entry.weight, 0);
+                const totalBMI = entries.reduce((sum, entry) => sum + entry.bmi, 0);
+                
+                grouped[key].weight = totalWeight / entries.length;
+                grouped[key].bmi = totalBMI / entries.length;
             });
             
             // Sort by week
@@ -1015,344 +1114,275 @@
             return result;
         }
         
-        // Group data by month
+        // Modified: Group data by month with averaging
         function groupDataByMonth(data) {
             const grouped = {};
             
+            // First, group all entries by month
             data.forEach(entry => {
                 const date = new Date(entry.date);
                 const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 
-                if (!grouped[monthKey] || new Date(entry.date) > new Date(grouped[monthKey].date)) {
-                    grouped[monthKey] = entry;
+                if (!grouped[monthKey]) {
+                    grouped[monthKey] = {
+                        entries: [],
+                        date: monthKey
+                    };
                 }
+                
+                grouped[monthKey].entries.push(entry);
+            });
+            
+            // Then calculate averages for each month
+            Object.keys(grouped).forEach(key => {
+                const entries = grouped[key].entries;
+                const totalWeight = entries.reduce((sum, entry) => sum + entry.weight, 0);
+                const totalBMI = entries.reduce((sum, entry) => sum + entry.bmi, 0);
+                
+                grouped[key].weight = totalWeight / entries.length;
+                grouped[key].bmi = totalBMI / entries.length;
             });
             
             return grouped;
         }
         
-        // AI Agent integration
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const message = input.value.trim();
+        // New function: Setup voice controls for AI agent interaction
+        function setupVoiceControls() {
+            const voiceButton = document.getElementById('voice-input-btn');
+            const voiceStatus = document.getElementById('voice-status');
+            const voiceOutputToggle = document.getElementById('voice-output-toggle');
+            const speakerIcon = document.getElementById('speaker-icon');
             
-            if (!message) return;
-            
-            // Add user message
-            addChatMessage(message, 'user');
-            input.value = '';
-            
-            // Disable send button and show typing indicator
-            const sendButton = document.getElementById('send-button');
-            sendButton.disabled = true;
-            showTypingIndicator();
-            
-            try {
-                // Get AI response (using local mock for now)
-                const response = await getAIResponse(message);
+            // Setup voice output toggle
+            voiceOutputToggle.addEventListener('click', function() {
+                voiceEnabled = !voiceEnabled;
                 
-                // Remove typing indicator and add AI response
-                hideTypingIndicator();
-                addChatMessage(response, 'ai');
-                
-                // Convert to speech if voice is enabled
                 if (voiceEnabled) {
-                    speakText(response);
+                    speakerIcon.textContent = '🔊';
+                    voiceOutputToggle.style.backgroundColor = '#10b981';
+                    voiceOutputToggle.title = 'Voice responses enabled - click to disable';
+                } else {
+                    speakerIcon.textContent = '🔇';
+                    voiceOutputToggle.style.backgroundColor = '#6b7280';
+                    voiceOutputToggle.title = 'Voice responses disabled - click to enable';
+                    // Stop any current speech
+                    if (window.speechSynthesis && window.speechSynthesis.speaking) {
+                        window.speechSynthesis.cancel();
+                    }
                 }
+            });
+            
+            // Setup speech recognition if available
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
                 
-                // Add to recommendations if it's a key insight
-                if (response.toLowerCase().includes('recommend') || response.toLowerCase().includes('suggest')) {
-                    addRecommendation(response);
-                }
-            } catch (error) {
-                hideTypingIndicator();
-                addChatMessage("I'm sorry, I encountered an error. Please try again.", 'ai');
-                console.error('AI Chat Error:', error);
-            } finally {
-                sendButton.disabled = false;
+                recognition.onstart = function() {
+                    voiceButton.classList.add('listening');
+                    voiceStatus.textContent = 'Listening...';
+                };
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    voiceStatus.textContent = 'Processing: "' + transcript + '"';
+                    
+                    // Send message to chatbot iframe
+                    sendMessageToIframe(transcript);
+                };
+                
+                recognition.onerror = function(event) {
+                    voiceButton.classList.remove('listening');
+                    voiceStatus.textContent = 'Error: ' + event.error;
+                    setTimeout(() => {
+                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
+                    }, 3000);
+                };
+                
+                recognition.onend = function() {
+                    voiceButton.classList.remove('listening');
+                    setTimeout(() => {
+                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
+                    }, 2000);
+                };
+                
+                voiceButton.addEventListener('click', function() {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        // If already started, stop and restart
+                        recognition.stop();
+                        setTimeout(() => {
+                            recognition.start();
+                        }, 200);
+                    }
+                });
+            } else {
+                voiceButton.disabled = true;
+                voiceStatus.textContent = 'Speech recognition not supported in this browser';
             }
-        }
-        
-        function addChatMessage(content, sender) {
-            const messagesContainer = document.getElementById('chat-messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
             
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    ${formatMessageContent(content)}
-                </div>
-            `;
-            
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-        
-        function formatMessageContent(content) {
-            // Convert markdown-like formatting to HTML
-            content = content
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/\n- (.*?)(?=\n|$)/g, '\n<li>$1</li>')
-                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-                .replace(/\n/g, '<br>');
-            
-            return content;
-        }
-        
-        function showTypingIndicator() {
-            const messagesContainer = document.getElementById('chat-messages');
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message ai-message';
-            typingDiv.id = 'typing-indicator';
-            typingDiv.innerHTML = `
-                <div class="typing-indicator">
-                    <span>AI is thinking</span>
-                    <div class="typing-dots">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </div>
-            `;
-            messagesContainer.appendChild(typingDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-        
-        function hideTypingIndicator() {
-            const typingIndicator = document.getElementById('typing-indicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
-        }
-        
-        // Mock AI responses (replace with actual AI service)
-        async function getAIResponse(message) {
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-            
-            const latestStats = getCurrentStats();
-            const userMessage = message.toLowerCase();
-            
-            // Context-aware responses based on user's fitness data
-            if (userMessage.includes('weight') || userMessage.includes('lost') || userMessage.includes('gained')) {
-                if (latestStats.weightChange !== '--') {
-                    const change = parseFloat(latestStats.weightChange);
-                    if (change < 0) {
-                        return `Great job! You've lost ${Math.abs(change).toFixed(1)}kg in the last 30 days. Keep up the excellent work! Consider maintaining your current routine and ensure you're getting adequate protein (aim for 1.6-2.2g per kg of body weight).`;
-                    } else if (change > 0) {
-                        return `I notice you've gained ${change.toFixed(1)}kg recently. This could be muscle gain if you're strength training, or we might need to adjust your nutrition. Are you following a specific workout routine? I'd recommend tracking your measurements alongside weight.`;
-                    } else {
-                        return `Your weight has been stable, which is great for maintenance! If your goal is to lose or gain weight, we might need to adjust your caloric intake by about 300-500 calories per day.`;
+            // Setup message listener for iframe responses
+            window.addEventListener('message', function(event) {
+                // Check if the message is from our chatbot
+                if (event.data && event.data.type === 'chatbase-message' && event.data.message) {
+                    // If voice is enabled, speak the response
+                    if (voiceEnabled) {
+                        speakText(event.data.message);
+                    }
+                    
+                    // Add to recommendations if it contains key words
+                    const message = event.data.message.toLowerCase();
+                    if (message.includes('recommend') || message.includes('suggest') || 
+                        message.includes('try') || message.includes('should') || 
+                        message.includes('important') || message.includes('focus')) {
+                        addRecommendation(event.data.message);
                     }
                 }
-                return "I'd love to help with your weight goals! First, let me know what you're aiming for - weight loss, gain, or maintenance?";
-            }
+            });
             
-            if (userMessage.includes('bmi')) {
-                if (latestStats.currentBMI !== '--') {
-                    const bmi = parseFloat(latestStats.currentBMI);
-                    if (bmi < 18.5) {
-                        return `Your current BMI is ${bmi.toFixed(1)}, which falls in the underweight category. I recommend focusing on **strength training** and **increasing caloric intake** with nutrient-dense foods. Consider consulting with a nutritionist for a personalized meal plan.`;
-                    } else if (bmi >= 18.5 && bmi < 25) {
-                        return `Excellent! Your BMI of ${bmi.toFixed(1)} is in the healthy range. Focus on **maintaining your current lifestyle** with regular exercise and balanced nutrition. Consider adding variety to your workouts to prevent plateaus.`;
-                    } else if (bmi >= 25 && bmi < 30) {
-                        return `Your BMI is ${bmi.toFixed(1)}, which is in the overweight range. I recommend a combination of **cardio and strength training** along with a moderate caloric deficit. Aim for 150-300 minutes of moderate exercise per week.`;
-                    } else {
-                        return `Your BMI indicates you might benefit from a structured weight management approach. I strongly recommend consulting with healthcare professionals for a comprehensive plan that includes nutrition, exercise, and lifestyle modifications.`;
-                    }
-                }
-                return "I don't have your current BMI data yet. Once you log your weight and height, I can provide personalized BMI guidance!";
-            }
-            
-            if (userMessage.includes('workout') || userMessage.includes('exercise') || userMessage.includes('routine')) {
-                return `Here's a balanced weekly routine I recommend:
-
-**Monday & Thursday**: Upper Body Strength
-- Push-ups or chest press: 3 sets of 8-12 reps
-- Rows or pull-ups: 3 sets of 8-12 reps
-- Shoulder press: 3 sets of 8-12 reps
-
-**Tuesday & Friday**: Lower Body Strength
-- Squats: 3 sets of 12-15 reps
-- Lunges: 3 sets of 10 per leg
-- Deadlifts: 3 sets of 8-10 reps
-
-**Wednesday**: Cardio
-- 30-45 minutes of moderate cardio (walking, cycling, swimming)
-
-**Saturday**: Active recovery (yoga, light walking)
-**Sunday**: Rest
-
-Start with weights you can handle comfortably and gradually increase. Listen to your body!`;
-            }
-            
-            if (userMessage.includes('nutrition') || userMessage.includes('diet') || userMessage.includes('eat')) {
-                return `Here are my key nutrition recommendations:
-
-**Macronutrient Balance**:
-- Protein: 25-30% of calories (crucial for muscle maintenance)
-- Carbs: 40-50% (focus on complex carbs)
-- Fats: 20-25% (healthy fats like nuts, avocado, olive oil)
-
-**Daily Habits**:
-- Eat protein with every meal
-- Fill half your plate with vegetables
-- Stay hydrated (aim for 8-10 glasses of water)
-- Eat slowly and mindfully
-
-**Timing**:
-- Eat a protein-rich breakfast within 1 hour of waking
-- Have your last meal 2-3 hours before bed
-
-Would you like specific meal ideas or help with portion sizes?`;
-            }
-            
-            if (userMessage.includes('motivation') || userMessage.includes('stuck') || userMessage.includes('plateau')) {
-                return `I understand how frustrating plateaus can be! Here's how to break through:
-
-**Shake up your routine**:
-- Try new exercises every 4-6 weeks
-- Increase intensity or duration gradually
-- Add variety (if you usually do cardio, try strength training)
-
-**Track everything**:
-- Take body measurements, not just weight
-- Monitor energy levels and sleep quality
-- Progress photos can be very motivating
-
-**Remember**:
-- Plateaus are normal and temporary
-- Small changes compound over time
-- Celebrate non-scale victories (strength gains, better sleep, mood improvements)
-
-You've got this! Consistency beats perfection every time.`;
-            }
-            
-            // Default responses for general queries
-            const responses = [
-                "Based on your fitness journey, I'd recommend focusing on consistency over perfection. What specific area would you like to work on?",
-                "Let's talk about your goals! Are you looking to lose weight, build muscle, improve endurance, or maintain your current fitness level?",
-                "I notice you've been tracking your progress - that's fantastic! Consistent monitoring is key to long-term success. How are you feeling about your current routine?",
-                "Fitness is a journey, not a destination. What's one small change you could make this week to move closer to your goals?",
-                "I'd love to help you optimize your fitness routine! Could you tell me about your current exercise habits and any challenges you're facing?"
-            ];
-            
-            return responses[Math.floor(Math.random() * responses.length)];
+            // Initialize the custom communication with the Chatbase iframe
+            setupIframeCommunication();
         }
         
-        function getCurrentStats() {
-            return {
-                currentWeight: document.getElementById('current-weight').textContent,
-                currentBMI: document.getElementById('current-bmi').textContent,
-                totalEntries: document.getElementById('total-entries').textContent,
-                weightChange: document.getElementById('weight-change').textContent
-            };
+        // Setup communication with the Chatbase iframe
+        function setupIframeCommunication() {
+            // Wait for iframe to load
+            const iframe = document.getElementById('chat-iframe');
+            if (iframe) {
+                iframe.onload = function() {
+                    // Send a message to the iframe to initialize
+                    try {
+                        iframe.contentWindow.postMessage({
+                            type: 'fitness-app-init',
+                            message: 'Initialize communication'
+                        }, '*');
+                        
+                        console.log('Initialized communication with chat iframe');
+                    } catch (e) {
+                        console.error('Error initializing iframe communication:', e);
+                    }
+                };
+            }
+        }
+        
+        // Function to send message to the iframe chatbot
+        function sendMessageToIframe(message) {
+            const iframe = document.getElementById('chat-iframe');
+            if (iframe && iframe.contentWindow) {
+                try {
+                    // Find the input in the iframe and set its value
+                    iframe.contentWindow.postMessage({
+                        type: 'chatbase-input',
+                        message: message
+                    }, '*');
+                    
+                    // Also try direct injection for Chatbase iframe
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    const inputField = iframeDoc.querySelector('input[type="text"], textarea');
+                    const sendButton = iframeDoc.querySelector('button[type="submit"]');
+                    
+                    if (inputField && sendButton) {
+                        // Set input value
+                        inputField.value = message;
+                        
+                        // Trigger input event to activate the send button
+                        const inputEvent = new Event('input', { bubbles: true });
+                        inputField.dispatchEvent(inputEvent);
+                        
+                        // Click the send button
+                        setTimeout(() => {
+                            sendButton.click();
+                        }, 100);
+                    }
+                } catch (e) {
+                    console.error('Error sending message to iframe:', e);
+                    // Fallback - let the user know there was an issue
+                    const voiceStatus = document.getElementById('voice-status');
+                    voiceStatus.textContent = "Couldn't send message to AI coach. Try typing directly in the chat.";
+                    setTimeout(() => {
+                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
+                    }, 3000);
+                }
+            }
         }
         
         // Text-to-Speech functionality
         function speakText(text) {
-            // Stop any current speech
-            if (currentSpeech) {
-                speechSynthesis.cancel();
+            // Check if speech synthesis is available
+            if (!('speechSynthesis' in window)) {
+                console.log('Text-to-speech not supported in this browser');
+                return;
             }
             
-            // Clean text for better speech
+            // Stop any current speech
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+            }
+            
+            // Clean text for better speech (remove markdown or special characters)
             const cleanText = text
                 .replace(/\*\*(.*?)\*\*/g, '$1')
                 .replace(/\*(.*?)\*/g, '$1')
-                .replace(/[•\-]\s*/g, '');
+                .replace(/[•\-]\s*/g, '')
+                .replace(/<[^>]*>/g, '') // Remove HTML tags
+                .replace(/\n/g, ' '); // Replace newlines with spaces
             
-            if ('speechSynthesis' in window) {
-                currentSpeech = new SpeechSynthesisUtterance(cleanText);
-                currentSpeech.rate = 0.9;
-                currentSpeech.pitch = 1;
-                currentSpeech.volume = 0.8;
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Load and use available voices
+            const loadVoices = function() {
+                // Get available voices
+                const voices = window.speechSynthesis.getVoices();
                 
-                // Try to use a more natural voice
-                const voices = speechSynthesis.getVoices();
+                // Try to find a good quality voice in this order:
+                // 1. Google or Microsoft natural voices
+                // 2. Any English voice
+                // 3. Default voice
                 const preferredVoice = voices.find(voice => 
                     voice.name.includes('Google') || 
-                    voice.name.includes('Microsoft') ||
-                    voice.lang.includes('en')
-                );
+                    voice.name.includes('Natural') || 
+                    voice.name.includes('Microsoft')
+                ) || voices.find(voice => 
+                    voice.lang === 'en-US' || 
+                    voice.lang === 'en-GB'
+                ) || voices[0];
+                
                 if (preferredVoice) {
-                    currentSpeech.voice = preferredVoice;
+                    utterance.voice = preferredVoice;
+                    console.log('Using voice:', preferredVoice.name);
                 }
                 
-                speechSynthesis.speak(currentSpeech);
-            }
-        }
-        
-        function toggleVoice() {
-            voiceEnabled = !voiceEnabled;
-            const voiceIcon = document.getElementById('voice-icon');
-            const voiceButton = document.querySelector('.voice-toggle');
+                // Speak the text
+                window.speechSynthesis.speak(utterance);
+            };
             
-            if (voiceEnabled) {
-                voiceIcon.textContent = '🔊';
-                voiceButton.classList.add('enabled');
-                voiceButton.title = 'Voice responses enabled - click to disable';
-            } else {
-                voiceIcon.textContent = '🔇';
-                voiceButton.classList.remove('enabled');
-                voiceButton.title = 'Voice responses disabled - click to enable';
-                // Stop any current speech
-                if (speechSynthesis.speaking) {
-                    speechSynthesis.cancel();
+            // Chrome needs this event to get all voices
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                // If voices aren't loaded yet, wait for them
+                if (window.speechSynthesis.getVoices().length === 0) {
+                    window.speechSynthesis.onvoiceschanged = loadVoices;
+                } else {
+                    loadVoices();
                 }
+            } else {
+                // For browsers that don't support onvoiceschanged
+                loadVoices();
             }
         }
         
-        function clearChat() {
-            const messagesContainer = document.getElementById('chat-messages');
-            messagesContainer.innerHTML = `
-                <div class="message ai-message">
-                    <div class="message-content">
-                        <p>Hello! I'm your AI fitness coach. I can help you with:</p>
-                        <ul>
-                            <li>Analyzing your weight and BMI trends</li>
-                            <li>Providing personalized fitness recommendations</li>
-                            <li>Suggesting workout routines</li>
-                            <li>Discussing nutrition and healthy habits</li>
-                        </ul>
-                        <p>What would you like to know about your fitness journey?</p>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Setup chat input handling
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatInput = document.getElementById('chat-input');
-            if (chatInput) {
-                chatInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                    }
-                });
-            }
-            
-            // Initialize voice toggle state
-            const voiceButton = document.querySelector('.voice-toggle');
-            if (voiceButton && voiceEnabled) {
-                voiceButton.classList.add('enabled');
-            }
-        });
-        
-        // Add recommendation
+        // Add recommendation to the list
         function addRecommendation(text) {
             const now = new Date();
             const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
             
             const recommendationsContainer = document.getElementById('recommendations-list');
             
-            // Clear the "no recommendations" message if it exists
-            if (recommendationsContainer.innerHTML.includes('No recommendations yet')) {
-                recommendationsContainer.innerHTML = '';
-            }
-            
+            // Create new recommendation element
             const recommendationElement = document.createElement('div');
             recommendationElement.className = 'recommendation-item';
             recommendationElement.innerHTML = `
@@ -1360,14 +1390,27 @@ You've got this! Consistency beats perfection every time.`;
                 <div>${text}</div>
             `;
             
-            recommendationsContainer.appendChild(recommendationElement);
+            // Add at the top of the list
+            recommendationsContainer.prepend(recommendationElement);
+            
+            // Remove oldest if more than 5
+            const items = recommendationsContainer.querySelectorAll('.recommendation-item');
+            if (items.length > 5) {
+                items[items.length - 1].remove();
+            }
             
             // Save recommendations to localStorage
             const recommendations = JSON.parse(localStorage.getItem('dailyRecommendations') || '[]');
-            recommendations.push({
+            recommendations.unshift({
                 time: now.toISOString(),
                 text: text
             });
+            
+            // Keep only the 10 most recent
+            if (recommendations.length > 10) {
+                recommendations.pop();
+            }
+            
             localStorage.setItem('dailyRecommendations', JSON.stringify(recommendations));
         }
         
@@ -1380,11 +1423,10 @@ You've got this! Consistency beats perfection every time.`;
             );
             
             const container = document.getElementById('recommendations-list');
-            if (todayRecommendations.length === 0) {
-                container.innerHTML = '<p style="color: var(--muted-color); font-size: 0.875rem;">No recommendations yet. Talk to your AI coach to get started!</p>';
-            } else {
+            
+            if (todayRecommendations.length > 0) {
                 container.innerHTML = '';
-                todayRecommendations.forEach(rec => {
+                todayRecommendations.slice(0, 5).forEach(rec => {
                     const time = new Date(rec.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                     const element = document.createElement('div');
                     element.className = 'recommendation-item';
@@ -1396,6 +1438,21 @@ You've got this! Consistency beats perfection every time.`;
                 });
             }
         }
+        
+        // Initialize voices for speech synthesis
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                const voices = window.speechSynthesis.getVoices();
+                console.log('Available voices:', voices.length);
+            };
+        }
+        
+        // Handle errors gracefully
+        window.addEventListener('error', function(e) {
+            console.error('Error caught:', e.message);
+            // Don't show errors to the user unless needed
+            return true; // Prevents the error from being shown in console
+        });
     </script>
 </body>
 </html>
