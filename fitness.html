@@ -310,11 +310,12 @@
             border-color: var(--accent-color);
         }
         
-        /* Modified: Charts in side-by-side layout */
+        /* Modified: Charts in side-by-side layout and center-aligned */
         .charts-row {
             display: flex;
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin: 0 auto 1.5rem;
+            justify-content: center;
         }
         
         .chart-container {
@@ -681,21 +682,10 @@
                     </iframe>
                 </div>
                 
-                <div class="recommendations">
+                <div class="recommendations" style="display: none;">
                     <h3 style="margin-bottom: 1rem; font-size: 1.125rem; font-weight: 600;">Quick Tips</h3>
                     <div id="recommendations-list">
-                        <div class="recommendation-item">
-                            <div class="recommendation-time">Daily Reminder</div>
-                            <div>💡 Ask your AI coach about your current BMI trends and weight goals!</div>
-                        </div>
-                        <div class="recommendation-item">
-                            <div class="recommendation-time">Pro Tip</div>
-                            <div>🏋️ Upload your latest fitness data before chatting for more personalized advice.</div>
-                        </div>
-                        <div class="recommendation-item">
-                            <div class="recommendation-time">Voice Enabled</div>
-                            <div>🎤 Try speaking to your AI coach by clicking the microphone button!</div>
-                        </div>
+                        <!-- Recommendations will be added here when specifically requested -->
                     </div>
                 </div>
             </div>
@@ -1071,7 +1061,7 @@
             Plotly.newPlot('bmi-chart', [bmiTrace, underweightLine, overweightLine, obeseLine], bmiLayout, { responsive: true });
         }
         
-        // Modified: Group data by week with averaging
+        // Modified: Group data by week with averaging and improved date format
         function groupDataByWeek(data) {
             const grouped = {};
             
@@ -1079,13 +1069,18 @@
             data.forEach(entry => {
                 const date = new Date(entry.date);
                 const weekStart = new Date(date);
-                weekStart.setDate(date.getDate() - date.getDay());
+                weekStart.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6); // End of week (Saturday)
+                
                 const weekKey = weekStart.toISOString().split('T')[0];
                 
                 if (!grouped[weekKey]) {
                     grouped[weekKey] = {
                         entries: [],
-                        date: weekKey
+                        date: weekKey,
+                        weekStart: weekStart,
+                        weekEnd: weekEnd
                     };
                 }
                 
@@ -1105,9 +1100,15 @@
             // Sort by week
             const sortedKeys = Object.keys(grouped).sort();
             const result = {};
+            
+            // Format the week label as "May 18 - May 24"
             sortedKeys.forEach(key => {
-                const date = new Date(key);
-                const weekLabel = `${date.getFullYear()}-W${Math.ceil((date.getTime() - new Date(date.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000))}`;
+                const weekStart = grouped[key].weekStart;
+                const weekEnd = grouped[key].weekEnd;
+                
+                // Format as "May 18 - May 24"
+                const weekLabel = `${weekStart.toLocaleString('default', { month: 'short' })} ${weekStart.getDate()} - ${weekEnd.toLocaleString('default', { month: 'short' })} ${weekEnd.getDate()}`;
+                
                 result[weekLabel] = grouped[key];
             });
             
@@ -1146,7 +1147,7 @@
             return grouped;
         }
         
-        // New function: Setup voice controls for AI agent interaction
+        // Modified: Setup voice controls for AI agent interaction with better error handling
         function setupVoiceControls() {
             const voiceButton = document.getElementById('voice-input-btn');
             const voiceStatus = document.getElementById('voice-status');
@@ -1223,27 +1224,52 @@
                 voiceStatus.textContent = 'Speech recognition not supported in this browser';
             }
             
-            // Setup message listener for iframe responses
+            // Setup custom message handler for iframe communication
             window.addEventListener('message', function(event) {
-                // Check if the message is from our chatbot
-                if (event.data && event.data.type === 'chatbase-message' && event.data.message) {
-                    // If voice is enabled, speak the response
-                    if (voiceEnabled) {
-                        speakText(event.data.message);
+                try {
+                    // Check if the message is from our iframe or Chatbase
+                    if (event.data) {
+                        // Handle Chatbase messages
+                        if (event.data.type === 'chatbase-message' && event.data.message) {
+                            // If voice is enabled, speak the response
+                            if (voiceEnabled) {
+                                speakText(event.data.message);
+                            }
+                            
+                            // Check if this is a recommendation or summary request
+                            const message = event.data.message;
+                            if (message.toLowerCase().includes('quick tip') || 
+                                message.toLowerCase().includes('summarize this as a tip') ||
+                                message.toLowerCase().includes('quick summary') ||
+                                message.includes('💡')) {
+                                addRecommendation(message);
+                            }
+                        }
+                        
+                        // Handle direct message responses (custom implementation)
+                        if (event.data.type === 'fitness-voice-response' && event.data.text) {
+                            if (voiceEnabled) {
+                                speakText(event.data.text);
+                            }
+                            
+                            if (event.data.isRecommendation) {
+                                addRecommendation(event.data.text);
+                            }
+                        }
                     }
-                    
-                    // Add to recommendations if it contains key words
-                    const message = event.data.message.toLowerCase();
-                    if (message.includes('recommend') || message.includes('suggest') || 
-                        message.includes('try') || message.includes('should') || 
-                        message.includes('important') || message.includes('focus')) {
-                        addRecommendation(event.data.message);
-                    }
+                } catch (error) {
+                    console.error('Error handling iframe message:', error);
                 }
             });
             
-            // Initialize the custom communication with the Chatbase iframe
-            setupIframeCommunication();
+            // Add message listener for debugging iframe communication
+            document.addEventListener('keydown', function(e) {
+                // Press Alt+D to check iframe communication status (debug)
+                if (e.altKey && e.key === 'd') {
+                    const lastMessage = localStorage.getItem('lastVoiceMessage');
+                    alert(`Last voice message: ${lastMessage || 'None'}\nIframe communication test: ${document.querySelector('iframe') ? 'Iframe found' : 'No iframe'}`);
+                }
+            });
         }
         
         // Setup communication with the Chatbase iframe
@@ -1267,45 +1293,84 @@
             }
         }
         
-        // Function to send message to the iframe chatbot
+        // Function to send message to the iframe chatbot - improved for cross-origin communication
         function sendMessageToIframe(message) {
             const iframe = document.getElementById('chat-iframe');
-            if (iframe && iframe.contentWindow) {
+            const voiceStatus = document.getElementById('voice-status');
+            
+            if (iframe) {
                 try {
-                    // Find the input in the iframe and set its value
+                    // First approach: Use postMessage API (most reliable for cross-origin iframes)
                     iframe.contentWindow.postMessage({
                         type: 'chatbase-input',
                         message: message
                     }, '*');
                     
-                    // Also try direct injection for Chatbase iframe
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    const inputField = iframeDoc.querySelector('input[type="text"], textarea');
-                    const sendButton = iframeDoc.querySelector('button[type="submit"]');
+                    // Update status
+                    voiceStatus.textContent = `Message sent: "${message}"`;
+                    setTimeout(() => {
+                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
+                    }, 3000);
+                    
+                    // Simulate interaction with the chatbot UI
+                    // Since we can't directly interact with cross-origin iframe content,
+                    // let's implement a workaround using a custom message channel
+                    
+                    // Store message in localStorage for debugging/backup
+                    localStorage.setItem('lastVoiceMessage', message);
+                    
+                    // Advanced: Setup a custom handler to retry until iframe is ready
+                    checkIframeAndSendMessage(iframe, message);
+                    
+                } catch (e) {
+                    console.error('Error sending message to iframe:', e);
+                    voiceStatus.textContent = "Couldn't send message directly. Please type in the chat or try again.";
+                    setTimeout(() => {
+                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
+                    }, 3000);
+                }
+            } else {
+                voiceStatus.textContent = "Chat iframe not found. Please refresh the page.";
+            }
+        }
+        
+        // Helper function to check iframe and try sending message repeatedly
+        function checkIframeAndSendMessage(iframe, message) {
+            let attempts = 0;
+            const maxAttempts = 5;
+            
+            const checkInterval = setInterval(() => {
+                attempts++;
+                try {
+                    // Try to access iframe - this will throw an error if cross-origin
+                    const iframeAccess = iframe.contentWindow.document;
+                    
+                    // If we got here, we can access the iframe directly
+                    clearInterval(checkInterval);
+                    
+                    // Find input field and send button
+                    const inputField = iframeAccess.querySelector('input[type="text"], textarea');
+                    const sendButton = iframeAccess.querySelector('button[type="submit"]');
                     
                     if (inputField && sendButton) {
                         // Set input value
                         inputField.value = message;
                         
-                        // Trigger input event to activate the send button
+                        // Trigger input event
                         const inputEvent = new Event('input', { bubbles: true });
                         inputField.dispatchEvent(inputEvent);
                         
-                        // Click the send button
-                        setTimeout(() => {
-                            sendButton.click();
-                        }, 100);
+                        // Click send button
+                        setTimeout(() => sendButton.click(), 100);
                     }
                 } catch (e) {
-                    console.error('Error sending message to iframe:', e);
-                    // Fallback - let the user know there was an issue
-                    const voiceStatus = document.getElementById('voice-status');
-                    voiceStatus.textContent = "Couldn't send message to AI coach. Try typing directly in the chat.";
-                    setTimeout(() => {
-                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
-                    }, 3000);
+                    // Expected behavior for cross-origin iframe
+                    // Use alternative methods
+                    if (attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                    }
                 }
-            }
+            }, 500);
         }
         
         // Text-to-Speech functionality
@@ -1375,43 +1440,54 @@
             }
         }
         
-        // Add recommendation to the list
+        // Add recommendation to the list - modified to only show when requested
         function addRecommendation(text) {
             const now = new Date();
             const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
             
-            const recommendationsContainer = document.getElementById('recommendations-list');
+            // Check if this is a recommendation request from the AI
+            const isRecommendationRequest = text.toLowerCase().includes('quick tip') || 
+                                           text.toLowerCase().includes('summarize this as a tip') || 
+                                           text.toLowerCase().includes('quick summary');
             
-            // Create new recommendation element
-            const recommendationElement = document.createElement('div');
-            recommendationElement.className = 'recommendation-item';
-            recommendationElement.innerHTML = `
-                <div class="recommendation-time">${timeString}</div>
-                <div>${text}</div>
-            `;
-            
-            // Add at the top of the list
-            recommendationsContainer.prepend(recommendationElement);
-            
-            // Remove oldest if more than 5
-            const items = recommendationsContainer.querySelectorAll('.recommendation-item');
-            if (items.length > 5) {
-                items[items.length - 1].remove();
+            if (isRecommendationRequest || text.includes('💡')) {
+                // Show the recommendations section
+                const recommendationsSection = document.querySelector('.recommendations');
+                recommendationsSection.style.display = 'block';
+                
+                const recommendationsContainer = document.getElementById('recommendations-list');
+                
+                // Create new recommendation element
+                const recommendationElement = document.createElement('div');
+                recommendationElement.className = 'recommendation-item';
+                recommendationElement.innerHTML = `
+                    <div class="recommendation-time">${timeString}</div>
+                    <div>${text}</div>
+                `;
+                
+                // Add at the top of the list
+                recommendationsContainer.prepend(recommendationElement);
+                
+                // Remove oldest if more than 5
+                const items = recommendationsContainer.querySelectorAll('.recommendation-item');
+                if (items.length > 5) {
+                    items[items.length - 1].remove();
+                }
+                
+                // Save recommendations to localStorage
+                const recommendations = JSON.parse(localStorage.getItem('dailyRecommendations') || '[]');
+                recommendations.unshift({
+                    time: now.toISOString(),
+                    text: text
+                });
+                
+                // Keep only the 10 most recent
+                if (recommendations.length > 10) {
+                    recommendations.pop();
+                }
+                
+                localStorage.setItem('dailyRecommendations', JSON.stringify(recommendations));
             }
-            
-            // Save recommendations to localStorage
-            const recommendations = JSON.parse(localStorage.getItem('dailyRecommendations') || '[]');
-            recommendations.unshift({
-                time: now.toISOString(),
-                text: text
-            });
-            
-            // Keep only the 10 most recent
-            if (recommendations.length > 10) {
-                recommendations.pop();
-            }
-            
-            localStorage.setItem('dailyRecommendations', JSON.stringify(recommendations));
         }
         
         // Load daily recommendations
@@ -1423,6 +1499,7 @@
             );
             
             const container = document.getElementById('recommendations-list');
+            const recommendationsSection = document.querySelector('.recommendations');
             
             if (todayRecommendations.length > 0) {
                 container.innerHTML = '';
@@ -1436,6 +1513,18 @@
                     `;
                     container.appendChild(element);
                 });
+                
+                // Only show recommendations section if there are explicit recommendation requests
+                const hasExplicitRecommendations = todayRecommendations.some(rec => 
+                    rec.text.toLowerCase().includes('quick tip') || 
+                    rec.text.toLowerCase().includes('summarize this as a tip') ||
+                    rec.text.toLowerCase().includes('quick summary') ||
+                    rec.text.includes('💡')
+                );
+                
+                recommendationsSection.style.display = hasExplicitRecommendations ? 'block' : 'none';
+            } else {
+                recommendationsSection.style.display = 'none';
             }
         }
         
