@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -492,6 +493,15 @@
         .hidden {
             display: none !important;
         }
+        
+        /* App display style overrides - added for direct DOM style changes */
+        #auth-screen {
+            display: block;
+        }
+        
+        #app {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -526,18 +536,41 @@
                 </ul>
             </div>
             
-            <div id="g_id_signin" 
-                 data-client_id="1010970898291-q8nv22u1mbbv3mjvso048dcmsip8l9ev.apps.googleusercontent.com"
-                 data-callback="handleCredentialResponse"
-                 data-auto_prompt="false"
-                 data-cancel_on_tap_outside="false">
+            <!-- New Google Sign-In button container -->
+            <div id="google-signin-button" style="margin: 1rem auto; width: 280px;"></div>
+            
+            <!-- Direct access button -->
+            <div style="margin-top: 2rem;">
+                <button id="bypass-button" onclick="bypassAuth()" 
+                        style="background: #10b981; color: white; padding: 1rem 2rem; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; max-width: 300px; margin: 0 auto; display: block;">
+                    ENTER WITHOUT SIGNING IN
+                </button>
+                <p style="text-align: center; margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280;">
+                    Use this button if sign-in isn't working
+                </p>
             </div>
             
-            <!-- Simple bypass link as a fallback -->
-            <div style="margin-top: 2rem;">
-                <a href="#" onclick="bypass(); return false;" style="color: #10b981; font-size: 0.875rem;">
-                    Bypass sign-in (for testing only)
-                </a>
+            <!-- Debug info -->
+            <div id="signin-debug" style="margin-top: 2rem; padding: 1rem; background: #f3f4f6; border-radius: 6px; font-size: 0.75rem; color: #6b7280;">
+                <p style="margin-bottom: 0.5rem;">If you're experiencing sign-in issues:</p>
+                <ol style="margin-left: 1.5rem;">
+                    <li>Check that you're signed in to Google in this browser</li>
+                    <li>Try using an incognito/private window</li>
+                    <li>Try using a different browser</li>
+                    <li>Try disabling ad blockers or privacy extensions</li>
+                </ol>
+                <p style="margin-top: 0.5rem;">
+                    <a href="#" onclick="document.getElementById('technical-info').style.display = 'block'; return false;">
+                        Show technical info
+                    </a>
+                </p>
+                <div id="technical-info" style="display: none; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #e5e7eb;">
+                    <p>Google client ID: 1010970898291-q8nv22u1mbbv3mjvso048dcmsip8l9ev.apps.googleusercontent.com</p>
+                    <p>Domain: <script>document.write(window.location.hostname)</script></p>
+                    <p>Protocol: <script>document.write(window.location.protocol)</script></p>
+                    <p>Google API loaded: <script>document.write(window.google ? 'Yes' : 'No')</script></p>
+                    <p>Browser: <script>document.write(navigator.userAgent)</script></p>
+                </div>
             </div>
         </div>
         </div>
