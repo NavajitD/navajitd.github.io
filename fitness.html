@@ -670,11 +670,11 @@
                     </button>
                 </div>
                 
-    <!-- Modified: More landscape oriented iframe with improved Chatbase integration -->
+    <!-- Modified: More landscape oriented iframe with simple voice feedback -->
     <div class="chat-container">
-        <div id="iframe-message-layer" style="display: none; padding: 10px; background: #f0f9ff; border-radius: 8px 8px 0 0; border-bottom: 1px solid #e0f2fe;">
-            <div id="last-voice-message" style="font-size: 0.875rem; margin-bottom: 5px;"></div>
-            <button id="manual-submit-btn" style="padding: 5px 10px; font-size: 0.75rem; background: var(--accent-color);">Submit to Chatbase</button>
+        <div id="voice-feedback" style="display: none; padding: 12px; background: #f0f9ff; border-radius: 8px 8px 0 0; border-bottom: 1px solid #e0f2fe; font-size: 0.875rem; color: #2563eb;">
+            Your voice message was detected. Please type the same message directly in the Chatbase chat below.
+            <button id="hide-feedback-btn" style="float: right; background: none; color: #6b7280; border: none; padding: 0; font-size: 0.875rem; cursor: pointer;">✕</button>
         </div>
         <!-- Original Chatbase iframe -->
         <iframe
