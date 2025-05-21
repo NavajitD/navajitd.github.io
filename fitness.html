@@ -1152,12 +1152,21 @@
             return grouped;
         }
         
-        // Improved voice controls with audio response detection
+        // Simplified voice controls for Chatbase
         function setupVoiceControls() {
             const voiceButton = document.getElementById('voice-input-btn');
             const voiceStatus = document.getElementById('voice-status');
             const voiceOutputToggle = document.getElementById('voice-output-toggle');
             const speakerIcon = document.getElementById('speaker-icon');
+            const voiceFeedback = document.getElementById('voice-feedback');
+            const hideFeedbackBtn = document.getElementById('hide-feedback-btn');
+            
+            // Setup close button for the feedback message
+            if (hideFeedbackBtn) {
+                hideFeedbackBtn.addEventListener('click', function() {
+                    voiceFeedback.style.display = 'none';
+                });
+            }
             
             // Setup voice output toggle
             voiceOutputToggle.addEventListener('click', function() {
@@ -1194,7 +1203,7 @@
                     const transcript = event.results[0][0].transcript;
                     voiceStatus.textContent = 'Processing: "' + transcript + '"';
                     
-                    // Send message to chatbot iframe
+                    // Process the voice input
                     sendMessageToIframe(transcript);
                 };
                 
@@ -1229,118 +1238,31 @@
                 voiceStatus.textContent = 'Speech recognition not supported in this browser';
             }
             
-            // Setup iframe load event to enable audio response monitoring
-            const iframe = document.getElementById('chat-iframe');
-            if (iframe) {
-                iframe.onload = function() {
-                    // This sets up a MutationObserver to monitor changes in the iframe
-                    try {
-                        // Try to set up content observer (may fail due to CORS)
-                        setupIframeContentObserver(iframe);
-                        
-                        // Connect to iframe using postMessage API
-                        iframe.contentWindow.postMessage({ 
-                            type: 'fitness-app-init',
-                            message: 'Hello from Fitness App!' 
-                        }, '*');
-                    } catch (e) {
-                        console.log('Could not set up iframe observer due to CORS', e);
-                    }
-                };
-            }
-            
-            // Setup manual chat message listener via postMessage API
+            // Setup message listener for potential iframe responses
             window.addEventListener('message', function(event) {
+                // This is unlikely to work with Chatbase but we'll keep it just in case
                 try {
-                    if (event.data) {
-                        // Check if this is a Chatbase message
-                        if (typeof event.data === 'object' && event.data.type === 'chatbase-message') {
-                            const message = event.data.message;
-                            console.log('Received message from Chatbase:', message);
-                            
-                            // Speak the response if voice is enabled
-                            if (voiceEnabled && message) {
-                                speakText(message);
-                            }
-                            
-                            // Check if it's a recommendation
-                            if (message && (
-                                message.toLowerCase().includes('quick tip') || 
-                                message.toLowerCase().includes('summarize this as a tip') ||
-                                message.toLowerCase().includes('quick summary') ||
-                                message.includes('💡'))) {
-                                addRecommendation(message);
-                            }
+                    if (event.data && event.data.type === 'chatbase-message' && event.data.message) {
+                        const message = event.data.message;
+                        
+                        // Speak the response if voice is enabled
+                        if (voiceEnabled && message) {
+                            speakText(message);
+                        }
+                        
+                        // Check if it's a recommendation
+                        if (message && (
+                            message.toLowerCase().includes('quick tip') || 
+                            message.toLowerCase().includes('summarize this as a tip') ||
+                            message.toLowerCase().includes('quick summary') ||
+                            message.includes('💡'))) {
+                            addRecommendation(message);
                         }
                     }
                 } catch (e) {
-                    console.error('Error processing message:', e);
+                    console.log('Error processing iframe message:', e);
                 }
             });
-            
-            // Setup the manual submit button
-            const manualSubmitBtn = document.getElementById('manual-submit-btn');
-            if (manualSubmitBtn) {
-                manualSubmitBtn.addEventListener('click', function() {
-                    const message = localStorage.getItem('lastVoiceMessage');
-                    if (message) {
-                        // Open Chatbase in a new window with the message
-                        const chatbaseUrl = 'https://www.chatbase.co/chatbot/6PsfEElX5kLoAlV6eMQzw';
-                        window.open(chatbaseUrl, '_blank');
-                        
-                        // Hide the message layer
-                        const messageLayer = document.getElementById('iframe-message-layer');
-                        if (messageLayer) {
-                            messageLayer.style.display = 'none';
-                        }
-                    }
-                });
-            }
-        }
-        
-        // Setup observer for iframe content changes (detects new messages)
-        function setupIframeContentObserver(iframe) {
-            try {
-                const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-                const chatContainer = iframeDocument.querySelector('.chat-container');
-                
-                if (chatContainer) {
-                    const observer = new MutationObserver(function(mutations) {
-                        mutations.forEach(function(mutation) {
-                            if (mutation.type === 'childList') {
-                                // Check for new AI responses
-                                const aiMessages = iframeDocument.querySelectorAll('.ai-message');
-                                if (aiMessages.length > 0) {
-                                    const latestMessage = aiMessages[aiMessages.length - 1];
-                                    const messageText = latestMessage.textContent;
-                                    
-                                    // Speak the message if voice enabled
-                                    if (voiceEnabled && messageText) {
-                                        speakText(messageText);
-                                    }
-                                    
-                                    // Check if it's a recommendation
-                                    if (messageText && (
-                                        messageText.toLowerCase().includes('quick tip') || 
-                                        messageText.toLowerCase().includes('summarize') ||
-                                        messageText.toLowerCase().includes('quick summary') ||
-                                        messageText.includes('💡'))) {
-                                        addRecommendation(messageText);
-                                    }
-                                }
-                            }
-                        });
-                    });
-                    
-                    // Start observing the chat container
-                    observer.observe(chatContainer, { childList: true, subtree: true });
-                    console.log('Successfully set up observer for iframe chat');
-                } else {
-                    console.log('Chat container not found in iframe');
-                }
-            } catch (e) {
-                console.log('Error setting up iframe observer:', e);
-            }
         }
         
         // Setup communication with the Chatbase iframe
@@ -1364,83 +1286,39 @@
             }
         }
         
-        // Function to send message to the iframe chatbot - completely revamped for Chatbase
+        // Simplified voice message handling for Chatbase
         function sendMessageToIframe(message) {
-            const iframe = document.getElementById('chat-iframe');
             const voiceStatus = document.getElementById('voice-status');
-            const messageLayer = document.getElementById('iframe-message-layer');
-            const lastVoiceMessage = document.getElementById('last-voice-message');
-            const manualSubmitBtn = document.getElementById('manual-submit-btn');
+            const voiceFeedback = document.getElementById('voice-feedback');
             
-            if (iframe) {
-                // Store message for fallback
-                localStorage.setItem('lastVoiceMessage', message);
-                
-                // Update voice status
-                voiceStatus.textContent = `Message: "${message}"`;
-                
-                // Try several approaches to send the message to Chatbase
-                
-                // Approach 1: PostMessage API - this rarely works with Chatbase due to cross-origin restrictions
-                try {
-                    iframe.contentWindow.postMessage({
-                        type: 'chatbase-input',
-                        message: message
-                    }, '*');
-                } catch (e) {
-                    console.log('PostMessage failed, trying other methods');
-                }
-                
-                // Approach 2: Show fallback UI for manual submission
-                messageLayer.style.display = 'block';
-                lastVoiceMessage.textContent = `Voice message: "${message}"`;
-                
-                // Setup manual submit button
-                manualSubmitBtn.onclick = function() {
-                    // Open the iframe in a new tab with the message
-                    const chatbaseUrl = `https://www.chatbase.co/chatbot/6PsfEElX5kLoAlV6eMQzw`;
-                    const newTab = window.open(chatbaseUrl, '_blank');
-                    
-                    // Store the message in sessionStorage so the new tab can access it
-                    sessionStorage.setItem('chatbaseMessage', message);
-                    
-                    // Hide the message layer
-                    messageLayer.style.display = 'none';
-                };
-                
-                // Approach 3: Try to access the iframe's DOM directly (this will likely fail due to CORS)
-                try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    const chatInput = iframeDoc.querySelector('input[type="text"], textarea');
-                    const sendButton = iframeDoc.querySelector('button[type="submit"]');
-                    
-                    if (chatInput && sendButton) {
-                        chatInput.value = message;
-                        const event = new Event('input', { bubbles: true });
-                        chatInput.dispatchEvent(event);
-                        sendButton.click();
-                        
-                        // If we got here, it worked! Hide the fallback UI
-                        messageLayer.style.display = 'none';
-                        
-                        // Update status
-                        voiceStatus.textContent = 'Message sent successfully!';
-                        setTimeout(() => {
-                            voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
-                        }, 3000);
-                    }
-                } catch (e) {
-                    console.log('Direct DOM access failed due to CORS, using fallback UI');
-                }
-                
-                // Auto-hide the fallback UI after 20 seconds if not used
-                setTimeout(() => {
-                    messageLayer.style.display = 'none';
-                }, 20000);
-                
-            } else {
-                voiceStatus.textContent = "Chat iframe not found. Please refresh the page.";
+            // Store message in clipboard and localStorage for easy access
+            try {
+                navigator.clipboard.writeText(message);
+            } catch (e) {
+                console.log('Could not copy to clipboard', e);
             }
+            
+            localStorage.setItem('lastVoiceMessage', message);
+            
+            // Show voice feedback message
+            if (voiceFeedback) {
+                voiceFeedback.style.display = 'block';
+                
+                // Auto-hide after 15 seconds
+                setTimeout(() => {
+                    voiceFeedback.style.display = 'none';
+                }, 15000);
+            }
+            
+            // Update status
+            voiceStatus.textContent = `Message ready: "${message}" (copied to clipboard)`;
+            setTimeout(() => {
+                voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
+            }, 5000);
+            
+            // In testing, we've found that direct iframe communication with Chatbase
+            // is not reliable due to cross-origin restrictions. The best approach is to
+            // have the user manually type or paste the message into the Chatbase interface.
         }
         
         // Text-to-Speech functionality
