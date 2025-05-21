@@ -670,17 +670,22 @@
                     </button>
                 </div>
                 
-                <!-- Modified: More landscape oriented iframe -->
-                <div class="chat-container">
-                    <iframe
-                        src="https://www.chatbase.co/chatbot-iframe/6PsfEElX5kLoAlV6eMQzw"
-                        width="100%"
-                        style="height: 100%; min-height: 500px; border: none; border-radius: 8px;"
-                        frameborder="0"
-                        id="chat-iframe"
-                        title="AI Fitness Coach">
-                    </iframe>
-                </div>
+    <!-- Modified: More landscape oriented iframe with improved Chatbase integration -->
+    <div class="chat-container">
+        <div id="iframe-message-layer" style="display: none; padding: 10px; background: #f0f9ff; border-radius: 8px 8px 0 0; border-bottom: 1px solid #e0f2fe;">
+            <div id="last-voice-message" style="font-size: 0.875rem; margin-bottom: 5px;"></div>
+            <button id="manual-submit-btn" style="padding: 5px 10px; font-size: 0.75rem; background: var(--accent-color);">Submit to Chatbase</button>
+        </div>
+        <!-- Original Chatbase iframe -->
+        <iframe
+            id="chat-iframe"
+            src="https://www.chatbase.co/chatbot-iframe/6PsfEElX5kLoAlV6eMQzw"
+            width="100%"
+            style="height: 100%; min-height: 500px; border: none; border-radius: 8px;"
+            frameborder="0"
+            title="AI Fitness Coach">
+        </iframe>
+    </div>
                 
                 <div class="recommendations" style="display: none;">
                     <h3 style="margin-bottom: 1rem; font-size: 1.125rem; font-weight: 600;">Quick Tips</h3>
@@ -1106,8 +1111,8 @@
                 const weekStart = grouped[key].weekStart;
                 const weekEnd = grouped[key].weekEnd;
                 
-                // Format as "May 18 - May 24"
-                const weekLabel = `${weekStart.toLocaleString('default', { month: 'short' })} ${weekStart.getDate()} - ${weekEnd.toLocaleString('default', { month: 'short' })} ${weekEnd.getDate()}`;
+                // Format as "May 18-24"
+                const weekLabel = `${weekStart.toLocaleString('default', { month: 'short' })} ${weekStart.getDate()}-${weekEnd.getDate()}`;
                 
                 result[weekLabel] = grouped[key];
             });
@@ -1147,7 +1152,7 @@
             return grouped;
         }
         
-        // Modified: Setup voice controls for AI agent interaction with better error handling
+        // Improved voice controls with audio response detection
         function setupVoiceControls() {
             const voiceButton = document.getElementById('voice-input-btn');
             const voiceStatus = document.getElementById('voice-status');
@@ -1224,52 +1229,118 @@
                 voiceStatus.textContent = 'Speech recognition not supported in this browser';
             }
             
-            // Setup custom message handler for iframe communication
+            // Setup iframe load event to enable audio response monitoring
+            const iframe = document.getElementById('chat-iframe');
+            if (iframe) {
+                iframe.onload = function() {
+                    // This sets up a MutationObserver to monitor changes in the iframe
+                    try {
+                        // Try to set up content observer (may fail due to CORS)
+                        setupIframeContentObserver(iframe);
+                        
+                        // Connect to iframe using postMessage API
+                        iframe.contentWindow.postMessage({ 
+                            type: 'fitness-app-init',
+                            message: 'Hello from Fitness App!' 
+                        }, '*');
+                    } catch (e) {
+                        console.log('Could not set up iframe observer due to CORS', e);
+                    }
+                };
+            }
+            
+            // Setup manual chat message listener via postMessage API
             window.addEventListener('message', function(event) {
                 try {
-                    // Check if the message is from our iframe or Chatbase
                     if (event.data) {
-                        // Handle Chatbase messages
-                        if (event.data.type === 'chatbase-message' && event.data.message) {
-                            // If voice is enabled, speak the response
-                            if (voiceEnabled) {
-                                speakText(event.data.message);
+                        // Check if this is a Chatbase message
+                        if (typeof event.data === 'object' && event.data.type === 'chatbase-message') {
+                            const message = event.data.message;
+                            console.log('Received message from Chatbase:', message);
+                            
+                            // Speak the response if voice is enabled
+                            if (voiceEnabled && message) {
+                                speakText(message);
                             }
                             
-                            // Check if this is a recommendation or summary request
-                            const message = event.data.message;
-                            if (message.toLowerCase().includes('quick tip') || 
+                            // Check if it's a recommendation
+                            if (message && (
+                                message.toLowerCase().includes('quick tip') || 
                                 message.toLowerCase().includes('summarize this as a tip') ||
                                 message.toLowerCase().includes('quick summary') ||
-                                message.includes('💡')) {
+                                message.includes('💡'))) {
                                 addRecommendation(message);
                             }
                         }
-                        
-                        // Handle direct message responses (custom implementation)
-                        if (event.data.type === 'fitness-voice-response' && event.data.text) {
-                            if (voiceEnabled) {
-                                speakText(event.data.text);
-                            }
-                            
-                            if (event.data.isRecommendation) {
-                                addRecommendation(event.data.text);
-                            }
-                        }
                     }
-                } catch (error) {
-                    console.error('Error handling iframe message:', error);
+                } catch (e) {
+                    console.error('Error processing message:', e);
                 }
             });
             
-            // Add message listener for debugging iframe communication
-            document.addEventListener('keydown', function(e) {
-                // Press Alt+D to check iframe communication status (debug)
-                if (e.altKey && e.key === 'd') {
-                    const lastMessage = localStorage.getItem('lastVoiceMessage');
-                    alert(`Last voice message: ${lastMessage || 'None'}\nIframe communication test: ${document.querySelector('iframe') ? 'Iframe found' : 'No iframe'}`);
+            // Setup the manual submit button
+            const manualSubmitBtn = document.getElementById('manual-submit-btn');
+            if (manualSubmitBtn) {
+                manualSubmitBtn.addEventListener('click', function() {
+                    const message = localStorage.getItem('lastVoiceMessage');
+                    if (message) {
+                        // Open Chatbase in a new window with the message
+                        const chatbaseUrl = 'https://www.chatbase.co/chatbot/6PsfEElX5kLoAlV6eMQzw';
+                        window.open(chatbaseUrl, '_blank');
+                        
+                        // Hide the message layer
+                        const messageLayer = document.getElementById('iframe-message-layer');
+                        if (messageLayer) {
+                            messageLayer.style.display = 'none';
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Setup observer for iframe content changes (detects new messages)
+        function setupIframeContentObserver(iframe) {
+            try {
+                const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                const chatContainer = iframeDocument.querySelector('.chat-container');
+                
+                if (chatContainer) {
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.type === 'childList') {
+                                // Check for new AI responses
+                                const aiMessages = iframeDocument.querySelectorAll('.ai-message');
+                                if (aiMessages.length > 0) {
+                                    const latestMessage = aiMessages[aiMessages.length - 1];
+                                    const messageText = latestMessage.textContent;
+                                    
+                                    // Speak the message if voice enabled
+                                    if (voiceEnabled && messageText) {
+                                        speakText(messageText);
+                                    }
+                                    
+                                    // Check if it's a recommendation
+                                    if (messageText && (
+                                        messageText.toLowerCase().includes('quick tip') || 
+                                        messageText.toLowerCase().includes('summarize') ||
+                                        messageText.toLowerCase().includes('quick summary') ||
+                                        messageText.includes('💡'))) {
+                                        addRecommendation(messageText);
+                                    }
+                                }
+                            }
+                        });
+                    });
+                    
+                    // Start observing the chat container
+                    observer.observe(chatContainer, { childList: true, subtree: true });
+                    console.log('Successfully set up observer for iframe chat');
+                } else {
+                    console.log('Chat container not found in iframe');
                 }
-            });
+            } catch (e) {
+                console.log('Error setting up iframe observer:', e);
+            }
         }
         
         // Setup communication with the Chatbase iframe
@@ -1293,84 +1364,83 @@
             }
         }
         
-        // Function to send message to the iframe chatbot - improved for cross-origin communication
+        // Function to send message to the iframe chatbot - completely revamped for Chatbase
         function sendMessageToIframe(message) {
             const iframe = document.getElementById('chat-iframe');
             const voiceStatus = document.getElementById('voice-status');
+            const messageLayer = document.getElementById('iframe-message-layer');
+            const lastVoiceMessage = document.getElementById('last-voice-message');
+            const manualSubmitBtn = document.getElementById('manual-submit-btn');
             
             if (iframe) {
+                // Store message for fallback
+                localStorage.setItem('lastVoiceMessage', message);
+                
+                // Update voice status
+                voiceStatus.textContent = `Message: "${message}"`;
+                
+                // Try several approaches to send the message to Chatbase
+                
+                // Approach 1: PostMessage API - this rarely works with Chatbase due to cross-origin restrictions
                 try {
-                    // First approach: Use postMessage API (most reliable for cross-origin iframes)
                     iframe.contentWindow.postMessage({
                         type: 'chatbase-input',
                         message: message
                     }, '*');
-                    
-                    // Update status
-                    voiceStatus.textContent = `Message sent: "${message}"`;
-                    setTimeout(() => {
-                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
-                    }, 3000);
-                    
-                    // Simulate interaction with the chatbot UI
-                    // Since we can't directly interact with cross-origin iframe content,
-                    // let's implement a workaround using a custom message channel
-                    
-                    // Store message in localStorage for debugging/backup
-                    localStorage.setItem('lastVoiceMessage', message);
-                    
-                    // Advanced: Setup a custom handler to retry until iframe is ready
-                    checkIframeAndSendMessage(iframe, message);
-                    
                 } catch (e) {
-                    console.error('Error sending message to iframe:', e);
-                    voiceStatus.textContent = "Couldn't send message directly. Please type in the chat or try again.";
-                    setTimeout(() => {
-                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
-                    }, 3000);
+                    console.log('PostMessage failed, trying other methods');
                 }
+                
+                // Approach 2: Show fallback UI for manual submission
+                messageLayer.style.display = 'block';
+                lastVoiceMessage.textContent = `Voice message: "${message}"`;
+                
+                // Setup manual submit button
+                manualSubmitBtn.onclick = function() {
+                    // Open the iframe in a new tab with the message
+                    const chatbaseUrl = `https://www.chatbase.co/chatbot/6PsfEElX5kLoAlV6eMQzw`;
+                    const newTab = window.open(chatbaseUrl, '_blank');
+                    
+                    // Store the message in sessionStorage so the new tab can access it
+                    sessionStorage.setItem('chatbaseMessage', message);
+                    
+                    // Hide the message layer
+                    messageLayer.style.display = 'none';
+                };
+                
+                // Approach 3: Try to access the iframe's DOM directly (this will likely fail due to CORS)
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    const chatInput = iframeDoc.querySelector('input[type="text"], textarea');
+                    const sendButton = iframeDoc.querySelector('button[type="submit"]');
+                    
+                    if (chatInput && sendButton) {
+                        chatInput.value = message;
+                        const event = new Event('input', { bubbles: true });
+                        chatInput.dispatchEvent(event);
+                        sendButton.click();
+                        
+                        // If we got here, it worked! Hide the fallback UI
+                        messageLayer.style.display = 'none';
+                        
+                        // Update status
+                        voiceStatus.textContent = 'Message sent successfully!';
+                        setTimeout(() => {
+                            voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
+                        }, 3000);
+                    }
+                } catch (e) {
+                    console.log('Direct DOM access failed due to CORS, using fallback UI');
+                }
+                
+                // Auto-hide the fallback UI after 20 seconds if not used
+                setTimeout(() => {
+                    messageLayer.style.display = 'none';
+                }, 20000);
+                
             } else {
                 voiceStatus.textContent = "Chat iframe not found. Please refresh the page.";
             }
-        }
-        
-        // Helper function to check iframe and try sending message repeatedly
-        function checkIframeAndSendMessage(iframe, message) {
-            let attempts = 0;
-            const maxAttempts = 5;
-            
-            const checkInterval = setInterval(() => {
-                attempts++;
-                try {
-                    // Try to access iframe - this will throw an error if cross-origin
-                    const iframeAccess = iframe.contentWindow.document;
-                    
-                    // If we got here, we can access the iframe directly
-                    clearInterval(checkInterval);
-                    
-                    // Find input field and send button
-                    const inputField = iframeAccess.querySelector('input[type="text"], textarea');
-                    const sendButton = iframeAccess.querySelector('button[type="submit"]');
-                    
-                    if (inputField && sendButton) {
-                        // Set input value
-                        inputField.value = message;
-                        
-                        // Trigger input event
-                        const inputEvent = new Event('input', { bubbles: true });
-                        inputField.dispatchEvent(inputEvent);
-                        
-                        // Click send button
-                        setTimeout(() => sendButton.click(), 100);
-                    }
-                } catch (e) {
-                    // Expected behavior for cross-origin iframe
-                    // Use alternative methods
-                    if (attempts >= maxAttempts) {
-                        clearInterval(checkInterval);
-                    }
-                }
-            }, 500);
         }
         
         // Text-to-Speech functionality
