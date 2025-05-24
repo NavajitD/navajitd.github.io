@@ -6,14 +6,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23dc2626;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' font-weight='bold' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
     
     <title>Navajit D - By design</title>
     <style>
         /* Base Styles */
         :root {
             /* Original Theme */
-            --text-color: #171717;
+            --text-color: #0f2e00;
             --bg-color: #fff;
             --accent-color: #2563eb;
             --muted-color: #6b7280;
@@ -23,12 +23,12 @@
         
         /* Green/Red/Yellow Theme */
         [data-theme="colorful"] {
-            --text-color: #1a2e05;
+            --text-color: #0a1f00;
             --bg-color: #fefffe;
             --accent-color: #16a34a;
             --muted-color: #65a30d;
             --border-color: #bbf7d0;
-            --secondary-color: #dc2626;
+            --secondary-color: #ea580c;
             --highlight-color: #eab308;
             --success-color: #059669;
             --warning-color: #d97706;
@@ -82,24 +82,28 @@
             position: fixed;
             top: 2rem;
             right: 2rem;
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            border: 2px solid var(--border-color);
+            width: 3.5rem;
+            height: 2.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
             background: var(--bg-color);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             transition: all 0.3s ease;
             z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .theme-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: var(--accent-color);
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        [data-theme="colorful"] .theme-toggle:hover {
+            border-color: var(--accent-color);
+            background: rgba(22, 163, 74, 0.05);
         }
         
         /* Theme toggle icons */
@@ -175,11 +179,25 @@
         }
         
         [data-theme="colorful"] .intro-title {
-            background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+            background: linear-gradient(45deg, var(--accent-color), var(--secondary-color), var(--highlight-color), var(--accent-color));
+            background-size: 400% 400%;
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             color: transparent;
+            animation: gradientFlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
         
         .intro p {
@@ -392,9 +410,9 @@
             .theme-toggle {
                 top: 1rem;
                 right: 1rem;
-                width: 2.5rem;
-                height: 2.5rem;
-                font-size: 1.25rem;
+                width: 3rem;
+                height: 2rem;
+                font-size: 1rem;
             }
             
             header {
@@ -566,9 +584,9 @@
             }
             
             // Add a subtle animation effect
-            themeToggle.style.transform = 'scale(0.9)';
+            themeToggle.style.opacity = '0.7';
             setTimeout(() => {
-                themeToggle.style.transform = 'scale(1)';
+                themeToggle.style.opacity = '1';
             }, 150);
         });
         
