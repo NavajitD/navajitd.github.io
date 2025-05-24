@@ -13,7 +13,7 @@
         /* Base Styles */
         :root {
             /* Original Theme */
-            --text-color: #0f2e00;
+            --text-color: #0a1f00;
             --bg-color: #fff;
             --accent-color: #2563eb;
             --muted-color: #6b7280;
@@ -23,7 +23,7 @@
         
         /* Green/Red/Yellow Theme */
         [data-theme="colorful"] {
-            --text-color: #0a1f00;
+            --text-color: #0f2e00;
             --bg-color: #fefffe;
             --accent-color: #16a34a;
             --muted-color: #65a30d;
@@ -81,17 +81,17 @@
         .theme-toggle {
             position: fixed;
             top: 2rem;
-            right: 2rem;
-            width: 3.5rem;
-            height: 2.5rem;
-            border-radius: 8px;
+            right: 50%;
+            transform: translateX(50%);
+            width: 2.5rem;
+            height: 2rem;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
             background: var(--bg-color);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
             transition: all 0.3s ease;
             z-index: 1000;
         }
@@ -107,24 +107,34 @@
         }
         
         /* Theme toggle icons */
-        .theme-toggle .icon {
-            transition: opacity 0.3s ease, transform 0.3s ease;
+        .theme-toggle svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--text-color);
+            fill: none;
+            stroke-width: 1.5;
+            transition: all 0.3s ease;
         }
         
-        .theme-toggle .icon-colorful {
+        .theme-toggle:hover svg {
+            stroke: var(--accent-color);
+        }
+        
+        /* Theme toggle icons visibility */
+        .icon-colorful {
             opacity: 1;
         }
         
-        .theme-toggle .icon-original {
+        .icon-original {
             opacity: 0;
             position: absolute;
         }
         
-        [data-theme="colorful"] .theme-toggle .icon-colorful {
+        [data-theme="colorful"] .icon-colorful {
             opacity: 0;
         }
         
-        [data-theme="colorful"] .theme-toggle .icon-original {
+        [data-theme="colorful"] .icon-original {
             opacity: 1;
         }
         
@@ -185,7 +195,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             color: transparent;
-            animation: gradientFlow 3s ease-in-out infinite;
+            animation: gradientFlow 8s ease-in-out infinite;
         }
         
         @keyframes gradientFlow {
@@ -409,10 +419,15 @@
             
             .theme-toggle {
                 top: 1rem;
-                right: 1rem;
-                width: 3rem;
-                height: 2rem;
-                font-size: 1rem;
+                right: 50%;
+                transform: translateX(50%);
+                width: 2rem;
+                height: 1.75rem;
+            }
+            
+            .theme-toggle svg {
+                width: 14px;
+                height: 14px;
             }
             
             header {
@@ -443,8 +458,15 @@
 <body class="theme-transition">
     <!-- Theme Toggle Button -->
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
-        <span class="icon icon-colorful">🎨</span>
-        <span class="icon icon-original">🌙</span>
+        <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+            <circle cx="12" cy="12" r="2"/>
+            <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
+        </svg>
+        <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
     </button>
 
     <header>
