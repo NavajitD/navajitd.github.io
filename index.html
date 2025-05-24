@@ -4,16 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <title>By design</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23dc2626;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' font-weight='bold' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
+    
+    <title>Navajit D - By design</title>
     <style>
         /* Base Styles */
         :root {
+            /* Original Theme */
             --text-color: #171717;
             --bg-color: #fff;
             --accent-color: #2563eb;
             --muted-color: #6b7280;
             --border-color: #e5e7eb;
             --font-sans: "Inconsolata", monospace;
+        }
+        
+        /* Green/Red/Yellow Theme */
+        [data-theme="colorful"] {
+            --text-color: #1a2e05;
+            --bg-color: #fefffe;
+            --accent-color: #16a34a;
+            --muted-color: #65a30d;
+            --border-color: #bbf7d0;
+            --secondary-color: #dc2626;
+            --highlight-color: #eab308;
+            --success-color: #059669;
+            --warning-color: #d97706;
+        }
+        
+        /* Original theme secondary colors */
+        :root {
+            --secondary-color: #374151;
+            --highlight-color: #f59e0b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
         }
         
         * {
@@ -34,11 +60,13 @@
             max-width: 42rem;
             margin: 0 auto;
             padding: 3rem 1.5rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         a {
             color: var(--accent-color);
             text-decoration: none;
+            transition: color 0.3s ease;
         }
         
         a:hover {
@@ -47,6 +75,53 @@
         
         p {
             margin-bottom: 1.5rem;
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            background: var(--bg-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Theme toggle icons */
+        .theme-toggle .icon {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .theme-toggle .icon-colorful {
+            opacity: 1;
+        }
+        
+        .theme-toggle .icon-original {
+            opacity: 0;
+            position: absolute;
+        }
+        
+        [data-theme="colorful"] .theme-toggle .icon-colorful {
+            opacity: 0;
+        }
+        
+        [data-theme="colorful"] .theme-toggle .icon-original {
+            opacity: 1;
         }
         
         /* Header Styles */
@@ -99,6 +174,14 @@
             margin-bottom: 1.5rem;
         }
         
+        [data-theme="colorful"] .intro-title {
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+        
         .intro p {
             font-size: 1.125rem;
             color: var(--text-color);
@@ -116,11 +199,29 @@
             padding-bottom: 0.5rem;
             border-bottom: 1px solid var(--border-color);
             letter-spacing: 0.05em;
+            transition: border-color 0.3s ease;
+        }
+        
+        [data-theme="colorful"] .section-title {
+            color: var(--accent-color);
         }
         
         /* Projects Section */
         .project-item {
             margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="colorful"] .project-item {
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(220, 38, 38, 0.05));
+            border: 1px solid var(--border-color);
+        }
+        
+        [data-theme="colorful"] .project-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.1);
         }
         
         .project-title {
@@ -129,10 +230,19 @@
             margin-bottom: 0.5rem;
         }
         
+        [data-theme="colorful"] .project-title {
+            color: var(--secondary-color);
+        }
+        
         .project-meta {
             font-size: 0.875rem;
             color: var(--muted-color);
             margin-bottom: 0.75rem;
+        }
+        
+        [data-theme="colorful"] .project-meta {
+            color: var(--accent-color);
+            font-weight: 500;
         }
         
         .project-description {
@@ -142,11 +252,38 @@
         .project-links a {
             font-size: 0.875rem;
             margin-right: 1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="colorful"] .project-links a {
+            background: var(--highlight-color);
+            color: white;
+        }
+        
+        [data-theme="colorful"] .project-links a:hover {
+            background: var(--secondary-color);
+            text-decoration: none;
+            transform: translateY(-1px);
         }
         
         /* Blog Section */
         .blog-item {
             margin-bottom: 2rem;
+            padding: 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="colorful"] .blog-item {
+            background: rgba(22, 163, 74, 0.03);
+            border-left: 3px solid var(--accent-color);
+        }
+        
+        [data-theme="colorful"] .blog-item:hover {
+            background: rgba(22, 163, 74, 0.08);
+            border-left-color: var(--secondary-color);
         }
         
         .blog-title {
@@ -155,10 +292,19 @@
             margin-bottom: 0.5rem;
         }
         
+        [data-theme="colorful"] .blog-title a {
+            color: var(--secondary-color);
+        }
+        
         .blog-meta {
             font-size: 0.875rem;
             color: var(--muted-color);
             margin-bottom: 0.75rem;
+        }
+        
+        [data-theme="colorful"] .blog-meta {
+            color: var(--accent-color);
+            font-weight: 500;
         }
         
         .blog-excerpt {
@@ -169,30 +315,22 @@
             font-size: 0.875rem;
         }
         
-        /* Writing Section */
-        .writing-list {
-            list-style: none;
-        }
-        
-        .writing-item {
-            display: flex;
-            margin-bottom: 0.75rem;
-        }
-        
-        .writing-date {
-            color: var(--muted-color);
-            font-size: 0.875rem;
-            width: 5rem;
-            flex-shrink: 0;
-        }
-        
-        .writing-title {
-            font-size: 1rem;
+        [data-theme="colorful"] .read-more {
+            color: var(--warning-color);
+            font-weight: 600;
         }
         
         /* Experience Section */
         .experience-item {
             margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="colorful"] .experience-item {
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.05), rgba(22, 163, 74, 0.05));
+            border: 1px solid var(--border-color);
         }
         
         .experience-title {
@@ -201,10 +339,19 @@
             margin-bottom: 0.25rem;
         }
         
+        [data-theme="colorful"] .experience-title {
+            color: var(--secondary-color);
+        }
+        
         .experience-meta {
             font-size: 0.875rem;
             color: var(--muted-color);
             margin-bottom: 0.75rem;
+        }
+        
+        [data-theme="colorful"] .experience-meta {
+            color: var(--accent-color);
+            font-weight: 500;
         }
         
         /* Footer */
@@ -214,6 +361,7 @@
             border-top: 1px solid var(--border-color);
             font-size: 0.875rem;
             color: var(--muted-color);
+            transition: border-color 0.3s ease;
         }
         
         .footer-links {
@@ -224,11 +372,29 @@
         
         .footer-links a {
             color: var(--text-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
         }
         
+        [data-theme="colorful"] .footer-links a:hover {
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+        }
+        
+        /* Responsive */
         @media (max-width: 640px) {
             body {
                 padding: 2rem 1rem;
+            }
+            
+            .theme-toggle {
+                top: 1rem;
+                right: 1rem;
+                width: 2.5rem;
+                height: 2.5rem;
+                font-size: 1.25rem;
             }
             
             header {
@@ -244,18 +410,25 @@
                 font-size: 1.75rem;
             }
             
-            .writing-item {
-                flex-direction: column;
-                margin-bottom: 1.25rem;
+            [data-theme="colorful"] .project-item,
+            [data-theme="colorful"] .experience-item {
+                padding: 1rem;
             }
-            
-            .writing-date {
-                margin-bottom: 0.25rem;
-            }
+        }
+        
+        /* Loading animation for theme transition */
+        .theme-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
 </head>
-<body>
+<body class="theme-transition">
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
+        <span class="icon icon-colorful">🎨</span>
+        <span class="icon icon-original">🌙</span>
+    </button>
+
     <header>
         <div class="logo">
             <a href="/">Navajit D</a>
@@ -366,5 +539,51 @@
         </div>
         <div>© 2025 Navajit D</div>
     </footer>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        
+        // Check for saved theme preference or default to 'original'
+        const currentTheme = localStorage.getItem('theme') || 'original';
+        
+        // Apply the current theme
+        if (currentTheme === 'colorful') {
+            body.setAttribute('data-theme', 'colorful');
+        }
+        
+        // Theme toggle event listener
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = body.getAttribute('data-theme');
+            
+            if (currentTheme === 'colorful') {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'original');
+            } else {
+                body.setAttribute('data-theme', 'colorful');
+                localStorage.setItem('theme', 'colorful');
+            }
+            
+            // Add a subtle animation effect
+            themeToggle.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                themeToggle.style.transform = 'scale(1)';
+            }, 150);
+        });
+        
+        // Add keyboard accessibility
+        themeToggle.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                themeToggle.click();
+            }
+        });
+        
+        // Prefers reduced motion check
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            body.classList.remove('theme-transition');
+        }
+    </script>
 </body>
 </html>
