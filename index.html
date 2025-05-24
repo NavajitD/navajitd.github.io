@@ -398,17 +398,22 @@
             display: flex;
             gap: 1.5rem;
             margin-bottom: 1rem;
+            margin-left: 0;
         }
         
         .footer-links a {
             color: var(--text-color);
             border-radius: 4px;
             transition: all 0.3s ease;
-            margin-left: -0.25rem; /* Offset padding in colorful theme */
         }
         
         [data-theme="colorful"] .footer-links a {
             padding: 0.25rem 0.5rem;
+            margin-left: -0.5rem;
+        }
+        
+        [data-theme="colorful"] .footer-links a:first-child {
+            margin-left: -0.5rem;
         }
         
         [data-theme="colorful"] .footer-links a:hover {
