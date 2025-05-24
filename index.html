@@ -197,7 +197,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             color: transparent;
-            animation: gradientFlow 12s ease-in-out infinite; <!-- TWEAK ANIMATION SPEED FROM HERE -->
+            animation: gradientFlow 8s ease-in-out infinite;
         }
         
         @keyframes gradientFlow {
@@ -282,7 +282,6 @@
         .project-links a {
             font-size: 0.875rem;
             margin-right: 1rem;
-            padding: 0.25rem 0.75rem;
             border-radius: 4px;
             transition: all 0.3s ease;
         }
@@ -290,6 +289,7 @@
         [data-theme="colorful"] .project-links a {
             background: var(--highlight-color);
             color: white;
+            padding: 0.25rem 0.75rem;
         }
         
         [data-theme="colorful"] .project-links a:hover {
@@ -402,9 +402,12 @@
         
         .footer-links a {
             color: var(--text-color);
-            padding: 0.25rem 0.5rem;
             border-radius: 4px;
             transition: all 0.3s ease;
+        }
+        
+        [data-theme="colorful"] .footer-links a {
+            padding: 0.25rem 0.5rem;
         }
         
         [data-theme="colorful"] .footer-links a:hover {
