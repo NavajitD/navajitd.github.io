@@ -79,10 +79,6 @@
         
         /* Theme Toggle */
         .theme-toggle {
-            position: fixed;
-            top: 2rem;
-            right: 50%;
-            transform: translateX(50%);
             width: 2.5rem;
             height: 2rem;
             border-radius: 6px;
@@ -93,7 +89,6 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            z-index: 1000;
         }
         
         .theme-toggle:hover {
@@ -122,27 +117,34 @@
         
         /* Theme toggle icons visibility */
         .icon-colorful {
-            opacity: 1;
-        }
-        
-        .icon-original {
             opacity: 0;
             position: absolute;
         }
         
+        .icon-original {
+            opacity: 1;
+        }
+        
         [data-theme="colorful"] .icon-colorful {
-            opacity: 0;
+            opacity: 1;
         }
         
         [data-theme="colorful"] .icon-original {
-            opacity: 1;
+            opacity: 0;
         }
         
         /* Header Styles */
         header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 3rem;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
         
         .logo {
@@ -237,7 +239,6 @@
         /* Projects Section */
         .project-item {
             margin-bottom: 2rem;
-            padding: 1.5rem;
             border-radius: 8px;
             transition: all 0.3s ease;
         }
@@ -245,6 +246,7 @@
         [data-theme="colorful"] .project-item {
             background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(220, 38, 38, 0.05));
             border: 1px solid var(--border-color);
+            padding: 1.5rem;
         }
         
         [data-theme="colorful"] .project-item:hover {
@@ -299,7 +301,6 @@
         /* Blog Section */
         .blog-item {
             margin-bottom: 2rem;
-            padding: 1rem;
             border-radius: 6px;
             transition: all 0.3s ease;
         }
@@ -307,6 +308,7 @@
         [data-theme="colorful"] .blog-item {
             background: rgba(22, 163, 74, 0.03);
             border-left: 3px solid var(--accent-color);
+            padding: 1rem;
         }
         
         [data-theme="colorful"] .blog-item:hover {
@@ -351,7 +353,6 @@
         /* Experience Section */
         .experience-item {
             margin-bottom: 2rem;
-            padding: 1.5rem;
             border-radius: 8px;
             transition: all 0.3s ease;
         }
@@ -359,6 +360,7 @@
         [data-theme="colorful"] .experience-item {
             background: linear-gradient(135deg, rgba(234, 179, 8, 0.05), rgba(22, 163, 74, 0.05));
             border: 1px solid var(--border-color);
+            padding: 1.5rem;
         }
         
         .experience-title {
@@ -456,22 +458,23 @@
     </style>
 </head>
 <body class="theme-transition">
-    <!-- Theme Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
-        <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-            <circle cx="12" cy="12" r="2"/>
-            <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
-        </svg>
-        <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="5"/>
-            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-        </svg>
-    </button>
-
     <header>
-        <div class="logo">
-            <a href="/">Navajit D</a>
+        <div class="header-left">
+            <div class="logo">
+                <a href="/">Navajit D</a>
+            </div>
+            <!-- Theme Toggle Button -->
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
+                <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    <circle cx="12" cy="12" r="2"/>
+                    <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
+                </svg>
+                <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+            </button>
         </div>
         <nav>
             <ul>
