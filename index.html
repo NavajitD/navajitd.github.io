@@ -8,21 +8,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
     
-    <title>Fitness - Navajit D</title>
-    
-    <!-- Open Graph meta tags for thumbnail -->
-    <meta property="og:title" content="Fitness Tracker - Navajit D">
-    <meta property="og:description" content="Personal fitness tracking dashboard with AI-powered recommendations">
-    <meta property="og:image" content="https://navajitd.github.io/assets/fitness-thumbnail.png">
-    <meta property="og:url" content="https://navajitd.github.io/fitness.html">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fitness Tracker - Navajit D">
-    <meta name="twitter:description" content="Personal fitness tracking dashboard with AI-powered recommendations">
-    <meta name="twitter:image" content="https://navajitd.github.io/assets/fitness-thumbnail.png">
-    
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <title>Navajit D - By design</title>
     <style>
         /* Base Styles */
         :root {
@@ -33,9 +19,6 @@
             --muted-color: #6b7280;
             --border-color: #e5e7eb;
             --font-sans: "Inconsolata", monospace;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --error-color: #ef4444;
         }
         
         /* Green/Red/Yellow Theme */
@@ -49,13 +32,14 @@
             --highlight-color: #eab308;
             --success-color: #059669;
             --warning-color: #d97706;
-            --error-color: #dc2626;
         }
         
         /* Original theme secondary colors */
         :root {
             --secondary-color: #374151;
             --highlight-color: #f59e0b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
         }
         
         * {
@@ -93,32 +77,17 @@
             margin-bottom: 1.5rem;
         }
         
-        /* Header Styles */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3rem;
-        }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .logo {
-            font-weight: 600;
-            font-size: 1rem;
+        /* Special styling for merchant experience platform link */
+        .merchant-link {
             color: var(--text-color);
+            text-decoration: none;
+            border-bottom: 1px solid var(--muted-color);
+            transition: all 0.3s ease;
         }
         
-        .logo a {
-            color: var(--text-color);
-        }
-        
-        .logo a:hover {
+        .merchant-link:hover {
             color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
             text-decoration: none;
         }
         
@@ -178,6 +147,35 @@
             opacity: 0;
         }
         
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+        
+        .logo a {
+            color: var(--text-color);
+        }
+        
+        .logo a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
         nav ul {
             display: flex;
             gap: 1.5rem;
@@ -194,50 +192,19 @@
             text-decoration: none;
         }
         
-        nav a.current {
-            color: var(--accent-color);
-            font-weight: 600;
+        /* Introduction */
+        .intro {
+            margin-bottom: 4rem;
         }
         
-        /* Modified: Removed the user-info div and integrated sign-out into nav */
-        .sign-out-link {
-            color: var(--text-color);
-            cursor: pointer;
-            border: none;
-            background: none;
-            font: inherit;
-            font-size: 1rem;
-            padding: 0;
-        }
-        
-        .sign-out-link:hover {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-        
-        /* Authentication */
-        .auth-container {
-            text-align: center;
-            padding: 4rem 0;
-            background: #f9fafb;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            margin: 2rem 0;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="colorful"] .auth-container {
-            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(234, 179, 8, 0.05));
-            border-color: var(--border-color);
-        }
-        
-        .auth-title {
-            font-size: 2rem;
+        .intro-title {
+            font-size: 2.3rem;
+            line-height: 1.3;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
         
-        [data-theme="colorful"] .auth-title {
+        [data-theme="colorful"] .intro-title {
             background: linear-gradient(45deg, var(--accent-color), var(--secondary-color), var(--highlight-color), var(--accent-color));
             background-size: 400% 400%;
             background-clip: text;
@@ -259,83 +226,9 @@
             }
         }
         
-        .auth-description {
-            color: var(--muted-color);
-            margin-bottom: 2rem;
-            font-size: 1.125rem;
-        }
-        
-        .auth-features {
-            text-align: left;
-            max-width: 300px;
-            margin: 0 auto 2rem;
-        }
-        
-        .auth-features ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .auth-features li {
-            padding: 0.5rem 0;
-            position: relative;
-            padding-left: 1.5rem;
-        }
-        
-        .auth-features li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: var(--success-color);
-            font-weight: bold;
-        }
-        
-        #g_id_signin {
-            display: inline-block;
-            margin: 0 auto;
-        }
-        
-        .restricted-access {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-top: 1rem;
-            color: #dc2626;
-            font-size: 0.875rem;
-        }
-        
-        [data-theme="colorful"] .restricted-access {
-            background: rgba(220, 38, 38, 0.1);
-            border-color: var(--error-color);
-            color: var(--error-color);
-        }
-        
-        /* Page Header */
-        .page-header {
-            margin-bottom: 3rem;
-        }
-        
-        .page-title {
-            font-size: 2rem;
-            line-height: 1.3;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        
-        [data-theme="colorful"] .page-title {
-            background: linear-gradient(45deg, var(--accent-color), var(--secondary-color), var(--highlight-color), var(--accent-color));
-            background-size: 400% 400%;
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
-            animation: gradientFlow 8s ease-in-out infinite;
-        }
-        
-        .page-description {
-            font-size: 1.125rem;
-            color: var(--muted-color);
+        .intro p {
+            font-size: 1rem;
+            color: var(--text-color);
         }
         
         /* Section Styles */
@@ -357,361 +250,228 @@
             color: var(--accent-color);
         }
         
-        /* Form Styles - Modified to reduce bottom padding */
-        .form-container {
-            background: #f9fafb;
-            padding: 1.5rem 1.5rem 1rem; /* Reduced bottom padding */
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
+        /* Projects Section */
+        .project-item {
             margin-bottom: 2rem;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="colorful"] .form-container {
-            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(234, 179, 8, 0.05));
-            border-color: var(--border-color);
-        }
-        
-        .form-group {
-            margin-bottom: 1rem; /* Reduced from 1.5rem */
-        }
-        
-        .form-group:last-child {
-            margin-bottom: 0;
-        }
-        
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        [data-theme="colorful"] label {
-            color: var(--accent-color);
-        }
-        
-        input[type="number"],
-        input[type="date"] {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        
-        input[type="number"]:focus,
-        input[type="date"]:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-        
-        [data-theme="colorful"] input[type="number"]:focus,
-        [data-theme="colorful"] input[type="date"]:focus {
-            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        button {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        button:hover {
-            background: #1d4ed8;
-        }
-        
-        [data-theme="colorful"] button:hover {
-            background: #15803d;
-        }
-        
-        button:disabled {
-            background: var(--muted-color);
-            cursor: not-allowed;
-        }
-        
-        /* Filter Buttons */
-        .filter-controls {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            background: #f3f4f6;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 0.875rem;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .filter-btn.active {
-            background: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
-        }
-        
-        [data-theme="colorful"] .filter-btn {
-            background: rgba(22, 163, 74, 0.1);
-        }
-        
-        /* Modified: Charts in side-by-side layout and center-aligned */
-        .charts-row {
-            display: flex;
-            gap: 1rem;
-            margin: 0 auto 1.5rem;
-            justify-content: center;
-        }
-        
-        .chart-container {
-            flex: 1;
-            padding: 1rem;
-            border: 1px solid var(--border-color);
             border-radius: 8px;
-            background: white;
             transition: all 0.3s ease;
         }
         
-        [data-theme="colorful"] .chart-container {
-            background: linear-gradient(135deg, rgba(22, 163, 74, 0.02), rgba(234, 179, 8, 0.02));
-            border-color: var(--border-color);
+        [data-theme="colorful"] .project-item {
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(220, 38, 38, 0.05));
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
         }
         
-        .chart-title {
+        [data-theme="colorful"] .project-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.1);
+        }
+        
+        .project-title {
             font-size: 1.125rem;
             font-weight: 600;
-            margin-bottom: 1rem;
-            text-align: center;
+            margin-bottom: 0.5rem;
         }
         
-        [data-theme="colorful"] .chart-title {
+        [data-theme="colorful"] .project-title {
             color: var(--secondary-color);
         }
         
-        /* Modified: Stats - single row with only 3 stats */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
+        .project-meta {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            margin-bottom: 0.75rem;
         }
         
-        .stat-card {
-            padding: 1.5rem;
-            background: #f9fafb;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="colorful"] .stat-card {
-            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(234, 179, 8, 0.05));
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
+        [data-theme="colorful"] .project-meta {
             color: var(--accent-color);
-            margin-bottom: 0.5rem;
+            font-weight: 500;
         }
         
-        [data-theme="colorful"] .stat-value {
-            color: var(--secondary-color);
+        .project-description {
+            margin-bottom: 0.75rem;
         }
         
-        .stat-label {
+        .project-links a {
             font-size: 0.875rem;
-            color: var(--muted-color);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        /* AI Agent - More landscape oriented */
-        .ai-section {
-            background: #f0f9ff;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #e0f2fe;
+            margin-right: 1rem;
+            border-radius: 4px;
             transition: all 0.3s ease;
         }
         
-        [data-theme="colorful"] .ai-section {
-            background: linear-gradient(135deg, rgba(22, 163, 74, 0.08), rgba(234, 179, 8, 0.08));
-            border-color: var(--border-color);
-        }
-        
-        /* Modified: More landscape oriented chat container */
-        .chat-container {
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-            min-height: 500px; /* Reduced height for more landscape orientation */
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="colorful"] .chat-container {
-            border-color: var(--border-color);
-        }
-        
-        /* Voice input UI */
-        .voice-controls {
-            display: flex;
-            gap: 0.5rem;
-            margin: 1rem 0;
-            align-items: center;
-        }
-        
-        .voice-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            background: var(--accent-color);
+        [data-theme="colorful"] .project-links a {
+            background: var(--highlight-color);
             color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 1.25rem;
-            transition: all 0.3s ease;
+            padding: 0.25rem 0.75rem;
         }
         
-        .voice-btn:hover {
-            background: #1d4ed8;
+        [data-theme="colorful"] .project-links a:hover {
+            background: var(--secondary-color);
+            text-decoration: none;
+            transform: translateY(-1px);
         }
         
-        [data-theme="colorful"] .voice-btn:hover {
-            background: #15803d;
-        }
-        
-        .voice-btn.listening {
-            animation: pulse 1.5s infinite;
-            background: #ef4444;
-        }
-        
-        .voice-status {
-            font-size: 0.875rem;
-            color: var(--muted-color);
-            flex: 1;
-        }
-        
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-            
-            70% {
-                transform: scale(1.05);
-                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-            }
-            
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
-        
-        .recommendations {
-            margin-top: 1rem;
-        }
-        
-        .recommendation-item {
-            background: white;
-            padding: 1rem;
+        /* Blog Section */
+        .blog-item {
+            margin-bottom: 2rem;
             border-radius: 6px;
-            margin-bottom: 0.5rem;
-            border-left: 3px solid var(--accent-color);
             transition: all 0.3s ease;
         }
         
-        [data-theme="colorful"] .recommendation-item {
+        [data-theme="colorful"] .blog-item {
+            background: rgba(22, 163, 74, 0.03);
+            border-left: 3px solid var(--accent-color);
+            padding: 1rem;
+        }
+        
+        [data-theme="colorful"] .blog-item:hover {
+            background: rgba(22, 163, 74, 0.08);
             border-left-color: var(--secondary-color);
         }
         
-        .recommendation-time {
-            font-size: 0.75rem;
-            color: var(--muted-color);
-            margin-bottom: 0.5rem;
+        .blog-title {
+            font-size: 1.125rem;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        [data-theme="colorful"] .blog-title a {
+            color: var(--secondary-color);
+        }
+        
+        .blog-meta {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            margin-bottom: 0.75rem;
+        }
+        
+        [data-theme="colorful"] .blog-meta {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+        
+        .blog-excerpt {
+            margin-bottom: 0.5rem;
+        }
+        
+        .read-more {
+            font-size: 0.875rem;
+        }
+        
+        [data-theme="colorful"] .read-more {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        
+        /* Experience Section */
+        .experience-item {
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="colorful"] .experience-item {
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.05), rgba(22, 163, 74, 0.05));
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+        }
+        
+        .experience-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        [data-theme="colorful"] .experience-title {
+            color: var(--secondary-color);
+        }
+        
+        .experience-meta {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            margin-bottom: 0.75rem;
+        }
+        
+        [data-theme="colorful"] .experience-meta {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+        
+        /* Footer */
+        footer {
+            padding-top: 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            transition: border-color 0.3s ease;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            margin-left: 0;
+        }
+        
+        .footer-links a {
+            color: var(--text-color);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="colorful"] .footer-links a {
+            padding: 0.25rem 0.5rem;
+            margin-left: -0.5rem;
+        }
+        
+        [data-theme="colorful"] .footer-links a:first-child {
+            margin-left: -0.5rem;
+        }
+        
+        [data-theme="colorful"] .footer-links a:hover {
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
         }
         
         /* Responsive */
-        @media (max-width: 768px) {
-            .charts-row {
-                flex-direction: column;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
         @media (max-width: 640px) {
             body {
                 padding: 2rem 1rem;
             }
             
-            header {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: flex-start;
-            }
-            
-            .header-left {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            nav ul {
-                gap: 1rem;
-            }
-            
-            .page-title {
-                font-size: 1.75rem;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .filter-controls {
-                flex-wrap: wrap;
+            .theme-toggle {
+                top: 1rem;
+                right: 50%;
+                transform: translateX(50%);
+                width: 2rem;
+                height: 1.75rem;
             }
             
             .theme-toggle svg {
                 width: 14px;
                 height: 14px;
             }
-        }
-        
-        /* Hidden class */
-        .hidden {
-            display: none !important;
+            
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .intro-title {
+                font-size: 1.75rem;
+            }
+            
+            [data-theme="colorful"] .project-item,
+            [data-theme="colorful"] .experience-item {
+                padding: 1rem;
+            }
         }
         
         /* Loading animation for theme transition */
@@ -721,1066 +481,175 @@
     </style>
 </head>
 <body class="theme-transition">
-    <!-- Auth Screen -->
-    <div id="auth-screen">
-        <!-- Keep the navigation even on auth screen -->
-        <header>
-            <div class="header-left">
-                <div class="logo">
-                    <a href="/">Navajit D</a>
-                </div>
-                <!-- Theme Toggle Button -->
-                <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
-                    <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-                        <circle cx="12" cy="12" r="2"/>
-                        <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
-                    </svg>
-                    <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="5"/>
-                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
-                </button>
+    <header>
+        <div class="header-left">
+            <div class="logo">
+                <a href="/">Navajit D</a>
             </div>
-        </header>
-        
-        <div class="auth-container">
-            <h1 class="auth-title">Fitness Tracking Dashboard</h1>
-            <p class="auth-description">Sign in to access your personal fitness data and AI coach</p>
-            
-            <div class="auth-features">
-                <ul>
-                    <li>Track weight and BMI over time</li>
-                    <li>Visualize progress with interactive charts</li>
-                    <li>Get AI-powered fitness recommendations</li>
-                    <li>Secure data storage</li>
-                </ul>
-            </div>
-            
-            <div id="g_id_signin" 
-                 data-client_id="1010970898291-q8nv22u1mbbv3mjvso048dcmsip8l9ev.apps.googleusercontent.com"
-                 data-callback="handleCredentialResponse"
-                 data-auto_prompt="false"
-                 data-cancel_on_tap_outside="false"
-                 data-theme="outline"
-                 data-size="large"
-                 data-text="signin_with"
-                 data-shape="rectangular"
-                 data-logo_alignment="left">
-            </div>
-            
-            <!-- Fallback sign-in button if Google doesn't load -->
-            <button id="fallback-signin" class="hidden" onclick="initializeGoogleSignIn()" 
-                    style="background: #4285f4; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0 auto;">
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            <!-- Theme Toggle Button -->
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
+                <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    <circle cx="12" cy="12" r="2"/>
+                    <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
                 </svg>
-                Sign in with Google
+                <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
             </button>
         </div>
-    </div>
-
-    <!-- Main App -->
-    <div id="app" class="hidden">
-        <header>
-            <div class="header-left">
-                <div class="logo">
-                    <a href="/">Navajit D</a>
-                </div>
-                <!-- Theme Toggle Button -->
-                <button class="theme-toggle" id="themeToggleApp" aria-label="Toggle color theme">
-                    <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-                        <circle cx="12" cy="12" r="2"/>
-                        <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
-                    </svg>
-                    <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="5"/>
-                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
-                </button>
+        <nav>
+            <ul>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="/fitness.html">Fitness</a></li>
+                <li><a href="mailto:navajit@example.com">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <section class="intro">
+        <h1 class="intro-title">Hello, I'm Navajit D.</h1>
+        <p>I majored in Aerospace Engineering and minored in Systems & Control Engineering and currently work as a Product Manager. At work, I am product owner of Pine Labs' <a href="https://one.pinelabs.com" target="_blank" rel="noopener noreferrer" class="merchant-link">merchant experience platform</a>. Outside of work, I build tools to make life easier or more fun.</p>
+        <p>I love well-designed products and I tinker at building with code. I am interested in psychology and international politics. I enjoy swimming and climbing.</p>
+    </section>
+    
+    <section id="projects">
+        <h2 class="section-title">Projects</h2>
+        <div class="project-item">
+            <h3 class="project-title">Credit Card Recommendation Engine</h3>
+            <div class="project-meta">Python, ML, React · 2024</div>
+            <p class="project-description">A machine learning-based system that analyzes user spending patterns and recommends the most suitable credit card based on reward programs and usage habits.</p>
+            <div class="project-links">
+                <a href="#">Case Study</a>
+                <a href="#">GitHub</a>
             </div>
-            <nav>
-                <ul>
-                    <li><a href="#" class="sign-out-link" onclick="signOut()">Sign Out</a></li>
-                </ul>
-            </nav>
-        </header>
-        
-        <div class="page-header">
-            <h1 class="page-title">Fitness Tracking</h1>
-            <p class="page-description">Track your weight, BMI, and health metrics over time.</p>
         </div>
         
-        <!-- Data Entry - Modified with reduced padding -->
-        <section>
-            <h2 class="section-title">Log New Entry</h2>
-            <div class="form-container">
-                <form id="fitness-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="date">Date</label>
-                            <input type="date" id="date" name="date" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="weight">Weight (kg)</label>
-                            <input type="number" id="weight" name="weight" step="0.1" min="30" max="300" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="height">Height (cm)</label>
-                            <input type="number" id="height" name="height" step="0.1" min="100" max="250" required>
-                        </div>
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <button type="submit">Add Entry</button>
-                        </div>
-                    </div>
-                </form>
+        <div class="project-item">
+            <h3 class="project-title">Personal Finance Dashboard</h3>
+            <div class="project-meta">React, Firebase, Tailwind CSS · 2023</div>
+            <p class="project-description">A comprehensive dashboard that helps users track expenses, set budgets, and visualize spending patterns. Integrates with multiple bank accounts via secure APIs.</p>
+            <div class="project-links">
+                <a href="#">Demo</a>
+                <a href="#">GitHub</a>
             </div>
-        </section>
-        
-        <!-- Modified: Current Stats - only 3 stats in a single row -->
-        <section>
-            <h2 class="section-title">Current Stats</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="current-weight">--</div>
-                    <div class="stat-label">Current Weight (kg)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="current-bmi">--</div>
-                    <div class="stat-label">Current BMI</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="weight-change">--</div>
-                    <div class="stat-label">30-Day Change (kg)</div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Modified: Charts in side-by-side layout -->
-        <section>
-            <h2 class="section-title">Progress Charts</h2>
-            <div class="filter-controls">
-                <button class="filter-btn active" data-filter="weekly">Weekly</button>
-                <button class="filter-btn" data-filter="monthly">Monthly</button>
-            </div>
-            
-            <!-- Modified: Charts in side-by-side layout -->
-            <div class="charts-row">
-                <div class="chart-container">
-                    <h3 class="chart-title">Weight Progress</h3>
-                    <div id="weight-chart"></div>
-                </div>
-                
-                <div class="chart-container">
-                    <h3 class="chart-title">BMI Progress</h3>
-                    <div id="bmi-chart"></div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- AI Agent - Modified with voice input capabilities -->
-        <section>
-            <h2 class="section-title">AI Fitness Coach</h2>
-            <div class="ai-section">
-                <p>Chat with your AI fitness coach for personalized recommendations based on your progress data.</p>
-                
-                <!-- Modified: Added voice controls -->
-                <div class="voice-controls">
-                    <button id="voice-input-btn" class="voice-btn" title="Click to speak">
-                        <i class="mic-icon">🎤</i>
-                    </button>
-                    <span id="voice-status" class="voice-status">Click the microphone to speak to your AI coach</span>
-                    
-                    <button id="voice-output-toggle" class="voice-btn" style="background-color: #10b981;" title="Toggle voice responses">
-                        <i id="speaker-icon">🔊</i>
-                    </button>
-                </div>
-                
-    <!-- Modified: More landscape oriented iframe with simple voice feedback -->
-    <div class="chat-container">
-        <div id="voice-feedback" style="display: none; padding: 12px; background: #f0f9ff; border-radius: 8px 8px 0 0; border-bottom: 1px solid #e0f2fe; font-size: 0.875rem; color: #2563eb;">
-            Your voice message was detected. Please type the same message directly in the Chatbase chat below.
-            <button id="hide-feedback-btn" style="float: right; background: none; color: #6b7280; border: none; padding: 0; font-size: 0.875rem; cursor: pointer;">✕</button>
         </div>
-        <!-- Original Chatbase iframe -->
-        <iframe
-            id="chat-iframe"
-            src="https://www.chatbase.co/chatbot-iframe/6PsfEElX5kLoAlV6eMQzw"
-            width="100%"
-            style="height: 100%; min-height: 500px; border: none; border-radius: 8px;"
-            frameborder="0"
-            title="AI Fitness Coach">
-        </iframe>
-    </div>
-                
-                <div class="recommendations" style="display: none;">
-                    <h3 style="margin-bottom: 1rem; font-size: 1.125rem; font-weight: 600;">Quick Tips</h3>
-                    <div id="recommendations-list">
-                        <!-- Recommendations will be added here when specifically requested -->
-                    </div>
-                </div>
+        
+        <div class="project-item">
+            <h3 class="project-title">Flight Path Optimization Tool</h3>
+            <div class="project-meta">Python, NumPy, Visualization · 2022</div>
+            <p class="project-description">Leveraging my aerospace engineering background, I created a tool that optimizes flight paths for commercial airlines, potentially reducing fuel consumption by up to 8%.</p>
+            <div class="project-links">
+                <a href="#">Research Paper</a>
+                <a href="#">GitHub</a>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
+    
+    <section id="blog">
+        <h2 class="section-title">Blog</h2>
+        <div class="blog-item">
+            <h3 class="blog-title"><a href="/blog/post-1">Product Management in Fintech: Lessons Learned</a></h3>
+            <div class="blog-meta">April 5, 2025</div>
+            <p class="blog-excerpt">After 3 years in fintech product management, I've gathered some insights on building products for financial inclusion in emerging markets. Here are my key takeaways...</p>
+            <a href="/blog/post-1" class="read-more">Read more →</a>
+        </div>
+        
+        <div class="blog-item">
+            <h3 class="blog-title"><a href="/blog/post-2">The Intersection of Aerospace Engineering and Product Design</a></h3>
+            <div class="blog-meta">March 12, 2025</div>
+            <p class="blog-excerpt">My unusual career path from aerospace engineering to product management has given me a unique perspective on problem-solving. Here's how engineering principles inform my product decisions...</p>
+            <a href="/blog/post-2" class="read-more">Read more →</a>
+        </div>
+        
+        <div class="blog-item">
+            <h3 class="blog-title"><a href="/blog/post-3">User Research in Low-Tech Environments</a></h3>
+            <div class="blog-meta">February 20, 2025</div>
+            <p class="blog-excerpt">Conducting user research in regions with low digital literacy presents unique challenges. Here's my methodology for getting meaningful insights from users unfamiliar with technology...</p>
+            <a href="/blog/post-3" class="read-more">Read more →</a>
+        </div>
+        
+        <a href="/blog" style="font-size: 0.875rem; display: inline-block; margin-top: 1rem;">View all posts →</a>
+    </section>
+    
+    <section id="experience">
+        <h2 class="section-title">Experience</h2>
+        <div class="experience-item">
+            <h3 class="experience-title">Senior Product Manager at Fintech Unicorn</h3>
+            <div class="experience-meta">Bengaluru, India · 2023 – Present</div>
+            <p>Leading the credit products team, responsible for developing and scaling credit solutions for underserved markets. Drove 70% growth in user acquisition and improved approval rates by 25% through data-driven optimization.</p>
+        </div>
+        
+        <div class="experience-item">
+            <h3 class="experience-title">Product Manager at Financial Services Startup</h3>
+            <div class="experience-meta">Bengaluru, India · 2021 – 2023</div>
+            <p>Managed the personal finance management product suite. Led the design and implementation of automated savings features that increased user retention by 40% and average transaction value by 35%.</p>
+        </div>
+        
+        <div class="experience-item">
+            <h3 class="experience-title">Associate Product Manager at Tech Consultancy</h3>
+            <div class="experience-meta">Mumbai, India · 2019 – 2021</div>
+            <p>Started as a technical consultant leveraging my engineering background, then transitioned to product management. Worked with clients across fintech, healthcare, and e-commerce sectors.</p>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="footer-links">
+            <a href="https://github.com/navajitd">GitHub</a>
+            <a href="https://twitter.com/navajitd">Twitter</a>
+            <a href="https://linkedin.com/in/navajitd">LinkedIn</a>
+            <a href="mailto:navajit@example.com">Email</a>
+        </div>
+        <div>© 2025 Navajit D</div>
+    </footer>
 
     <script>
-        // Global variables
-        let fitnessData = [];
-        let currentFilter = 'weekly';
-        let userEmail = null;
-        let voiceEnabled = true;
-        let currentSpeech = null;
-        let recognition = null;
-        
-        // Initialize Google Sign-In when the page loads
-        window.onload = function() {
-            // Check if Google Identity Services loaded
-            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                google.accounts.id.initialize({
-                    client_id: '1010970898291-q8nv22u1mbbv3mjvso048dcmsip8l9ev.apps.googleusercontent.com',
-                    callback: handleCredentialResponse,
-                    auto_select: false,
-                    cancel_on_tap_outside: false
-                });
-                
-                // Render the button
-                google.accounts.id.renderButton(
-                    document.getElementById('g_id_signin'),
-                    {
-                        theme: 'outline',
-                        size: 'large',
-                        text: 'signin_with',
-                        shape: 'rectangular',
-                        logo_alignment: 'left'
-                    }
-                );
-            } else {
-                // Show fallback button if Google didn't load
-                document.getElementById('fallback-signin').classList.remove('hidden');
-            }
-        };
-        
-        // Fallback function to try initializing Google Sign-In
-        function initializeGoogleSignIn() {
-            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                google.accounts.id.initialize({
-                    client_id: '1010970898291-q8nv22u1mbbv3mjvso048dcmsip8l9ev.apps.googleusercontent.com',
-                    callback: handleCredentialResponse
-                });
-                google.accounts.id.prompt();
-            } else {
-                alert('Google Sign-In is not available. Please check your internet connection and try again.');
-            }
-        }
-        
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', function() {
-            loadStoredData();
-            updateCurrentStats();
-            updateCharts();
-            setupForm();
-            setupFilters();
-            setTodayDate();
-            setupVoiceControls();
-            setupThemeToggle();
-        });
-        
         // Theme toggle functionality
-        function setupThemeToggle() {
-            const themeToggle = document.getElementById('themeToggle');
-            const themeToggleApp = document.getElementById('themeToggleApp');
-            const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        
+        // Check for saved theme preference or default to 'original'
+        const currentTheme = localStorage.getItem('theme') || 'original';
+        
+        // Apply the current theme
+        if (currentTheme === 'colorful') {
+            body.setAttribute('data-theme', 'colorful');
+        }
+        
+        // Theme toggle event listener
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = body.getAttribute('data-theme');
             
-            // Check for saved theme preference or default to 'original'
-            const currentTheme = localStorage.getItem('theme') || 'original';
-            
-            // Apply the current theme
             if (currentTheme === 'colorful') {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'original');
+            } else {
                 body.setAttribute('data-theme', 'colorful');
+                localStorage.setItem('theme', 'colorful');
             }
             
-            // Theme toggle event listeners for both buttons
-            function toggleTheme() {
-                const currentTheme = body.getAttribute('data-theme');
-                
-                if (currentTheme === 'colorful') {
-                    body.removeAttribute('data-theme');
-                    localStorage.setItem('theme', 'original');
-                } else {
-                    body.setAttribute('data-theme', 'colorful');
-                    localStorage.setItem('theme', 'colorful');
-                }
-            }
-            
-            if (themeToggle) {
-                themeToggle.addEventListener('click', toggleTheme);
-                
-                // Add keyboard accessibility
-                themeToggle.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        toggleTheme();
-                    }
-                });
-            }
-            
-            if (themeToggleApp) {
-                themeToggleApp.addEventListener('click', toggleTheme);
-                
-                // Add keyboard accessibility
-                themeToggleApp.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        toggleTheme();
-                    }
-                });
-            }
-            
-            // Prefers reduced motion check
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                body.classList.remove('theme-transition');
-            }
-        }
-        
-        // Google Sign-In
-        window.handleCredentialResponse = function(response) {
-            const responsePayload = decodeJwtResponse(response.credential);
-            
-            // Check if the email matches the allowed email - kept as is per request
-            if (responsePayload.email === 'navjitdebnath5@gmail.com') {
-                userEmail = responsePayload.email;
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                loadStoredData();
-                updateCurrentStats();
-                updateCharts();
-                loadDailyRecommendations();
-            } else {
-                alert('Access denied. This fitness tracker is restricted to authorized users only.');
-                signOut();
-            }
-        };
-        
-        function decodeJwtResponse(token) {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        }
-        
-        window.signOut = function() {
-            userEmail = null;
-            document.getElementById('auth-screen').classList.remove('hidden');
-            document.getElementById('app').classList.add('hidden');
-            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                google.accounts.id.disableAutoSelect();
-            }
-        };
-        
-        // Load data from localStorage
-        function loadStoredData() {
-            const stored = localStorage.getItem('fitnessData');
-            if (stored) {
-                fitnessData = JSON.parse(stored);
-                // Sort by date
-                fitnessData.sort((a, b) => new Date(a.date) - new Date(b.date));
-            }
-        }
-        
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('fitnessData', JSON.stringify(fitnessData));
-        }
-        
-        // Set today's date as default
-        function setTodayDate() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('date').value = today;
-        }
-        
-        // Setup form submission
-        function setupForm() {
-            document.getElementById('fitness-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(e.target);
-                const entry = {
-                    date: formData.get('date'),
-                    weight: parseFloat(formData.get('weight')),
-                    height: parseFloat(formData.get('height')),
-                    bmi: calculateBMI(parseFloat(formData.get('weight')), parseFloat(formData.get('height')))
-                };
-                
-                // Check if entry for this date already exists
-                const existingIndex = fitnessData.findIndex(item => item.date === entry.date);
-                if (existingIndex >= 0) {
-                    if (confirm('An entry for this date already exists. Do you want to update it?')) {
-                        fitnessData[existingIndex] = entry;
-                    } else {
-                        return;
-                    }
-                } else {
-                    fitnessData.push(entry);
-                }
-                
-                // Sort by date
-                fitnessData.sort((a, b) => new Date(a.date) - new Date(b.date));
-                
-                saveData();
-                updateCurrentStats();
-                updateCharts();
-                
-                // Clear form except date
-                document.getElementById('weight').value = '';
-                document.getElementById('height').value = '';
-                
-                alert('Entry added successfully!');
-            });
-        }
-        
-        // Calculate BMI
-        function calculateBMI(weight, height) {
-            return weight / Math.pow(height / 100, 2);
-        }
-        
-        // Setup filter buttons
-        function setupFilters() {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentFilter = this.dataset.filter;
-                    updateCharts();
-                });
-            });
-        }
-        
-        // Filter data based on current filter
-        function getFilteredData() {
-            if (fitnessData.length === 0) return [];
-            
-            const now = new Date();
-            let startDate;
-            
-            switch (currentFilter) {
-                case 'weekly':
-                    startDate = new Date(now.getTime() - (12 * 7 * 24 * 60 * 60 * 1000)); // Last 12 weeks
-                    break;
-                case 'monthly':
-                    startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1); // Last 12 months
-                    break;
-                default:
-                    return fitnessData;
-            }
-            
-            return fitnessData.filter(entry => new Date(entry.date) >= startDate);
-        }
-        
-        // Update current stats - Modified to only show 3 stats
-        function updateCurrentStats() {
-            if (fitnessData.length === 0) {
-                document.getElementById('current-weight').textContent = '--';
-                document.getElementById('current-bmi').textContent = '--';
-                document.getElementById('weight-change').textContent = '--';
-                return;
-            }
-            
-            const latest = fitnessData[fitnessData.length - 1];
-            document.getElementById('current-weight').textContent = latest.weight.toFixed(1);
-            document.getElementById('current-bmi').textContent = latest.bmi.toFixed(1);
-            
-            // Calculate 30-day change
-            const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
-            const recentEntries = fitnessData.filter(entry => new Date(entry.date) > thirtyDaysAgo);
-            
-            if (recentEntries.length >= 2) {
-                const firstWeight = recentEntries[0].weight;
-                const lastWeight = recentEntries[recentEntries.length - 1].weight;
-                const change = lastWeight - firstWeight;
-                const changeText = change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
-                document.getElementById('weight-change').textContent = changeText;
-            } else {
-                document.getElementById('weight-change').textContent = '--';
-            }
-        }
-        
-        // Modified: Update charts to be side-by-side with updated labels and averaging
-        function updateCharts() {
-            const filteredData = getFilteredData();
-            
-            if (filteredData.length === 0) {
-                document.getElementById('weight-chart').innerHTML = '<p style="text-align: center; color: var(--muted-color);">No data available</p>';
-                document.getElementById('bmi-chart').innerHTML = '<p style="text-align: center; color: var(--muted-color);">No data available</p>';
-                return;
-            }
-            
-            // Group data by week or month based on filter with averaging
-            let groupedData;
-            if (currentFilter === 'weekly') {
-                groupedData = groupDataByWeek(filteredData);
-            } else {
-                groupedData = groupDataByMonth(filteredData);
-            }
-            
-            // Prepare data for charts
-            const labels = Object.keys(groupedData);
-            const formattedLabels = labels.map(label => {
-                if (currentFilter === 'weekly') {
-                    return label; // Keep the week format
-                } else {
-                    // Format to month name (e.g., "May 2025")
-                    const [year, month] = label.split('-');
-                    const date = new Date(parseInt(year), parseInt(month) - 1);
-                    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-                }
-            });
-            
-            const weights = labels.map(label => groupedData[label].weight);
-            const bmis = labels.map(label => groupedData[label].bmi);
-            
-            // Weight chart
-            const weightTrace = {
-                x: formattedLabels,
-                y: weights,
-                type: 'scatter',
-                mode: 'lines+markers',
-                line: { color: '#2563eb', width: 3 },
-                marker: { color: '#2563eb', size: 8 },
-                name: 'Weight (kg)'
-            };
-            
-            const weightLayout = {
-                title: false,
-                xaxis: { 
-                    title: currentFilter === 'weekly' ? 'Week' : 'Month',
-                    tickangle: -45
-                },
-                yaxis: { title: 'Weight (kg)' },
-                margin: { t: 20, r: 20, b: 60, l: 50 },
-                height: 300, // Reduced height for 4:3 aspect ratio
-                width: 400, // Width for 4:3 aspect ratio
-                font: { family: 'Inconsolata, monospace' }
-            };
-            
-            Plotly.newPlot('weight-chart', [weightTrace], weightLayout, { responsive: true });
-            
-            // BMI chart with reference lines
-            const bmiTrace = {
-                x: formattedLabels,
-                y: bmis,
-                type: 'scatter',
-                mode: 'lines+markers',
-                line: { color: '#10b981', width: 3 },
-                marker: { color: '#10b981', size: 8 },
-                name: 'BMI'
-            };
-            
-            // BMI reference lines
-            const underweightLine = {
-                x: formattedLabels,
-                y: Array(formattedLabels.length).fill(18.5),
-                type: 'scatter',
-                mode: 'lines',
-                line: { color: '#6b7280', width: 1, dash: 'dash' },
-                name: 'Underweight (18.5)',
-                showlegend: false
-            };
-            
-            const overweightLine = {
-                x: formattedLabels,
-                y: Array(formattedLabels.length).fill(25),
-                type: 'scatter',
-                mode: 'lines',
-                line: { color: '#f59e0b', width: 1, dash: 'dash' },
-                name: 'Overweight (25)',
-                showlegend: false
-            };
-            
-            const obeseLine = {
-                x: formattedLabels,
-                y: Array(formattedLabels.length).fill(30),
-                type: 'scatter',
-                mode: 'lines',
-                line: { color: '#ef4444', width: 1, dash: 'dash' },
-                name: 'Obese (30)',
-                showlegend: false
-            };
-            
-            const bmiLayout = {
-                title: false,
-                xaxis: { 
-                    title: currentFilter === 'weekly' ? 'Week' : 'Month',
-                    tickangle: -45
-                },
-                yaxis: { title: 'BMI' },
-                margin: { t: 20, r: 20, b: 60, l: 50 },
-                height: 300, // Reduced height for 4:3 aspect ratio 
-                width: 400, // Width for 4:3 aspect ratio
-                font: { family: 'Inconsolata, monospace' },
-                annotations: [
-                    {
-                        x: formattedLabels[Math.floor(formattedLabels.length / 2)],
-                        y: 18.5,
-                        text: 'Underweight',
-                        showarrow: false,
-                        font: { size: 10, color: '#6b7280' },
-                        yanchor: 'bottom'
-                    },
-                    {
-                        x: formattedLabels[Math.floor(formattedLabels.length / 2)],
-                        y: 25,
-                        text: 'Overweight',
-                        showarrow: false,
-                        font: { size: 10, color: '#f59e0b' },
-                        yanchor: 'bottom'
-                    },
-                    {
-                        x: formattedLabels[Math.floor(formattedLabels.length / 2)],
-                        y: 30,
-                        text: 'Obese',
-                        showarrow: false,
-                        font: { size: 10, color: '#ef4444' },
-                        yanchor: 'bottom'
-                    }
-                ]
-            };
-            
-            Plotly.newPlot('bmi-chart', [bmiTrace, underweightLine, overweightLine, obeseLine], bmiLayout, { responsive: true });
-        }
-        
-        // Modified: Group data by week with averaging and improved date format
-        function groupDataByWeek(data) {
-            const grouped = {};
-            
-            // First, group all entries by week
-            data.forEach(entry => {
-                const date = new Date(entry.date);
-                const weekStart = new Date(date);
-                weekStart.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekStart.getDate() + 6); // End of week (Saturday)
-                
-                const weekKey = weekStart.toISOString().split('T')[0];
-                
-                if (!grouped[weekKey]) {
-                    grouped[weekKey] = {
-                        entries: [],
-                        date: weekKey,
-                        weekStart: weekStart,
-                        weekEnd: weekEnd
-                    };
-                }
-                
-                grouped[weekKey].entries.push(entry);
-            });
-            
-            // Then calculate averages for each week
-            Object.keys(grouped).forEach(key => {
-                const entries = grouped[key].entries;
-                const totalWeight = entries.reduce((sum, entry) => sum + entry.weight, 0);
-                const totalBMI = entries.reduce((sum, entry) => sum + entry.bmi, 0);
-                
-                grouped[key].weight = totalWeight / entries.length;
-                grouped[key].bmi = totalBMI / entries.length;
-            });
-            
-            // Sort by week
-            const sortedKeys = Object.keys(grouped).sort();
-            const result = {};
-            
-            // Format the week label as "May 18 - May 24"
-            sortedKeys.forEach(key => {
-                const weekStart = grouped[key].weekStart;
-                const weekEnd = grouped[key].weekEnd;
-                
-                // Format as "May 18-24"
-                const weekLabel = `${weekStart.toLocaleString('default', { month: 'short' })} ${weekStart.getDate()}-${weekEnd.getDate()}`;
-                
-                result[weekLabel] = grouped[key];
-            });
-            
-            return result;
-        }
-        
-        // Modified: Group data by month with averaging
-        function groupDataByMonth(data) {
-            const grouped = {};
-            
-            // First, group all entries by month
-            data.forEach(entry => {
-                const date = new Date(entry.date);
-                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                
-                if (!grouped[monthKey]) {
-                    grouped[monthKey] = {
-                        entries: [],
-                        date: monthKey
-                    };
-                }
-                
-                grouped[monthKey].entries.push(entry);
-            });
-            
-            // Then calculate averages for each month
-            Object.keys(grouped).forEach(key => {
-                const entries = grouped[key].entries;
-                const totalWeight = entries.reduce((sum, entry) => sum + entry.weight, 0);
-                const totalBMI = entries.reduce((sum, entry) => sum + entry.bmi, 0);
-                
-                grouped[key].weight = totalWeight / entries.length;
-                grouped[key].bmi = totalBMI / entries.length;
-            });
-            
-            return grouped;
-        }
-        
-        // Simplified voice controls for Chatbase
-        function setupVoiceControls() {
-            const voiceButton = document.getElementById('voice-input-btn');
-            const voiceStatus = document.getElementById('voice-status');
-            const voiceOutputToggle = document.getElementById('voice-output-toggle');
-            const speakerIcon = document.getElementById('speaker-icon');
-            const voiceFeedback = document.getElementById('voice-feedback');
-            const hideFeedbackBtn = document.getElementById('hide-feedback-btn');
-            
-            // Setup close button for the feedback message
-            if (hideFeedbackBtn) {
-                hideFeedbackBtn.addEventListener('click', function() {
-                    voiceFeedback.style.display = 'none';
-                });
-            }
-            
-            // Setup voice output toggle
-            voiceOutputToggle.addEventListener('click', function() {
-                voiceEnabled = !voiceEnabled;
-                
-                if (voiceEnabled) {
-                    speakerIcon.textContent = '🔊';
-                    voiceOutputToggle.style.backgroundColor = '#10b981';
-                    voiceOutputToggle.title = 'Voice responses enabled - click to disable';
-                } else {
-                    speakerIcon.textContent = '🔇';
-                    voiceOutputToggle.style.backgroundColor = '#6b7280';
-                    voiceOutputToggle.title = 'Voice responses disabled - click to enable';
-                    // Stop any current speech
-                    if (window.speechSynthesis && window.speechSynthesis.speaking) {
-                        window.speechSynthesis.cancel();
-                    }
-                }
-            });
-            
-            // Setup speech recognition if available
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.lang = 'en-US';
-                
-                recognition.onstart = function() {
-                    voiceButton.classList.add('listening');
-                    voiceStatus.textContent = 'Listening...';
-                };
-                
-                recognition.onresult = function(event) {
-                    const transcript = event.results[0][0].transcript;
-                    voiceStatus.textContent = 'Processing: "' + transcript + '"';
-                    
-                    // Process the voice input
-                    sendMessageToIframe(transcript);
-                };
-                
-                recognition.onerror = function(event) {
-                    voiceButton.classList.remove('listening');
-                    voiceStatus.textContent = 'Error: ' + event.error;
-                    setTimeout(() => {
-                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
-                    }, 3000);
-                };
-                
-                recognition.onend = function() {
-                    voiceButton.classList.remove('listening');
-                    setTimeout(() => {
-                        voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
-                    }, 2000);
-                };
-                
-                voiceButton.addEventListener('click', function() {
-                    try {
-                        recognition.start();
-                    } catch (e) {
-                        // If already started, stop and restart
-                        recognition.stop();
-                        setTimeout(() => {
-                            recognition.start();
-                        }, 200);
-                    }
-                });
-            } else {
-                voiceButton.disabled = true;
-                voiceStatus.textContent = 'Speech recognition not supported in this browser';
-            }
-            
-            // Setup message listener for potential iframe responses
-            window.addEventListener('message', function(event) {
-                // This is unlikely to work with Chatbase but we'll keep it just in case
-                try {
-                    if (event.data && event.data.type === 'chatbase-message' && event.data.message) {
-                        const message = event.data.message;
-                        
-                        // Speak the response if voice is enabled
-                        if (voiceEnabled && message) {
-                            speakText(message);
-                        }
-                        
-                        // Check if it's a recommendation
-                        if (message && (
-                            message.toLowerCase().includes('quick tip') || 
-                            message.toLowerCase().includes('summarize this as a tip') ||
-                            message.toLowerCase().includes('quick summary') ||
-                            message.includes('💡'))) {
-                            addRecommendation(message);
-                        }
-                    }
-                } catch (e) {
-                    console.log('Error processing iframe message:', e);
-                }
-            });
-        }
-        
-        // Setup communication with the Chatbase iframe
-        function setupIframeCommunication() {
-            // Wait for iframe to load
-            const iframe = document.getElementById('chat-iframe');
-            if (iframe) {
-                iframe.onload = function() {
-                    // Send a message to the iframe to initialize
-                    try {
-                        iframe.contentWindow.postMessage({
-                            type: 'fitness-app-init',
-                            message: 'Initialize communication'
-                        }, '*');
-                        
-                        console.log('Initialized communication with chat iframe');
-                    } catch (e) {
-                        console.error('Error initializing iframe communication:', e);
-                    }
-                };
-            }
-        }
-        
-        // Simplified voice message handling for Chatbase
-        function sendMessageToIframe(message) {
-            const voiceStatus = document.getElementById('voice-status');
-            const voiceFeedback = document.getElementById('voice-feedback');
-            
-            // Store message in clipboard and localStorage for easy access
-            try {
-                navigator.clipboard.writeText(message);
-            } catch (e) {
-                console.log('Could not copy to clipboard', e);
-            }
-            
-            localStorage.setItem('lastVoiceMessage', message);
-            
-            // Show voice feedback message
-            if (voiceFeedback) {
-                voiceFeedback.style.display = 'block';
-                
-                // Auto-hide after 15 seconds
-                setTimeout(() => {
-                    voiceFeedback.style.display = 'none';
-                }, 15000);
-            }
-            
-            // Update status
-            voiceStatus.textContent = `Message ready: "${message}" (copied to clipboard)`;
+            // Add a subtle animation effect
+            themeToggle.style.opacity = '0.7';
             setTimeout(() => {
-                voiceStatus.textContent = 'Click the microphone to speak to your AI coach';
-            }, 5000);
-            
-            // In testing, we've found that direct iframe communication with Chatbase
-            // is not reliable due to cross-origin restrictions. The best approach is to
-            // have the user manually type or paste the message into the Chatbase interface.
-        }
-        
-        // Text-to-Speech functionality
-        function speakText(text) {
-            // Check if speech synthesis is available
-            if (!('speechSynthesis' in window)) {
-                console.log('Text-to-speech not supported in this browser');
-                return;
-            }
-            
-            // Stop any current speech
-            if (window.speechSynthesis.speaking) {
-                window.speechSynthesis.cancel();
-            }
-            
-            // Clean text for better speech (remove markdown or special characters)
-            const cleanText = text
-                .replace(/\*\*(.*?)\*\*/g, '$1')
-                .replace(/\*(.*?)\*/g, '$1')
-                .replace(/[•\-]\s*/g, '')
-                .replace(/<[^>]*>/g, '') // Remove HTML tags
-                .replace(/\n/g, ' '); // Replace newlines with spaces
-            
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            
-            // Load and use available voices
-            const loadVoices = function() {
-                // Get available voices
-                const voices = window.speechSynthesis.getVoices();
-                
-                // Try to find a good quality voice in this order:
-                // 1. Google or Microsoft natural voices
-                // 2. Any English voice
-                // 3. Default voice
-                const preferredVoice = voices.find(voice => 
-                    voice.name.includes('Google') || 
-                    voice.name.includes('Natural') || 
-                    voice.name.includes('Microsoft')
-                ) || voices.find(voice => 
-                    voice.lang === 'en-US' || 
-                    voice.lang === 'en-GB'
-                ) || voices[0];
-                
-                if (preferredVoice) {
-                    utterance.voice = preferredVoice;
-                    console.log('Using voice:', preferredVoice.name);
-                }
-                
-                // Speak the text
-                window.speechSynthesis.speak(utterance);
-            };
-            
-            // Chrome needs this event to get all voices
-            if (window.speechSynthesis.onvoiceschanged !== undefined) {
-                // If voices aren't loaded yet, wait for them
-                if (window.speechSynthesis.getVoices().length === 0) {
-                    window.speechSynthesis.onvoiceschanged = loadVoices;
-                } else {
-                    loadVoices();
-                }
-            } else {
-                // For browsers that don't support onvoiceschanged
-                loadVoices();
-            }
-        }
-        
-        // Add recommendation to the list - modified to only show when requested
-        function addRecommendation(text) {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            
-            // Check if this is a recommendation request from the AI
-            const isRecommendationRequest = text.toLowerCase().includes('quick tip') || 
-                                           text.toLowerCase().includes('summarize this as a tip') || 
-                                           text.toLowerCase().includes('quick summary');
-            
-            if (isRecommendationRequest || text.includes('💡')) {
-                // Show the recommendations section
-                const recommendationsSection = document.querySelector('.recommendations');
-                recommendationsSection.style.display = 'block';
-                
-                const recommendationsContainer = document.getElementById('recommendations-list');
-                
-                // Create new recommendation element
-                const recommendationElement = document.createElement('div');
-                recommendationElement.className = 'recommendation-item';
-                recommendationElement.innerHTML = `
-                    <div class="recommendation-time">${timeString}</div>
-                    <div>${text}</div>
-                `;
-                
-                // Add at the top of the list
-                recommendationsContainer.prepend(recommendationElement);
-                
-                // Remove oldest if more than 5
-                const items = recommendationsContainer.querySelectorAll('.recommendation-item');
-                if (items.length > 5) {
-                    items[items.length - 1].remove();
-                }
-                
-                // Save recommendations to localStorage
-                const recommendations = JSON.parse(localStorage.getItem('dailyRecommendations') || '[]');
-                recommendations.unshift({
-                    time: now.toISOString(),
-                    text: text
-                });
-                
-                // Keep only the 10 most recent
-                if (recommendations.length > 10) {
-                    recommendations.pop();
-                }
-                
-                localStorage.setItem('dailyRecommendations', JSON.stringify(recommendations));
-            }
-        }
-        
-        // Load daily recommendations
-        function loadDailyRecommendations() {
-            const today = new Date().toDateString();
-            const recommendations = JSON.parse(localStorage.getItem('dailyRecommendations') || '[]');
-            const todayRecommendations = recommendations.filter(rec => 
-                new Date(rec.time).toDateString() === today
-            );
-            
-            const container = document.getElementById('recommendations-list');
-            const recommendationsSection = document.querySelector('.recommendations');
-            
-            if (todayRecommendations.length > 0) {
-                container.innerHTML = '';
-                todayRecommendations.slice(0, 5).forEach(rec => {
-                    const time = new Date(rec.time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                    const element = document.createElement('div');
-                    element.className = 'recommendation-item';
-                    element.innerHTML = `
-                        <div class="recommendation-time">${time}</div>
-                        <div>${rec.text}</div>
-                    `;
-                    container.appendChild(element);
-                });
-                
-                // Only show recommendations section if there are explicit recommendation requests
-                const hasExplicitRecommendations = todayRecommendations.some(rec => 
-                    rec.text.toLowerCase().includes('quick tip') || 
-                    rec.text.toLowerCase().includes('summarize this as a tip') ||
-                    rec.text.toLowerCase().includes('quick summary') ||
-                    rec.text.includes('💡')
-                );
-                
-                recommendationsSection.style.display = hasExplicitRecommendations ? 'block' : 'none';
-            } else {
-                recommendationsSection.style.display = 'none';
-            }
-        }
-        
-        // Initialize voices for speech synthesis
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = function() {
-                const voices = window.speechSynthesis.getVoices();
-                console.log('Available voices:', voices.length);
-            };
-        }
-        
-        // Handle errors gracefully
-        window.addEventListener('error', function(e) {
-            console.error('Error caught:', e.message);
-            // Don't show errors to the user unless needed
-            return true; // Prevents the error from being shown in console
+                themeToggle.style.opacity = '1';
+            }, 150);
         });
+        
+        // Add keyboard accessibility
+        themeToggle.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                themeToggle.click();
+            }
+        });
+        
+        // Prefers reduced motion check
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            body.classList.remove('theme-transition');
+        }
     </script>
 </body>
 </html>
