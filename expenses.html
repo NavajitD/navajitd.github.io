@@ -12,25 +12,25 @@
     
     <!-- Open Graph meta tags -->
     <meta property="og:title" content="Expense Tracker - Navajit D">
-    <meta property="og:description" content="Personal expense tracking with AI-powered insights and spending optimization">
+    <meta property="og:description" content="Personal expense tracking with AI-powered insights">
     <meta property="og:image" content="https://navajitd.github.io/assets/expense-tracker-thumbnail.png">
     <meta property="og:url" content="https://navajitd.github.io/expenses.html">
     <meta property="og:type" content="website">
     
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        /* Base Styles */
+        /* Dark Mode Base Styles */
         :root {
-            --text-color: #171717;
-            --bg-color: #fff;
-            --accent-color: #2563eb;
-            --muted-color: #6b7280;
-            --border-color: #e5e7eb;
-            --font-sans: "Inconsolata", monospace;
+            --text-color: #e5e7eb;
+            --bg-color: #111827;
+            --surface-color: #1f2937;
+            --accent-color: #3b82f6;
+            --muted-color: #9ca3af;
+            --border-color: #374151;
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --error-color: #ef4444;
+            --font-sans: "Inconsolata", monospace;
         }
         
         * {
@@ -51,6 +51,7 @@
             max-width: 42rem;
             margin: 0 auto;
             padding: 3rem 1.5rem;
+            min-height: 100vh;
         }
         
         a {
@@ -124,7 +125,7 @@
         .auth-container {
             text-align: center;
             padding: 4rem 0;
-            background: #f9fafb;
+            background: var(--surface-color);
             border-radius: 12px;
             border: 1px solid var(--border-color);
             margin: 2rem 0;
@@ -134,6 +135,7 @@
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 1rem;
+            color: var(--text-color);
         }
         
         .auth-description {
@@ -157,6 +159,7 @@
             padding: 0.5rem 0;
             position: relative;
             padding-left: 1.5rem;
+            color: var(--text-color);
         }
         
         .auth-features li:before {
@@ -182,6 +185,7 @@
             line-height: 1.3;
             font-weight: 700;
             margin-bottom: 1rem;
+            color: var(--text-color);
         }
         
         .page-description {
@@ -189,45 +193,75 @@
             color: var(--muted-color);
         }
         
-        /* Tab Styles */
-        .tabs {
+        /* Navigation Pills */
+        .nav-pills {
             display: flex;
-            border-bottom: 1px solid var(--border-color);
+            gap: 1rem;
+            margin-bottom: 3rem;
+            padding: 0.5rem;
+            background: var(--surface-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .nav-pill {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            background: transparent;
+            color: var(--muted-color);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .nav-pill:hover {
+            background: var(--border-color);
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        .nav-pill.active {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
             margin-bottom: 2rem;
         }
         
-        .tab-button {
-            background: none;
-            border: none;
-            padding: 1rem 1.5rem;
-            font-family: inherit;
-            font-size: 1rem;
-            color: var(--muted-color);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
+        .stat-card {
+            padding: 1.5rem;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
         }
         
-        .tab-button:hover {
-            color: var(--text-color);
-        }
-        
-        .tab-button.active {
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
             color: var(--accent-color);
-            border-bottom-color: var(--accent-color);
+            margin-bottom: 0.5rem;
         }
         
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         
         /* Form Styles */
         .form-container {
-            background: #f9fafb;
+            background: var(--surface-color);
             padding: 1.5rem;
             border-radius: 8px;
             border: 1px solid var(--border-color);
@@ -247,6 +281,7 @@
             font-weight: 500;
             margin-bottom: 0.5rem;
             font-size: 0.875rem;
+            color: var(--text-color);
         }
         
         input[type="text"],
@@ -259,13 +294,15 @@
             border-radius: 4px;
             font-family: inherit;
             font-size: 1rem;
+            background: var(--bg-color);
+            color: var(--text-color);
         }
         
         input:focus,
         select:focus {
             outline: none;
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         
         .form-row {
@@ -288,7 +325,7 @@
         }
         
         button:hover {
-            background: #1d4ed8;
+            background: #2563eb;
         }
         
         button:disabled {
@@ -296,158 +333,71 @@
             cursor: not-allowed;
         }
         
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            padding: 1.5rem;
-            background: #f9fafb;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--muted-color);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        /* Charts */
-        .charts-container {
-            margin: 2rem 0;
-        }
-        
-        .chart-wrapper {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+        /* Success/Error Messages */
+        .message-banner {
             padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        /* AI Insights Section */
-        .ai-section {
-            background: #f0f9ff;
-            padding: 2rem;
-            border-radius: 8px;
-            border: 1px solid #e0f2fe;
-            margin-bottom: 2rem;
-        }
-        
-        .ai-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-color);
-        }
-        
-        .chat-container {
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            min-height: 400px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 1rem;
-            overflow-y: auto;
-            max-height: 300px;
-        }
-        
-        .chat-input-container {
-            padding: 1rem;
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .chat-input {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .chat-input input {
-            flex: 1;
-            margin: 0;
-        }
-        
-        .chat-input button {
-            padding: 0.75rem 1rem;
-        }
-        
-        .message {
-            margin-bottom: 1rem;
-            padding: 0.75rem;
             border-radius: 6px;
-        }
-        
-        .message.user {
-            background: #e0f2fe;
-            margin-left: 2rem;
-        }
-        
-        .message.ai {
-            background: #f0f9ff;
-            margin-right: 2rem;
-        }
-        
-        .message-content {
-            margin: 0;
-        }
-        
-        .message-time {
-            font-size: 0.75rem;
-            color: var(--muted-color);
-            margin-top: 0.5rem;
-        }
-        
-        /* Insights Grid */
-        .insights-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        
-        .insight-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .insight-title {
-            font-size: 1.125rem;
-            font-weight: 600;
             margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .message-banner.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .message-banner.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        /* Recent Expenses */
+        .recent-expenses {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .recent-expenses-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
             color: var(--text-color);
         }
         
-        .insight-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            margin-bottom: 0.5rem;
+        .expense-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .insight-description {
-            color: var(--muted-color);
+        .expense-item:last-child {
+            border-bottom: none;
+        }
+        
+        .expense-details {
+            flex: 1;
+        }
+        
+        .expense-name {
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 0.25rem;
+        }
+        
+        .expense-meta {
             font-size: 0.875rem;
+            color: var(--muted-color);
+        }
+        
+        .expense-amount {
+            font-weight: 600;
+            color: var(--accent-color);
         }
         
         /* Responsive */
@@ -460,8 +410,9 @@
                 grid-template-columns: 1fr;
             }
             
-            .insights-grid {
-                grid-template-columns: 1fr;
+            .nav-pills {
+                flex-direction: column;
+                gap: 0.5rem;
             }
         }
         
@@ -483,40 +434,11 @@
             .page-title {
                 font-size: 1.75rem;
             }
-            
-            .tabs {
-                overflow-x: auto;
-            }
-            
-            .tab-button {
-                white-space: nowrap;
-                padding: 1rem;
-            }
         }
         
         /* Hidden class */
         .hidden {
             display: none !important;
-        }
-        
-        /* Success/Error Messages */
-        .message-banner {
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-        }
-        
-        .message-banner.success {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-        
-        .message-banner.error {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
         }
     </style>
 </head>
@@ -570,8 +492,15 @@
         </header>
         
         <div class="page-header">
-            <h1 class="page-title">Expense Tracker</h1>
+            <h1 class="page-title">💸 Expense Tracker</h1>
             <p class="page-description">Track spending fast with clarity and strategic insights.</p>
+        </div>
+        
+        <!-- Navigation Pills -->
+        <div class="nav-pills">
+            <a href="/expenses.html" class="nav-pill active">Add Expense</a>
+            <a href="/expense-analytics.html" class="nav-pill">Analytics</a>
+            <a href="/expense-chat.html" class="nav-pill">AI Assistant</a>
         </div>
         
         <!-- Current Stats -->
@@ -590,148 +519,111 @@
             </div>
         </div>
         
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-button active" data-tab="add-expense">New Expense</button>
-            <button class="tab-button" data-tab="trends">Trends & Insights</button>
-        </div>
-        
-        <!-- Add Expense Tab -->
-        <div id="add-expense" class="tab-content active">
-            <div class="form-container">
-                <form id="expense-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="expense-name">Expense Name</label>
-                            <input type="text" id="expense-name" name="expenseName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="category">Category</label>
-                            <select id="category" name="category" required>
-                                <option value="">Select Category</option>
-                                <option value="Miscellaneous">Miscellaneous</option>
-                                <option value="Bike">Bike</option>
-                                <option value="Auto/Cab">Auto/Cab</option>
-                                <option value="Public transport">Public transport</option>
-                                <option value="Groceries">Groceries</option>
-                                <option value="Eating out">Eating out</option>
-                                <option value="Party">Party</option>
-                                <option value="Household supplies">Household supplies</option>
-                                <option value="Education">Education</option>
-                                <option value="Gift">Gift</option>
-                                <option value="Cinema">Cinema</option>
-                                <option value="Entertainment">Entertainment</option>
-                                <option value="Rent/Maintenance">Rent/Maintenance</option>
-                                <option value="Furniture">Furniture</option>
-                                <option value="Services">Services</option>
-                                <option value="Electricity">Electricity</option>
-                                <option value="Internet">Internet</option>
-                                <option value="Investment">Investment</option>
-                                <option value="Insurance">Insurance</option>
-                                <option value="Medical expenses">Medical expenses</option>
-                                <option value="Flights">Flights</option>
-                                <option value="Travel">Travel</option>
-                                <option value="Clothes">Clothes</option>
-                                <option value="Gas">Gas</option>
-                                <option value="Phone">Phone</option>
-                                <option value="Liquor">Liquor</option>
-                                <option value="Games/Sports">Games/Sports</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="amount">Amount (₹)</label>
-                            <input type="number" id="amount" name="amount" min="0" step="0.01" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="date">Date</label>
-                            <input type="date" id="date" name="date" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="payment-method">Payment Method</label>
-                            <select id="payment-method" name="paymentMethod" required>
-                                <option value="">Select Payment Method</option>
-                                <option value="Cred UPI">Cred UPI</option>
-                                <option value="Credit card">Credit card</option>
-                                <option value="GPay UPI">GPay UPI</option>
-                                <option value="Pine Perks">Pine Perks</option>
-                                <option value="Cash">Cash</option>
-                                <option value="Debit card">Debit card</option>
-                                <option value="Net Banking">Net Banking</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <button type="submit">Add Expense</button>
-                        </div>
-                    </div>
-                    
+        <!-- Add Expense Form -->
+        <div class="form-container">
+            <form id="expense-form">
+                <div class="form-row">
                     <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="shared" name="shared" style="width: auto; margin-right: 0.5rem;">
-                            Shared expense
-                        </label>
+                        <label for="expense-name">Expense Name</label>
+                        <input type="text" id="expense-name" name="expenseName" required>
                     </div>
-                    
-                    <div id="shared-options" class="hidden">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="split-between">Split between (people)</label>
-                                <input type="number" id="split-between" name="splitBetween" min="1" value="2">
-                            </div>
-                            <div class="form-group">
-                                <label for="split-amount">Split Amount (₹)</label>
-                                <input type="number" id="split-amount" name="splitAmount" min="0" step="0.01">
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Miscellaneous">Miscellaneous</option>
+                            <option value="Bike">Bike</option>
+                            <option value="Auto/Cab">Auto/Cab</option>
+                            <option value="Public transport">Public transport</option>
+                            <option value="Groceries">Groceries</option>
+                            <option value="Eating out">Eating out</option>
+                            <option value="Party">Party</option>
+                            <option value="Household supplies">Household supplies</option>
+                            <option value="Education">Education</option>
+                            <option value="Gift">Gift</option>
+                            <option value="Cinema">Cinema</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Rent/Maintenance">Rent/Maintenance</option>
+                            <option value="Furniture">Furniture</option>
+                            <option value="Services">Services</option>
+                            <option value="Electricity">Electricity</option>
+                            <option value="Internet">Internet</option>
+                            <option value="Investment">Investment</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Medical expenses">Medical expenses</option>
+                            <option value="Flights">Flights</option>
+                            <option value="Travel">Travel</option>
+                            <option value="Clothes">Clothes</option>
+                            <option value="Gas">Gas</option>
+                            <option value="Phone">Phone</option>
+                            <option value="Liquor">Liquor</option>
+                            <option value="Games/Sports">Games/Sports</option>
+                        </select>
                     </div>
-                </form>
-            </div>
-            
-            <div id="message-container"></div>
-        </div>
-        
-        <!-- Trends & Insights Tab -->
-        <div id="trends" class="tab-content">
-            <div class="ai-section">
-                <h3 class="ai-title">💡 AI Expense Advisor</h3>
-                <p style="margin-bottom: 1rem; color: var(--muted-color);">Ask me anything about your spending patterns, get personalized recommendations, or explore your expense data.</p>
+                </div>
                 
-                <div class="chat-container">
-                    <div class="chat-messages" id="chat-messages">
-                        <div class="message ai">
-                            <div class="message-content">👋 Hi! I'm your AI expense advisor. I can help you analyze your spending patterns, identify areas to save money, and answer questions about your expenses. Try asking me things like:</div>
-                            <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--muted-color); font-size: 0.875rem;">
-                                <li>"What are my biggest expense categories this month?"</li>
-                                <li>"How can I reduce my dining out expenses?"</li>
-                                <li>"Show me my spending trends over the last 3 months"</li>
-                                <li>"What's my average monthly grocery spending?"</li>
-                            </ul>
-                        </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="amount">Amount (₹)</label>
+                        <input type="number" id="amount" name="amount" min="0" step="0.01" required>
                     </div>
-                    
-                    <div class="chat-input-container">
-                        <div class="chat-input">
-                            <input type="text" id="chat-message" placeholder="Ask me about your expenses..." maxlength="500">
-                            <button id="send-message">Send</button>
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="payment-method">Payment Method</label>
+                        <select id="payment-method" name="paymentMethod" required>
+                            <option value="">Select Payment Method</option>
+                            <option value="Cred UPI">Cred UPI</option>
+                            <option value="Credit card">Credit card</option>
+                            <option value="GPay UPI">GPay UPI</option>
+                            <option value="Pine Perks">Pine Perks</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Debit card">Debit card</option>
+                            <option value="Net Banking">Net Banking</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="submit">Add Expense</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="shared" name="shared" style="width: auto; margin-right: 0.5rem;">
+                        Shared expense
+                    </label>
+                </div>
+                
+                <div id="shared-options" class="hidden">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="split-between">Split between (people)</label>
+                            <input type="number" id="split-between" name="splitBetween" min="1" value="2">
+                        </div>
+                        <div class="form-group">
+                            <label for="split-amount">Split Amount (₹)</label>
+                            <input type="number" id="split-amount" name="splitAmount" min="0" step="0.01">
                         </div>
                     </div>
                 </div>
+            </form>
+        </div>
+        
+        <div id="message-container"></div>
+        
+        <!-- Recent Expenses -->
+        <div class="recent-expenses">
+            <div class="recent-expenses-header">
+                Recent Expenses
             </div>
-            
-            <!-- Smart Insights Grid -->
-            <div class="insights-grid" id="insights-grid">
-                <!-- Insights will be dynamically generated here -->
-            </div>
-            
-            <!-- Charts Container -->
-            <div class="charts-container" id="charts-container">
-                <!-- Charts will be rendered here -->
+            <div id="recent-expenses-list">
+                <!-- Recent expenses will be loaded here -->
             </div>
         </div>
     </div>
@@ -802,35 +694,9 @@
         
         // Initialize app
         function initializeApp() {
-            setupTabs();
             setupExpenseForm();
             loadExpenseData();
             setTodayDate();
-            setupChatbot();
-        }
-        
-        // Tab functionality
-        function setupTabs() {
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetTab = button.dataset.tab;
-                    
-                    // Update active states
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    
-                    button.classList.add('active');
-                    document.getElementById(targetTab).classList.add('active');
-                    
-                    // Load trends data when trends tab is activated
-                    if (targetTab === 'trends') {
-                        loadTrendsAndInsights();
-                    }
-                });
-            });
         }
         
         // Set today's date
@@ -920,7 +786,7 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    showMessage('Expense added successfully!', 'success');
+                    showMessage('✅ Expense added successfully!', 'success');
                     document.getElementById('expense-form').reset();
                     setTodayDate();
                     document.getElementById('shared-options').classList.add('hidden');
@@ -931,7 +797,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                showMessage('Error adding expense: ' + error.message, 'error');
+                showMessage('❌ Error adding expense: ' + error.message, 'error');
             }
         }
         
@@ -975,6 +841,7 @@
                 if (result.data) {
                     expenses = result.data.sort((a, b) => new Date(b.date) - new Date(a.date));
                     updateStats();
+                    updateRecentExpenses();
                 }
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -1023,262 +890,25 @@
             document.getElementById('top-category').textContent = topCategory;
         }
         
-        // Setup chatbot
-        function setupChatbot() {
-            const chatInput = document.getElementById('chat-message');
-            const sendButton = document.getElementById('send-message');
-            const chatMessages = document.getElementById('chat-messages');
+        // Update recent expenses
+        function updateRecentExpenses() {
+            const container = document.getElementById('recent-expenses-list');
+            const recentExpenses = expenses.slice(0, 5); // Show last 5 expenses
             
-            function sendMessage() {
-                const message = chatInput.value.trim();
-                if (!message) return;
-                
-                // Add user message
-                addMessage(message, 'user');
-                chatInput.value = '';
-                
-                // Process message and get AI response
-                setTimeout(() => {
-                    const response = processAIQuery(message);
-                    addMessage(response, 'ai');
-                }, 1000);
+            if (recentExpenses.length === 0) {
+                container.innerHTML = '<div class="expense-item"><div class="expense-details"><div class="expense-name">No expenses yet</div><div class="expense-meta">Add your first expense above</div></div></div>';
+                return;
             }
             
-            sendButton.addEventListener('click', sendMessage);
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-        }
-        
-        // Add message to chat
-        function addMessage(content, type) {
-            const chatMessages = document.getElementById('chat-messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-            contentDiv.textContent = content;
-            
-            const timeDiv = document.createElement('div');
-            timeDiv.className = 'message-time';
-            timeDiv.textContent = new Date().toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            
-            messageDiv.appendChild(contentDiv);
-            messageDiv.appendChild(timeDiv);
-            chatMessages.appendChild(messageDiv);
-            
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        
-        // Process AI query (simple rule-based for now)
-        function processAIQuery(query) {
-            const lowerQuery = query.toLowerCase();
-            
-            // Calculate current month stats
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
-            
-            const thisMonthExpenses = expenses.filter(expense => {
-                const expenseDate = new Date(expense.date);
-                return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
-            });
-            
-            const totalSpent = thisMonthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount || 0), 0);
-            
-            // Category analysis
-            if (lowerQuery.includes('category') || lowerQuery.includes('breakdown')) {
-                const categoryTotals = {};
-                thisMonthExpenses.forEach(expense => {
-                    const category = expense.category;
-                    categoryTotals[category] = (categoryTotals[category] || 0) + parseFloat(expense.amount || 0);
-                });
-                
-                const sortedCategories = Object.entries(categoryTotals)
-                    .sort(([,a], [,b]) => b - a)
-                    .slice(0, 5);
-                
-                let response = `Your top spending categories this month are:\n\n`;
-                sortedCategories.forEach(([category, amount], index) => {
-                    response += `${index + 1}. ${category}: ₹${amount.toFixed(0)}\n`;
-                });
-                
-                return response;
-            }
-            
-            // Dining out suggestions
-            if (lowerQuery.includes('dining') || lowerQuery.includes('eating out') || lowerQuery.includes('restaurant')) {
-                const diningExpenses = thisMonthExpenses.filter(expense => 
-                    expense.category === 'Eating out'
-                );
-                const diningTotal = diningExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount || 0), 0);
-                
-                return `You've spent ₹${diningTotal.toFixed(0)} on dining out this month. Here are some tips to reduce this:\n\n• Plan your meals in advance\n• Cook more meals at home\n• Set a weekly dining budget\n• Choose budget-friendly restaurants\n• Share meals or opt for lunch specials`;
-            }
-            
-            // Spending trends
-            if (lowerQuery.includes('trend') || lowerQuery.includes('pattern')) {
-                const avgDailySpending = totalSpent / now.getDate();
-                const projectedMonthly = avgDailySpending * 30;
-                
-                return `Based on your current spending pattern:\n\n• Average daily spending: ₹${avgDailySpending.toFixed(0)}\n• Projected monthly total: ₹${projectedMonthly.toFixed(0)}\n• You're ${projectedMonthly > totalSpent ? 'on track' : 'ahead'} of your current pace`;
-            }
-            
-            // Grocery spending
-            if (lowerQuery.includes('grocery') || lowerQuery.includes('groceries')) {
-                const groceryExpenses = thisMonthExpenses.filter(expense => 
-                    expense.category === 'Groceries'
-                );
-                const groceryTotal = groceryExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount || 0), 0);
-                const avgGrocerySpending = groceryTotal / groceryExpenses.length || 0;
-                
-                return `Your grocery spending this month: ₹${groceryTotal.toFixed(0)} across ${groceryExpenses.length} transactions. Average per trip: ₹${avgGrocerySpending.toFixed(0)}`;
-            }
-            
-            // General help
-            if (lowerQuery.includes('help') || lowerQuery.includes('what can you do')) {
-                return `I can help you with:\n\n• Analyzing your spending by category\n• Providing tips to reduce expenses\n• Showing spending trends and patterns\n• Calculating averages and totals\n• Suggesting budget optimization strategies\n\nTry asking specific questions about your expenses!`;
-            }
-            
-            // Default response
-            return `I understand you're asking about "${query}". While I'm still learning to analyze your expense data better, I can see you've spent ₹${totalSpent.toFixed(0)} this month across ${thisMonthExpenses.length} transactions. Is there a specific aspect of your spending you'd like me to focus on?`;
-        }
-        
-        // Load trends and insights
-        function loadTrendsAndInsights() {
-            generateInsights();
-            generateCharts();
-        }
-        
-        // Generate insights
-        function generateInsights() {
-            const insightsGrid = document.getElementById('insights-grid');
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
-            
-            const thisMonthExpenses = expenses.filter(expense => {
-                const expenseDate = new Date(expense.date);
-                return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
-            });
-            
-            const lastMonthExpenses = expenses.filter(expense => {
-                const expenseDate = new Date(expense.date);
-                return expenseDate.getMonth() === (currentMonth - 1 + 12) % 12 && 
-                       expenseDate.getFullYear() === (currentMonth === 0 ? currentYear - 1 : currentYear);
-            });
-            
-            const thisMonthTotal = thisMonthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount || 0), 0);
-            const lastMonthTotal = lastMonthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount || 0), 0);
-            const monthOverMonthChange = ((thisMonthTotal - lastMonthTotal) / lastMonthTotal * 100) || 0;
-            
-            // Category analysis
-            const categoryTotals = {};
-            thisMonthExpenses.forEach(expense => {
-                const category = expense.category;
-                categoryTotals[category] = (categoryTotals[category] || 0) + parseFloat(expense.amount || 0);
-            });
-            
-            const topCategory = Object.entries(categoryTotals)
-                .sort(([,a], [,b]) => b - a)[0];
-            
-            // Generate insight cards
-            const insights = [
-                {
-                    title: 'Month-over-Month Change',
-                    value: `${monthOverMonthChange > 0 ? '+' : ''}${monthOverMonthChange.toFixed(1)}%`,
-                    description: monthOverMonthChange > 0 ? 'Spending increased from last month' : 'Spending decreased from last month'
-                },
-                {
-                    title: 'Biggest Expense Category',
-                    value: topCategory ? topCategory[0] : 'N/A',
-                    description: topCategory ? `₹${topCategory[1].toFixed(0)} spent this month` : 'No data available'
-                },
-                {
-                    title: 'Daily Average',
-                    value: `₹${(thisMonthTotal / now.getDate()).toFixed(0)}`,
-                    description: `Based on ${now.getDate()} days of spending`
-                },
-                {
-                    title: 'Transaction Count',
-                    value: thisMonthExpenses.length.toString(),
-                    description: 'Total transactions this month'
-                }
-            ];
-            
-            insightsGrid.innerHTML = insights.map(insight => `
-                <div class="insight-card">
-                    <h4 class="insight-title">${insight.title}</h4>
-                    <div class="insight-value">${insight.value}</div>
-                    <div class="insight-description">${insight.description}</div>
+            container.innerHTML = recentExpenses.map(expense => `
+                <div class="expense-item">
+                    <div class="expense-details">
+                        <div class="expense-name">${expense.expenseName}</div>
+                        <div class="expense-meta">${expense.category} • ${new Date(expense.date).toLocaleDateString()} • ${expense.paymentMethod}</div>
+                    </div>
+                    <div class="expense-amount">₹${parseFloat(expense.amount).toFixed(0)}</div>
                 </div>
             `).join('');
-        }
-        
-        // Generate charts
-        function generateCharts() {
-            const chartsContainer = document.getElementById('charts-container');
-            
-            // Create container for category chart
-            chartsContainer.innerHTML = `
-                <div class="chart-wrapper">
-                    <h4 style="margin-bottom: 1rem; font-size: 1.125rem; font-weight: 600;">Spending by Category (This Month)</h4>
-                    <div id="category-chart" style="height: 400px;"></div>
-                </div>
-            `;
-            
-            // Get current month data
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
-            
-            const thisMonthExpenses = expenses.filter(expense => {
-                const expenseDate = new Date(expense.date);
-                return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
-            });
-            
-            // Category breakdown
-            const categoryTotals = {};
-            thisMonthExpenses.forEach(expense => {
-                const category = expense.category;
-                categoryTotals[category] = (categoryTotals[category] || 0) + parseFloat(expense.amount || 0);
-            });
-            
-            const categories = Object.keys(categoryTotals);
-            const amounts = Object.values(categoryTotals);
-            
-            // Create pie chart
-            const pieData = [{
-                values: amounts,
-                labels: categories,
-                type: 'pie',
-                textinfo: 'label+percent',
-                textposition: 'outside',
-                automargin: true
-            }];
-            
-            const pieLayout = {
-                title: false,
-                showlegend: true,
-                legend: {
-                    orientation: 'h',
-                    yanchor: 'bottom',
-                    y: -0.3,
-                    xanchor: 'center',
-                    x: 0.5
-                },
-                margin: { t: 20, r: 20, b: 100, l: 20 },
-                font: { family: 'Inconsolata, monospace', size: 12 }
-            };
-            
-            Plotly.newPlot('category-chart', pieData, pieLayout, { responsive: true });
         }
     </script>
 </body>
