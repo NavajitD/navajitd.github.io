@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
+    
+    <title>Expense Analytics - Navajit D</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        /* Dark Mode Base Styles */
+        :root {
+            --text-color: #e5e7eb;
+            --bg-color: #111827;
+            --surface-color: #1f2937;
+            --accent-color: #3b82f6;
+            --muted-color: #9ca3af;
+            --border-color: #374151;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --font-sans: "Inconsolata", monospace;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html {
+            font-size: 16px;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.65;
+            max-width: 64rem;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+            min-height: 100vh;
+        }
+        
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        p {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+        
+        .logo {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+        
+        .logo a {
+            color: var(--text-color);
+        }
+        
+        .logo a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+        
+        nav a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        .sign-out-link {
+            color: var(--text-color);
+            cursor: pointer;
+            border: none;
+            background: none;
+            font: inherit;
+            font-size: 1rem;
+            padding: 0;
+        }
+        
+        .sign-out-link:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        /* Authentication */
+        .auth-container {
+            text-align: center;
+            padding: 4rem 0;
+            background: var(--surface-color);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin: 2rem 0;
+        }
+        
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        .auth-description {
+            color: var(--muted-color);
+            margin-bottom: 2rem;
+            font-size: 1.125rem;
+        }
+        
+        #g_id_signin {
+            display: inline-block;
+            margin: 0 auto;
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-bottom: 3rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            line-height: 1.3;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        .page-description {
+            font-size: 1.125rem;
+            color: var(--muted-color);
+        }
+        
+        /* Navigation Pills */
+        .nav-pills {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            padding: 0.5rem;
+            background: var(--surface-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .nav-pill {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            background: transparent;
+            color: var(--muted-color);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .nav-pill:hover {
+            background: var(--border-color);
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        .nav-pill.active {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--surface-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .filter-label {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            font-weight: 500;
+        }
+        
+        select {
+            padding: 0.5rem;
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .chart-container {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        .chart-canvas {
+            height: 300px;
+        }
+        
+        /* Full Width Charts */
+        .chart-full {
+            grid-column: 1 / -1;
+        }
+        
+        .chart-full .chart-canvas {
+            height: 400px;
+        }
+        
+        /* Stats Summary */
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .stat-change {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+        
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+        
+        .stat-change.negative {
+            color: var(--error-color);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-pills {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            body {
+                padding: 2rem 1rem;
+                max-width: 42rem;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.75rem;
+            }
+            
+            .stats-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Loading state */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            color: var(--muted-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+        <header>
+            <div class="logo">
+                <a href="/">Navajit D</a>
+            </div>
+        </header>
+        
+        <div class="auth-container">
+            <h1 class="auth-title">Expense Analytics</h1>
+            <p class="auth-description">Sign in to view your expense analytics dashboard</p>
+            
+            <div id="g_id_signin" 
+                 data-client_id="1010970898291-q8nv22u1mbbv3mjvso048dcmsip8l9ev.apps.googleusercontent.com"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false"
+                 data-cancel_on_tap_outside="false"
+                 data-theme="outline"
+                 data-size="large"
+                 data-text="signin_with"
+                 data-shape="rectangular"
+                 data-logo_alignment="left">
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <header>
+            <div class="logo">
+                <a href="/">Navajit D</a>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="sign-out-link" onclick="signOut()">Sign Out</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <div class="page-header">
+            <h1 class="page-title">📊 Expense Analytics</h1>
+            <p class="page-description">Visualize and analyze your spending patterns over time.</p>
+        </div>
+        
+        <!-- Navigation Pills -->
+        <div class="nav-pills">
+            <a href="/expenses.html" class="nav-pill">Add Expense</a>
+            <a href="/expense-analytics.html" class="nav-pill active">Analytics</a>
+            <a href="/expense-chat.html" class="nav-pill">AI Assistant</a>
+        </div>
+        
+        <!-- Filter Controls -->
+        <div class="filter-controls">
+            <div class="filter-group">
+                <div class="filter-label">Time Period</div>
+                <select id="time-filter">
+                    <option value="current-month">Current Month</option>
+                    <option value="last-month">Last Month</option>
+                    <option value="last-3-months">Last 3 Months</option>
+                    <option value="last-6-months">Last 6 Months</option>
+                    <option value="current-year">Current Year</option>
+                    <option value="all-time">All Time</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <div class="filter-label">Category</div>
+                <select id="category-filter">
+                    <option value="all">All Categories</option>
+                    <!-- Categories will be populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <div class="filter-label">Payment Method</div>
+                <select id="payment-filter">
+                    <option value="all">All Methods</option>
+                    <!-- Payment methods will be populated dynamically -->
+                </select>
+            </div>
+        </div>
+        
+        <!-- Stats Summary -->
+        <div class="stats-summary">
+            <div class="stat-card">
+                <div class="stat-value" id="total-expenses">₹0</div>
+                <div class="stat-label">Total Expenses</div>
+                <div class="stat-change" id="total-change">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-expense">₹0</div>
+                <div class="stat-label">Average Expense</div>
+                <div class="stat-change" id="avg-change">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="expense-count">0</div>
+                <div class="stat-label">Total Transactions</div>
+                <div class="stat-change" id="count-change">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="top-category-stat">--</div>
+                <div class="stat-label">Top Category</div>
+                <div class="stat-change" id="category-amount">--</div>
+            </div>
+        </div>
+        
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <!-- Category Distribution (Pie Chart) -->
+            <div class="chart-container">
+                <h3 class="chart-title">Spending by Category</h3>
+                <div class="chart-canvas">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Payment Method Distribution (Doughnut Chart) -->
+            <div class="chart-container">
+                <h3 class="chart-title">Payment Methods</h3>
+                <div class="chart-canvas">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Monthly Spending Trend (Line Chart) -->
+            <div class="chart-container chart-full">
+                <h3 class="chart-title">Monthly Spending Trends</h3>
+                <div class="chart-canvas">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Daily Spending (Bar Chart) -->
+            <div class="chart-container chart-full">
+                <h3 class="chart-title">Daily Spending Pattern</h3>
+                <div class="chart-canvas">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let expenses = [];
+        let userEmail = null;
+        let charts = {};
+        
+        // Google Apps Script URL
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwISgM-mNsc6fZmKki2ImDKhsePg_Ixbcku3Ofw9_feNE9OuDUEDamLylrwK5kLB7vGZg/exec";
+        
+        // Chart.js default config for dark theme
+        Chart.defaults.color = '#e5e7eb';
+        Chart.defaults.borderColor = '#374151';
+        Chart.defaults.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+        
+        // Initialize Google Sign-In
+        window.onload = function() {
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                google.accounts.id.initialize({
+                    client_id: '1010970898291-q8nv22u1mbbv3mjvso048dcmsip8l9ev.apps.googleusercontent.com',
+                    callback: handleCredentialResponse,
+                    auto_select: false,
+                    cancel_on_tap_outside: false
+                });
+                
+                google.accounts.id.renderButton(
+                    document.getElementById('g_id_signin'),
+                    {
+                        theme: 'outline',
+                        size: 'large',
+                        text: 'signin_with',
+                        shape: 'rectangular',
+                        logo_alignment: 'left'
+                    }
+                );
+            }
+        };
+        
+        // Handle Google Sign-In
+        window.handleCredentialResponse = function(response) {
+            const responsePayload = decodeJwtResponse(response.credential);
+            
+            if (responsePayload.email === 'navjitdebnath5@gmail.com') {
+                userEmail = responsePayload.email;
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                initializeApp();
+            } else {
+                alert('Access denied. This analytics dashboard is restricted to authorized users only.');
+                signOut();
+            }
+        };
+        
+        function decodeJwtResponse(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+        
+        window.signOut = function() {
+            userEmail = null;
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+        };
+        
+        // Initialize app
+        async function initializeApp() {
+            await loadExpenseData();
+            populateFilters();
+            setupEventListeners();
+            updateAnalytics();
+        }
+        
+        // Load expense data
+        async function loadExpenseData() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL);
+                const result = await response.json();
+                
+                if (result.data) {
+                    expenses = result.data.sort((a, b) => new Date(b.date) - new Date(a.date));
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+        
+        // Populate filter dropdowns
+        function populateFilters() {
+            // Populate categories
+            const categories = [...new Set(expenses.map(e => e.category))].sort();
+            const categorySelect = document.getElementById('category-filter');
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+            
+            // Populate payment methods
+            const paymentMethods = [...new Set(expenses.map(e => e.paymentMethod))].sort();
+            const paymentSelect = document.getElementById('payment-filter');
+            paymentMethods.forEach(method => {
+                const option = document.createElement('option');
+                option.value = method;
+                option.textContent = method;
+                paymentSelect.appendChild(option);
+            });
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('time-filter').addEventListener('change', updateAnalytics);
+            document.getElementById('category-filter').addEventListener('change', updateAnalytics);
+            document.getElementById('payment-filter').addEventListener('change', updateAnalytics);
+        }
+        
+        // Filter expenses based on current selections
+        function getFilteredExpenses() {
+            const timeFilter = document.getElementById('time-filter').value;
+            const categoryFilter = document.getElementById('category-filter').value;
+            const paymentFilter = document.getElementById('payment-filter').value;
+            
+            let filtered = [...expenses];
+            
+            // Apply time filter
+            const now = new Date();
+            switch (timeFilter) {
+                case 'current-month':
+                    filtered = filtered.filter(e => {
+                        const date = new Date(e.date);
+                        return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                    });
+                    break;
+                case 'last-month':
+                    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    filtered = filtered.filter(e => {
+                        const date = new Date(e.date);
+                        return date.getMonth() === lastMonth.getMonth() && date.getFullYear() === lastMonth.getFullYear();
+                    });
+                    break;
+                case 'last-3-months':
+                    const threeMonthsAgo = new Date(now.getTime() - (90 * 24 * 60 * 60 * 1000));
+                    filtered = filtered.filter(e => new Date(e.date) >= threeMonthsAgo);
+                    break;
+                case 'last-6-months':
+                    const sixMonthsAgo = new Date(now.getTime() - (180 * 24 * 60 * 60 * 1000));
+                    filtered = filtered.filter(e => new Date(e.date) >= sixMonthsAgo);
+                    break;
+                case 'current-year':
+                    filtered = filtered.filter(e => new Date(e.date).getFullYear() === now.getFullYear());
+                    break;
+            }
+            
+            // Apply category filter
+            if (categoryFilter !== 'all') {
+                filtered = filtered.filter(e => e.category === categoryFilter);
+            }
+            
+            // Apply payment method filter
+            if (paymentFilter !== 'all') {
+                filtered = filtered.filter(e => e.paymentMethod === paymentFilter);
+            }
+            
+            return filtered;
+        }
+        
+        // Update all analytics
+        function updateAnalytics() {
+            const filteredExpenses = getFilteredExpenses();
+            updateStats(filteredExpenses);
+            updateCharts(filteredExpenses);
+        }
+        
+        // Update statistics
+        function updateStats(filteredExpenses) {
+            const total = filteredExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+            const count = filteredExpenses.length;
+            const average = count > 0 ? total / count : 0;
+            
+            document.getElementById('total-expenses').textContent = `₹${total.toFixed(0)}`;
+            document.getElementById('avg-expense').textContent = `₹${average.toFixed(0)}`;
+            document.getElementById('expense-count').textContent = count.toString();
+            
+            // Top category
+            const categoryTotals = {};
+            filteredExpenses.forEach(e => {
+                categoryTotals[e.category] = (categoryTotals[e.category] || 0) + parseFloat(e.amount || 0);
+            });
+            
+            const topCategory = Object.entries(categoryTotals)
+                .sort(([,a], [,b]) => b - a)[0];
+            
+            if (topCategory) {
+                document.getElementById('top-category-stat').textContent = topCategory[0];
+                document.getElementById('category-amount').textContent = `₹${topCategory[1].toFixed(0)}`;
+            } else {
+                document.getElementById('top-category-stat').textContent = '--';
+                document.getElementById('category-amount').textContent = '--';
+            }
+        }
+        
+        // Update all charts
+        function updateCharts(filteredExpenses) {
+            updateCategoryChart(filteredExpenses);
+            updatePaymentChart(filteredExpenses);
+            updateTrendChart(filteredExpenses);
+            updateDailyChart(filteredExpenses);
+        }
+        
+        // Category distribution pie chart
+        function updateCategoryChart(filteredExpenses) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            // Destroy existing chart
+            if (charts.category) {
+                charts.category.destroy();
+            }
+            
+            const categoryTotals = {};
+            filteredExpenses.forEach(e => {
+                categoryTotals[e.category] = (categoryTotals[e.category] || 0) + parseFloat(e.amount || 0);
+            });
+            
+            const labels = Object.keys(categoryTotals);
+            const data = Object.values(categoryTotals);
+            
+            // Generate colors
+            const colors = labels.map((_, i) => `hsl(${(i * 360) / labels.length}, 70%, 60%)`);
+            
+            charts.category = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#374151',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e5e7eb',
+                                font: {
+                                    family: 'Inconsolata'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Payment method doughnut chart
+        function updatePaymentChart(filteredExpenses) {
+            const ctx = document.getElementById('paymentChart').getContext('2d');
+            
+            if (charts.payment) {
+                charts.payment.destroy();
+            }
+            
+            const paymentTotals = {};
+            filteredExpenses.forEach(e => {
+                paymentTotals[e.paymentMethod] = (paymentTotals[e.paymentMethod] || 0) + parseFloat(e.amount || 0);
+            });
+            
+            const labels = Object.keys(paymentTotals);
+            const data = Object.values(paymentTotals);
+            const colors = labels.map((_, i) => `hsl(${(i * 360) / labels.length}, 70%, 60%)`);
+            
+            charts.payment = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#374151',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e5e7eb',
+                                font: {
+                                    family: 'Inconsolata'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Monthly trend line chart
+        function updateTrendChart(filteredExpenses) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (charts.trend) {
+                charts.trend.destroy();
+            }
+            
+            // Group by month
+            const monthlyTotals = {};
+            filteredExpenses.forEach(e => {
+                const date = new Date(e.date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + parseFloat(e.amount || 0);
+            });
+            
+            const sortedMonths = Object.keys(monthlyTotals).sort();
+            const labels = sortedMonths.map(month => {
+                const [year, monthNum] = month.split('-');
+                const date = new Date(year, monthNum - 1);
+                return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            });
+            const data = sortedMonths.map(month => monthlyTotals[month]);
+            
+            charts.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Monthly Spending',
+                        data: data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#e5e7eb',
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb',
+                                font: {
+                                    family: 'Inconsolata'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Daily spending bar chart
+        function updateDailyChart(filteredExpenses) {
+            const ctx = document.getElementById('dailyChart').getContext('2d');
+            
+            if (charts.daily) {
+                charts.daily.destroy();
+            }
+            
+            // Group by day of week
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dailyTotals = new Array(7).fill(0);
+            const dailyCounts = new Array(7).fill(0);
+            
+            filteredExpenses.forEach(e => {
+                const dayOfWeek = new Date(e.date).getDay();
+                dailyTotals[dayOfWeek] += parseFloat(e.amount || 0);
+                dailyCounts[dayOfWeek]++;
+            });
+            
+            // Calculate averages
+            const dailyAverages = dailyTotals.map((total, i) => 
+                dailyCounts[i] > 0 ? total / dailyCounts[i] : 0
+            );
+            
+            charts.daily = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dayNames,
+                    datasets: [{
+                        label: 'Average Daily Spending',
+                        data: dailyAverages,
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#e5e7eb',
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb',
+                                font: {
+                                    family: 'Inconsolata'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
