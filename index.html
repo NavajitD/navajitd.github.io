@@ -201,133 +201,28 @@
             font-size: 2.3rem;
             line-height: 1.3;
             font-weight: 700;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         
-        [data-theme="colorful"] .intro-title {
-            background: linear-gradient(45deg, var(--accent-color), var(--secondary-color), var(--highlight-color), var(--accent-color));
-            background-size: 400% 400%;
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
-            animation: gradientFlow 8s ease-in-out infinite;
-        }
-        
-        @keyframes gradientFlow {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-        
-        .intro p {
-            font-size: 1rem;
-            color: var(--text-color);
-        }
-        
-        /* Section Styles */
-        section {
+        /* Blog Section */
+        #blog {
             margin-bottom: 4rem;
         }
         
         .section-title {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border-color);
-            letter-spacing: 0.05em;
-            transition: border-color 0.3s ease;
-        }
-        
-        [data-theme="colorful"] .section-title {
-            color: var(--accent-color);
-        }
-        
-        /* Projects Section */
-        .project-item {
             margin-bottom: 2rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
         }
         
-        [data-theme="colorful"] .project-item {
-            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(220, 38, 38, 0.05));
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
-        }
-        
-        [data-theme="colorful"] .project-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.1);
-        }
-        
-        .project-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        [data-theme="colorful"] .project-title {
-            color: var(--secondary-color);
-        }
-        
-        .project-meta {
-            font-size: 0.875rem;
-            color: var(--muted-color);
-            margin-bottom: 0.75rem;
-        }
-        
-        [data-theme="colorful"] .project-meta {
-            color: var(--accent-color);
-            font-weight: 500;
-        }
-        
-        .project-description {
-            margin-bottom: 0.75rem;
-        }
-        
-        .project-links a {
-            font-size: 0.875rem;
-            margin-right: 1rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="colorful"] .project-links a {
-            background: var(--highlight-color);
-            color: white;
-            padding: 0.25rem 0.75rem;
-        }
-        
-        [data-theme="colorful"] .project-links a:hover {
-            background: var(--secondary-color);
-            text-decoration: none;
-            transform: translateY(-1px);
-        }
-        
-        /* Blog Section */
         .blog-item {
-            margin-bottom: 2rem;
-            border-radius: 6px;
-            transition: all 0.3s ease;
+            margin-bottom: 2.5rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
         }
         
-        [data-theme="colorful"] .blog-item {
-            background: rgba(22, 163, 74, 0.03);
-            border-left: 3px solid var(--accent-color);
-            padding: 1rem;
-        }
-        
-        [data-theme="colorful"] .blog-item:hover {
-            background: rgba(22, 163, 74, 0.08);
-            border-left-color: var(--secondary-color);
+        .blog-item:last-child {
+            border-bottom: none;
         }
         
         .blog-title {
@@ -336,19 +231,18 @@
             margin-bottom: 0.5rem;
         }
         
-        [data-theme="colorful"] .blog-title a {
-            color: var(--secondary-color);
+        .blog-title a {
+            color: var(--text-color);
+        }
+        
+        .blog-title a:hover {
+            color: var(--accent-color);
         }
         
         .blog-meta {
             font-size: 0.875rem;
             color: var(--muted-color);
             margin-bottom: 0.75rem;
-        }
-        
-        [data-theme="colorful"] .blog-meta {
-            color: var(--accent-color);
-            font-weight: 500;
         }
         
         .blog-excerpt {
@@ -359,32 +253,42 @@
             font-size: 0.875rem;
         }
         
-        [data-theme="colorful"] .read-more {
-            color: var(--warning-color);
-            font-weight: 600;
+        /* Experience Section */
+        #experience {
+            margin-bottom: 4rem;
         }
         
-        /* Experience Section */
         .experience-item {
-            margin-bottom: 2rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            margin-bottom: 2.5rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
         }
         
         [data-theme="colorful"] .experience-item {
-            background: linear-gradient(135deg, rgba(234, 179, 8, 0.05), rgba(22, 163, 74, 0.05));
-            border: 1px solid var(--border-color);
+            background: linear-gradient(
+                135deg, 
+                rgba(22, 163, 74, 0.03) 0%, 
+                rgba(234, 88, 12, 0.03) 50%,
+                rgba(234, 179, 8, 0.03) 100%
+            );
             padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-bottom: none;
+        }
+        
+        .experience-item:last-child {
+            border-bottom: none;
         }
         
         .experience-title {
             font-size: 1.125rem;
             font-weight: 600;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
         }
         
         [data-theme="colorful"] .experience-title {
-            color: var(--secondary-color);
+            color: var(--accent-color);
         }
         
         .experience-meta {
@@ -394,58 +298,32 @@
         }
         
         [data-theme="colorful"] .experience-meta {
-            color: var(--accent-color);
-            font-weight: 500;
+            color: var(--secondary-color);
         }
         
         /* Footer */
         footer {
-            padding-top: 2rem;
             margin-top: 4rem;
+            padding-top: 2rem;
             border-top: 1px solid var(--border-color);
             font-size: 0.875rem;
             color: var(--muted-color);
-            transition: border-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .footer-links {
             display: flex;
             gap: 1.5rem;
-            margin-bottom: 1rem;
-            margin-left: 0;
         }
         
-        .footer-links a {
-            color: var(--text-color);
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="colorful"] .footer-links a {
-            padding: 0.25rem 0.5rem;
-            margin-left: -0.5rem;
-        }
-        
-        [data-theme="colorful"] .footer-links a:first-child {
-            margin-left: -0.5rem;
-        }
-        
-        [data-theme="colorful"] .footer-links a:hover {
-            background: var(--accent-color);
-            color: white;
-            text-decoration: none;
-        }
-        
-        /* Responsive */
         @media (max-width: 640px) {
             body {
                 padding: 2rem 1rem;
             }
             
             .theme-toggle {
-                top: 1rem;
-                right: 50%;
-                transform: translateX(50%);
                 width: 2rem;
                 height: 1.75rem;
             }
@@ -468,7 +346,6 @@
                 font-size: 1.75rem;
             }
             
-            [data-theme="colorful"] .project-item,
             [data-theme="colorful"] .experience-item {
                 padding: 1rem;
             }
@@ -501,11 +378,9 @@
         </div>
         <nav>
             <ul>
-                <li><a href="#projects">Projects</a></li>
+                <li><a href="/projects.html">Projects</a></li>
                 <li><a href="#blog">Blog</a></li>
                 <li><a href="#experience">Experience</a></li>
-                <li><a href="/fitness.html">Fitness</a></li>
-                <li><a href="/expenses.html">Expenses</a></li>
                 <li><a href="mailto:navajit@example.com">Contact</a></li>
             </ul>
         </nav>
@@ -515,39 +390,6 @@
         <h1 class="intro-title">Hello, I'm Navajit D.</h1>
         <p>I majored in Aerospace Engineering and minored in Systems & Control Engineering and currently work as a Product Manager. At work, I am product owner of Pine Labs' <a href="https://one.pinelabs.com" target="_blank" rel="noopener noreferrer" class="merchant-link">merchant experience platform</a>. Outside of work, I build tools to make life easier or more fun.</p>
         <p>I love well-designed products and I tinker at building with code. I am interested in psychology and international politics. I enjoy swimming and climbing.</p>
-    </section>
-    
-    <section id="projects">
-        <h2 class="section-title">Projects</h2>
-        <div class="project-item">
-            <h3 class="project-title">Credit Card Recommendation Engine</h3>
-            <div class="project-meta">Python, ML, React · 2024</div>
-            <p class="project-description">A machine learning-based system that analyzes user spending patterns and recommends the most suitable credit card based on reward programs and usage habits.</p>
-            <div class="project-links">
-                <a href="#">Case Study</a>
-                <a href="#">GitHub</a>
-            </div>
-        </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">Personal Finance Dashboard</h3>
-            <div class="project-meta">React, Firebase, Tailwind CSS · 2023</div>
-            <p class="project-description">A comprehensive dashboard that helps users track expenses, set budgets, and visualize spending patterns. Integrates with multiple bank accounts via secure APIs.</p>
-            <div class="project-links">
-                <a href="#">Demo</a>
-                <a href="#">GitHub</a>
-            </div>
-        </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">Flight Path Optimization Tool</h3>
-            <div class="project-meta">Python, NumPy, Visualization · 2022</div>
-            <p class="project-description">Leveraging my aerospace engineering background, I created a tool that optimizes flight paths for commercial airlines, potentially reducing fuel consumption by up to 8%.</p>
-            <div class="project-links">
-                <a href="#">Research Paper</a>
-                <a href="#">GitHub</a>
-            </div>
-        </div>
     </section>
     
     <section id="blog">
@@ -647,10 +489,26 @@
             }
         });
         
-        // Prefers reduced motion check
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            body.classList.remove('theme-transition');
+        // Prefers color scheme detection
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        // Only auto-set theme if no saved preference
+        if (!localStorage.getItem('theme')) {
+            if (prefersDark.matches) {
+                body.setAttribute('data-theme', 'colorful');
+            }
         }
+        
+        // Listen for changes in system theme preference
+        prefersDark.addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                if (e.matches) {
+                    body.setAttribute('data-theme', 'colorful');
+                } else {
+                    body.removeAttribute('data-theme');
+                }
+            }
+        });
     </script>
 </body>
 </html>
