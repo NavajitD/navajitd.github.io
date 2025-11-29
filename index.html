@@ -204,53 +204,43 @@
             margin-bottom: 1rem;
         }
         
-        /* Blog Section */
-        #blog {
-            margin-bottom: 4rem;
+        /* Dynamic gradient animation for colorful mode */
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        [data-theme="colorful"] .intro-title {
+            background: linear-gradient(
+                90deg,
+                #16a34a,
+                #059669,
+                #eab308,
+                #ea580c,
+                #dc2626,
+                #ea580c,
+                #eab308,
+                #059669,
+                #16a34a
+            );
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 4s ease infinite;
         }
         
         .section-title {
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 2rem;
-        }
-        
-        .blog-item {
-            margin-bottom: 2.5rem;
-            padding-bottom: 2.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .blog-item:last-child {
-            border-bottom: none;
-        }
-        
-        .blog-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        .blog-title a {
-            color: var(--text-color);
-        }
-        
-        .blog-title a:hover {
-            color: var(--accent-color);
-        }
-        
-        .blog-meta {
-            font-size: 0.875rem;
-            color: var(--muted-color);
-            margin-bottom: 0.75rem;
-        }
-        
-        .blog-excerpt {
-            margin-bottom: 0.5rem;
-        }
-        
-        .read-more {
-            font-size: 0.875rem;
         }
         
         /* Experience Section */
@@ -379,63 +369,37 @@
         <nav>
             <ul>
                 <li><a href="/projects.html">Projects</a></li>
-                <li><a href="#blog">Blog</a></li>
                 <li><a href="#experience">Experience</a></li>
-                <li><a href="mailto:navajit@example.com">Contact</a></li>
+                <li><a href="mailto:navjitdebnath5@gmail.com">Contact</a></li>
             </ul>
         </nav>
     </header>
     
     <section class="intro">
         <h1 class="intro-title">Hello, I'm Navajit D.</h1>
-        <p>I majored in Aerospace Engineering and minored in Systems & Control Engineering and currently work as a Product Manager. At work, I am product owner of Pine Labs' <a href="https://one.pinelabs.com" target="_blank" rel="noopener noreferrer" class="merchant-link">merchant experience platform</a>. Outside of work, I build tools to make life easier or more fun.</p>
-        <p>I love well-designed products and I tinker at building with code. I am interested in psychology and international politics. I enjoy swimming and climbing.</p>
-    </section>
-    
-    <section id="blog">
-        <h2 class="section-title">Blog</h2>
-        <div class="blog-item">
-            <h3 class="blog-title"><a href="/blog/post-1">Product Management in Fintech: Lessons Learned</a></h3>
-            <div class="blog-meta">April 5, 2025</div>
-            <p class="blog-excerpt">After 3 years in fintech product management, I've gathered some insights on building products for financial inclusion in emerging markets. Here are my key takeaways...</p>
-            <a href="/blog/post-1" class="read-more">Read more →</a>
-        </div>
-        
-        <div class="blog-item">
-            <h3 class="blog-title"><a href="/blog/post-2">The Intersection of Aerospace Engineering and Product Design</a></h3>
-            <div class="blog-meta">March 12, 2025</div>
-            <p class="blog-excerpt">My unusual career path from aerospace engineering to product management has given me a unique perspective on problem-solving. Here's how engineering principles inform my product decisions...</p>
-            <a href="/blog/post-2" class="read-more">Read more →</a>
-        </div>
-        
-        <div class="blog-item">
-            <h3 class="blog-title"><a href="/blog/post-3">User Research in Low-Tech Environments</a></h3>
-            <div class="blog-meta">February 20, 2025</div>
-            <p class="blog-excerpt">Conducting user research in regions with low digital literacy presents unique challenges. Here's my methodology for getting meaningful insights from users unfamiliar with technology...</p>
-            <a href="/blog/post-3" class="read-more">Read more →</a>
-        </div>
-        
-        <a href="/blog" style="font-size: 0.875rem; display: inline-block; margin-top: 1rem;">View all posts →</a>
+        <p>I'm a Product Manager with an engineering background, driving Merchant Experience and AI initiatives at Pine Labs. I grew up in Tripura and Delhi, eventually landing at IIT Bombay, where I graduated with Honors in Aerospace Engineering and a minor in Systems & Control.</p>
+        <p>Early on, I realized I preferred the iteration speed of software over hardware. But I kept the 'Systems' mindset—specifically, the discipline of looking for root causes in data rather than relying on intuition. I joined Pine Labs directly from campus as an APM and was inducted into the <a href="https://one.pinelabs.com" target="_blank" rel="noopener noreferrer" class="merchant-link">Pine Labs One</a> team for our merchant experience platform.</p>
     </section>
     
     <section id="experience">
         <h2 class="section-title">Experience</h2>
+        
         <div class="experience-item">
-            <h3 class="experience-title">Senior Product Manager at Fintech Unicorn</h3>
-            <div class="experience-meta">Bengaluru, India · 2023 – Present</div>
-            <p>Leading the credit products team, responsible for developing and scaling credit solutions for underserved markets. Drove 70% growth in user acquisition and improved approval rates by 25% through data-driven optimization.</p>
+            <h3 class="experience-title">Founding AI PM at Pine Labs</h3>
+            <div class="experience-meta">Bengaluru, India · 2024 – Present</div>
+            <p>Promoted to be the Founding AI PM after proving impact on the core platform. I pushed back on several low-ROI use cases, spending weeks shadowing support teams and listening to calls to frame problems as: 'Users can't do X, and it costs us Z.' Enabled a 2-member team to build an email automation system now saving INR 1.6 Lakhs per month and automatically resolving 5,000 tickets. Deployed VoiceBots with external vendors deflecting 7,000 calls a month. Focused strictly on ROI and quality metrics, bridging the gap between 'ML language' engineers speak and 'User stories' business cares about.</p>
         </div>
         
         <div class="experience-item">
-            <h3 class="experience-title">Product Manager at Financial Services Startup</h3>
-            <div class="experience-meta">Bengaluru, India · 2021 – 2023</div>
-            <p>Managed the personal finance management product suite. Led the design and implementation of automated savings features that increased user retention by 40% and average transaction value by 35%.</p>
+            <h3 class="experience-title">Product Manager – Pine Labs One</h3>
+            <div class="experience-meta">Bengaluru, India · 2023 – 2024</div>
+            <p>My first major challenge was retention. We had a high churn rate, and the platform was struggling with performance. Instead of proposing features, I looked at the logs. I found our 95th percentile app load time was 23 seconds. I realized we couldn't retain users if they couldn't access the dashboard. Built consensus across teams to switch databases and improve transaction sync times. Slashed load times from 23 seconds to 10 seconds and reduced report generation time from 3 minutes to 60 seconds. Pushed through retention policies that improved retention by 15% and helped hit 100k MAUs two months ahead of schedule.</p>
         </div>
         
         <div class="experience-item">
-            <h3 class="experience-title">Associate Product Manager at Tech Consultancy</h3>
-            <div class="experience-meta">Mumbai, India · 2019 – 2021</div>
-            <p>Started as a technical consultant leveraging my engineering background, then transitioned to product management. Worked with clients across fintech, healthcare, and e-commerce sectors.</p>
+            <h3 class="experience-title">Product Consolidation & Platform Scaling</h3>
+            <div class="experience-meta">Pine Labs · 2023 – 2024</div>
+            <p>Once stability was fixed, I focused on consolidation. Deprecated the legacy platform (TRM) and migrated 19 internal teams to a new 'OneAdmin' portal. This required aligning workflows for teams as diverse as Support, Risk, and Onboarding onto a single UI. Proven track record stabilizing high-traffic platforms, managing technical debt alongside new revenue lines like On-Demand Settlements, and delivering AI products that actually save money.</p>
         </div>
     </section>
     
@@ -444,7 +408,7 @@
             <a href="https://github.com/navajitd">GitHub</a>
             <a href="https://twitter.com/navajitd">Twitter</a>
             <a href="https://linkedin.com/in/navajitd">LinkedIn</a>
-            <a href="mailto:navajit@example.com">Email</a>
+            <a href="mailto:navjitdebnath5@gmail.com">Email</a>
         </div>
         <div>© 2025 Navajit D</div>
     </footer>
