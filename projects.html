@@ -199,6 +199,39 @@
             color: var(--muted-color);
         }
         
+        /* Dynamic gradient animation for colorful mode */
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        [data-theme="colorful"] .page-description {
+            background: linear-gradient(
+                90deg,
+                #16a34a,
+                #059669,
+                #eab308,
+                #ea580c,
+                #dc2626,
+                #ea580c,
+                #eab308,
+                #059669,
+                #16a34a
+            );
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 6s ease infinite;
+        }
+        
         /* Projects Section - Similar to index.html project items */
         #projects {
             margin-bottom: 4rem;
@@ -295,6 +328,16 @@
         [data-theme="colorful"] .status-active {
             background-color: rgba(22, 163, 74, 0.1);
             color: var(--accent-color);
+        }
+        
+        .status-experiment {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+        }
+        
+        [data-theme="colorful"] .status-experiment {
+            background-color: rgba(234, 179, 8, 0.1);
+            color: var(--highlight-color);
         }
         
         /* Footer */
@@ -426,6 +469,18 @@
             <p class="project-description">Smart expense management with AI-powered insights and budget tracking. Features automated categorization, spending pattern visualization, and financial habit optimization. Includes a beautiful dark mode interface and secure Google authentication.</p>
             <div class="project-links">
                 <a href="/expenses.html">Launch</a>
+            </div>
+        </div>
+        
+        <div class="project-item">
+            <h3 class="project-title">
+                Letter Hunt
+                <span class="project-status status-experiment">Experiment</span>
+            </h3>
+            <div class="project-meta">p5.js, Canvas, Interactive Art · 2025</div>
+            <p class="project-description">An interactive visual game where you hunt for letters hidden in street photography from Bengaluru. Click on letters to progress through images and discover what fruit you'll find at the end. A playful experiment combining code and urban exploration.</p>
+            <div class="project-links">
+                <a href="/sketches/letter-hunt.html">Launch</a>
             </div>
         </div>
     </section>
