@@ -359,7 +359,7 @@
         }
     </style>
 </head>
-<body class="theme-transition">
+<body class="theme-transition" data-theme="colorful">
     <header>
         <div class="header-left">
             <div class="logo">
@@ -381,9 +381,8 @@
         <nav>
             <ul>
                 <li><a href="/projects.html" class="current">Projects</a></li>
-                <li><a href="/#blog">Blog</a></li>
                 <li><a href="/#experience">Experience</a></li>
-                <li><a href="mailto:navajit@example.com">Contact</a></li>
+                <li><a href="mailto:navjitdebnath5@gmail.com">Contact</a></li>
             </ul>
         </nav>
     </header>
@@ -402,8 +401,7 @@
             <div class="project-meta">JavaScript, Local Storage, PWA · 2025</div>
             <p class="project-description">A comprehensive quiz management system for running live quiz competitions. Features support for Infinite Bounce and Pounce formats, real-time leaderboards, score tracking, and CSV export. All data is stored locally in your browser for offline use.</p>
             <div class="project-links">
-                <a href="/quiz-scoring.html">Launch App</a>
-                <a href="#">Documentation</a>
+                <a href="/quiz-scoring.html">Launch</a>
             </div>
         </div>
         
@@ -415,8 +413,7 @@
             <div class="project-meta">React, Google Sheets API, AI Integration · 2024</div>
             <p class="project-description">Personal fitness tracking dashboard with AI-powered recommendations. Track weight, BMI, and health metrics over time with interactive visualizations. Integrates with Google Sheets for seamless data management and includes an AI coach for personalized fitness advice.</p>
             <div class="project-links">
-                <a href="/fitness.html">Launch App</a>
-                <a href="#">View Metrics</a>
+                <a href="/fitness.html">Launch</a>
             </div>
         </div>
         
@@ -428,38 +425,7 @@
             <div class="project-meta">JavaScript, Google Sheets API, Dark Mode · 2024</div>
             <p class="project-description">Smart expense management with AI-powered insights and budget tracking. Features automated categorization, spending pattern visualization, and financial habit optimization. Includes a beautiful dark mode interface and secure Google authentication.</p>
             <div class="project-links">
-                <a href="/expenses.html">Launch App</a>
-                <a href="#">Analytics</a>
-            </div>
-        </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">Credit Card Recommendation Engine</h3>
-            <div class="project-meta">Python, ML, React · 2024</div>
-            <p class="project-description">A machine learning-based system that analyzes user spending patterns and recommends the most suitable credit card based on reward programs and usage habits.</p>
-            <div class="project-links">
-                <a href="#">Case Study</a>
-                <a href="#">GitHub</a>
-            </div>
-        </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">Personal Finance Dashboard</h3>
-            <div class="project-meta">React, Firebase, Tailwind CSS · 2023</div>
-            <p class="project-description">A comprehensive dashboard that helps users track expenses, set budgets, and visualize spending patterns. Integrates with multiple bank accounts via secure APIs.</p>
-            <div class="project-links">
-                <a href="#">Demo</a>
-                <a href="#">GitHub</a>
-            </div>
-        </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">Flight Path Optimization Tool</h3>
-            <div class="project-meta">Python, NumPy, Visualization · 2022</div>
-            <p class="project-description">Leveraging my aerospace engineering background, I created a tool that optimizes flight paths for commercial airlines, potentially reducing fuel consumption by up to 8%.</p>
-            <div class="project-links">
-                <a href="#">Research Paper</a>
-                <a href="#">GitHub</a>
+                <a href="/expenses.html">Launch</a>
             </div>
         </div>
     </section>
@@ -469,23 +435,25 @@
             <a href="https://github.com/navajitd">GitHub</a>
             <a href="https://twitter.com/navajitd">Twitter</a>
             <a href="https://linkedin.com/in/navajitd">LinkedIn</a>
-            <a href="mailto:navajit@example.com">Email</a>
+            <a href="mailto:navjitdebnath5@gmail.com">Email</a>
         </div>
         <div>© 2025 Navajit D</div>
     </footer>
 
     <script>
-        // Theme toggle functionality - identical to index.html
+        // Theme toggle functionality - projects page defaults to colorful
         const themeToggle = document.getElementById('themeToggle');
         const body = document.body;
         
-        // Check for saved theme preference or default to 'original'
-        const currentTheme = localStorage.getItem('theme') || 'original';
+        // For projects page: default to colorful if no saved preference
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
         
-        // Apply the current theme
-        if (currentTheme === 'colorful') {
-            body.setAttribute('data-theme', 'colorful');
+        // If there's a saved preference, apply it; otherwise keep colorful (already set in HTML)
+        if (savedTheme === 'original') {
+            body.removeAttribute('data-theme');
         }
+        // If savedTheme is 'colorful' or null/undefined, keep colorful (default for projects page)
         
         // Theme toggle event listener
         themeToggle.addEventListener('click', function() {
@@ -516,13 +484,6 @@
         
         // Prefers color scheme detection
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        // Only auto-set theme if no saved preference
-        if (!localStorage.getItem('theme')) {
-            if (prefersDark.matches) {
-                body.setAttribute('data-theme', 'colorful');
-            }
-        }
         
         // Listen for changes in system theme preference
         prefersDark.addEventListener('change', (e) => {
