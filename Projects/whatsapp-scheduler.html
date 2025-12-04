@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
+    
+    <title>WhatsApp Scheduler - Navajit D</title>
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="WhatsApp Scheduler - Navajit D">
+    <meta property="og:description" content="Schedule WhatsApp messages like emails - send messages at the perfect time">
+    <meta property="og:url" content="https://navajitd.github.io/Projects/whatsapp-scheduler.html">
+    <meta property="og:type" content="website">
+    
+    <style>
+        /* Base Styles */
+        :root {
+            --text-color: #0a1f00;
+            --bg-color: #fff;
+            --accent-color: #25D366;
+            --muted-color: #6b7280;
+            --border-color: #e5e7eb;
+            --font-sans: "Inconsolata", monospace;
+            --success-color: #25D366;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --whatsapp-dark: #128C7E;
+            --whatsapp-light: #25D366;
+        }
+        
+        /* Colorful Theme */
+        [data-theme="colorful"] {
+            --text-color: #0f2e00;
+            --bg-color: #fefffe;
+            --accent-color: #25D366;
+            --muted-color: #65a30d;
+            --border-color: #bbf7d0;
+            --secondary-color: #ea580c;
+            --highlight-color: #eab308;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html {
+            font-size: 16px;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.65;
+            max-width: 42rem;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        p {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+        
+        .logo a {
+            color: var(--text-color);
+        }
+        
+        .logo a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            width: 2.5rem;
+            height: 2rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            border-color: var(--accent-color);
+            background: rgba(37, 211, 102, 0.05);
+        }
+        
+        .theme-toggle svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--text-color);
+            fill: none;
+            stroke-width: 1.5;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover svg {
+            stroke: var(--accent-color);
+        }
+        
+        .icon-colorful { opacity: 0; position: absolute; }
+        .icon-original { opacity: 1; }
+        [data-theme="colorful"] .icon-colorful { opacity: 1; }
+        [data-theme="colorful"] .icon-original { opacity: 0; }
+        
+        nav ul {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+        
+        nav a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-bottom: 3rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            line-height: 1.3;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .page-title svg {
+            width: 2rem;
+            height: 2rem;
+        }
+        
+        .page-description {
+            font-size: 1.125rem;
+            color: var(--muted-color);
+        }
+        
+        /* Dynamic gradient animation for colorful mode */
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        [data-theme="colorful"] .page-description {
+            background: linear-gradient(90deg, #25D366, #128C7E, #25D366);
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 4s ease infinite;
+        }
+        
+        /* Section Styles */
+        section {
+            margin-bottom: 3rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.05em;
+        }
+        
+        /* Connection Status */
+        .connection-panel {
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.05) 0%, rgba(18, 140, 126, 0.05) 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.connected {
+            background: #25D366;
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-text {
+            font-weight: 600;
+        }
+        
+        .qr-container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            border: 2px dashed var(--border-color);
+        }
+        
+        .qr-container img {
+            max-width: 256px;
+            border-radius: 8px;
+        }
+        
+        .qr-placeholder {
+            color: var(--muted-color);
+            padding: 3rem;
+        }
+        
+        /* Form Styles */
+        .form-container {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        
+        [data-theme="colorful"] .form-container {
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.03) 0%, rgba(234, 88, 12, 0.03) 100%);
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        input[type="text"],
+        input[type="tel"],
+        input[type="datetime-local"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.875rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.15);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .form-hint {
+            font-size: 0.75rem;
+            color: var(--muted-color);
+            margin-top: 0.25rem;
+        }
+        
+        /* Buttons */
+        button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        button:hover {
+            background: var(--whatsapp-dark);
+            transform: translateY(-1px);
+        }
+        
+        button:disabled {
+            background: var(--muted-color);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        button.secondary {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        button.secondary:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(37, 211, 102, 0.05);
+        }
+        
+        button.danger {
+            background: #ef4444;
+        }
+        
+        button.danger:hover {
+            background: #dc2626;
+        }
+        
+        /* Scheduled Messages List */
+        .messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .message-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.2s;
+        }
+        
+        .message-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.1);
+        }
+        
+        [data-theme="colorful"] .message-card {
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.02) 0%, rgba(255, 255, 255, 1) 100%);
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .message-recipient {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .message-time {
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .message-time svg {
+            width: 14px;
+            height: 14px;
+        }
+        
+        .message-preview {
+            color: var(--muted-color);
+            font-size: 0.9375rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-color);
+        }
+        
+        .message-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .message-actions button {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+        
+        .message-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+        
+        .status-sent {
+            background: rgba(37, 211, 102, 0.1);
+            color: #128C7E;
+        }
+        
+        .status-failed {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--muted-color);
+        }
+        
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        /* Backend Config */
+        .config-panel {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+        }
+        
+        .config-panel.error {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+        
+        .config-panel.success {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+        
+        .config-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .config-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .config-input input {
+            flex: 1;
+        }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .toast {
+            background: var(--text-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .toast.success {
+            background: var(--accent-color);
+        }
+        
+        .toast.error {
+            background: #ef4444;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            body {
+                padding: 2rem 1rem;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.75rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .message-header {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .toast-container {
+                left: 1rem;
+                right: 1rem;
+            }
+        }
+        
+        /* Loading State */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="theme-transition" data-theme="colorful">
+    <header>
+        <div class="header-left">
+            <div class="logo">
+                <a href="/">Navajit D</a>
+            </div>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
+                <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    <circle cx="12" cy="12" r="2"/>
+                    <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
+                </svg>
+                <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+            </button>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/projects.html">← Projects</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="page-header">
+        <h1 class="page-title">
+            <svg viewBox="0 0 24 24" fill="#25D366">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            WhatsApp Scheduler
+        </h1>
+        <p class="page-description">Schedule messages like emails. Send at the perfect time, every time.</p>
+    </div>
+
+    <!-- WhatsApp Connection -->
+    <section id="connectionSection">
+        <h2 class="section-title">WhatsApp Connection</h2>
+        <div class="connection-panel">
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span class="status-text" id="statusText">Disconnected</span>
+            </div>
+            <div class="qr-container" id="qrContainer">
+                <div class="qr-placeholder" id="qrPlaceholder">
+                    <p>Connect to backend server to scan QR code</p>
+                </div>
+                <img id="qrImage" class="hidden" alt="WhatsApp QR Code">
+            </div>
+            <div id="connectedInfo" class="hidden" style="text-align: center; padding: 2rem;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="#25D366">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                <p style="font-weight: 600; margin-top: 1rem;">WhatsApp Connected!</p>
+                <p style="color: var(--muted-color); font-size: 0.875rem;" id="connectedPhone"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Schedule New Message -->
+    <section>
+        <h2 class="section-title">Schedule Message</h2>
+        <div class="form-container">
+            <form id="scheduleForm">
+                <div class="form-group">
+                    <label for="recipient">Recipient Phone Number</label>
+                    <input type="tel" id="recipient" name="recipient" placeholder="+91 98765 43210" required>
+                    <p class="form-hint">Include country code (e.g., +91 for India)</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" placeholder="Type your message here..." required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="scheduledTime">Send At</label>
+                        <input type="datetime-local" id="scheduledTime" name="scheduledTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="repeat">Repeat</label>
+                        <select id="repeat" name="repeat">
+                            <option value="none">Don't repeat</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" id="scheduleBtn" disabled>
+                        <span id="scheduleBtnText">Schedule Message</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Scheduled Messages -->
+    <section>
+        <h2 class="section-title">Scheduled Messages</h2>
+        <div id="messagesList" class="messages-list">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <p>No scheduled messages yet</p>
+                <p style="font-size: 0.875rem;">Schedule your first message above!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Global state
+        const backendUrl = 'https://whatsapp-scheduler-production-1f8d.up.railway.app';
+        let isConnected = false;
+        let scheduledMessages = [];
+        let pollInterval = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupThemeToggle();
+            setMinDateTime();
+            connectBackend();
+            document.getElementById('scheduleForm').addEventListener('submit', scheduleMessage);
+        });
+
+        // Theme toggle
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (savedTheme === 'original') {
+                body.removeAttribute('data-theme');
+            }
+            
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = body.getAttribute('data-theme');
+                if (currentTheme === 'colorful') {
+                    body.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'original');
+                } else {
+                    body.setAttribute('data-theme', 'colorful');
+                    localStorage.setItem('theme', 'colorful');
+                }
+            });
+        }
+
+        // Set minimum datetime to now
+        function setMinDateTime() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('scheduledTime').min = now.toISOString().slice(0, 16);
+        }
+
+        // Connect to backend
+        async function connectBackend() {
+            try {
+                const response = await fetch(`${backendUrl}/api/status`);
+                const data = await response.json();
+                
+                if (data.connected) {
+                    updateConnectionStatus(true, data.phone);
+                } else {
+                    startQRPolling();
+                }
+                
+                document.getElementById('scheduleBtn').disabled = false;
+                loadScheduledMessages();
+                
+            } catch (error) {
+                console.error('Connection error:', error);
+                showToast('Failed to connect to server', 'error');
+            }
+        }
+
+        // Start polling for QR code
+        function startQRPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            
+            pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${backendUrl}/api/status`);
+                    const data = await response.json();
+                    
+                    if (data.connected) {
+                        clearInterval(pollInterval);
+                        updateConnectionStatus(true, data.phone);
+                    } else if (data.qr) {
+                        showQRCode(data.qr);
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 3000);
+            
+            // Initial fetch
+            fetchQRCode();
+        }
+
+        // Fetch QR code
+        async function fetchQRCode() {
+            try {
+                const response = await fetch(`${backendUrl}/api/qr`);
+                const data = await response.json();
+                
+                if (data.qr) {
+                    showQRCode(data.qr);
+                } else if (data.connected) {
+                    updateConnectionStatus(true, data.phone);
+                }
+            } catch (error) {
+                console.error('QR fetch error:', error);
+            }
+        }
+
+        // Show QR code
+        function showQRCode(qrDataUrl) {
+            const qrImage = document.getElementById('qrImage');
+            const qrPlaceholder = document.getElementById('qrPlaceholder');
+            
+            qrImage.src = qrDataUrl;
+            qrImage.classList.remove('hidden');
+            qrPlaceholder.classList.add('hidden');
+            
+            document.getElementById('statusText').textContent = 'Scan QR Code';
+        }
+
+        // Update connection status
+        function updateConnectionStatus(connected, phone = '') {
+            isConnected = connected;
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const qrContainer = document.getElementById('qrContainer');
+            const connectedInfo = document.getElementById('connectedInfo');
+            const connectedPhone = document.getElementById('connectedPhone');
+            
+            if (connected) {
+                indicator.classList.add('connected');
+                statusText.textContent = 'Connected';
+                qrContainer.classList.add('hidden');
+                connectedInfo.classList.remove('hidden');
+                connectedPhone.textContent = phone || 'WhatsApp account linked';
+                
+                if (pollInterval) {
+                    clearInterval(pollInterval);
+                }
+                
+                showToast('WhatsApp connected successfully!', 'success');
+            } else {
+                indicator.classList.remove('connected');
+                statusText.textContent = 'Disconnected';
+                qrContainer.classList.remove('hidden');
+                connectedInfo.classList.add('hidden');
+            }
+        }
+
+        // Schedule message
+        async function scheduleMessage(e) {
+            e.preventDefault();
+            
+            if (!backendUrl) {
+                showToast('Please connect to backend first', 'error');
+                return;
+            }
+            
+            const form = e.target;
+            const btn = document.getElementById('scheduleBtn');
+            const btnText = document.getElementById('scheduleBtnText');
+            
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span> Scheduling...';
+            
+            const data = {
+                recipient: document.getElementById('recipient').value.replace(/\s/g, ''),
+                message: document.getElementById('message').value,
+                scheduledTime: new Date(document.getElementById('scheduledTime').value).toISOString(),
+                repeat: document.getElementById('repeat').value
+            };
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/schedule`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Message scheduled successfully!', 'success');
+                    form.reset();
+                    setMinDateTime();
+                    loadScheduledMessages();
+                } else {
+                    showToast(result.error || 'Failed to schedule message', 'error');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+                console.error('Schedule error:', error);
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Schedule Message';
+            }
+        }
+
+        // Load scheduled messages
+        async function loadScheduledMessages() {
+            if (!backendUrl) return;
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/messages`);
+                const data = await response.json();
+                
+                scheduledMessages = data.messages || [];
+                renderMessages();
+            } catch (error) {
+                console.error('Load messages error:', error);
+            }
+        }
+
+        // Render messages list
+        function renderMessages() {
+            const container = document.getElementById('messagesList');
+            
+            if (scheduledMessages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <p>No scheduled messages yet</p>
+                        <p style="font-size: 0.875rem;">Schedule your first message above!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = scheduledMessages.map(msg => `
+                <div class="message-card" data-id="${msg.id}">
+                    <div class="message-header">
+                        <div>
+                            <div class="message-recipient">${formatPhone(msg.recipient)}</div>
+                            <span class="message-status status-${msg.status}">${msg.status}</span>
+                        </div>
+                        <div class="message-time">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            ${formatDateTime(msg.scheduledTime)}
+                        </div>
+                    </div>
+                    <div class="message-preview">${escapeHtml(msg.message)}</div>
+                    <div class="message-actions">
+                        ${msg.status === 'pending' ? `
+                            <button class="secondary" onclick="editMessage('${msg.id}')">Edit</button>
+                            <button class="danger" onclick="cancelMessage('${msg.id}')">Cancel</button>
+                        ` : ''}
+                        ${msg.status === 'sent' ? `
+                            <button class="secondary" onclick="rescheduleMessage('${msg.id}')">Send Again</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Cancel message
+        async function cancelMessage(id) {
+            if (!confirm('Are you sure you want to cancel this scheduled message?')) return;
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/messages/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Message cancelled', 'success');
+                    loadScheduledMessages();
+                } else {
+                    showToast(result.error || 'Failed to cancel', 'error');
+                }
+            } catch (error) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        // Edit message (populate form)
+        function editMessage(id) {
+            const msg = scheduledMessages.find(m => m.id === id);
+            if (!msg) return;
+            
+            document.getElementById('recipient').value = msg.recipient;
+            document.getElementById('message').value = msg.message;
+            
+            const dt = new Date(msg.scheduledTime);
+            dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+            document.getElementById('scheduledTime').value = dt.toISOString().slice(0, 16);
+            
+            document.getElementById('repeat').value = msg.repeat || 'none';
+            
+            // Scroll to form
+            document.getElementById('scheduleForm').scrollIntoView({ behavior: 'smooth' });
+            
+            // Cancel the old one
+            cancelMessage(id);
+        }
+
+        // Reschedule message
+        function rescheduleMessage(id) {
+            const msg = scheduledMessages.find(m => m.id === id);
+            if (!msg) return;
+            
+            document.getElementById('recipient').value = msg.recipient;
+            document.getElementById('message').value = msg.message;
+            setMinDateTime();
+            
+            document.getElementById('scheduleForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Helper functions
+        function formatPhone(phone) {
+            // Simple formatting
+            return phone.replace(/(\+\d{2})(\d{5})(\d{5})/, '$1 $2 $3');
+        }
+
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                ${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}
+                ${message}
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Periodic status check
+        setInterval(() => {
+            if (backendUrl && isConnected) {
+                loadScheduledMessages();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
