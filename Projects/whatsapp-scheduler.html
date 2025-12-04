@@ -642,17 +642,6 @@
             <div class="logo">
                 <a href="/">Navajit D</a>
             </div>
-            <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
-                <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-                    <circle cx="12" cy="12" r="2"/>
-                    <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
-                </svg>
-                <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="5"/>
-                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                </svg>
-            </button>
         </div>
         <nav>
             <ul>
@@ -758,40 +747,17 @@
 
     <script>
         // Global state
-        const backendUrl = 'whatsapp-scheduler-production-1f8d.up.railway.app';
+        const backendUrl = 'https://whatsapp-scheduler-production-1f8d.up.railway.app';
         let isConnected = false;
         let scheduledMessages = [];
         let pollInterval = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            setupThemeToggle();
             setMinDateTime();
             connectBackend();
             document.getElementById('scheduleForm').addEventListener('submit', scheduleMessage);
         });
-
-        // Theme toggle
-        function setupThemeToggle() {
-            const themeToggle = document.getElementById('themeToggle');
-            const body = document.body;
-            const savedTheme = localStorage.getItem('theme');
-            
-            if (savedTheme === 'original') {
-                body.removeAttribute('data-theme');
-            }
-            
-            themeToggle.addEventListener('click', function() {
-                const currentTheme = body.getAttribute('data-theme');
-                if (currentTheme === 'colorful') {
-                    body.removeAttribute('data-theme');
-                    localStorage.setItem('theme', 'original');
-                } else {
-                    body.setAttribute('data-theme', 'colorful');
-                    localStorage.setItem('theme', 'colorful');
-                }
-            });
-        }
 
         // Set minimum datetime to now
         function setMinDateTime() {
@@ -802,13 +768,19 @@
 
         // Connect to backend
         async function connectBackend() {
+            const placeholder = document.getElementById('qrPlaceholder');
+            placeholder.innerHTML = '<p>Connecting to server...</p>';
+            
             try {
                 const response = await fetch(`${backendUrl}/api/status`);
                 const data = await response.json();
                 
                 if (data.connected) {
                     updateConnectionStatus(true, data.phone);
+                } else if (data.qr) {
+                    showQRCode(data.qr);
                 } else {
+                    placeholder.innerHTML = '<p>Waiting for QR code... (WhatsApp is initializing)</p>';
                     startQRPolling();
                 }
                 
@@ -817,7 +789,10 @@
                 
             } catch (error) {
                 console.error('Connection error:', error);
-                showToast('Failed to connect to server', 'error');
+                placeholder.innerHTML = `<p style="color: #ef4444;">Failed to connect to server.<br><small>Server may be starting up. Retrying in 10s...</small></p>`;
+                
+                // Retry after 10 seconds
+                setTimeout(connectBackend, 10000);
             }
         }
 
