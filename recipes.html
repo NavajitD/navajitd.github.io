@@ -4,24 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
-    
-    <title>Projects - Navajit D</title>
+
+    <title>Recipes - Navajit D</title>
     <style>
-        /* Base Styles - Identical to index.html */
         :root {
-            /* Original Theme */
             --text-color: #0a1f00;
             --bg-color: #fff;
             --accent-color: #2563eb;
             --muted-color: #6b7280;
             --border-color: #e5e7eb;
             --font-sans: "Inconsolata", monospace;
+            --secondary-color: #374151;
+            --highlight-color: #f59e0b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
         }
-        
-        /* Green/Red/Yellow Theme */
+
         [data-theme="colorful"] {
             --text-color: #0f2e00;
             --bg-color: #fefffe;
@@ -33,25 +34,17 @@
             --success-color: #059669;
             --warning-color: #d97706;
         }
-        
-        /* Original theme secondary colors */
-        :root {
-            --secondary-color: #374151;
-            --highlight-color: #f59e0b;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-        }
-        
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        
+
         html {
             font-size: 16px;
         }
-        
+
         body {
             font-family: var(--font-sans);
             color: var(--text-color);
@@ -62,21 +55,17 @@
             padding: 3rem 1.5rem;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        
+
         a {
             color: var(--accent-color);
             text-decoration: none;
             transition: color 0.3s ease;
         }
-        
+
         a:hover {
             text-decoration: underline;
         }
-        
-        p {
-            margin-bottom: 1.5rem;
-        }
-        
+
         /* Theme Toggle */
         .theme-toggle {
             width: 2.5rem;
@@ -90,18 +79,17 @@
             justify-content: center;
             transition: all 0.3s ease;
         }
-        
+
         .theme-toggle:hover {
             border-color: var(--accent-color);
             background: rgba(37, 99, 235, 0.05);
         }
-        
+
         [data-theme="colorful"] .theme-toggle:hover {
             border-color: var(--accent-color);
             background: rgba(22, 163, 74, 0.05);
         }
-        
-        /* Theme toggle icons */
+
         .theme-toggle svg {
             width: 16px;
             height: 16px;
@@ -110,29 +98,28 @@
             stroke-width: 1.5;
             transition: all 0.3s ease;
         }
-        
+
         .theme-toggle:hover svg {
             stroke: var(--accent-color);
         }
-        
-        /* Theme toggle icons visibility */
+
         .icon-colorful {
             opacity: 0;
             position: absolute;
         }
-        
+
         .icon-original {
             opacity: 1;
         }
-        
+
         [data-theme="colorful"] .icon-colorful {
             opacity: 1;
         }
-        
+
         [data-theme="colorful"] .icon-original {
             opacity: 0;
         }
-        
+
         /* Header Styles */
         header {
             display: flex;
@@ -140,206 +127,158 @@
             align-items: center;
             margin-bottom: 3rem;
         }
-        
+
         .header-left {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
-        
+
         .logo {
             font-weight: 600;
             font-size: 1rem;
             color: var(--text-color);
         }
-        
+
         .logo a {
             color: var(--text-color);
         }
-        
+
         .logo a:hover {
             color: var(--accent-color);
             text-decoration: none;
         }
-        
+
         nav ul {
             display: flex;
             gap: 1.5rem;
             list-style: none;
         }
-        
+
         nav a {
             color: var(--text-color);
             font-size: 1rem;
         }
-        
+
         nav a:hover {
             color: var(--accent-color);
             text-decoration: none;
         }
-        
+
         nav a.current {
             color: var(--accent-color);
             font-weight: 600;
         }
-        
-        /* Page Title */
+
+        /* Page Header */
         .page-header {
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
         }
-        
+
         .page-title {
             font-size: 2.3rem;
             line-height: 1.3;
             font-weight: 700;
             margin-bottom: 1rem;
         }
-        
+
         .page-description {
             color: var(--muted-color);
+            font-size: 1rem;
         }
-        
-        /* Dynamic gradient animation for colorful mode */
+
         @keyframes gradient-shift {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        
+
         [data-theme="colorful"] .page-description {
-            background: linear-gradient(
-                90deg,
-                #16a34a,
-                #059669,
-                #eab308,
-                #ea580c,
-                #dc2626,
-                #ea580c,
-                #eab308,
-                #059669,
-                #16a34a
-            );
+            background: linear-gradient(90deg, #16a34a, #059669, #eab308, #ea580c, #dc2626, #ea580c, #eab308, #059669, #16a34a);
             background-size: 200% auto;
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: gradient-shift 6s ease infinite;
         }
-        
-        /* Projects Section - Similar to index.html project items */
-        #projects {
+
+        /* Recipe List - Minimalist Style */
+        .recipe-list {
             margin-bottom: 4rem;
         }
-        
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-        }
-        
-        .project-item {
-            margin-bottom: 2.5rem;
-            padding-bottom: 2.5rem;
+
+        .recipe-item {
+            display: block;
+            padding: 1.25rem 0;
             border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: var(--text-color);
         }
-        
-        [data-theme="colorful"] .project-item {
-            background: linear-gradient(
-                135deg, 
-                rgba(22, 163, 74, 0.03) 0%, 
-                rgba(234, 88, 12, 0.03) 50%,
-                rgba(234, 179, 8, 0.03) 100%
-            );
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            border-bottom: none;
+
+        .recipe-item:first-child {
+            border-top: 1px solid var(--border-color);
         }
-        
-        .project-item:last-child {
-            border-bottom: none;
+
+        .recipe-item:hover {
+            text-decoration: none;
+            padding-left: 0.75rem;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
         }
-        
-        .project-title {
+
+        [data-theme="colorful"] .recipe-item:hover {
+            background: linear-gradient(90deg, rgba(22, 163, 74, 0.06) 0%, transparent 100%);
+        }
+
+        .recipe-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .recipe-name {
             font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+            transition: color 0.2s ease;
         }
-        
-        [data-theme="colorful"] .project-title {
+
+        .recipe-item:hover .recipe-name {
             color: var(--accent-color);
         }
-        
-        .project-meta {
+
+        .recipe-meta {
             font-size: 0.875rem;
             color: var(--muted-color);
-            margin-bottom: 0.75rem;
+            font-weight: 400;
+            white-space: nowrap;
         }
-        
-        [data-theme="colorful"] .project-meta {
+
+        [data-theme="colorful"] .recipe-meta {
             color: var(--secondary-color);
         }
-        
-        .project-description {
-            margin-bottom: 0.75rem;
+
+        /* Category Sections */
+        .category-section {
+            margin-bottom: 3rem;
         }
-        
-        .project-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-        
-        .project-links a {
+
+        .category-title {
             font-size: 0.875rem;
-        }
-        
-        /* New badge styles for project status */
-        .project-status {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
             font-weight: 600;
-            border-radius: 4px;
-            margin-left: 0.5rem;
             text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
         }
-        
-        .status-wip {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
-        }
-        
-        [data-theme="colorful"] .status-wip {
-            background-color: rgba(234, 88, 12, 0.1);
-            color: var(--secondary-color);
-        }
-        
-        .status-active {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #059669;
-        }
-        
-        [data-theme="colorful"] .status-active {
-            background-color: rgba(22, 163, 74, 0.1);
+
+        [data-theme="colorful"] .category-title {
             color: var(--accent-color);
         }
-        
-        .status-experiment {
-            background-color: rgba(139, 92, 246, 0.1);
-            color: #7c3aed;
-        }
-        
-        [data-theme="colorful"] .status-experiment {
-            background-color: rgba(234, 179, 8, 0.1);
-            color: var(--highlight-color);
-        }
-        
+
         /* Footer */
         footer {
             margin-top: 4rem;
@@ -351,52 +290,60 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .footer-links {
             display: flex;
             gap: 1.5rem;
         }
-        
+
         @media (max-width: 640px) {
             body {
                 padding: 2rem 1rem;
             }
-            
+
             .theme-toggle {
                 width: 2rem;
                 height: 1.75rem;
             }
-            
+
             .theme-toggle svg {
                 width: 14px;
                 height: 14px;
             }
-            
+
             header {
                 flex-direction: column;
                 gap: 1rem;
             }
-            
+
             nav ul {
                 gap: 1rem;
             }
-            
+
             .page-title {
                 font-size: 1.75rem;
             }
-            
-            [data-theme="colorful"] .project-item {
-                padding: 1rem;
+
+            .page-header {
+                margin-bottom: 3rem;
             }
-            
+
+            .recipe-link {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .recipe-meta {
+                white-space: normal;
+            }
+
             footer {
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
             }
         }
-        
-        /* Loading animation for theme transition */
+
         .theme-transition {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -408,7 +355,6 @@
             <div class="logo">
                 <a href="/">Navajit D</a>
             </div>
-            <!-- Theme Toggle Button -->
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
                 <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
@@ -423,81 +369,127 @@
         </div>
         <nav>
             <ul>
-                <li><a href="/projects.html" class="current">Projects</a></li>
-                <li><a href="/recipes.html">Recipes</a></li>
-                <li><a href="/#experience">Experience</a></li>
+                <li><a href="/projects.html">Projects</a></li>
+                <li><a href="/recipes.html" class="current">Recipes</a></li>
                 <li><a href="mailto:navjitdebnath5@gmail.com">Contact</a></li>
             </ul>
         </nav>
     </header>
-    
+
     <div class="page-header">
-        <h1 class="page-title">Projects</h1>
-        <p class="page-description">Tools and applications I've built to make life easier or more fun.</p>
+        <h1 class="page-title">Recipes</h1>
+        <p class="page-description">A collection of dishes I've cooked and loved.</p>
     </div>
-    
-    <section id="projects">
-        <div class="project-item">
-            <h3 class="project-title">
-                WhatsApp Scheduler
-                <span class="project-status status-wip">Ongoing fixes</span>
-            </h3>
-            <div class="project-meta">Node.js, WhatsApp Web API, Express · 2025</div>
-            <p class="project-description">Schedule WhatsApp messages like emails. Set up messages to be sent at the perfect time with support for recurring schedules. Connect your WhatsApp via QR code and manage all scheduled messages from a clean dashboard.</p>
-            <div class="project-links">
-                <a href="/Projects/whatsapp-scheduler.html">Launch</a>
-            </div>
+
+    <section class="recipe-list">
+        <div class="category-section">
+            <h2 class="category-title">Main Courses</h2>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">butter.chicken()</span>
+                    <span class="recipe-meta">Indian · 2024</span>
+                </div>
+            </a>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">dal.makhani()</span>
+                    <span class="recipe-meta">Indian · 2024</span>
+                </div>
+            </a>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">chicken.biryani()</span>
+                    <span class="recipe-meta">Indian · 2023</span>
+                </div>
+            </a>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">paneer.tikka()</span>
+                    <span class="recipe-meta">Indian · 2023</span>
+                </div>
+            </a>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">pasta.carbonara()</span>
+                    <span class="recipe-meta">Italian · 2024</span>
+                </div>
+            </a>
         </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">
-                Quiz Score Counter
-                <span class="project-status status-active">Active</span>
-            </h3>
-            <div class="project-meta">JavaScript, Local Storage, PWA · 2025</div>
-            <p class="project-description">A comprehensive quiz management system for running live quiz competitions. Features support for Infinite Bounce and Pounce formats, real-time leaderboards, score tracking, and CSV export. All data is stored locally in your browser for offline use.</p>
-            <div class="project-links">
-                <a href="/Projects/quiz-scoring.html">Launch</a>
-            </div>
+
+        <div class="category-section">
+            <h2 class="category-title">Snacks & Sides</h2>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">samosa.filling()</span>
+                    <span class="recipe-meta">Indian · 2024</span>
+                </div>
+            </a>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">garlic.naan()</span>
+                    <span class="recipe-meta">Indian · 2023</span>
+                </div>
+            </a>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">aloo.paratha()</span>
+                    <span class="recipe-meta">Indian · 2023</span>
+                </div>
+            </a>
         </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">
-                Fitness Tracker
-                <span class="project-status status-wip">Ongoing fixes</span>
-            </h3>
-            <div class="project-meta">React, Google Sheets API, AI Integration · 2024</div>
-            <p class="project-description">Personal fitness tracking dashboard with AI-powered recommendations. Track weight, BMI, and health metrics over time with interactive visualizations. Integrates with Google Sheets for seamless data management and includes an AI coach for personalized fitness advice.</p>
-            <div class="project-links">
-                <a href="/Projects/fitness.html">Launch</a>
-            </div>
+
+        <div class="category-section">
+            <h2 class="category-title">Desserts</h2>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">gulab.jamun()</span>
+                    <span class="recipe-meta">Indian · 2024</span>
+                </div>
+            </a>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">kheer.rice()</span>
+                    <span class="recipe-meta">Indian · 2023</span>
+                </div>
+            </a>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">chocolate.lava()</span>
+                    <span class="recipe-meta">French · 2024</span>
+                </div>
+            </a>
         </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">
-                Expense Tracker
-                <span class="project-status status-active">Active</span>
-            </h3>
-            <div class="project-meta">JavaScript, Google Sheets API, Dark Mode · 2024</div>
-            <p class="project-description">Smart expense management with AI-powered insights and budget tracking. Features automated categorization, spending pattern visualization, and financial habit optimization. Includes a beautiful dark mode interface and secure Google authentication.</p>
-            <div class="project-links">
-                <a href="/Projects/Expense-Tracker/expenses.html">Launch</a>
-            </div>
-        </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">
-                Letter Hunt
-                <span class="project-status status-active">Active</span>
-            </h3>
-            <div class="project-meta">p5.js, Canvas, Interactive Art · 2025</div>
-            <p class="project-description">An interactive visual game where you hunt for letters hidden in street photography from Bengaluru. Click on letters to progress through images and discover what fruit you'll find at the end. A playful experiment combining code and urban exploration.</p>
-            <div class="project-links">
-                <a href="/Projects/Sketches/letter-hunt.html">Launch</a>
-            </div>
+
+        <div class="category-section">
+            <h2 class="category-title">Beverages</h2>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">masala.chai()</span>
+                    <span class="recipe-meta">Indian · 2023</span>
+                </div>
+            </a>
+
+            <a href="#" class="recipe-item">
+                <div class="recipe-link">
+                    <span class="recipe-name">mango.lassi()</span>
+                    <span class="recipe-meta">Indian · 2024</span>
+                </div>
+            </a>
         </div>
     </section>
-    
+
     <footer>
         <div class="footer-links">
             <a href="https://github.com/navajitd">GitHub</a>
@@ -509,24 +501,18 @@
     </footer>
 
     <script>
-        // Theme toggle functionality - projects page defaults to colorful
         const themeToggle = document.getElementById('themeToggle');
         const body = document.body;
-        
-        // For projects page: default to colorful if no saved preference
-        // Check for saved theme preference
+
         const savedTheme = localStorage.getItem('theme');
-        
-        // If there's a saved preference, apply it; otherwise keep colorful (already set in HTML)
+
         if (savedTheme === 'original') {
             body.removeAttribute('data-theme');
         }
-        // If savedTheme is 'colorful' or null/undefined, keep colorful (default for projects page)
-        
-        // Theme toggle event listener
+
         themeToggle.addEventListener('click', function() {
             const currentTheme = body.getAttribute('data-theme');
-            
+
             if (currentTheme === 'colorful') {
                 body.removeAttribute('data-theme');
                 localStorage.setItem('theme', 'original');
@@ -534,26 +520,22 @@
                 body.setAttribute('data-theme', 'colorful');
                 localStorage.setItem('theme', 'colorful');
             }
-            
-            // Add a subtle animation effect
+
             themeToggle.style.opacity = '0.7';
             setTimeout(() => {
                 themeToggle.style.opacity = '1';
             }, 150);
         });
-        
-        // Add keyboard accessibility
+
         themeToggle.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 themeToggle.click();
             }
         });
-        
-        // Prefers color scheme detection
+
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        // Listen for changes in system theme preference
+
         prefersDark.addEventListener('change', (e) => {
             if (!localStorage.getItem('theme')) {
                 if (e.matches) {
