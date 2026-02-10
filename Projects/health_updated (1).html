@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HealthTracker+">
+<meta name="theme-color" content="#fefffe">
+<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2316a34a'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' font-weight='700' text-anchor='middle' fill='white'%3EH%3C/text%3E%3C/svg%3E">
+<title>HealthTracker+ · Navajit D</title>
+<style>
+:root {
+  --text: #0a1f00;
+  --bg: #fff;
+  --bg2: #f9fafb;
+  --accent: #2563eb;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --green: #16a34a;
+  --orange: #ea580c;
+  --yellow: #eab308;
+  --red: #dc2626;
+  --font: "Inconsolata", monospace;
+  --radius: 8px;
+  --max-w: 42rem;
+  --ring-track: #e5e7eb;
+}
+[data-theme="colorful"] {
+  --text: #0f2e00;
+  --bg: #fefffe;
+  --bg2: #f0fdf4;
+  --accent: #16a34a;
+  --muted: #65a30d;
+  --border: #bbf7d0;
+  --ring-track: #dcfce7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;height:100%;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.6;min-height:100%;transition:background .3s,color .3s;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+button{font-family:var(--font);cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:var(--font);color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:.5rem .75rem;font-size:.8125rem;outline:none;transition:border .2s}
+input:focus,select:focus{border-color:var(--accent)}
+
+/* App Shell */
+.app{max-width:var(--max-w);margin:0 auto;padding:0 1rem;padding-bottom:5rem}
+
+/* Header */
+.header{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--border);padding:.875rem 0;margin-bottom:1.5rem;transition:background .3s}
+.header-inner{display:flex;align-items:center;justify-content:space-between;max-width:var(--max-w);margin:0 auto}
+.header-left{display:flex;align-items:center;gap:.75rem}
+.logo{font-weight:700;font-size:.875rem;letter-spacing:-.02em}
+.logo a{color:var(--text);text-decoration:none}
+.logo a:hover{color:var(--accent);text-decoration:none}
+.header-tag{font-size:.6875rem;color:var(--muted);letter-spacing:.04em}
+
+/* Theme Toggle - matches portfolio */
+.theme-toggle{width:2rem;height:1.75rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;transition:all .3s;position:relative}
+.theme-toggle:hover{border-color:var(--accent)}
+.theme-toggle svg{width:14px;height:14px;stroke:var(--text);fill:none;stroke-width:1.5;transition:all .3s}
+.theme-toggle:hover svg{stroke:var(--accent)}
+.icon-colorful{opacity:0;position:absolute}.icon-original{opacity:1}
+[data-theme="colorful"] .icon-colorful{opacity:1}
+[data-theme="colorful"] .icon-original{opacity:0}
+
+/* Date Nav */
+.date-nav{display:flex;align-items:center;justify-content:center;gap:1rem;margin-bottom:1.5rem}
+.date-nav button{padding:.25rem .5rem;border-radius:var(--radius);border:1px solid var(--border);font-size:.75rem;color:var(--muted);transition:all .2s}
+.date-nav button:hover{border-color:var(--accent);color:var(--accent)}
+.date-label{font-size:.8125rem;font-weight:600;min-width:10rem;text-align:center}
+.date-today{font-size:.625rem;color:var(--accent);cursor:pointer}
+
+/* Cards */
+.card{border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;background:var(--bg);transition:all .3s}
+[data-theme="colorful"] .card{background:linear-gradient(135deg,rgba(22,163,74,.02),rgba(234,88,12,.02))}
+.card-title{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.card-title svg{width:14px;height:14px;stroke:var(--accent);stroke-width:2}
+
+/* Ring */
+.ring-wrap{display:flex;align-items:center;gap:1.5rem}
+.ring-container{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.ring-center{position:absolute;text-align:center}
+.ring-big{font-size:1.5rem;font-weight:700;line-height:1}
+.ring-small{font-size:.625rem;color:var(--muted)}
+.ring-info{flex:1;display:flex;flex-direction:column;gap:.5rem}
+
+/* Progress Bar */
+.prog{margin-bottom:.5rem}
+.prog-header{display:flex;justify-content:space-between;font-size:.6875rem;margin-bottom:.25rem}
+.prog-label{color:var(--muted)}
+.prog-val{font-weight:600}
+.prog-track{height:5px;background:var(--ring-track);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* Quick Stats */
+.stats-row{display:flex;gap:.5rem;margin-top:.75rem}
+.stat-box{flex:1;text-align:center;padding:.5rem;background:var(--bg2);border-radius:var(--radius);border:1px solid var(--border)}
+.stat-val{font-size:.875rem;font-weight:700}
+.stat-label{font-size:.5625rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+
+/* Water */
+.water-bar{height:8px;background:var(--ring-track);border-radius:4px;overflow:hidden;margin:.5rem 0}
+.water-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),#38bdf8);transition:width .5s}
+.water-btns{display:flex;gap:.5rem}
+.water-btn{flex:1;padding:.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.75rem;font-weight:600;transition:all .2s;background:var(--bg2)}
+.water-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg)}
+.water-head{display:flex;justify-content:space-between;align-items:center}
+.water-amt{font-weight:700;color:var(--accent)}
+
+/* Food Log */
+.food-actions{display:flex;gap:.5rem;margin-bottom:.75rem}
+.food-btn{padding:.375rem .75rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.6875rem;font-weight:600;transition:all .2s;background:var(--bg2)}
+.food-btn:hover{border-color:var(--accent);color:var(--accent)}
+.food-btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.food-btn-primary:hover{opacity:.9;color:#fff}
+.food-item{display:flex;align-items:center;gap:.75rem;padding:.625rem;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.375rem;transition:all .2s}
+.food-item:hover{border-color:var(--accent)}
+.food-icon{width:1.75rem;height:1.75rem;border-radius:6px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0}
+.food-info{flex:1;min-width:0}
+.food-name{font-size:.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.food-meta{font-size:.625rem;color:var(--muted)}
+.food-cal{font-size:.8125rem;font-weight:700;flex-shrink:0}
+.food-remove{width:1.25rem;height:1.25rem;border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .2s;flex-shrink:0;font-size:.75rem}
+.food-remove:hover{color:var(--red);background:rgba(220,38,38,.08)}
+.empty-state{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.8125rem}
+.empty-icon{font-size:1.5rem;margin-bottom:.5rem;opacity:.4}
+
+/* Supplements */
+.supp-item{display:flex;align-items:center;gap:.625rem;padding:.5rem .625rem;border-radius:var(--radius);cursor:pointer;transition:all .2s;border:1px solid transparent}
+.supp-item:hover{background:var(--bg2)}
+.supp-item.taken{background:var(--bg2);border-color:var(--border)}
+.supp-icon{font-size:.875rem}
+.supp-name{flex:1;font-size:.8125rem}
+.supp-freq{font-size:.625rem;color:var(--muted)}
+.supp-check{width:1rem;height:1rem;border:1.5px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:.625rem}
+.supp-item.taken .supp-check{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* Exercise */
+.ex-item{display:flex;align-items:center;gap:.625rem;padding:.5rem .625rem;border-radius:var(--radius);cursor:pointer;transition:all .2s;border:1px solid transparent}
+.ex-item:hover{background:var(--bg2)}
+.ex-item.done{opacity:.65}
+.ex-item.done .ex-name{text-decoration:line-through}
+.ex-check{width:1.125rem;height:1.125rem;border:1.5px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:.625rem;flex-shrink:0}
+.ex-item.done .ex-check{background:var(--green);border-color:var(--green);color:#fff}
+.ex-name{font-size:.8125rem;flex:1}
+.ex-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem}
+.ex-badge{font-size:.6875rem;font-weight:600;padding:.25rem .625rem;border-radius:var(--radius);background:var(--bg2);border:1px solid var(--border)}
+.ex-counter{text-align:center;padding:.75rem;background:var(--bg2);border-radius:var(--radius);border:1px solid var(--border);margin-top:.75rem}
+.ex-counter-val{font-size:1.25rem;font-weight:700;color:var(--green)}
+
+/* Sleep */
+.sleep-form{display:flex;gap:.75rem;margin-bottom:.75rem}
+.sleep-field{flex:1}
+.sleep-field label{display:block;font-size:.625rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem}
+.sleep-save{padding:.625rem;border-radius:var(--radius);background:var(--accent);color:#fff;font-weight:600;font-size:.8125rem;transition:opacity .2s;width:100%}
+.sleep-save:hover{opacity:.9}
+
+/* Dashboard Charts */
+.chart-section{margin-bottom:.75rem}
+.chart-title{font-size:.6875rem;font-weight:600;color:var(--muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em}
+.chart-bars{display:flex;align-items:flex-end;gap:3px;height:100px;padding-top:.5rem}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.chart-bar{width:100%;border-radius:3px 3px 0 0;transition:height .5s;min-height:2px}
+.chart-bar-label{font-size:.5625rem;color:var(--muted)}
+.chart-bar-val{font-size:.5625rem;font-weight:600;color:var(--text)}
+
+/* Macro pie (CSS only) */
+.macro-legend{display:flex;gap:1rem;flex-wrap:wrap}
+.macro-item{display:flex;align-items:center;gap:.375rem;font-size:.75rem}
+.macro-dot{width:8px;height:8px;border-radius:50%}
+
+/* Bottom Nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:40;background:var(--bg);border-top:1px solid var(--border);padding:.375rem 0;padding-bottom:env(safe-area-inset-bottom,.375rem);transition:background .3s}
+.bottom-nav-inner{display:flex;justify-content:space-around;max-width:var(--max-w);margin:0 auto}
+.nav-item{display:flex;flex-direction:column;align-items:center;padding:.375rem .75rem;border-radius:var(--radius);transition:all .2s;cursor:pointer;gap:1px;-webkit-tap-highlight-color:transparent}
+.nav-item svg{width:18px;height:18px;stroke:var(--muted);stroke-width:1.5;fill:none;transition:stroke .2s}
+.nav-item span{font-size:.5625rem;font-weight:600;color:var(--muted);letter-spacing:.02em;transition:color .2s}
+.nav-item.active svg{stroke:var(--accent)}
+.nav-item.active span{color:var(--accent)}
+.nav-item:hover svg{stroke:var(--accent)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.3);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
+.modal{background:var(--bg);width:100%;max-width:var(--max-w);max-height:80vh;border-radius:12px 12px 0 0;border:1px solid var(--border);overflow:hidden;animation:slideUp .25s ease}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:1}
+.modal-title{font-weight:700;font-size:.875rem}
+.modal-close{padding:.25rem;border-radius:4px;color:var(--muted);font-size:1rem}
+.modal-close:hover{color:var(--red)}
+.modal-body{overflow-y:auto;max-height:calc(80vh - 3.5rem);padding:1rem 1.25rem}
+
+/* Plan meal item in modal */
+.plan-item{padding:.875rem;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem;cursor:pointer;transition:all .2s}
+.plan-item:hover{border-color:var(--accent)}
+.plan-item.added{opacity:.5;border-color:var(--green)}
+.plan-meal-tag{font-size:.5625rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.plan-meal-time{font-size:.5625rem;color:var(--muted);margin-left:.5rem}
+.plan-meal-name{font-size:.8125rem;font-weight:600;margin-top:.125rem}
+.plan-meal-desc{font-size:.6875rem;color:var(--muted);margin-top:.125rem;line-height:1.4}
+.plan-meal-macros{display:flex;gap:.75rem;margin-top:.375rem;font-size:.625rem}
+.plan-meal-macros span:first-child{font-weight:600;color:var(--accent)}
+.plan-add-all{width:100%;padding:.625rem;border-radius:var(--radius);background:var(--accent);color:#fff;font-weight:600;font-size:.8125rem;margin-top:.5rem;transition:opacity .2s}
+.plan-add-all:hover{opacity:.9}
+
+/* Toast */
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:60;background:var(--text);color:var(--bg);padding:.5rem 1.25rem;border-radius:var(--radius);font-size:.75rem;font-weight:600;animation:fadeIn .2s;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+/* Custom food form */
+.custom-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem}
+.custom-full{grid-column:1/-1}
+
+/* Export */
+.export-desc{font-size:.75rem;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+.export-btn{width:100%;padding:.625rem;border-radius:var(--radius);background:var(--accent);color:#fff;font-weight:600;font-size:.8125rem;transition:opacity .2s}
+.export-btn:hover{opacity:.9}
+.export-hint{font-size:.625rem;color:var(--muted);text-align:center;margin-top:.75rem}
+
+/* Water log */
+.water-log{max-height:10rem;overflow-y:auto;margin-top:.75rem}
+.water-log-item{display:flex;justify-content:space-between;padding:.25rem .375rem;font-size:.6875rem;border-radius:4px}
+.water-log-item:hover{background:var(--bg2)}
+.water-log-time{color:var(--muted)}
+.water-log-amt{font-weight:600;color:var(--accent)}
+.water-undo{font-size:.625rem;color:var(--muted);margin-top:.375rem;text-align:center}
+.water-undo:hover{color:var(--red)}
+
+
+
+/* ─── Micronutrients (collapsible) ───────────────── */
+.micros-details{margin-top:.75rem;border-top:1px dashed var(--border);padding-top:.75rem}
+.micros-details summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:.6875rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.micros-details summary::-webkit-details-marker{display:none}
+.micros-details[open] summary{color:var(--accent)}
+.micros-scroll{max-height:14rem;overflow:auto;margin-top:.75rem;padding-right:.25rem}
+.micro-mini{font-size:.5625rem;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0}
+
+/* ─── Dashboard filters + trends ─────────────────── */
+.filter-controls{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.filter-btn{padding:.375rem .75rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.6875rem;font-weight:600;background:var(--bg2);color:var(--muted);transition:all .2s}
+.filter-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg)}
+.filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.trend{width:100%}
+.trend svg{width:100%;height:110px;display:block}
+.trend-labels{display:flex;justify-content:space-between;font-size:.5625rem;color:var(--muted);margin-top:.25rem}
+
+
+@media(max-width:640px){
+  .app{padding:0 .75rem;padding-bottom:5rem}
+  .ring-wrap{gap:1rem}
+  .header-inner{padding:0 .75rem}
+  .modal-body{padding:.875rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<div class="header" style="padding-left:1rem;padding-right:1rem">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="logo"><a href="/">Navajit D</a> <span style="font-weight:400;color:var(--muted)">/ </span><span style="font-weight:600;color:var(--accent)">health</span></div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg class="icon icon-colorful" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><circle cx="12" cy="12" r="2"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
+        <svg class="icon icon-original" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <span class="header-tag" id="headerTag"></span>
+      <button onclick="showModal('cloud')" style="padding:.25rem .5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.625rem;color:var(--muted);transition:all .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">☁ Sync</button>
+          <button onclick="showModal('export')" style="padding:.25rem .5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.625rem;color:var(--muted);transition:all .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">↓ Export</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <!-- Date Nav -->
+  <div class="date-nav">
+    <button onclick="shiftDate(-1)">← prev</button>
+    <div>
+      <div class="date-label" id="dateLabel"></div>
+      <div class="date-today" id="dateTodayBtn" onclick="goToday()" style="display:none">↑ back to today</div>
+    </div>
+    <button onclick="shiftDate(1)">next →</button>
+  </div>
+
+  <!-- Tab Content -->
+  <div id="tabContent"></div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <div class="nav-item active" data-tab="today" onclick="switchTab('today')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      <span>Today</span>
+    </div>
+    <div class="nav-item" data-tab="water" onclick="switchTab('water')">
+      <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+      <span>Water</span>
+    </div>
+    <div class="nav-item" data-tab="activity" onclick="switchTab('activity')">
+      <svg viewBox="0 0 24 24"><path d="M6.5 6.5h11M6.5 17.5h11M3 12h18"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item" data-tab="sleep" onclick="switchTab('sleep')">
+      <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span>Sleep</span>
+    </div>
+    <div class="nav-item" data-tab="dashboard" onclick="switchTab('dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      <span>Stats</span>
+    </div>
+  </div>
+</nav>
+
+<!-- Modal Container -->
+<div id="modalContainer"></div>
+<!-- Toast Container -->
+<div id="toastContainer"></div>
+
+<script>
+// ═══ DATA ═══════════════════════════════════════════
+const MEAL_PLAN = {
+  0:{label:"Sunday",tag:"Upper Body Push",meals:[
+    {meal:"Breakfast",time:"9 AM",name:"Masala Oats + Boiled Egg",desc:"40g oats with milk, veggies, spices + 1 boiled egg + black coffee",cal:340,protein:18,carbs:42,fat:11,fiber:6},
+    {meal:"Mid-Morning",time:"11 AM",name:"Banana + Peanut Butter",desc:"1 banana with 1 tbsp peanut butter",cal:195,protein:5,carbs:30,fat:8,fiber:3},
+    {meal:"Lunch",time:"2 PM",name:"Chicken Biryani + Raita",desc:"1 cup chicken biryani with veggies + yogurt raita",cal:520,protein:30,carbs:60,fat:16,fiber:4},
+    {meal:"Afternoon",time:"5 PM",name:"Greek Yogurt + Honey",desc:"1 cup Greek yogurt with drizzle of honey",cal:160,protein:15,carbs:20,fat:3,fiber:0},
+    {meal:"Dinner",time:"8 PM",name:"Soup + Sautéed Veggies + Paneer",desc:"1 bowl tomato/chicken soup, sautéed veggies + 50g paneer",cal:310,protein:18,carbs:25,fat:14,fiber:5},
+    {meal:"Before Bed",time:"10:30 PM",name:"Chamomile Tea",desc:"Chamomile tea – relax and reflect",cal:5,protein:0,carbs:1,fat:0,fiber:0}
+  ]},
+  1:{label:"Monday",tag:"Lower Body · Veg",meals:[
+    {meal:"Breakfast",time:"8 AM",name:"Post-Workout Protein Shake",desc:"Whey + creatine + chia + PB + oats + milk + dates (~600 kcal)",cal:600,protein:40,carbs:65,fat:22,fiber:8},
+    {meal:"Mid-Morning",time:"11 AM",name:"Guava + Pumpkin Seeds",desc:"1 guava + handful pumpkin seeds",cal:130,protein:5,carbs:18,fat:5,fiber:5},
+    {meal:"Lunch",time:"1 PM",name:"3 Rotis + Paneer Curry + Sabzi + Curd",desc:"Whole-wheat rotis, 100g paneer curry, mixed sabzi, 200g curd",cal:580,protein:30,carbs:55,fat:24,fiber:6},
+    {meal:"Afternoon",time:"4 PM",name:"Whey Protein in Milk",desc:"1 scoop whey in 200ml milk",cal:185,protein:28,carbs:12,fat:4,fiber:0},
+    {meal:"Dinner",time:"8 PM",name:"Khichdi + Dal + Salad",desc:"1 cup khichdi with veggies, 1 cup dal, cucumber-carrot salad",cal:380,protein:16,carbs:55,fat:8,fiber:7},
+    {meal:"Before Bed",time:"10:30 PM",name:"Warm Milk + Turmeric",desc:"1 cup warm milk with turmeric/ashwagandha",cal:105,protein:6,carbs:10,fat:4,fiber:0}
+  ]},
+  2:{label:"Tuesday",tag:"Active Recovery · Yoga",meals:[
+    {meal:"Breakfast",time:"8 AM",name:"Post-Workout Protein Shake",desc:"Whey + creatine + collagen + chia + PB + oats + milk + dates",cal:620,protein:45,carbs:65,fat:22,fiber:8},
+    {meal:"Mid-Morning",time:"11 AM",name:"Apple + Walnuts",desc:"1 apple with 10 walnuts",cal:180,protein:4,carbs:22,fat:10,fiber:4},
+    {meal:"Lunch",time:"1 PM",name:"3 Rotis + Grilled Chicken + Broccoli + Curd",desc:"3 rotis, 100g grilled chicken breast, sautéed broccoli, 1 bowl curd",cal:560,protein:42,carbs:50,fat:16,fiber:5},
+    {meal:"Afternoon",time:"4 PM",name:"Boiled Egg",desc:"1 boiled egg – protein snack",cal:78,protein:6,carbs:1,fat:5,fiber:0},
+    {meal:"Dinner",time:"8 PM",name:"Veg Pulao + Rajma + Beetroot Salad",desc:"1.5 cups veg pulao, 100g rajma curry, small beetroot salad",cal:480,protein:18,carbs:70,fat:12,fiber:9},
+    {meal:"Before Bed",time:"10:30 PM",name:"Chamomile Tea",desc:"Chamomile tea or lukewarm water",cal:5,protein:0,carbs:1,fat:0,fiber:0}
+  ]},
+  3:{label:"Wednesday",tag:"Upper Body Pull",meals:[
+    {meal:"Breakfast",time:"8 AM",name:"Post-Workout Protein Shake",desc:"Whey + creatine + chia + PB + oats + milk + dates",cal:600,protein:40,carbs:65,fat:22,fiber:8},
+    {meal:"Mid-Morning",time:"11 AM",name:"Banana + Flaxseeds",desc:"1 banana + 1 tbsp roasted flaxseeds",cal:145,protein:3,carbs:28,fat:4,fiber:5},
+    {meal:"Lunch",time:"1 PM",name:"Buddha Bowl (Quinoa + Tofu)",desc:"1 cup quinoa, 100g pan-seared tofu, veggies, almonds, olive oil",cal:520,protein:28,carbs:55,fat:20,fiber:8},
+    {meal:"Afternoon",time:"4 PM",name:"Whey Protein in Water",desc:"1 scoop whey in water – low cal, fast protein",cal:120,protein:25,carbs:2,fat:1,fiber:0},
+    {meal:"Dinner",time:"8 PM",name:"2 Rotis + Grilled Fish + Dal + Salad",desc:"2 rotis, 150g grilled fish, 1 katori dal, side salad",cal:520,protein:38,carbs:45,fat:16,fiber:5},
+    {meal:"Before Bed",time:"10:30 PM",name:"Milk + Ashwagandha",desc:"200ml milk/curd, optional ashwagandha 300mg",cal:100,protein:6,carbs:10,fat:4,fiber:0}
+  ]},
+  4:{label:"Thursday",tag:"Lower Body Volume",meals:[
+    {meal:"Breakfast",time:"8 AM",name:"Post-Workout Protein Shake",desc:"Whey + creatine + chia + PB + oats + milk + dates",cal:600,protein:40,carbs:65,fat:22,fiber:8},
+    {meal:"Mid-Morning",time:"11 AM",name:"Orange + Almonds",desc:"1 orange or mango + 10 almonds",cal:160,protein:5,carbs:20,fat:8,fiber:4},
+    {meal:"Lunch",time:"1 PM",name:"3 Rotis + Chicken Curry + Okra + Curd",desc:"3 rotis, 100g chicken curry, 1 katori okra sabzi, 1 bowl curd",cal:570,protein:35,carbs:55,fat:18,fiber:5},
+    {meal:"Afternoon",time:"4 PM",name:"Buttermilk / Protein Shake",desc:"1 glass buttermilk or whey in water",cal:100,protein:12,carbs:8,fat:2,fiber:0},
+    {meal:"Dinner",time:"8 PM",name:"Whole-Grain Pasta + Chicken",desc:"1.5 cups pasta, 100g chicken/paneer, tomato sauce, mushrooms, spinach",cal:520,protein:30,carbs:60,fat:16,fiber:6},
+    {meal:"Before Bed",time:"10:30 PM",name:"Herbal Tea / Milk",desc:"Herbal tea or milk + optional collagen",cal:80,protein:4,carbs:8,fat:3,fiber:0}
+  ]},
+  5:{label:"Friday",tag:"Core & HIIT",meals:[
+    {meal:"Breakfast",time:"8 AM",name:"Post-Workout Protein Shake",desc:"Whey + creatine + chia + PB + oats + milk + dates",cal:600,protein:40,carbs:65,fat:22,fiber:8},
+    {meal:"Mid-Morning",time:"11 AM",name:"Apple + Peanuts",desc:"1 apple or pear + 10 peanuts/cashews",cal:165,protein:5,carbs:22,fat:7,fiber:4},
+    {meal:"Lunch",time:"1 PM",name:"3 Rotis + Paneer Bhurji + Dal + Curd",desc:"3 rotis, 100g paneer bhurji, 1 katori dal, 1 bowl curd",cal:580,protein:32,carbs:55,fat:22,fiber:6},
+    {meal:"Afternoon",time:"4 PM",name:"2 Boiled Eggs",desc:"2 whole eggs – nutrient-dense protein snack",cal:156,protein:12,carbs:1,fat:10,fiber:0},
+    {meal:"Dinner",time:"8 PM",name:"Brown Rice + Stir-Fried Chicken",desc:"1 cup brown rice, 150g chicken stir-fry with veggies, steamed greens",cal:510,protein:35,carbs:55,fat:14,fiber:5},
+    {meal:"Before Bed",time:"10:30 PM",name:"Golden Milk / Yogurt",desc:"Turmeric + milk or low-fat yogurt + ashwagandha",cal:100,protein:6,carbs:10,fat:4,fiber:0}
+  ]},
+  6:{label:"Saturday",tag:"Stretch & Mobility",meals:[
+    {meal:"Breakfast",time:"8 AM",name:"Post-Workout Protein Shake",desc:"Whey + creatine + chia + PB + oats + milk + dates",cal:600,protein:40,carbs:65,fat:22,fiber:8},
+    {meal:"Mid-Morning",time:"11 AM",name:"Papaya / Watermelon + Seeds",desc:"1 bowl hydrating fruit + 1 tbsp mixed seeds",cal:140,protein:4,carbs:25,fat:4,fiber:4},
+    {meal:"Lunch",time:"1 PM",name:"Egg Sandwiches / Chicken Salad",desc:"2 multigrain sandwiches with 2 eggs/paneer, lettuce, tomato, cheese",cal:480,protein:28,carbs:45,fat:18,fiber:5},
+    {meal:"Afternoon",time:"4 PM",name:"Protein Bar / Roasted Chana",desc:"1 protein bar or handful of roasted chickpeas",cal:150,protein:10,carbs:18,fat:5,fiber:4},
+    {meal:"Dinner",time:"8 PM",name:"2 Rotis + 3 Egg Omelet + Dal",desc:"2 rotis, 3 egg whites + 1 yolk omelet with spinach, 1 katori dal, salad",cal:470,protein:32,carbs:42,fat:16,fiber:6},
+    {meal:"Before Bed",time:"10:30 PM",name:"Milk + Shilajit / Casein",desc:"200ml milk with shilajit or casein for overnight recovery",cal:150,protein:18,carbs:12,fat:5,fiber:0}
+  ]}
+};
+
+const SUPPLEMENTS = [
+  {id:"creatine",name:"Creatine (5g)",freq:"daily",icon:"⚡"},
+  {id:"zincovit",name:"Zincovit Multivitamin",freq:"alt-day",icon:"💊"},
+  {id:"codliver",name:"Cod Liver Oil",freq:"alt-day",icon:"🐟"},
+  {id:"collagen",name:"Collagen Peptides",freq:"daily",icon:"✨"},
+  {id:"ashwagandha",name:"Ashwagandha (500mg)",freq:"daily",icon:"🌿"},
+  {id:"vitc",name:"Vitamin C",freq:"daily",icon:"🍊"}
+];
+
+const WORKOUT_PLAN = {
+  0:{name:"Upper Body Push",exercises:["Bench Press 3×8-12","Assisted Pull-Ups 3×8-12","Overhead Press 3×8-12","Bicep Curls 3×10-15","Tricep Extensions 3×10-15","Side Planks 3×30-60s","Kegels 3×10"]},
+  1:{name:"Lower Body Strength",exercises:["Squats 3×8-12","Deadlifts 3×8-12","Walking Lunges 3×10-12/leg","Leg Press 3×10-15","Calf Raises 3×15-20","Hip Thrusts 3×10-15","Kegels 3×10"]},
+  2:{name:"Active Recovery (Yoga)",exercises:["Yoga Flow 30-40 min","Neck Posture Drills","Kegels 3×10","Pranayama 5 min"]},
+  3:{name:"Upper Body Pull",exercises:["Pull-Ups 3×6-10","Incline Bench 3×8-12","Lateral Raises 3×10-15","One-Arm Row 3×8-12/arm","Hammer Curls 3×10-15","Skull Crushers 3×10-15","Neg. Pull-Ups 3×5"]},
+  4:{name:"Lower Body Volume",exercises:["Leg Press 3×10-15","Romanian Deadlifts 3×10-12","Leg Curls 3×10-15","Leg Extensions 3×10-15","Hip Thrusts 3×10-15","Planks 3×45-60s","Kegels 3×10"]},
+  5:{name:"Core & HIIT",exercises:["Planks 3×60s","Russian Twists 3×20","Hanging Leg Raises 3×12-15","Bicycle Crunches 3×15-20/side","Farmer's Walks 3×30s","Dead Hangs 2×max","HIIT Sprints 6-8 rds"]},
+  6:{name:"Stretch & Mobility",exercises:["Full Body Stretch 20-30 min","Foam Rolling","Neck Stretches","Hip Flexor Stretch","Kegels 3×10","Diaphragm Breathing 5 min"]}
+};
+
+const TARGETS = {cal:2100,protein:120,carbs:260,fat:70,water:3500,sleep:8};
+const MEAL_ICONS = {"Breakfast":"☕","Mid-Morning":"🍎","Lunch":"🌤","Afternoon":"☕","Dinner":"🌅","Before Bed":"🌙","Snack":"🍪"};
+
+// ═══ CONFIG ═════════════════════════════════════════
+const HEIGHT_CM = 162; // fixed height for BMI (cm)
+
+// Micronutrients (keys + daily targets). Keys MUST match Groq JSON output.
+const MICROS = [
+  {key:"vitamin_a_ug", label:"Vitamin A", unit:"µg", target:900},
+  {key:"vitamin_c_mg", label:"Vitamin C", unit:"mg", target:90},
+  {key:"vitamin_d_ug", label:"Vitamin D", unit:"µg", target:20},
+  {key:"vitamin_e_mg", label:"Vitamin E", unit:"mg", target:15},
+  {key:"vitamin_k_ug", label:"Vitamin K", unit:"µg", target:120},
+  {key:"thiamin_mg", label:"B1 (Thiamin)", unit:"mg", target:1.2},
+  {key:"riboflavin_mg", label:"B2 (Riboflavin)", unit:"mg", target:1.3},
+  {key:"niacin_mg", label:"B3 (Niacin)", unit:"mg", target:16},
+  {key:"pantothenic_mg", label:"B5 (Pantothenic)", unit:"mg", target:5},
+  {key:"vitamin_b6_mg", label:"B6", unit:"mg", target:1.7},
+  {key:"biotin_ug", label:"B7 (Biotin)", unit:"µg", target:30},
+  {key:"folate_ug", label:"B9 (Folate)", unit:"µg", target:400},
+  {key:"vitamin_b12_ug", label:"B12", unit:"µg", target:2.4},
+  {key:"calcium_mg", label:"Calcium", unit:"mg", target:1300},
+  {key:"iron_mg", label:"Iron", unit:"mg", target:18},
+  {key:"magnesium_mg", label:"Magnesium", unit:"mg", target:420},
+  {key:"potassium_mg", label:"Potassium", unit:"mg", target:4700},
+  {key:"sodium_mg", label:"Sodium", unit:"mg", target:2300},
+  {key:"zinc_mg", label:"Zinc", unit:"mg", target:11},
+  {key:"selenium_ug", label:"Selenium", unit:"µg", target:55},
+  {key:"copper_mg", label:"Copper", unit:"mg", target:0.9},
+  {key:"manganese_mg", label:"Manganese", unit:"mg", target:2.3},
+  {key:"phosphorus_mg", label:"Phosphorus", unit:"mg", target:1250},
+  {key:"iodine_ug", label:"Iodine", unit:"µg", target:150},
+  {key:"choline_mg", label:"Choline", unit:"mg", target:550}
+];
+
+// Local storage keys (cloud config stays only in this browser)
+const CLOUD_CFG_KEY = "health_cloud_cfg_v1";
+const DIRTY_KEY = "health_dirty_days_v1";
+const LAST_PULL_KEY = "health_last_pull_v1";
+const LAST_PUSH_KEY = "health_last_push_v1";
+const NUTRIENT_CACHE_PREFIX = "__nut_cache__::";
+
+// Cloud sync defaults (store the URL in this file; keep the secret out of GitHub)
+const DEFAULT_CLOUD_SCRIPT_URL = ""; // e.g. "https://script.google.com/macros/s/XXXX/exec"
+const CLOUD_SECRET_SESSION_KEY = "health_cloud_secret_session_v1";
+
+
+// ═══ STATE ══════════════════════════════════════════
+let currentTab = "today";
+let selectedDate = todayStr();
+let dayData = emptyDay();
+let dashboardRange = "weekly"; // weekly | monthly
+let _hydratingMicros = false;
+let _renderTimer = null;
+
+// ═══ HELPERS ════════════════════════════════════════
+function todayStr(){ return new Date().toISOString().split("T")[0] }
+function dow(d){ return new Date(d+"T12:00:00").getDay() }
+function fmtDate(d){ return new Date(d+"T12:00:00").toLocaleDateString("en-IN",{weekday:"short",month:"short",day:"numeric"}) }
+function dayName(i){ return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][i] }
+
+function escapeHtml(str=""){
+  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function fmtTs(iso){
+  if(!iso) return "–";
+  try{
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return "–";
+    return d.toLocaleString("en-IN",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+  }catch(e){ return "–"; }
+}
+function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+
+function calcBMI(weightKg){
+  const w = +weightKg;
+  if(!w || w<=0) return null;
+  const h = HEIGHT_CM/100;
+  return w / (h*h);
+}
+
+function emptyDay(){
+  return {
+    foods:[],
+    water:0,
+    waterLogs:[],
+    sleep:{bedtime:"",wakeup:"",hours:0},
+    exercises:[],
+    supplementsTaken:[],
+    calBurned:0,
+    weight:null,
+    bmi:null,
+    updatedAt:""
+  };
+}
+
+function normalizeDay(data){
+  const base = emptyDay();
+  const d = {...base, ...(data||{})};
+
+  d.foods = Array.isArray(d.foods) ? d.foods : [];
+  d.waterLogs = Array.isArray(d.waterLogs) ? d.waterLogs : [];
+  d.exercises = Array.isArray(d.exercises) ? d.exercises : [];
+  d.supplementsTaken = Array.isArray(d.supplementsTaken) ? d.supplementsTaken : [];
+  d.sleep = {...base.sleep, ...(d.sleep||{})};
+
+  d.calBurned = +d.calBurned || 0;
+  d.weight = (d.weight===null || d.weight===undefined || d.weight==="") ? null : +d.weight;
+  d.bmi = (d.weight ? (+d.bmi || calcBMI(d.weight)) : null);
+
+  return d;
+}
+
+function computeTotals(data){
+  const t = {cal:0,protein:0,carbs:0,fat:0,fiber:0,micros:{}};
+  const foods = data?.foods || [];
+  for(const f of foods){
+    t.cal += (+f.cal||0);
+    t.protein += (+f.protein||0);
+    t.carbs += (+f.carbs||0);
+    t.fat += (+f.fat||0);
+    t.fiber += (+f.fiber||0);
+    if(f.micros && typeof f.micros === "object"){
+      for(const [k,v] of Object.entries(f.micros)){
+        const num = +v;
+        if(!isFinite(num)) continue;
+        t.micros[k] = (t.micros[k]||0) + num;
+      }
+    }
+  }
+  // round macros for display
+  t.cal = Math.round(t.cal);
+  t.protein = Math.round(t.protein*10)/10;
+  t.carbs = Math.round(t.carbs*10)/10;
+  t.fat = Math.round(t.fat*10)/10;
+  t.fiber = Math.round(t.fiber*10)/10;
+  return t;
+}
+
+// ═══ IndexedDB ═════════════════════════════════════
+const DB_NAME = "healthtracker";
+const DB_VERSION = 1;
+const STORE = "days";
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => { e.target.result.createObjectStore(STORE) };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+async function dbGet(key){
+  const db = await openDB();
+  return new Promise((resolve)=>{
+    const tx = db.transaction(STORE,"readonly");
+    const req = tx.objectStore(STORE).get(key);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => resolve(null);
+  });
+}
+async function dbSet(key, val){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(STORE,"readwrite");
+    tx.objectStore(STORE).put(val, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// ═══ CLOUD CONFIG ═══════════════════════════════════
+function getCloudSecret(){
+  try { return sessionStorage.getItem(CLOUD_SECRET_SESSION_KEY) || ""; }
+  catch(e){ return ""; }
+}
+function setCloudSecret(secret){
+  try{
+    if(secret) sessionStorage.setItem(CLOUD_SECRET_SESSION_KEY, secret);
+    else sessionStorage.removeItem(CLOUD_SECRET_SESSION_KEY);
+  }catch(e){}
+}
+function getStoredCloudCfg(){
+  try { return JSON.parse(localStorage.getItem(CLOUD_CFG_KEY)||"null"); }
+  catch(e){ return null; }
+}
+function setCloudCfg(cfg){
+  // Store ONLY non-sensitive config (URL). Secret stays in sessionStorage.
+  try{
+    const prev = getStoredCloudCfg() || {};
+    const next = {...prev, ...(cfg||{})};
+    delete next.secret;
+    localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify(next));
+  }catch(e){
+    try{
+      const url = (cfg && cfg.scriptUrl) ? String(cfg.scriptUrl) : "";
+      localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify({scriptUrl:url}));
+    }catch(_){ }
+  }
+}
+function getCloudScriptUrl(){
+  const stored = getStoredCloudCfg();
+  const url = (stored && stored.scriptUrl) ? String(stored.scriptUrl).trim() : "";
+  return (url || String(DEFAULT_CLOUD_SCRIPT_URL||"").trim());
+}
+function getCloudCfg(){
+  // Backward-compat cleanup: if an old cfg accidentally stored a secret, wipe it.
+  const stored = getStoredCloudCfg();
+  if(stored && stored.secret){
+    delete stored.secret;
+    try { localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify(stored)); } catch(e){}
+  }
+  return { scriptUrl: getCloudScriptUrl(), secret: getCloudSecret() };
+}
+function cloudReady(){
+  const cfg = getCloudCfg();
+  return !!(cfg && cfg.scriptUrl && cfg.secret);
+}
+
+// ═══ DIRTY TRACKING ═════════════════════════════════
+function getDirtyDates(){
+  try { return JSON.parse(localStorage.getItem(DIRTY_KEY)||"[]"); }
+  catch(e){ return []; }
+}
+function setDirtyDates(arr){
+  localStorage.setItem(DIRTY_KEY, JSON.stringify(arr));
+}
+function markDirty(date){
+  const s = new Set(getDirtyDates());
+  s.add(date);
+  setDirtyDates([...s]);
+}
+function clearDirty(date){
+  const s = new Set(getDirtyDates());
+  s.delete(date);
+  setDirtyDates([...s]);
+}
+
+// ═══ SAVE / LOAD ═══════════════════════════════════
+async function loadDay(){
+  const data = await dbGet(selectedDate);
+  dayData = normalizeDay(data || emptyDay());
+  render();
+
+  // Background: hydrate micronutrients for foods if missing
+  setTimeout(()=>hydrateMicrosForCurrentDay().catch(()=>{}), 50);
+}
+async function saveDay(){
+  dayData.updatedAt = new Date().toISOString();
+  await dbSet(selectedDate, dayData);
+  markDirty(selectedDate);
+}
+
+// ═══ CLOUD SYNC ═════════════════════════════════════
+function jsonp(url, params={}){
+  return new Promise((resolve,reject)=>{
+    const cb = "__jsonp_cb_" + Math.random().toString(36).slice(2);
+    const u = new URL(url);
+    Object.entries(params).forEach(([k,v])=>u.searchParams.set(k, v));
+    u.searchParams.set("prefix", cb);
+
+    let done = false;
+    window[cb] = (data)=>{
+      if(done) return;
+      done = true;
+      cleanup();
+      resolve(data);
+    };
+
+    const script = document.createElement("script");
+    script.src = u.toString();
+    script.async = true;
+    script.onerror = ()=>{
+      if(done) return;
+      done = true;
+      cleanup();
+      reject(new Error("JSONP request failed"));
+    };
+
+    function cleanup(){
+      try { delete window[cb]; } catch(e){ window[cb] = undefined; }
+      script.remove();
+    }
+
+    document.head.appendChild(script);
+  });
+}
+
+async function cloudPullAndMerge({days=120, toastOnFinish=false, silent=false}={}){
+  if(!cloudReady()) return;
+  const cfg = getCloudCfg();
+  if(!navigator.onLine) return;
+
+  try{
+    const res = await jsonp(cfg.scriptUrl, {action:"fetch", days:String(days), secret:cfg.secret});
+    if(!res || !res.ok) throw new Error(res?.error || "Cloud fetch failed");
+
+    const remoteDays = Array.isArray(res.days) ? res.days : [];
+    let changed = false;
+
+    for(const row of remoteDays){
+      const date = row.date;
+      const remote = normalizeDay(row.dayData);
+      if(!date || !remote) continue;
+
+      const local = await dbGet(date);
+      const localNorm = local ? normalizeDay(local) : null;
+
+      const rTS = remote.updatedAt || "";
+      const lTS = localNorm?.updatedAt || "";
+
+      if(!localNorm || rTS > lTS){
+        await dbSet(date, remote);
+        changed = true;
+      } else if(lTS > rTS){
+        // local newer than cloud → mark dirty to push later
+        markDirty(date);
+      }
+    }
+
+    localStorage.setItem(LAST_PULL_KEY, new Date().toISOString());
+    if(changed) {
+      const cur = await dbGet(selectedDate);
+      dayData = normalizeDay(cur || dayData);
+      render();
+    }
+    if(toastOnFinish && !silent) toast("Cloud pull ✓");
+  }catch(e){
+    if(!silent) toast("Cloud pull failed");
+  }
+}
+
+async function pushDayToCloud(date){
+  if(!cloudReady()) return false;
+  const cfg = getCloudCfg();
+  if(!navigator.onLine) return false;
+
+  const data = await dbGet(date);
+  if(!data) return true; // nothing to push
+
+  const payload = JSON.stringify({date, dayData: normalizeDay(data)});
+  const form = `action=upsert&secret=${encodeURIComponent(cfg.secret)}&payload=${encodeURIComponent(payload)}`;
+
+  // Prefer sendBeacon for page-dismissal reliability
+  let ok = false;
+  try{
+    ok = navigator.sendBeacon(cfg.scriptUrl, new Blob([form], {type:"application/x-www-form-urlencoded"}));
+  }catch(e){ ok = false; }
+
+  if(!ok){
+    try{
+      await fetch(cfg.scriptUrl, {method:"POST", mode:"no-cors", keepalive:true, headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:form});
+      ok = true;
+    }catch(e){ ok = false; }
+  }
+  if(ok){
+    clearDirty(date);
+    localStorage.setItem(LAST_PUSH_KEY, new Date().toISOString());
+  }
+  return ok;
+}
+
+async function flushCloudSync(reason="auto"){
+  if(!cloudReady()) return;
+  if(!navigator.onLine) return;
+
+  const dirty = getDirtyDates();
+  if(!dirty.length) return;
+
+  for(const date of dirty){
+    await pushDayToCloud(date);
+  }
+}
+
+// Auto-sync on hide/close
+function setupAutoSync(){
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden) flushCloudSync("visibility");
+  });
+  window.addEventListener("pagehide", ()=>flushCloudSync("pagehide"));
+  window.addEventListener("beforeunload", ()=>flushCloudSync("beforeunload"));
+  window.addEventListener("online", ()=>flushCloudSync("online"));
+}
+
+// ═══ GROQ NUTRIENT ESTIMATION (via Apps Script proxy) ═══════════════
+function makeDishKey(dish){
+  return String(dish||"").toLowerCase().replace(/\s+/g," ").trim();
+}
+async function getCachedNutrients(dishKey){
+  return await dbGet(NUTRIENT_CACHE_PREFIX + dishKey);
+}
+async function setCachedNutrients(dishKey, nutrients){
+  return await dbSet(NUTRIENT_CACHE_PREFIX + dishKey, nutrients);
+}
+
+async function estimateNutrientsViaCloud(dishText){
+  if(!cloudReady()) throw new Error("Cloud not configured");
+  const cfg = getCloudCfg();
+  if(!navigator.onLine) throw new Error("Offline");
+  const dishKey = makeDishKey(dishText);
+  const cached = await getCachedNutrients(dishKey);
+  if(cached) return cached;
+
+  const res = await jsonp(cfg.scriptUrl, {action:"estimate", dish:dishText, secret:cfg.secret});
+  if(!res || !res.ok) throw new Error(res?.error || "Estimate failed");
+
+  await setCachedNutrients(dishKey, res.nutrients);
+  return res.nutrients;
+}
+
+async function hydrateMicrosForCurrentDay(){
+  if(_hydratingMicros) return;
+  if(!cloudReady() || !navigator.onLine) return;
+  if(!dayData?.foods?.length) return;
+
+  _hydratingMicros = true;
+  try{
+    for(const f of dayData.foods){
+      if(f.micros && Object.keys(f.micros).length) continue;
+
+      const dishText = (f.name||"") + (f.desc ? ` — ${f.desc}` : "");
+      try{
+        const nutrients = await estimateNutrientsViaCloud(dishText);
+        if(nutrients?.micros && typeof nutrients.micros === "object"){
+          f.micros = nutrients.micros;
+
+          if((f.fiber===undefined || f.fiber===null) && nutrients.fiber_g!==undefined){
+            f.fiber = +nutrients.fiber_g || 0;
+          }
+          await saveDay();
+          scheduleRender();
+        }
+      }catch(e){
+        // ignore per-food errors
+      }
+    }
+  } finally {
+    _hydratingMicros = false;
+  }
+}
+
+function scheduleRender(){
+  if(_renderTimer) return;
+  _renderTimer = setTimeout(()=>{
+    _renderTimer = null;
+    render();
+  }, 200);
+}
+
+// ═══ ACTIONS ════════════════════════════════════════
+function addFood(food){
+  dayData.foods.push({...food, id:Date.now()+Math.floor(Math.random()*1000), addedAt:new Date().toISOString()});
+  saveDay(); render(); toast("✓ " + food.name);
+
+  setTimeout(()=>hydrateMicrosForCurrentDay().catch(()=>{}), 50);
+}
+function removeFood(id){
+  dayData.foods = dayData.foods.filter(f=>f.id!==id);
+  saveDay(); render(); toast("Removed");
+}
+function addWater(ml){
+  dayData.water = (dayData.water||0) + ml;
+  dayData.waterLogs = [...(dayData.waterLogs||[]), {ml, time: new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}];
+  saveDay(); render(); toast("+" + ml + "ml 💧");
+}
+function undoWater(){
+  if(!dayData.waterLogs?.length) return;
+  const last = dayData.waterLogs.pop();
+  dayData.water = Math.max(0, (dayData.water||0) - last.ml);
+  saveDay(); render();
+}
+function toggleSupp(id){
+  const t = dayData.supplementsTaken || [];
+  dayData.supplementsTaken = t.includes(id) ? t.filter(s=>s!==id) : [...t,id];
+  saveDay(); render();
+}
+function toggleExercise(ex){
+  const d = dayData.exercises || [];
+  dayData.exercises = d.includes(ex) ? d.filter(e=>e!==ex) : [...d,ex];
+  saveDay(); render();
+}
+function saveSleep(){
+  const bt = document.getElementById("sleepBed")?.value || "23:00";
+  const wu = document.getElementById("sleepWake")?.value || "07:00";
+  const [bh,bm] = bt.split(":").map(Number);
+  const [wh,wm] = wu.split(":").map(Number);
+  let h = wh + wm/60 - (bh + bm/60);
+  if(h<0) h+=24;
+  h = Math.round(h*10)/10;
+  dayData.sleep = {bedtime:bt,wakeup:wu,hours:h};
+  saveDay(); render(); toast("Sleep logged: "+h+"h");
+}
+function saveWeight(){
+  const raw = document.getElementById("weightInput")?.value;
+  const w = raw==="" ? null : parseFloat(raw);
+  if(w===null){
+    dayData.weight = null;
+    dayData.bmi = null;
+    saveDay(); render(); toast("Weight cleared");
+    return;
+  }
+  if(!isFinite(w) || w<=0){ toast("Enter valid weight"); return; }
+  const ww = Math.round(w*10)/10;
+  dayData.weight = ww;
+  dayData.bmi = Math.round(calcBMI(ww)*10)/10;
+  saveDay(); render(); toast("Weight saved ✓");
+}
+function saveBurn(){
+  const raw = document.getElementById("burnInput")?.value;
+  const b = raw==="" ? 0 : parseFloat(raw);
+  if(!isFinite(b) || b<0){ toast("Enter valid burn"); return; }
+  dayData.calBurned = Math.round(b);
+  saveDay(); render(); toast("Burn saved ✓");
+}
+
+// ═══ NAV ════════════════════════════════════════════
+function shiftDate(dir){
+  const d = new Date(selectedDate+"T12:00:00");
+  d.setDate(d.getDate()+dir);
+  selectedDate = d.toISOString().split("T")[0];
+  loadDay();
+}
+function goToday(){ selectedDate = todayStr(); loadDay() }
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll(".nav-item").forEach(n=>{
+    n.classList.toggle("active", n.dataset.tab===tab);
+  });
+  render();
+}
+function setDashboardRange(range){
+  dashboardRange = range;
+  loadDashboard();
+}
+
+// ═══ TOAST ══════════════════════════════════════════
+function toast(msg){
+  const c = document.getElementById("toastContainer");
+  c.innerHTML = `<div class="toast">${escapeHtml(msg)}</div>`;
+  setTimeout(()=>{ c.innerHTML="" }, 2200);
+}
+
+// ═══ MODAL ══════════════════════════════════════════
+function showModal(type, opts={}){
+  const c = document.getElementById("modalContainer");
+  if(type==="plan") c.innerHTML = renderPlanModal();
+  else if(type==="custom") c.innerHTML = renderCustomModal();
+  else if(type==="export") c.innerHTML = renderExportModal();
+  else if(type==="cloud") c.innerHTML = renderCloudModal(opts);
+
+  c.querySelector(".modal-overlay")?.addEventListener("click", e=>{
+    if(e.target.classList.contains("modal-overlay")) closeModal();
+  });
+
+  if(type==="cloud" && opts && opts.focusSecret){
+    setTimeout(()=>{ document.getElementById("cloudSecret")?.focus(); }, 80);
+  }
+}
+function closeModal(){ document.getElementById("modalContainer").innerHTML="" }
+
+
+function renderPlanModal(){
+  const plan = MEAL_PLAN[dow(selectedDate)];
+  if(!plan) return "";
+  let items = plan.meals.map(m=>{
+    const added = dayData.foods.some(f=>f.name===m.name && f.meal===m.meal);
+    return `<div class="plan-item ${added?"added":""}" onclick="${added?"":"addFromPlan(this)"}">
+      <div><span class="plan-meal-tag">${m.meal}</span><span class="plan-meal-time">${m.time}</span>${added?'<span style="float:right;color:var(--green);font-size:.625rem;font-weight:600">✓ added</span>':''}</div>
+      <div class="plan-meal-name">${m.name}</div>
+      <div class="plan-meal-desc">${m.desc}</div>
+      <div class="plan-meal-macros"><span>${m.cal} kcal</span><span>P:${m.protein}g</span><span>C:${m.carbs}g</span><span>F:${m.fat}g</span></div>
+      <div style="display:none" data-food='${JSON.stringify(m)}'></div>
+    </div>`;
+  }).join("");
+  return `<div class="modal-overlay"><div class="modal">
+    <div class="modal-head"><div class="modal-title">${plan.label} · Meal Plan</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">${items}
+      <button class="plan-add-all" onclick="addAllPlan()">Add all remaining meals</button>
+    </div>
+  </div></div>`;
+}
+function addFromPlan(el){
+  const data = JSON.parse(el.querySelector("[data-food]").dataset.food);
+  addFood(data);
+  closeModal();
+  setTimeout(()=>showModal("plan"),100);
+}
+function addAllPlan(){
+  const plan = MEAL_PLAN[dow(selectedDate)];
+  plan.meals.forEach(m=>{
+    if(!dayData.foods.some(f=>f.name===m.name && f.meal===m.meal)) addFood(m);
+  });
+  closeModal();
+}
+
+function renderCustomModal(){
+  return `<div class="modal-overlay"><div class="modal">
+    <div class="modal-head"><div class="modal-title">Add Dish</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="custom-grid">
+        <input class="custom-full" id="cfName" placeholder="Dish name (e.g., Chicken biryani)">
+        <input class="custom-full" id="cfPortion" placeholder="Portion (optional) e.g., 1 bowl / 2 rotis / 200g">
+        <select class="custom-full" id="cfMeal"><option>Breakfast</option><option>Mid-Morning</option><option>Lunch</option><option>Afternoon</option><option>Dinner</option><option>Snack</option></select>
+      </div>
+      <div class="export-desc" style="margin-top:-.25rem">Uses Groq Llama‑3.3‑70B (via Apps Script) to estimate calories, macros, and micronutrients. Estimates are approximate.</div>
+      <button class="plan-add-all" onclick="addCustomFoodAI()">Estimate & add</button>
+
+      <details style="margin-top:1rem">
+        <summary style="cursor:pointer;font-size:.6875rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Manual entry (offline fallback)</summary>
+        <div class="custom-grid" style="margin-top:.75rem">
+          <input id="cfCal" type="number" placeholder="Calories">
+          <input id="cfPro" type="number" placeholder="Protein (g)">
+          <input id="cfCarb" type="number" placeholder="Carbs (g)">
+          <input id="cfFat" type="number" placeholder="Fat (g)">
+        </div>
+        <button class="plan-add-all" style="background:var(--bg2);color:var(--text);border:1px solid var(--border)" onclick="addCustomFoodManual()">Add manually</button>
+      </details>
+    </div>
+  </div></div>`;
+}
+
+async function addCustomFoodAI(){
+  const n = document.getElementById("cfName").value.trim();
+  const portion = document.getElementById("cfPortion").value.trim();
+  const meal = document.getElementById("cfMeal").value;
+  if(!n) return toast("Dish name required");
+
+  if(!cloudReady()){
+    toast("Enter ☁ Sync secret to use AI");
+    closeModal();
+    setTimeout(()=>showModal("cloud", {focusSecret:true}), 150);
+    return;
+  }
+
+  const dishText = portion ? `${n} (${portion})` : n;
+  toast("Estimating…");
+  try{
+    const nutrients = await estimateNutrientsViaCloud(dishText);
+    const cal = Math.round(+nutrients.calories_kcal || 0);
+    addFood({
+      name:n,
+      desc:portion,
+      meal,
+      cal,
+      protein:+nutrients.protein_g || 0,
+      carbs:+nutrients.carbs_g || 0,
+      fat:+nutrients.fat_g || 0,
+      fiber:+nutrients.fiber_g || 0,
+      micros:nutrients.micros || {},
+      estimated:true
+    });
+    closeModal();
+    toast("Added ✓ (AI estimate)");
+  }catch(e){
+    toast("Estimate failed (offline?)");
+  }
+}
+function addCustomFoodManual(){
+  const n = document.getElementById("cfName").value.trim();
+  const meal = document.getElementById("cfMeal").value;
+  const c = +document.getElementById("cfCal").value;
+  if(!n||!c) return toast("Name & calories required");
+  addFood({
+    name:n, meal,
+    cal:c,
+    protein:+document.getElementById("cfPro").value||0,
+    carbs:+document.getElementById("cfCarb").value||0,
+    fat:+document.getElementById("cfFat").value||0,
+    fiber:0
+  });
+  closeModal();
+}
+
+function ensureCloudReadyOrPrompt(){
+  const cfg = getCloudCfg();
+  if(!cfg.scriptUrl){
+    toast("Set Apps Script URL in DEFAULT_CLOUD_SCRIPT_URL");
+    return false;
+  }
+  if(!cfg.secret){
+    toast("Enter ☁ Sync secret for this session");
+    showModal("cloud", {focusSecret:true});
+    return false;
+  }
+  return true;
+}
+function toggleCloudUrlEdit(){
+  const el = document.getElementById("cloudUrl");
+  if(!el) return;
+  el.readOnly = !el.readOnly;
+  toast(el.readOnly ? "URL locked" : "Edit URL enabled");
+  if(!el.readOnly) el.focus();
+}
+function clearCloudSecretSession(){
+  setCloudSecret("");
+  toast("Session secret cleared");
+  // Refresh modal to reflect state
+  try{ showModal("cloud"); }catch(e){}
+}
+
+function renderCloudModal(opts={}){
+  const cfg = getCloudCfg() || {};
+  const lastPull = localStorage.getItem(LAST_PULL_KEY);
+  const lastPush = localStorage.getItem(LAST_PUSH_KEY);
+  const url = (cfg.scriptUrl||"").trim();
+  const secretSet = !!(cfg.secret && String(cfg.secret).trim());
+
+  const urlReadonly = url ? "readonly" : "";
+  const secretPlaceholder = secretSet
+    ? "Secret already set ✓ (leave blank to keep)"
+    : "Secret key (stored only for this tab/session)";
+
+  return `<div class="modal-overlay"><div class="modal">
+    <div class="modal-head"><div class="modal-title">☁ Cloud Sync</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="export-desc">
+        Connect an Apps Script web app (backed by a Google Sheet). HealthTracker+ remains <b>offline-first</b> (IndexedDB), and will:
+        <br>• Pull from the sheet on open
+        <br>• Push local changes on minimise/close
+      </div>
+
+      <div class="custom-grid">
+        <div class="custom-full" style="display:flex;gap:.5rem;align-items:center">
+          <input class="custom-full" id="cloudUrl" placeholder="Apps Script Web App URL (…/exec)" value="${escapeHtml(url)}" ${urlReadonly}>
+          <button class="food-btn" onclick="toggleCloudUrlEdit()" style="white-space:nowrap">Edit</button>
+        </div>
+        <input type="password" class="custom-full" id="cloudSecret" placeholder="${escapeHtml(secretPlaceholder)}" value="">
+      </div>
+
+      <button class="export-btn" onclick="saveCloudSettings()">Save for this session</button>
+
+      <div class="stats-row" style="margin-top:1rem">
+        <div class="stat-box"><div class="stat-val" style="font-size:.75rem">${fmtTs(lastPull)}</div><div class="stat-label">last pull</div></div>
+        <div class="stat-box"><div class="stat-val" style="font-size:.75rem">${fmtTs(lastPush)}</div><div class="stat-label">last push</div></div>
+      </div>
+
+      <div style="display:flex;gap:.5rem;margin-top:1rem">
+        <button class="water-btn" onclick="if(ensureCloudReadyOrPrompt()) cloudPullAndMerge({toastOnFinish:true})" style="flex:1">Pull now</button>
+        <button class="water-btn" onclick="if(ensureCloudReadyOrPrompt()){ flushCloudSync('manual');toast('Pushing…'); }" style="flex:1">Push now</button>
+      </div>
+
+      <div style="display:flex;gap:.5rem;margin-top:.75rem">
+        <button class="water-btn" onclick="clearCloudSecretSession()" style="flex:1">Clear secret</button>
+      </div>
+
+      <div class="export-hint">URL is prefilled from <code>DEFAULT_CLOUD_SCRIPT_URL</code> in this file. Secret is kept in <code>sessionStorage</code> (cleared when the tab closes) — don’t commit it to GitHub.</div>
+    </div>
+  </div></div>`;
+}
+function saveCloudSettings(){
+  const urlEl = document.getElementById("cloudUrl");
+  const url = (urlEl ? urlEl.value.trim() : "");
+  if(!url) return toast("Add your Apps Script URL in DEFAULT_CLOUD_SCRIPT_URL");
+
+  // Persist URL override (non-sensitive)
+  setCloudCfg({scriptUrl:url});
+
+  // Secret: session-only
+  const newSecret = (document.getElementById("cloudSecret")?.value || "").trim();
+  if(newSecret) setCloudSecret(newSecret);
+
+  if(!getCloudSecret()){
+    toast("Secret required for this session");
+    return;
+  }
+
+  toast("Cloud ready ✓ (secret kept this session)");
+  closeModal();
+  cloudPullAndMerge({toastOnFinish:true}).catch(()=>{});
+}
+
+function renderExportModal(){
+  return `<div class="modal-overlay"><div class="modal">
+    <div class="modal-head"><div class="modal-title">Export Data</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="export-desc">Export last 30 days as CSV.</div>
+      <button class="export-btn" onclick="exportCSV()">↓ Download CSV</button>
+      <div class="export-hint">Google Sheets → File → Import → Upload CSV</div>
+    </div>
+  </div></div>`;
+}
+
+async function exportCSV(){
+  let csv = "Date,Calories,CaloriesBurned,NetCalories,Protein(g),Carbs(g),Fat(g),Fiber(g),Water(ml),Weight(kg),BMI,Sleep(h),Foods\\n";
+  for(let i=30;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().split("T")[0];
+    const data = normalizeDay(await dbGet(ds));
+    if(data && (data.foods.length || data.water || data.sleep?.hours || data.weight || data.calBurned)){
+      const t = computeTotals(data);
+      const burn = data.calBurned||0;
+      const net = t.cal - burn;
+      const foods = data.foods.map(f=>f.name).join("; ");
+      csv += `${ds},${t.cal},${burn},${net},${t.protein},${t.carbs},${t.fat},${t.fiber},${data.water||0},${data.weight||""},${data.bmi?Math.round(data.bmi*10)/10:""},${data.sleep?.hours||0},"${foods.replace(/"/g,'""')}"\\n`;
+    }
+  }
+  const blob = new Blob([csv],{type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href=url;a.download=`health-export-${todayStr()}.csv`;a.click();
+  URL.revokeObjectURL(url); closeModal(); toast("CSV downloaded ✓");
+}
+
+// ═══ SVG Ring ═══════════════════════════════════════
+function svgRing(pct, size=100, stroke=7, color="var(--accent)"){
+  const r = (size-stroke)/2, c = 2*Math.PI*r;
+  const offset = c - (Math.min(pct,100)/100)*c;
+  return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--ring-track)" stroke-width="${stroke}"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
+      stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset .6s ease"/>
+  </svg>`;
+}
+
+// ═══ CHARTS ═════════════════════════════════════════
+function chartBars(data, key, color, maxVal, opts={}){
+  const showVals = opts.showVals !== false;
+  const labelEvery = opts.labelEvery || 1;
+
+  const safeVals = data.map(d => (+d[key] || 0));
+  if(!maxVal) maxVal = Math.max(...safeVals, 1);
+
+  return `<div class="chart-bars">${data.map((d,i)=>{
+    const v = (+d[key] || 0);
+    const h = maxVal>0 ? (v/maxVal)*80 : 0;
+    const lbl = (i%labelEvery===0) ? (d.day||"") : "";
+    return `<div class="chart-bar-wrap">
+      <div class="chart-bar-val">${showVals && v ? v : ""}</div>
+      <div class="chart-bar" style="height:${Math.max(2,h)}px;background:${color}"></div>
+      <div class="chart-bar-label">${escapeHtml(lbl)}</div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+function trendLine(days, key, color, unit){
+  const pts = days
+    .map((d,i)=>({i, v:(d[key]===null||d[key]===undefined||d[key]==="")?null:+d[key], label:d.day, date:d.date}))
+    .filter(p=>p.v!==null && isFinite(p.v));
+
+  if(pts.length < 2){
+    return `<div class="empty-state" style="padding:1.5rem 1rem"><div class="empty-icon">📈</div>Add at least 2 entries to see a trend</div>`;
+  }
+
+  const W = 320, H = 90, PAD = 10;
+  let minV = Math.min(...pts.map(p=>p.v));
+  let maxV = Math.max(...pts.map(p=>p.v));
+  if(minV === maxV){
+    minV -= 1; maxV += 1;
+  } else {
+    const pad = (maxV-minV)*0.1;
+    minV -= pad; maxV += pad;
+  }
+
+  const xFor = (i)=> PAD + (i/(pts.length-1))*(W-2*PAD);
+  const yFor = (v)=> PAD + (1-((v-minV)/(maxV-minV)))*(H-2*PAD);
+
+  const poly = pts.map((p,idx)=>`${xFor(idx).toFixed(1)},${yFor(p.v).toFixed(1)}`).join(" ");
+  const first = pts[0], last = pts[pts.length-1];
+
+  return `
+    <div class="trend">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="trend chart">
+        <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        ${pts.map((p,idx)=>`<circle cx="${xFor(idx)}" cy="${yFor(p.v)}" r="3" fill="${color}"></circle>`).join("")}
+      </svg>
+      <div class="trend-labels">
+        <span>${escapeHtml(first.date.slice(5))}</span>
+        <span><b>${(last.v).toFixed(1)}${unit?(" "+unit):""}</b></span>
+        <span>${escapeHtml(last.date.slice(5))}</span>
+      </div>
+    </div>
+  `;
+}
+
+// ═══ RENDER ════════════════════════════════════════
+function render(){
+  const plan = MEAL_PLAN[dow(selectedDate)];
+  const workout = WORKOUT_PLAN[dow(selectedDate)];
+  const isToday = selectedDate === todayStr();
+
+  document.getElementById("headerTag").textContent = plan?.tag || "";
+
+  document.getElementById("dateLabel").textContent = isToday ? "Today · " + fmtDate(selectedDate) : fmtDate(selectedDate);
+  document.getElementById("dateTodayBtn").style.display = isToday ? "none" : "block";
+
+  const t = computeTotals(dayData);
+  const content = document.getElementById("tabContent");
+
+  if(currentTab==="today") content.innerHTML = renderToday(t, plan);
+  else if(currentTab==="water") content.innerHTML = renderWater();
+  else if(currentTab==="activity") content.innerHTML = renderActivity(workout);
+  else if(currentTab==="sleep") content.innerHTML = renderSleepTab();
+  else if(currentTab==="dashboard") loadDashboard();
+}
+
+// ─── TODAY TAB ──────────────────────────────────────
+function formatMicro(v, unit){
+  const num = +v || 0;
+  if(unit==="µg") return Math.round(num);
+  const abs = Math.abs(num);
+  if(abs===0) return 0;
+  if(abs < 1) return num.toFixed(2);
+  if(abs < 10) return num.toFixed(1);
+  return Math.round(num);
+}
+function renderMicrosDetails(micros){
+  micros = micros || {};
+  const met = MICROS.filter(m => (+micros[m.key]||0) >= m.target).length;
+
+  const rows = MICROS.map(m=>{
+    const val = (+micros[m.key]||0);
+    const pct = m.target ? clamp(val/m.target*100, 0, 100) : 0;
+    return `<div class="prog">
+      <div class="prog-header"><span class="prog-label">${escapeHtml(m.label)} <span class="micro-mini">(${m.unit})</span></span>
+        <span class="prog-val">${formatMicro(val,m.unit)}/${m.target}${m.unit}</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+    </div>`;
+  }).join("");
+
+  return `
+    <details class="micros-details">
+      <summary><span>Micronutrients</span><span class="micro-mini">${met}/${MICROS.length} at 100%</span></summary>
+      <div class="micros-scroll">
+        ${rows}
+        <div class="export-hint" style="margin-top:.75rem">Micros are AI-estimated for dishes (approx).</div>
+      </div>
+    </details>
+  `;
+}
+
+function renderToday(t, plan){
+  const calPct = (t.cal/TARGETS.cal)*100;
+  const remaining = TARGETS.cal - t.cal;
+  const waterPct = ((dayData.water||0)/TARGETS.water)*100;
+  const burned = dayData.calBurned || 0;
+  const net = t.cal - burned;
+
+  let foodList = "";
+  if(dayData.foods.length===0){
+    foodList = `<div class="empty-state"><div class="empty-icon">🍽</div>No foods logged yet<br><span style="font-size:.6875rem">Tap "from plan" to add today's meals</span></div>`;
+  } else {
+    foodList = dayData.foods.map(f=>`<div class="food-item">
+      <div class="food-icon">${MEAL_ICONS[f.meal]||"🍽"}</div>
+      <div class="food-info"><div class="food-name">${escapeHtml(f.name)} ${f.estimated?'<span style="color:var(--muted);font-size:.625rem;font-weight:400">· AI</span>':""}</div>
+        <div class="food-meta">${escapeHtml(f.meal)} · P:${Math.round((+f.protein||0))}g C:${Math.round((+f.carbs||0))}g F:${Math.round((+f.fat||0))}g</div></div>
+      <div class="food-cal">${Math.round((+f.cal||0))}</div>
+      <button class="food-remove" onclick="removeFood(${f.id})">✕</button>
+    </div>`).join("");
+  }
+
+  let suppList = SUPPLEMENTS.map(s=>{
+    const taken = (dayData.supplementsTaken||[]).includes(s.id);
+    return `<div class="supp-item ${taken?"taken":""}" onclick="toggleSupp('${s.id}')">
+      <span class="supp-icon">${s.icon}</span>
+      <span class="supp-name">${escapeHtml(s.name)}</span>
+      <span class="supp-freq">${escapeHtml(s.freq)}</span>
+      <span class="supp-check">${taken?"✓":""}</span>
+    </div>`;
+  }).join("");
+
+  return `
+    <!-- Calories + Macros -->
+    <div class="card">
+      <div class="ring-wrap">
+        <div class="ring-container" style="width:110px;height:110px">
+          ${svgRing(calPct, 110, 8, t.cal>TARGETS.cal?"var(--red)":"var(--accent)")}
+          <div class="ring-center">
+            <div class="ring-big">${t.cal}</div>
+            <div class="ring-small">/ ${TARGETS.cal} kcal</div>
+          </div>
+        </div>
+        <div class="ring-info">
+          <div class="prog">
+            <div class="prog-header"><span class="prog-label">Protein</span><span class="prog-val" style="color:var(--accent)">${t.protein}/${TARGETS.protein}g</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.protein/TARGETS.protein*100)}%;background:var(--accent)"></div></div>
+          </div>
+          <div class="prog">
+            <div class="prog-header"><span class="prog-label">Carbs</span><span class="prog-val" style="color:var(--yellow)">${t.carbs}/${TARGETS.carbs}g</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.carbs/TARGETS.carbs*100)}%;background:var(--yellow)"></div></div>
+          </div>
+          <div class="prog">
+            <div class="prog-header"><span class="prog-label">Fat</span><span class="prog-val" style="color:var(--orange)">${t.fat}/${TARGETS.fat}g</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.fat/TARGETS.fat*100)}%;background:var(--orange)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      ${renderMicrosDetails(t.micros)}
+
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-val" style="color:${remaining>=0?"var(--green)":"var(--red)"}">${remaining}</div><div class="stat-label">kcal left</div></div>
+        <div class="stat-box"><div class="stat-val">${t.fiber}g</div><div class="stat-label">fiber</div></div>
+        <div class="stat-box"><div class="stat-val">${dayData.foods.length}</div><div class="stat-label">meals</div></div>
+      </div>
+
+      <div style="margin-top:.75rem;font-size:.6875rem;color:var(--muted);text-align:center">
+        Burned: <b style="color:var(--green)">${burned}</b> kcal · Net: <b style="color:${net<=0?'var(--green)':'var(--text)'}">${net}</b> kcal
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5v1a4 4 0 0 1-2 3.46V20a3 3 0 0 1-6 0v-8.54A4 4 0 0 1 7 8V7a5 5 0 0 1 5-5z"/></svg> Body</div>
+      <div class="sleep-form" style="margin-bottom:.75rem">
+        <div class="sleep-field"><label>Weight (kg)</label><input type="number" step="0.1" id="weightInput" value="${dayData.weight??""}" placeholder="e.g. 62.5"></div>
+        <div class="sleep-field"><label>BMI</label><input type="text" value="${dayData.weight? (calcBMI(dayData.weight).toFixed(1)) : "–"}" disabled style="background:var(--bg2)"></div>
+      </div>
+      <button class="sleep-save" onclick="saveWeight()">Save weight</button>
+      <div class="export-hint" style="margin-top:.5rem">Height fixed at 162 cm · BMI auto-calculated</div>
+    </div>
+
+    <!-- Quick Water -->
+    <div class="card">
+      <div class="water-head">
+        <div class="card-title" style="margin:0"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg> Water</div>
+        <span class="water-amt">${((dayData.water||0)/1000).toFixed(1)}L <span style="color:var(--muted);font-weight:400">/ 3.5L</span></span>
+      </div>
+      <div class="water-bar"><div class="water-fill" style="width:${Math.min(100,waterPct)}%"></div></div>
+      <div class="water-btns">
+        <button class="water-btn" onclick="addWater(250)">+250ml</button>
+        <button class="water-btn" onclick="addWater(500)">+500ml</button>
+        <button class="water-btn" onclick="addWater(750)">+750ml</button>
+      </div>
+    </div>
+
+    <!-- Food Log -->
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg> Food Log</div>
+      <div class="food-actions">
+        <button class="food-btn food-btn-primary" onclick="showModal('plan')">+ from plan</button>
+        <button class="food-btn" onclick="showModal('custom')">+ custom</button>
+      </div>
+      ${foodList}
+    </div>
+
+    <!-- Supplements -->
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg> Supplements</div>
+      ${suppList}
+    </div>
+  `;
+}
+
+// ─── WATER TAB ──────────────────────────────────────
+function renderWater(){
+  const pct = ((dayData.water||0)/TARGETS.water)*100;
+  let logHtml = "";
+  if((dayData.waterLogs||[]).length > 0){
+    logHtml = `<div class="card"><div class="card-title">Today's Log</div><div class="water-log">
+      ${(dayData.waterLogs||[]).map(l=>`<div class="water-log-item"><span class="water-log-time">${escapeHtml(l.time)}</span><span class="water-log-amt">+${l.ml}ml</span></div>`).join("")}
+    </div></div>`;
+  }
+  return `
+    <div class="card" style="text-align:center;padding:2rem">
+      <div class="ring-container" style="width:150px;height:150px;margin:0 auto">
+        ${svgRing(pct, 150, 10, "var(--accent)")}
+        <div class="ring-center">
+          <div style="font-size:.875rem;margin-bottom:.125rem">💧</div>
+          <div class="ring-big">${((dayData.water||0)/1000).toFixed(1)}</div>
+          <div class="ring-small">/ 3.5 L</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap">
+        <button class="water-btn" onclick="addWater(250)" style="flex:none;padding:.625rem 1rem">+250ml</button>
+        <button class="water-btn" onclick="addWater(500)" style="flex:none;padding:.625rem 1rem">+500ml</button>
+        <button class="water-btn" onclick="addWater(750)" style="flex:none;padding:.625rem 1rem">+750ml</button>
+        <button class="water-btn" onclick="addWater(1000)" style="flex:none;padding:.625rem 1rem">+1L</button>
+      </div>
+      ${(dayData.water||0)>0?`<button class="water-undo" onclick="undoWater()">undo last</button>`:""}
+    </div>
+    ${logHtml}
+  `;
+}
+
+// ─── ACTIVITY TAB ───────────────────────────────────
+function renderActivity(workout){
+  const burnCard = `
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg> Calorie Burn</div>
+      <div class="sleep-form" style="margin-bottom:.75rem">
+        <div class="sleep-field" style="flex:1"><label>Calories burned (kcal)</label><input type="number" id="burnInput" value="${dayData.calBurned||0}" placeholder="e.g. 350"></div>
+      </div>
+      <button class="sleep-save" onclick="saveBurn()">Save burn</button>
+      <div class="export-hint" style="margin-top:.5rem">Log your estimated activity calories (walk/run/gym etc.)</div>
+    </div>
+  `;
+
+  if(!workout) return burnCard + `<div class="card"><div class="empty-state"><div class="empty-icon">🧘</div>Rest day</div></div>`;
+
+  const done = dayData.exercises || [];
+  const exList = workout.exercises.map(ex=>{
+    const d = done.includes(ex);
+    return `<div class="ex-item ${d?"done":""}" onclick="toggleExercise('${ex.replace(/'/g,"\\'")}')">
+      <span class="ex-check">${d?"✓":""}</span>
+      <span class="ex-name">${escapeHtml(ex)}</span>
+    </div>`;
+  }).join("");
+  return burnCard + `<div class="card">
+    <div class="ex-header">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--green)" stroke-width="1.5" fill="none"><path d="M6.5 6.5h11M6.5 17.5h11M3 12h18"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="6.5" r="2.5"/></svg>
+      <div><div style="font-weight:700;font-size:.9375rem">${escapeHtml(workout.name)}</div>
+      <div style="font-size:.6875rem;color:var(--muted)">~45 min session</div></div>
+    </div>
+    ${exList}
+    <div class="ex-counter"><div style="font-size:.6875rem;color:var(--muted)">completed</div><div class="ex-counter-val">${done.length} / ${workout.exercises.length}</div></div>
+  </div>`;
+}
+
+// ─── SLEEP TAB ──────────────────────────────────────
+function renderSleepTab(){
+  const h = dayData.sleep?.hours || 0;
+  const pct = h ? (h/TARGETS.sleep)*100 : 0;
+  return `
+    <div class="card" style="text-align:center;padding:2rem">
+      <div class="ring-container" style="width:130px;height:130px;margin:0 auto">
+        ${svgRing(pct, 130, 9, "#7c3aed")}
+        <div class="ring-center">
+          <div style="font-size:.875rem;margin-bottom:.125rem">🌙</div>
+          <div class="ring-big">${h||"–"}</div>
+          <div class="ring-small">/ ${TARGETS.sleep}h</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Log Sleep</div>
+      <div class="sleep-form">
+        <div class="sleep-field"><label>Bedtime</label><input type="time" id="sleepBed" value="${dayData.sleep?.bedtime||"23:00"}"></div>
+        <div class="sleep-field"><label>Wake-up</label><input type="time" id="sleepWake" value="${dayData.sleep?.wakeup||"07:00"}"></div>
+      </div>
+      <button class="sleep-save" onclick="saveSleep()">Save sleep</button>
+    </div>
+  `;
+}
+
+// ─── DASHBOARD ──────────────────────────────────────
+async function loadDashboard(){
+  const rangeN = dashboardRange==="monthly" ? 30 : 7;
+  const days = [];
+
+  for(let i=rangeN-1;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().split("T")[0];
+    const data = normalizeDay(await dbGet(ds) || emptyDay());
+    const t = computeTotals(data);
+
+    days.push({
+      date:ds,
+      day: dashboardRange==="monthly" ? ds.slice(5) : dayName(d.getDay()),
+      ...t,
+      water:data.water||0,
+      sleep:data.sleep?.hours||0,
+      calBurned:data.calBurned||0,
+      weight:(data.weight===null?null:+data.weight),
+      bmi:(data.weight?Math.round(calcBMI(data.weight)*10)/10:null)
+    });
+  }
+
+  const ct = computeTotals(dayData);
+  const totalMacro = ct.protein + ct.carbs + ct.fat || 1;
+
+  const barOpts = (dashboardRange==="monthly") ? {showVals:false, labelEvery:5} : {showVals:true, labelEvery:1};
+
+  const weightCount = days.filter(d=>d.weight!==null && isFinite(d.weight)).length;
+  const avgWeight = weightCount ? (days.filter(d=>d.weight!==null && isFinite(d.weight)).reduce((s,d)=>s+d.weight,0)/weightCount) : null;
+  const bmiCount = days.filter(d=>d.bmi!==null && isFinite(d.bmi)).length;
+  const avgBmi = bmiCount ? (days.filter(d=>d.bmi!==null && isFinite(d.bmi)).reduce((s,d)=>s+d.bmi,0)/bmiCount) : null;
+
+  document.getElementById("tabContent").innerHTML = `
+    <div class="card">
+      <div class="card-title">Snapshot</div>
+      <div class="filter-controls">
+        <button class="filter-btn ${dashboardRange==="weekly"?"active":""}" onclick="setDashboardRange('weekly')">Weekly</button>
+        <button class="filter-btn ${dashboardRange==="monthly"?"active":""}" onclick="setDashboardRange('monthly')">Monthly</button>
+        <button class="filter-btn" onclick="showModal('cloud')" title="Cloud sync">☁ Sync</button>
+      </div>
+      <div style="font-size:.625rem;color:var(--muted);margin-top:.5rem">
+        Last pull: ${fmtTs(localStorage.getItem(LAST_PULL_KEY))} · Last push: ${fmtTs(localStorage.getItem(LAST_PUSH_KEY))}
+      </div>
+    </div>
+
+    <!-- Selected-day macros -->
+    <div class="card">
+      <div class="card-title">Selected Day Macros</div>
+      <div class="macro-legend" style="margin-bottom:.75rem">
+        <div class="macro-item"><div class="macro-dot" style="background:var(--accent)"></div>Protein: <b>${ct.protein}g</b> (${Math.round(ct.protein/totalMacro*100)}%)</div>
+        <div class="macro-item"><div class="macro-dot" style="background:var(--yellow)"></div>Carbs: <b>${ct.carbs}g</b> (${Math.round(ct.carbs/totalMacro*100)}%)</div>
+        <div class="macro-item"><div class="macro-dot" style="background:var(--orange)"></div>Fat: <b>${ct.fat}g</b> (${Math.round(ct.fat/totalMacro*100)}%)</div>
+      </div>
+      <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--ring-track)">
+        <div style="width:${ct.protein/totalMacro*100}%;background:var(--accent);transition:width .5s"></div>
+        <div style="width:${ct.carbs/totalMacro*100}%;background:var(--yellow);transition:width .5s"></div>
+        <div style="width:${ct.fat/totalMacro*100}%;background:var(--orange);transition:width .5s"></div>
+      </div>
+    </div>
+
+    <!-- Body trends -->
+    <div class="card">
+      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Weight (kg)</div>
+      ${trendLine(days, "weight", "var(--accent)", "kg")}
+    </div>
+    <div class="card">
+      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} BMI</div>
+      ${trendLine(days, "bmi", "var(--orange)", "")}
+    </div>
+
+    <!-- Calories -->
+    <div class="card">
+      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Calories Intake</div>
+      ${chartBars(days, "cal", "var(--accent)", TARGETS.cal * 1.2, barOpts)}
+    </div>
+    <div class="card">
+      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Calories Burned</div>
+      ${chartBars(days, "calBurned", "var(--green)", 900, barOpts)}
+    </div>
+
+    <!-- Protein / Water / Sleep -->
+    <div class="card">
+      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Protein (g)</div>
+      ${chartBars(days, "protein", "var(--green)", TARGETS.protein * 1.2, barOpts)}
+    </div>
+    <div class="card">
+      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Water (ml)</div>
+      ${chartBars(days, "water", "var(--accent)", TARGETS.water * 1.1, barOpts)}
+    </div>
+    <div class="card">
+      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Sleep (hrs)</div>
+      ${chartBars(days, "sleep", "#7c3aed", 10, barOpts)}
+    </div>
+
+    <!-- Averages -->
+    <div class="card">
+      <div class="card-title">${dashboardRange==="weekly"?"7‑Day":"30‑Day"} Averages</div>
+      <div class="stats-row" style="flex-wrap:wrap">
+        <div class="stat-box"><div class="stat-val">${Math.round(days.reduce((s,d)=>s+d.cal,0)/rangeN)}</div><div class="stat-label">avg cal</div></div>
+        <div class="stat-box"><div class="stat-val">${Math.round(days.reduce((s,d)=>s+d.protein,0)/rangeN)}g</div><div class="stat-label">avg protein</div></div>
+        <div class="stat-box"><div class="stat-val">${(days.reduce((s,d)=>s+d.water,0)/rangeN/1000).toFixed(1)}L</div><div class="stat-label">avg water</div></div>
+        <div class="stat-box"><div class="stat-val">${(days.reduce((s,d)=>s+d.sleep,0)/rangeN).toFixed(1)}h</div><div class="stat-label">avg sleep</div></div>
+        <div class="stat-box"><div class="stat-val">${avgWeight!==null ? avgWeight.toFixed(1) : "–"}</div><div class="stat-label">avg weight</div></div>
+        <div class="stat-box"><div class="stat-val">${avgBmi!==null ? avgBmi.toFixed(1) : "–"}</div><div class="stat-label">avg bmi</div></div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══ THEME ══════════════════════════════════════════
+const themeToggle = document.getElementById("themeToggle");
+const savedTheme = localStorage.getItem("theme") || "original";
+if(savedTheme==="colorful") document.body.setAttribute("data-theme","colorful");
+
+themeToggle.addEventListener("click", ()=>{
+  const current = document.body.getAttribute("data-theme");
+  if(current==="colorful"){ document.body.removeAttribute("data-theme"); localStorage.setItem("theme","original") }
+  else { document.body.setAttribute("data-theme","colorful"); localStorage.setItem("theme","colorful") }
+});
+
+// ═══ INIT ═══════════════════════════════════════════
+async function init(){
+  setupAutoSync();
+  await loadDay();
+
+  // If URL is configured (in this file or local override), ask for secret once per tab/session.
+  // Secret is stored in sessionStorage and cleared when the tab closes.
+  if(!cloudReady()){
+    const url = (getCloudScriptUrl()||"").trim();
+    if(url && navigator.onLine){
+      setTimeout(()=>showModal("cloud", {focusSecret:true, auto:true}), 120);
+    }
+  }else{
+    cloudPullAndMerge({silent:true}).catch(()=>{});
+  }
+}
+init();
+</script>
+
+</body>
+</html>
