@@ -10,18 +10,19 @@
     
     <title>Projects - Navajit D</title>
     <style>
-        /* Base Styles - Identical to index.html */
         :root {
-            /* Original Theme */
             --text-color: #0a1f00;
             --bg-color: #fff;
             --accent-color: #2563eb;
             --muted-color: #6b7280;
             --border-color: #e5e7eb;
             --font-sans: "Inconsolata", monospace;
+            --secondary-color: #374151;
+            --highlight-color: #f59e0b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
         }
         
-        /* Green/Red/Yellow Theme */
         [data-theme="colorful"] {
             --text-color: #0f2e00;
             --bg-color: #fefffe;
@@ -34,23 +35,8 @@
             --warning-color: #d97706;
         }
         
-        /* Original theme secondary colors */
-        :root {
-            --secondary-color: #374151;
-            --highlight-color: #f59e0b;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        html {
-            font-size: 16px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; }
         
         body {
             font-family: var(--font-sans);
@@ -63,356 +49,127 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        a {
-            color: var(--accent-color);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        
-        a:hover {
-            text-decoration: underline;
-        }
-        
-        p {
-            margin-bottom: 1.5rem;
-        }
+        a { color: var(--accent-color); text-decoration: none; transition: color 0.3s ease; }
+        a:hover { text-decoration: underline; }
+        p { margin-bottom: 1.5rem; }
         
         /* Theme Toggle */
         .theme-toggle {
-            width: 2.5rem;
-            height: 2rem;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-color);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 2.5rem; height: 2rem; border-radius: 6px;
+            border: 1px solid var(--border-color); background: var(--bg-color);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
             transition: all 0.3s ease;
         }
+        .theme-toggle:hover { border-color: var(--accent-color); background: rgba(37, 99, 235, 0.05); }
+        [data-theme="colorful"] .theme-toggle:hover { background: rgba(22, 163, 74, 0.05); }
+        .theme-toggle svg { width: 16px; height: 16px; stroke: var(--text-color); fill: none; stroke-width: 1.5; transition: all 0.3s ease; }
+        .theme-toggle:hover svg { stroke: var(--accent-color); }
+        .icon-colorful { opacity: 0; position: absolute; }
+        .icon-original { opacity: 1; }
+        [data-theme="colorful"] .icon-colorful { opacity: 1; }
+        [data-theme="colorful"] .icon-original { opacity: 0; }
         
-        .theme-toggle:hover {
-            border-color: var(--accent-color);
-            background: rgba(37, 99, 235, 0.05);
-        }
+        /* Header */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .logo { font-weight: 600; font-size: 1rem; color: var(--text-color); }
+        .logo a { color: var(--text-color); }
+        .logo a:hover { color: var(--accent-color); text-decoration: none; }
+        nav ul { display: flex; gap: 1.5rem; list-style: none; }
+        nav a { color: var(--text-color); font-size: 1rem; }
+        nav a:hover { color: var(--accent-color); text-decoration: none; }
+        nav a.current { color: var(--accent-color); font-weight: 600; }
         
-        [data-theme="colorful"] .theme-toggle:hover {
-            border-color: var(--accent-color);
-            background: rgba(22, 163, 74, 0.05);
-        }
+        /* Page Header */
+        .page-header { margin-bottom: 3rem; }
+        .page-title { font-size: 2.3rem; line-height: 1.3; font-weight: 700; margin-bottom: 1rem; }
+        .page-description { color: var(--muted-color); }
         
-        /* Theme toggle icons */
-        .theme-toggle svg {
-            width: 16px;
-            height: 16px;
-            stroke: var(--text-color);
-            fill: none;
-            stroke-width: 1.5;
-            transition: all 0.3s ease;
-        }
-        
-        .theme-toggle:hover svg {
-            stroke: var(--accent-color);
-        }
-        
-        /* Theme toggle icons visibility */
-        .icon-colorful {
-            opacity: 0;
-            position: absolute;
-        }
-        
-        .icon-original {
-            opacity: 1;
-        }
-        
-        [data-theme="colorful"] .icon-colorful {
-            opacity: 1;
-        }
-        
-        [data-theme="colorful"] .icon-original {
-            opacity: 0;
-        }
-        
-        /* Header Styles */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3rem;
-        }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .logo {
-            font-weight: 600;
-            font-size: 1rem;
-            color: var(--text-color);
-        }
-        
-        .logo a {
-            color: var(--text-color);
-        }
-        
-        .logo a:hover {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-        
-        nav ul {
-            display: flex;
-            gap: 1.5rem;
-            list-style: none;
-        }
-        
-        nav a {
-            color: var(--text-color);
-            font-size: 1rem;
-        }
-        
-        nav a:hover {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-        
-        nav a.current {
-            color: var(--accent-color);
-            font-weight: 600;
-        }
-        
-        /* Page Title */
-        .page-header {
-            margin-bottom: 3rem;
-        }
-        
-        .page-title {
-            font-size: 2.3rem;
-            line-height: 1.3;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        
-        .page-description {
-            color: var(--muted-color);
-        }
-        
-        /* Dynamic gradient animation for colorful mode */
         @keyframes gradient-shift {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         [data-theme="colorful"] .page-description {
-            background: linear-gradient(
-                90deg,
-                #16a34a,
-                #059669,
-                #eab308,
-                #ea580c,
-                #dc2626,
-                #ea580c,
-                #eab308,
-                #059669,
-                #16a34a
-            );
+            background: linear-gradient(90deg, #16a34a, #059669, #eab308, #ea580c, #dc2626, #ea580c, #eab308, #059669, #16a34a);
             background-size: 200% auto;
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: gradient-shift 6s ease infinite;
         }
         
-        /* Projects Section - Similar to index.html project items */
-        #projects {
-            margin-bottom: 4rem;
-        }
+        /* Projects */
+        #projects { margin-bottom: 4rem; }
+        .section-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 2rem; }
         
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-        }
-        
-        .project-item {
-            margin-bottom: 2.5rem;
-            padding-bottom: 2.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
+        .project-item { margin-bottom: 2.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--border-color); }
         [data-theme="colorful"] .project-item {
-            background: linear-gradient(
-                135deg, 
-                rgba(22, 163, 74, 0.03) 0%, 
-                rgba(234, 88, 12, 0.03) 50%,
-                rgba(234, 179, 8, 0.03) 100%
-            );
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            border-bottom: none;
+            background: linear-gradient(135deg, rgba(22,163,74,0.03), rgba(234,88,12,0.03) 50%, rgba(234,179,8,0.03));
+            padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-bottom: none;
         }
+        .project-item:last-child { border-bottom: none; }
+        .project-title { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+        [data-theme="colorful"] .project-title { color: var(--accent-color); }
+        .project-meta { font-size: 0.875rem; color: var(--muted-color); margin-bottom: 0.75rem; }
+        [data-theme="colorful"] .project-meta { color: var(--secondary-color); }
+        .project-description { margin-bottom: 0.75rem; }
+        .project-links { display: flex; gap: 1.5rem; align-items: center; }
+        .project-links a { font-size: 0.875rem; }
         
-        .project-item:last-child {
-            border-bottom: none;
-        }
-        
-        .project-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        [data-theme="colorful"] .project-title {
-            color: var(--accent-color);
-        }
-        
-        .project-meta {
+        /* Blog CTA link */
+        .blog-cta {
             font-size: 0.875rem;
             color: var(--muted-color);
-            margin-bottom: 0.75rem;
+            border-bottom: 1px dashed var(--muted-color);
+            transition: all 0.2s ease;
         }
-        
-        [data-theme="colorful"] .project-meta {
-            color: var(--secondary-color);
-        }
-        
-        .project-description {
-            margin-bottom: 0.75rem;
-        }
-        
-        .project-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-        
-        .project-links a {
-            font-size: 0.875rem;
-        }
-        
-        /* New badge styles for project status */
-        .project-status {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border-radius: 4px;
-            margin-left: 0.5rem;
-            text-transform: uppercase;
-        }
-        
-        .status-wip {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
-        }
-        
-        [data-theme="colorful"] .status-wip {
-            background-color: rgba(234, 88, 12, 0.1);
-            color: var(--secondary-color);
-        }
-        
-        .status-active {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #059669;
-        }
-        
-        [data-theme="colorful"] .status-active {
-            background-color: rgba(22, 163, 74, 0.1);
+        .blog-cta:hover {
             color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+            text-decoration: none;
         }
         
-        .status-experiment {
-            background-color: rgba(139, 92, 246, 0.1);
-            color: #7c3aed;
+        /* Status badges */
+        .project-status {
+            display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem;
+            font-weight: 600; border-radius: 4px; margin-left: 0.5rem; text-transform: uppercase;
         }
-        
-        [data-theme="colorful"] .status-experiment {
-            background-color: rgba(234, 179, 8, 0.1);
-            color: var(--highlight-color);
-        }
+        .status-wip { background-color: rgba(239, 68, 68, 0.1); color: #dc2626; }
+        [data-theme="colorful"] .status-wip { background-color: rgba(234, 88, 12, 0.1); color: var(--secondary-color); }
+        .status-active { background-color: rgba(16, 185, 129, 0.1); color: #059669; }
+        [data-theme="colorful"] .status-active { background-color: rgba(22, 163, 74, 0.1); color: var(--accent-color); }
+        .status-experiment { background-color: rgba(139, 92, 246, 0.1); color: #7c3aed; }
+        [data-theme="colorful"] .status-experiment { background-color: rgba(234, 179, 8, 0.1); color: var(--highlight-color); }
         
         /* Footer */
         footer {
-            margin-top: 4rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border-color);
-            font-size: 0.875rem;
-            color: var(--muted-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color);
+            font-size: 0.875rem; color: var(--muted-color);
+            display: flex; justify-content: space-between; align-items: center;
         }
-        
-        .footer-links {
-            display: flex;
-            gap: 1.5rem;
-        }
+        .footer-links { display: flex; gap: 1.5rem; }
         
         @media (max-width: 640px) {
-            body {
-                padding: 2rem 1rem;
-            }
-            
-            .theme-toggle {
-                width: 2rem;
-                height: 1.75rem;
-            }
-            
-            .theme-toggle svg {
-                width: 14px;
-                height: 14px;
-            }
-            
-            header {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            nav ul {
-                gap: 1rem;
-            }
-            
-            .page-title {
-                font-size: 1.75rem;
-            }
-            
-            [data-theme="colorful"] .project-item {
-                padding: 1rem;
-            }
-            
-            footer {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
+            body { padding: 2rem 1rem; }
+            .theme-toggle { width: 2rem; height: 1.75rem; }
+            .theme-toggle svg { width: 14px; height: 14px; }
+            header { flex-direction: column; gap: 1rem; }
+            nav ul { gap: 1rem; }
+            .page-title { font-size: 1.75rem; }
+            [data-theme="colorful"] .project-item { padding: 1rem; }
+            footer { flex-direction: column; gap: 1rem; text-align: center; }
         }
         
-        /* Loading animation for theme transition */
-        .theme-transition {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .theme-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="theme-transition" data-theme="colorful">
     <header>
         <div class="header-left">
-            <div class="logo">
-                <a href="/">Navajit D</a>
-            </div>
-            <!-- Theme Toggle Button -->
+            <div class="logo"><a href="/">Navajit D</a></div>
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
                 <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-                    <circle cx="12" cy="12" r="2"/>
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><circle cx="12" cy="12" r="2"/>
                     <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
                 </svg>
                 <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -424,8 +181,8 @@
         <nav>
             <ul>
                 <li><a href="/projects.html" class="current">Projects</a></li>
+                <li><a href="/blog.html">Blog</a></li>
                 <li><a href="/#experience">Experience</a></li>
-                <li><a href="mailto:navjitdebnath5@gmail.com">Contact</a></li>
             </ul>
         </nav>
     </header>
@@ -436,6 +193,20 @@
     </div>
     
     <section id="projects">
+        <!-- Fitness Tracker — FIRST, Active -->
+        <div class="project-item">
+            <h3 class="project-title">
+                HealthTracker+
+                <span class="project-status status-active">Active</span>
+            </h3>
+            <div class="project-meta">JavaScript, IndexedDB, Google Sheets Sync, Groq AI · 2024–2025</div>
+            <p class="project-description">A full-stack personal health dashboard with daily calorie, macro, and micronutrient tracking powered by AI estimates (Groq Llama-3.3-70B). Includes a 7-day rotating meal plan, water intake logging, workout and exercise tracking, sleep monitoring, supplement management, and skincare/haircare routine checklists. Syncs to Google Sheets via Apps Script for cloud backup, with trend analysis, weekly/monthly dashboards, CSV export, and Google Sign-In authentication.</p>
+            <div class="project-links">
+                <a href="/Projects/health.html">Launch</a>
+                <a href="/blog.html#latest" class="blog-cta" id="healthBlogCta">Read the build story →</a>
+            </div>
+        </div>
+        
         <div class="project-item">
             <h3 class="project-title">
                 WhatsApp Scheduler
@@ -457,18 +228,6 @@
             <p class="project-description">A comprehensive quiz management system for running live quiz competitions. Features support for Infinite Bounce and Pounce formats, real-time leaderboards, score tracking, and CSV export. All data is stored locally in your browser for offline use.</p>
             <div class="project-links">
                 <a href="/Projects/quiz-scoring.html">Launch</a>
-            </div>
-        </div>
-        
-        <div class="project-item">
-            <h3 class="project-title">
-                Fitness Tracker
-                <span class="project-status status-wip">Ongoing fixes</span>
-            </h3>
-            <div class="project-meta">React, Google Sheets API, AI Integration · 2024</div>
-            <p class="project-description">Personal fitness tracking dashboard with AI-powered recommendations. Track weight, BMI, and health metrics over time with interactive visualizations. Integrates with Google Sheets for seamless data management and includes an AI coach for personalized fitness advice.</p>
-            <div class="project-links">
-                <a href="/Projects/health.html">Launch</a>
             </div>
         </div>
         
@@ -500,68 +259,69 @@
     <footer>
         <div class="footer-links">
             <a href="https://github.com/navajitd">GitHub</a>
-            <a href="https://twitter.com/navajitd">Twitter</a>
-            <a href="https://linkedin.com/in/navajitd">LinkedIn</a>
+            <a href="https://linkedin.com/in/navjit-debnath-34b1b5191">LinkedIn</a>
+            <a href="https://instagram.com/nav.jit">Instagram</a>
+            <a href="https://twitter.com/solitary_nav">Twitter</a>
             <a href="mailto:navjitdebnath5@gmail.com">Email</a>
         </div>
         <div>© 2025 Navajit D</div>
     </footer>
 
     <script>
-        // Theme toggle functionality - projects page defaults to colorful
         const themeToggle = document.getElementById('themeToggle');
         const body = document.body;
-        
-        // For projects page: default to colorful if no saved preference
-        // Check for saved theme preference
         const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'original') body.removeAttribute('data-theme');
         
-        // If there's a saved preference, apply it; otherwise keep colorful (already set in HTML)
-        if (savedTheme === 'original') {
-            body.removeAttribute('data-theme');
-        }
-        // If savedTheme is 'colorful' or null/undefined, keep colorful (default for projects page)
-        
-        // Theme toggle event listener
         themeToggle.addEventListener('click', function() {
-            const currentTheme = body.getAttribute('data-theme');
-            
-            if (currentTheme === 'colorful') {
-                body.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'original');
-            } else {
-                body.setAttribute('data-theme', 'colorful');
-                localStorage.setItem('theme', 'colorful');
-            }
-            
-            // Add a subtle animation effect
+            const current = body.getAttribute('data-theme');
+            if (current === 'colorful') { body.removeAttribute('data-theme'); localStorage.setItem('theme', 'original'); }
+            else { body.setAttribute('data-theme', 'colorful'); localStorage.setItem('theme', 'colorful'); }
             themeToggle.style.opacity = '0.7';
-            setTimeout(() => {
-                themeToggle.style.opacity = '1';
-            }, 150);
+            setTimeout(() => { themeToggle.style.opacity = '1'; }, 150);
         });
         
-        // Add keyboard accessibility
         themeToggle.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                themeToggle.click();
-            }
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeToggle.click(); }
         });
         
-        // Prefers color scheme detection
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        // Listen for changes in system theme preference
         prefersDark.addEventListener('change', (e) => {
             if (!localStorage.getItem('theme')) {
-                if (e.matches) {
-                    body.setAttribute('data-theme', 'colorful');
-                } else {
-                    body.removeAttribute('data-theme');
-                }
+                if (e.matches) body.setAttribute('data-theme', 'colorful');
+                else body.removeAttribute('data-theme');
             }
         });
+
+        // Dynamically update the HealthTracker+ blog CTA to link to the newest post
+        // Uses the same Apps Script proxy as blog.html (no API key exposed)
+        (async function updateBlogCta() {
+            const SCRIPT_URL = '' || localStorage.getItem('blog_script_url') || ''; // Same URL as blog.html
+            if (!SCRIPT_URL) return; // CTA stays as /blog.html#latest fallback
+
+            function jsonp(url, params) {
+                return new Promise((resolve, reject) => {
+                    const cb = '__pc_' + Math.random().toString(36).slice(2);
+                    const u = new URL(url);
+                    Object.entries(params).forEach(([k,v]) => u.searchParams.set(k,v));
+                    u.searchParams.set('prefix', cb);
+                    let done = false;
+                    window[cb] = (d) => { if(done) return; done=true; cleanup(); resolve(d); };
+                    const s = document.createElement('script'); s.src = u.toString(); s.async = true;
+                    s.onerror = () => { if(done) return; done=true; cleanup(); reject(); };
+                    function cleanup() { try{delete window[cb]}catch(e){} s.remove(); }
+                    document.head.appendChild(s);
+                });
+            }
+
+            try {
+                const res = await jsonp(SCRIPT_URL, { action: 'list' });
+                if (res?.ok && res.posts?.length > 0) {
+                    const cta = document.getElementById('healthBlogCta');
+                    if (cta) cta.href = `/blog-post.html?id=${res.posts[0].id}`;
+                }
+            } catch(e) { /* fallback link is fine */ }
+        })();
     </script>
 </body>
 </html>

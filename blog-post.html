@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
+    <title id="pageTitle">Blog - Navajit D</title>
+    <style>
+        :root {
+            --text: #1a1a1a; --text-secondary: #525252; --bg: #fff; --bg-subtle: #fafafa;
+            --accent: #2563eb; --border: #e5e7eb;
+            --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+            --font-mono: "Inconsolata", monospace;
+            --reading-width: 680px;
+        }
+        *{box-sizing:border-box;margin:0;padding:0} html{font-size:18px;scroll-behavior:smooth}
+        body{font-family:var(--font-serif);color:var(--text);background:var(--bg);line-height:1.8;-webkit-font-smoothing:antialiased}
+
+        /* ─── Top Bar ────────────────────────────────── */
+        .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:box-shadow .2s}
+        .topbar.scrolled{box-shadow:0 1px 8px rgba(0,0,0,.06)}
+        .topbar-inner{max-width:var(--reading-width);margin:0 auto;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+        .topbar-back{font-family:var(--font-mono);font-size:.8125rem;color:var(--text-secondary);text-decoration:none;display:flex;align-items:center;gap:.375rem;transition:color .2s}
+        .topbar-back:hover{color:var(--accent);text-decoration:none}
+        .topbar-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+        .topbar-brand{font-family:var(--font-mono);font-size:.8125rem;font-weight:600;color:var(--text);text-decoration:none}
+        .topbar-brand:hover{color:var(--accent);text-decoration:none}
+
+        /* ─── Article ────────────────────────────────── */
+        .article-container{max-width:var(--reading-width);margin:0 auto;padding:0 1.5rem}
+        .article-header{padding:3.5rem 0 2rem;border-bottom:1px solid var(--border);margin-bottom:2.5rem}
+        .article-title{font-family:var(--font-serif);font-size:2.25rem;font-weight:700;line-height:1.25;letter-spacing:-.02em;margin-bottom:1rem}
+        .article-meta{font-family:var(--font-mono);font-size:.8125rem;color:var(--text-secondary);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+        .article-meta-divider{width:3px;height:3px;border-radius:50%;background:var(--text-secondary);opacity:.5}
+        .article-author{font-weight:600;color:var(--text)}
+        .article-body{padding-bottom:3rem}
+
+        /* Reset Google Docs inline styles */
+        .article-body *{font-family:inherit !important;background-color:transparent !important}
+        .article-body p{margin-bottom:1.5rem;font-size:1rem;line-height:1.8}
+        .article-body h1{font-size:1.75rem;font-weight:700;margin:2.5rem 0 1rem;line-height:1.3;letter-spacing:-.01em}
+        .article-body h2{font-size:1.4rem;font-weight:700;margin:2.25rem 0 .875rem;line-height:1.35}
+        .article-body h3{font-size:1.15rem;font-weight:600;margin:2rem 0 .75rem;line-height:1.4}
+        .article-body h4,.article-body h5,.article-body h6{font-size:1rem;font-weight:600;margin:1.75rem 0 .625rem}
+        .article-body a{color:var(--accent);text-decoration:underline;text-decoration-color:rgba(37,99,235,.3);text-underline-offset:2px;transition:text-decoration-color .2s}
+        .article-body a:hover{text-decoration-color:var(--accent)}
+        .article-body strong,.article-body b{font-weight:700}
+        .article-body em,.article-body i{font-style:italic}
+        .article-body ul,.article-body ol{margin:0 0 1.5rem 1.5rem;line-height:1.8}
+        .article-body li{margin-bottom:.375rem} .article-body li p{margin-bottom:.375rem}
+        .article-body blockquote{border-left:3px solid var(--accent);padding:.25rem 0 .25rem 1.25rem;margin:1.75rem 0;color:var(--text-secondary);font-style:italic}
+        .article-body blockquote p{margin-bottom:.5rem} .article-body blockquote p:last-child{margin-bottom:0}
+        .article-body img{max-width:100%;height:auto;border-radius:6px;margin:1.5rem 0;display:block}
+        .article-body table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.9375rem}
+        .article-body th,.article-body td{border:1px solid var(--border);padding:.625rem .875rem;text-align:left;line-height:1.5}
+        .article-body th{background:var(--bg-subtle);font-weight:600}
+        .article-body tr:hover td{background:rgba(0,0,0,.015)}
+        .article-body code{font-family:var(--font-mono);font-size:.875em;background:var(--bg-subtle);padding:.15rem .4rem;border-radius:3px;border:1px solid var(--border)}
+        .article-body pre{background:var(--bg-subtle);border:1px solid var(--border);border-radius:6px;padding:1rem 1.25rem;overflow-x:auto;margin:1.5rem 0;font-family:var(--font-mono);font-size:.85rem;line-height:1.6}
+        .article-body pre code{background:none;border:none;padding:0}
+        .article-body hr{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
+        .article-body span>img{display:block;margin:1.5rem auto}
+
+        /* ─── Footer ─────────────────────────────────── */
+        .post-footer{max-width:var(--reading-width);margin:0 auto;padding:2rem 1.5rem 3rem;border-top:1px solid var(--border)}
+        .post-footer-inner{display:flex;justify-content:space-between;align-items:center}
+        .post-footer-author{font-family:var(--font-mono);font-size:.875rem}
+        .post-footer-author a{color:var(--text);text-decoration:none;font-weight:600} .post-footer-author a:hover{color:var(--accent)}
+        .post-footer-links{display:flex;gap:1.25rem;font-family:var(--font-mono);font-size:.8125rem}
+        .post-footer-links a{color:var(--text-secondary);text-decoration:none} .post-footer-links a:hover{color:var(--accent)}
+
+        /* ─── States ─────────────────────────────────── */
+        .loading-article{max-width:var(--reading-width);margin:0 auto;padding:4rem 1.5rem;text-align:center;font-family:var(--font-mono);color:var(--text-secondary);font-size:.875rem}
+        .loading-article .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        @media(max-width:640px){html{font-size:17px}.article-header{padding:2.5rem 0 1.5rem}.article-title{font-size:1.75rem}.article-container{padding:0 1rem}.topbar-inner{padding:.625rem 1rem}.post-footer{padding:2rem 1rem}.post-footer-inner{flex-direction:column;gap:1rem;align-items:flex-start}}
+    </style>
+</head>
+<body>
+    <div class="topbar" id="topbar">
+        <div class="topbar-inner">
+            <a href="/blog.html" class="topbar-back">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> All posts
+            </a>
+            <a href="/" class="topbar-brand">Navajit D</a>
+        </div>
+    </div>
+
+    <div class="loading-article" id="loadingState"><div class="spinner"></div>Loading post…</div>
+
+    <article class="article-container" id="articleContainer" style="display:none">
+        <header class="article-header">
+            <h1 class="article-title" id="articleTitle"></h1>
+            <div class="article-meta">
+                <span class="article-author">Navajit D</span>
+                <span class="article-meta-divider"></span>
+                <span id="articleDate"></span>
+                <span class="article-meta-divider"></span>
+                <span id="articleReadTime"></span>
+            </div>
+        </header>
+        <div class="article-body" id="articleBody"></div>
+    </article>
+
+    <div class="post-footer" id="postFooter" style="display:none">
+        <div class="post-footer-inner">
+            <div class="post-footer-author">Written by <a href="/">Navajit D</a></div>
+            <div class="post-footer-links">
+                <a href="https://github.com/navajitd">GitHub</a>
+                <a href="https://linkedin.com/in/navjit-debnath-34b1b5191">LinkedIn</a>
+                <a href="https://twitter.com/solitary_nav">Twitter</a>
+                <a href="mailto:navjitdebnath5@gmail.com">Email</a>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — Same Apps Script URL as blog.html
+// ═══════════════════════════════════════════════════════════════
+const BLOG_SCRIPT_URL = ''; // ← YOUR APPS SCRIPT WEB APP URL
+const CONTENT_CACHE_TTL = 10 * 60 * 1000;
+
+// ═══ TOPBAR SCROLL ═══
+const topbar = document.getElementById('topbar');
+window.addEventListener('scroll', () => { topbar.classList.toggle('scrolled', window.scrollY > 8); }, { passive: true });
+
+// ═══ HELPERS ═══
+function getScriptUrl() { return BLOG_SCRIPT_URL || localStorage.getItem('blog_script_url') || ''; }
+function getFileId() { return new URLSearchParams(location.search).get('id') || ''; }
+function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-IN', { year:'numeric', month:'long', day:'numeric' }); }
+function readTime(text) { return Math.max(1, Math.round(text.split(/\s+/).filter(Boolean).length / 200)) + ' min read'; }
+
+// ═══ JSONP ═══
+function jsonp(url, params = {}) {
+    return new Promise((resolve, reject) => {
+        const cb = '__bp_' + Math.random().toString(36).slice(2);
+        const u = new URL(url);
+        Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+        u.searchParams.set('prefix', cb);
+        let done = false;
+        window[cb] = (d) => { if (done) return; done = true; cleanup(); resolve(d); };
+        const s = document.createElement('script');
+        s.src = u.toString(); s.async = true;
+        s.onerror = () => { if (done) return; done = true; cleanup(); reject(new Error('Request failed')); };
+        function cleanup() { try { delete window[cb]; } catch(e) {} s.remove(); }
+        document.head.appendChild(s);
+    });
+}
+
+// ═══ CACHE ═══
+function getCached(id) {
+    try { const r = sessionStorage.getItem('bpost_' + id); if (!r) return null; const p = JSON.parse(r); return (Date.now() - p.ts < CONTENT_CACHE_TTL) ? p : null; } catch(e) { return null; }
+}
+function setCache(id, d) { try { sessionStorage.setItem('bpost_' + id, JSON.stringify({ ...d, ts: Date.now() })); } catch(e) {} }
+
+// ═══ SANITIZE GOOGLE DOCS HTML ═══
+function sanitize(raw) {
+    const doc = new DOMParser().parseFromString(raw, 'text/html');
+    doc.querySelectorAll('style').forEach(el => el.remove());
+    const body = doc.body;
+    if (!body) return '';
+
+    // Responsive images
+    body.querySelectorAll('img').forEach(img => { img.removeAttribute('style'); img.removeAttribute('width'); img.removeAttribute('height'); });
+
+    // Fix Google redirect links
+    body.querySelectorAll('a').forEach(a => {
+        const href = a.getAttribute('href') || '';
+        if (href.startsWith('http') || href.startsWith('//')) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener noreferrer'); }
+        if (href.includes('google.com/url?q=')) { try { const real = new URL(href).searchParams.get('q'); if (real) a.setAttribute('href', real); } catch(e) {} }
+    });
+
+    // Strip inline styles (keep text-align for centered content)
+    body.querySelectorAll('[style]').forEach(el => {
+        const align = el.style.textAlign;
+        el.removeAttribute('style');
+        if (align && align !== 'start' && align !== 'left') el.style.textAlign = align;
+    });
+
+    // Remove Google doc classes
+    body.querySelectorAll('[class]').forEach(el => el.removeAttribute('class'));
+
+    return body.innerHTML;
+}
+
+// ═══ LOAD POST ═══
+async function loadPost(fileId) {
+    const url = getScriptUrl();
+    if (!url) { showError('Blog script URL not configured. See <a href="/blog.html">blog setup</a>.'); return; }
+    if (!fileId) { showError('No post ID. <a href="/blog.html">Back to blog</a>'); return; }
+
+    // Check cache
+    const cached = getCached(fileId);
+    if (cached) { renderPost(cached); return; }
+
+    try {
+        const res = await jsonp(url, { action: 'post', id: fileId });
+        if (!res?.ok) throw new Error(res?.error || 'Failed to load');
+
+        const cleanHtml = sanitize(res.html || '');
+        const tmp = document.createElement('div'); tmp.innerHTML = cleanHtml;
+        const plainText = tmp.textContent || '';
+
+        const data = {
+            id: fileId,
+            title: res.title || 'Untitled',
+            date: res.createdTime,
+            html: cleanHtml,
+            readTime: readTime(plainText)
+        };
+
+        setCache(fileId, data);
+        renderPost(data);
+    } catch(e) {
+        showError('Failed to load post: ' + e.message);
+    }
+}
+
+function renderPost(data) {
+    document.getElementById('pageTitle').textContent = data.title + ' - Navajit D';
+    document.getElementById('articleTitle').textContent = data.title;
+    document.getElementById('articleDate').textContent = fmtDate(data.date);
+    document.getElementById('articleReadTime').textContent = data.readTime;
+    document.getElementById('articleBody').innerHTML = data.html;
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('articleContainer').style.display = 'block';
+    document.getElementById('postFooter').style.display = 'block';
+}
+
+function showError(msg) {
+    document.getElementById('loadingState').innerHTML = `<div style="color:#dc2626">${msg}</div><div style="margin-top:1rem"><a href="/blog.html" style="color:var(--accent);font-family:var(--font-mono);font-size:.8125rem">← Back to blog</a></div>`;
+}
+
+// ═══ BOOT ═══
+loadPost(getFileId());
+</script>
+</body>
+</html>

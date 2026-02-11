@@ -12,7 +12,6 @@
     <style>
         /* Base Styles */
         :root {
-            /* Original Theme */
             --text-color: #0a1f00;
             --bg-color: #fff;
             --accent-color: #2563eb;
@@ -21,7 +20,6 @@
             --font-sans: "Inconsolata", monospace;
         }
         
-        /* Green/Red/Yellow Theme */
         [data-theme="colorful"] {
             --text-color: #0f2e00;
             --bg-color: #fefffe;
@@ -34,7 +32,6 @@
             --warning-color: #d97706;
         }
         
-        /* Original theme secondary colors */
         :root {
             --secondary-color: #374151;
             --highlight-color: #f59e0b;
@@ -42,15 +39,8 @@
             --warning-color: #f59e0b;
         }
         
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        html {
-            font-size: 16px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; }
         
         body {
             font-family: var(--font-sans);
@@ -63,28 +53,16 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        a {
-            color: var(--accent-color);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
+        a { color: var(--accent-color); text-decoration: none; transition: color 0.3s ease; }
+        a:hover { text-decoration: underline; }
+        p { margin-bottom: 1.5rem; }
         
-        a:hover {
-            text-decoration: underline;
-        }
-        
-        p {
-            margin-bottom: 1.5rem;
-        }
-        
-        /* Special styling for merchant experience platform link */
         .merchant-link {
             color: var(--text-color);
             text-decoration: none;
             border-bottom: 1px solid var(--muted-color);
             transition: all 0.3s ease;
         }
-        
         .merchant-link:hover {
             color: var(--accent-color);
             border-bottom-color: var(--accent-color);
@@ -93,267 +71,87 @@
         
         /* Theme Toggle */
         .theme-toggle {
-            width: 2.5rem;
-            height: 2rem;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-color);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 2.5rem; height: 2rem; border-radius: 6px;
+            border: 1px solid var(--border-color); background: var(--bg-color);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
             transition: all 0.3s ease;
         }
+        .theme-toggle:hover { border-color: var(--accent-color); background: rgba(37, 99, 235, 0.05); }
+        [data-theme="colorful"] .theme-toggle:hover { background: rgba(22, 163, 74, 0.05); }
+        .theme-toggle svg { width: 16px; height: 16px; stroke: var(--text-color); fill: none; stroke-width: 1.5; transition: all 0.3s ease; }
+        .theme-toggle:hover svg { stroke: var(--accent-color); }
+        .icon-colorful { opacity: 0; position: absolute; }
+        .icon-original { opacity: 1; }
+        [data-theme="colorful"] .icon-colorful { opacity: 1; }
+        [data-theme="colorful"] .icon-original { opacity: 0; }
         
-        .theme-toggle:hover {
-            border-color: var(--accent-color);
-            background: rgba(37, 99, 235, 0.05);
-        }
+        /* Header */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .logo { font-weight: 600; font-size: 1rem; color: var(--text-color); }
+        .logo a { color: var(--text-color); }
+        .logo a:hover { color: var(--accent-color); text-decoration: none; }
+        nav ul { display: flex; gap: 1.5rem; list-style: none; }
+        nav a { color: var(--text-color); font-size: 1rem; }
+        nav a:hover { color: var(--accent-color); text-decoration: none; }
         
-        [data-theme="colorful"] .theme-toggle:hover {
-            border-color: var(--accent-color);
-            background: rgba(22, 163, 74, 0.05);
-        }
+        /* Intro */
+        .intro { margin-bottom: 4rem; }
+        .intro-title { font-size: 2.3rem; line-height: 1.3; font-weight: 700; margin-bottom: 1rem; }
         
-        /* Theme toggle icons */
-        .theme-toggle svg {
-            width: 16px;
-            height: 16px;
-            stroke: var(--text-color);
-            fill: none;
-            stroke-width: 1.5;
-            transition: all 0.3s ease;
-        }
-        
-        .theme-toggle:hover svg {
-            stroke: var(--accent-color);
-        }
-        
-        /* Theme toggle icons visibility */
-        .icon-colorful {
-            opacity: 0;
-            position: absolute;
-        }
-        
-        .icon-original {
-            opacity: 1;
-        }
-        
-        [data-theme="colorful"] .icon-colorful {
-            opacity: 1;
-        }
-        
-        [data-theme="colorful"] .icon-original {
-            opacity: 0;
-        }
-        
-        /* Header Styles */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3rem;
-        }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .logo {
-            font-weight: 600;
-            font-size: 1rem;
-            color: var(--text-color);
-        }
-        
-        .logo a {
-            color: var(--text-color);
-        }
-        
-        .logo a:hover {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-        
-        nav ul {
-            display: flex;
-            gap: 1.5rem;
-            list-style: none;
-        }
-        
-        nav a {
-            color: var(--text-color);
-            font-size: 1rem;
-        }
-        
-        nav a:hover {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-        
-        /* Introduction */
-        .intro {
-            margin-bottom: 4rem;
-        }
-        
-        .intro-title {
-            font-size: 2.3rem;
-            line-height: 1.3;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        
-        /* Dynamic gradient animation for colorful mode - SLOWER (6s) */
         @keyframes gradient-shift {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         [data-theme="colorful"] .intro-title {
-            background: linear-gradient(
-                90deg,
-                #16a34a,
-                #059669,
-                #eab308,
-                #ea580c,
-                #dc2626,
-                #ea580c,
-                #eab308,
-                #059669,
-                #16a34a
-            );
+            background: linear-gradient(90deg, #16a34a, #059669, #eab308, #ea580c, #dc2626, #ea580c, #eab308, #059669, #16a34a);
             background-size: 200% auto;
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: gradient-shift 10s ease infinite;
         }
         
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-        }
+        .section-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 2rem; }
         
-        /* Experience Section */
-        #experience {
-            margin-bottom: 4rem;
-        }
-        
-        .experience-item {
-            margin-bottom: 2.5rem;
-            padding-bottom: 2.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
+        /* Experience */
+        #experience { margin-bottom: 4rem; }
+        .experience-item { margin-bottom: 2.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--border-color); }
         [data-theme="colorful"] .experience-item {
-            background: linear-gradient(
-                135deg, 
-                rgba(22, 163, 74, 0.03) 0%, 
-                rgba(234, 88, 12, 0.03) 50%,
-                rgba(234, 179, 8, 0.03) 100%
-            );
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            border-bottom: none;
+            background: linear-gradient(135deg, rgba(22,163,74,0.03), rgba(234,88,12,0.03) 50%, rgba(234,179,8,0.03));
+            padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-bottom: none;
         }
-        
-        .experience-item:last-child {
-            border-bottom: none;
-        }
-        
-        .experience-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        [data-theme="colorful"] .experience-title {
-            color: var(--accent-color);
-        }
-        
-        .experience-meta {
-            font-size: 0.875rem;
-            color: var(--muted-color);
-            margin-bottom: 0.75rem;
-        }
-        
-        [data-theme="colorful"] .experience-meta {
-            color: var(--secondary-color);
-        }
+        .experience-item:last-child { border-bottom: none; }
+        .experience-title { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+        [data-theme="colorful"] .experience-title { color: var(--accent-color); }
+        .experience-meta { font-size: 0.875rem; color: var(--muted-color); margin-bottom: 0.75rem; }
+        [data-theme="colorful"] .experience-meta { color: var(--secondary-color); }
         
         /* Footer */
         footer {
-            margin-top: 4rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border-color);
-            font-size: 0.875rem;
-            color: var(--muted-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color);
+            font-size: 0.875rem; color: var(--muted-color);
+            display: flex; justify-content: space-between; align-items: center;
         }
-        
-        .footer-links {
-            display: flex;
-            gap: 1.5rem;
-        }
+        .footer-links { display: flex; gap: 1.5rem; }
         
         @media (max-width: 640px) {
-            body {
-                padding: 2rem 1rem;
-            }
-            
-            .theme-toggle {
-                width: 2rem;
-                height: 1.75rem;
-            }
-            
-            .theme-toggle svg {
-                width: 14px;
-                height: 14px;
-            }
-            
-            header {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            nav ul {
-                gap: 1rem;
-            }
-            
-            .intro-title {
-                font-size: 1.75rem;
-            }
-            
-            [data-theme="colorful"] .experience-item {
-                padding: 1rem;
-            }
+            body { padding: 2rem 1rem; }
+            .theme-toggle { width: 2rem; height: 1.75rem; }
+            .theme-toggle svg { width: 14px; height: 14px; }
+            header { flex-direction: column; gap: 1rem; }
+            nav ul { gap: 1rem; }
+            .intro-title { font-size: 1.75rem; }
+            [data-theme="colorful"] .experience-item { padding: 1rem; }
         }
         
-        /* Loading animation for theme transition */
-        .theme-transition {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .theme-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="theme-transition">
     <header>
         <div class="header-left">
-            <div class="logo">
-                <a href="/">Navajit D</a>
-            </div>
-            <!-- Theme Toggle Button -->
+            <div class="logo"><a href="/">Navajit D</a></div>
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
                 <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
@@ -369,8 +167,8 @@
         <nav>
             <ul>
                 <li><a href="/projects.html">Projects</a></li>
+                <li><a href="/blog.html">Blog</a></li>
                 <li><a href="#experience">Experience</a></li>
-                <li><a href="mailto:navjitdebnath5@gmail.com">Contact</a></li>
             </ul>
         </nav>
     </header>
@@ -415,63 +213,29 @@
     </footer>
 
     <script>
-        // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
         const body = document.body;
-        
-        // Check for saved theme preference or default to 'original'
         const currentTheme = localStorage.getItem('theme') || 'original';
+        if (currentTheme === 'colorful') body.setAttribute('data-theme', 'colorful');
         
-        // Apply the current theme
-        if (currentTheme === 'colorful') {
-            body.setAttribute('data-theme', 'colorful');
-        }
-        
-        // Theme toggle event listener
         themeToggle.addEventListener('click', function() {
-            const currentTheme = body.getAttribute('data-theme');
-            
-            if (currentTheme === 'colorful') {
-                body.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'original');
-            } else {
-                body.setAttribute('data-theme', 'colorful');
-                localStorage.setItem('theme', 'colorful');
-            }
-            
-            // Add a subtle animation effect
+            const current = body.getAttribute('data-theme');
+            if (current === 'colorful') { body.removeAttribute('data-theme'); localStorage.setItem('theme', 'original'); }
+            else { body.setAttribute('data-theme', 'colorful'); localStorage.setItem('theme', 'colorful'); }
             themeToggle.style.opacity = '0.7';
-            setTimeout(() => {
-                themeToggle.style.opacity = '1';
-            }, 150);
+            setTimeout(() => { themeToggle.style.opacity = '1'; }, 150);
         });
         
-        // Add keyboard accessibility
         themeToggle.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                themeToggle.click();
-            }
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeToggle.click(); }
         });
         
-        // Prefers color scheme detection
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        // Only auto-set theme if no saved preference
-        if (!localStorage.getItem('theme')) {
-            if (prefersDark.matches) {
-                body.setAttribute('data-theme', 'colorful');
-            }
-        }
-        
-        // Listen for changes in system theme preference
+        if (!localStorage.getItem('theme') && prefersDark.matches) body.setAttribute('data-theme', 'colorful');
         prefersDark.addEventListener('change', (e) => {
             if (!localStorage.getItem('theme')) {
-                if (e.matches) {
-                    body.setAttribute('data-theme', 'colorful');
-                } else {
-                    body.removeAttribute('data-theme');
-                }
+                if (e.matches) body.setAttribute('data-theme', 'colorful');
+                else body.removeAttribute('data-theme');
             }
         });
     </script>
