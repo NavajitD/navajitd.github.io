@@ -159,7 +159,15 @@ async function fetchExcerpt(id) {
     try {
         const res = await jsonp(url, { action: 'excerpt', id });
         if (!res?.ok) return null;
-        const d = { excerpt: res.excerpt || '', readTime: res.readTime || '' };
+        
+        // --- modification starts ---
+        let rawText = res.excerpt || '';
+        // Split by newlines, remove the first 2 lines, and join the rest back together
+        let processedText = rawText.split(/\r?\n/).slice(2).join('\n').trim();
+        
+        const d = { excerpt: processedText, readTime: res.readTime || '' };
+        // --- modification ends ---
+        
         setCachedExc(id, d);
         return d;
     } catch(e) { return null; }
