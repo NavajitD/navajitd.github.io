@@ -2357,7 +2357,7 @@ async function syncNow(){
 
 function signOutAndReload(){
   signOut();
-  try{ location.reload(); }catch(e){}
+  try{ window.location.href = '/projects.html'; }catch(e){}
 }
 
 function startApp(){
