@@ -687,8 +687,6 @@ function isVitaminKey(k){
   return VITAMIN_KEY_SET.has(k) || String(k||"").startsWith("vitamin_");
 }
 
-
-
 // Local storage keys (cloud config stays only in this browser)
 const CLOUD_CFG_KEY = "health_cloud_cfg_v1";
 const DIRTY_KEY = "health_dirty_days_v1";
@@ -698,7 +696,7 @@ const NUTRIENT_CACHE_PREFIX = "__nut_cache__::";
 
 // Cloud + Auth config
 // 1) Put your Apps Script Web App URL here so you never have to type it again.
-const DEFAULT_CLOUD_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrMhYSbkx7YUL79PEHR_r_Rwym_4DjHgJv06wFlHS4ewBJ3FCiurX2eGcstcG5QplK-Q/exec";
+const DEFAULT_CLOUD_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvxYZbQntDrHqa5QRqSLj04UcE3MTleqO97AKqGl4YKe6VPoRos5fDHLEUgwoGCpfenA/exec";
 // 2) Create a Google OAuth Client ID (Web) and paste it here.
 const GOOGLE_CLIENT_ID = "584361562824-4g0usbl8h1lb6fi4eu46ute5hkm022le.apps.googleusercontent.com"; // e.g. 1234-abc.apps.googleusercontent.com
 // 3) Only this account is allowed to use the app.
