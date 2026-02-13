@@ -563,9 +563,6 @@ const SUPPLEMENT_FACTS = {
   creatine: { calories_kcal:0, protein_g:0, carbs_g:0, fat_g:0, fiber_g:0, micros:{} }
 };
 
-
-
-
 const WORKOUT_PLAN = {
   0:{name:"Upper Body Push",exercises:["Bench Press 3×8-12","Assisted Pull-Ups 3×8-12","Overhead Press 3×8-12","Bicep Curls 3×10-15","Tricep Extensions 3×10-15","Side Planks 3×30-60s","Kegels 3×10"]},
   1:{name:"Lower Body Strength",exercises:["Squats 3×8-12","Deadlifts 3×8-12","Walking Lunges 3×10-12/leg","Leg Press 3×10-15","Calf Raises 3×15-20","Hip Thrusts 3×10-15","Kegels 3×10"]},
@@ -614,7 +611,6 @@ const SKINCARE_TASKS = [
 const SKINCARE_REQUIRED_TASKS = SKINCARE_TASKS.filter(t => t.required !== false);
 const SKINCARE_OPTIONAL_TASKS = SKINCARE_TASKS.filter(t => t.required === false);
 
-
 // Haircare schedule based on your plan PDF (Phase 1 sample week)
 const HAIRCARE_SCHEDULE = {
   1: [{id:"hc_keto", label:"Ketoconazole day (Ketoff)"},
@@ -647,8 +643,6 @@ function checklistAllDone(checkMap, tasks){
   return tasks.every(t => lwwGet(checkMap, t.id));
 }
 
-
-
 function skincareStatus(dayData){
   const checks = (dayData && dayData.skincareChecks && typeof dayData.skincareChecks==="object") ? dayData.skincareChecks : {};
   const required = SKINCARE_REQUIRED_TASKS;
@@ -658,7 +652,6 @@ function skincareStatus(dayData){
   const done = checklistAllDone(checks, required);
   return done ? "✅" : "";
 }
-
 
 function toggleChecklist(kind, id){
   if(kind==="skincare"){
@@ -722,7 +715,7 @@ const NUTRIENT_CACHE_PREFIX = "__nut_cache__::";
 
 // Cloud + Auth config
 // 1) Put your Apps Script Web App URL here so you never have to type it again.
-const DEFAULT_CLOUD_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMQXlFo42G0Hqv3w0HeCOvNmqmgaXH8g7go1G71eUp7y1c3XNO2dmDOoj4PbJRoVs1Pg/exec";
+const DEFAULT_CLOUD_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVZNCg7MQJgPDTv7KDfmU0HTXtX8Szyh2C5mvywMe3EoZ5-0usVl3y1iNV7rAwxjDXtA/exec";
 // 2) Create a Google OAuth Client ID (Web) and paste it here.
 const GOOGLE_CLIENT_ID = "584361562824-4g0usbl8h1lb6fi4eu46ute5hkm022le.apps.googleusercontent.com"; // e.g. 1234-abc.apps.googleusercontent.com
 // 3) Only this account is allowed to use the app.
