@@ -724,7 +724,7 @@ const NUTRIENT_CACHE_PREFIX = "__nut_cache__::";
 
 // Cloud + Auth config
 // 1) Put your Apps Script Web App URL here so you never have to type it again.
-const DEFAULT_CLOUD_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwRPD7CbtKm-SNxAtnGhy29Hegg6qJP4sEQivn3PhZ1LI3CVrwj-XQTg8zrPy10yHaAA/exec";
+const DEFAULT_CLOUD_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwruyJkJO618AmKLrhgM8r5VLTwrzvZMbNG5n9UFLNG3D4_ZVk-H60IuWMG8mNfgMsySA/exec";
 // 2) Create a Google OAuth Client ID (Web) and paste it here.
 const GOOGLE_CLIENT_ID = "584361562824-4g0usbl8h1lb6fi4eu46ute5hkm022le.apps.googleusercontent.com"; // e.g. 1234-abc.apps.googleusercontent.com
 // 3) Only this account is allowed to use the app.
@@ -1205,7 +1205,7 @@ async function ensureCloudSession(){
   if(!isAuthorizedSession()) throw new Error("Not signed in");
 
   try{
-    const res = await jsonp(getCloudScriptUrl(), {a:"session", t:getIdToken()});
+    const res = await cloudCall(getCloudScriptUrl(), {a:"session", t:getIdToken()});
     if(!res || !res.ok || !res.session_key) throw new Error(res?.error || "Session failed");
     const ttlS = isFinite(+res.ttl_s) ? (+res.ttl_s) : 900;
     setSession(res.session_key, Date.now() + ttlS*1000);
@@ -1393,6 +1393,48 @@ function jsonp(url, params={}){
       reject(new Error("JSONP timeout"));
     }, 25000);
   });
+}
+
+// ── fetch-based cloud call (avoids JSONP / ORB issues) ──
+// Apps Script returns plain JSON when no prefix/callback param is passed,
+// and supports CORS for "Anyone" deployments.
+async function cloudFetch(url, params={}){
+  const sp = new URLSearchParams();
+  sp.append("_", Date.now().toString());
+
+  Object.entries(params).forEach(([k,v])=>{
+    if(v === undefined || v === null) return;
+    if(k==="prefix"||k==="callback"||k==="cb") return; // strip JSONP params
+    sp.append(k, String(v));
+  });
+
+  const fullUrl = url + (url.includes("?") ? "&" : "?") + sp.toString();
+
+  const res = await fetch(fullUrl, { redirect:"follow" });
+  if(!res.ok) throw new Error("Cloud fetch failed: HTTP " + res.status);
+
+  const text = await res.text();
+  // Apps Script might return JSONP-wrapped if prefix leaked through; strip it.
+  let data;
+  try{
+    data = JSON.parse(text);
+  }catch(e){
+    // Try stripping JSONP wrapper: callbackName({...});
+    const m = text.match(/^\s*\w+\s*\(\s*([\s\S]+)\s*\)\s*;?\s*$/);
+    if(m) data = JSON.parse(m[1]);
+    else throw new Error("Couldn't parse cloud response: " + text.slice(0,200));
+  }
+  return data;
+}
+
+// ── Smart cloud call: try fetch first, fall back to JSONP ──
+async function cloudCall(url, params={}){
+  try{
+    return await cloudFetch(url, params);
+  }catch(fetchErr){
+    console.warn("cloudFetch failed, trying JSONP fallback:", fetchErr?.message || fetchErr);
+    return await jsonp(url, params);
+  }
 }
 
 
@@ -1642,7 +1684,7 @@ async function cloudFetchLatestRow(dateKey){
   const cfg = getCloudCfg();
   try{
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"latest", dateKey}, {requireSession:false}));
+    const res = await cloudCall(cfg.scriptUrl, cloudAuthParams({a:"latest", dateKey}, {requireSession:false}));
     if(!res || !res.ok) return null;
     return res.row || null;
   }catch(e){
@@ -1656,7 +1698,7 @@ async function cloudFetchRange(startDateKey, endDateKey){
   const cfg = getCloudCfg();
   try{
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"range", start:startDateKey, end:endDateKey}, {requireSession:false}));
+    const res = await cloudCall(cfg.scriptUrl, cloudAuthParams({a:"range", start:startDateKey, end:endDateKey}, {requireSession:false}));
     if(!res || !res.ok) return [];
     return Array.isArray(res.rows) ? res.rows : [];
   }catch(e){
@@ -1701,7 +1743,7 @@ async function cloudAppendSnapshot(dateKey, {source="manual", beacon=false}={}){
   }catch(e){
     // Last resort: JSONP (may fail for large payloads)
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"upsertDay", payload, dateKey, source}, {requireSession:false}));
+    const res = await cloudCall(cfg.scriptUrl, cloudAuthParams({a:"upsertDay", payload, dateKey, source}, {requireSession:false}));
     if(!res || !res.ok) throw new Error(res?.error || "Upsert failed");
     localStorage.setItem(LAST_PUSH_KEY, new Date().toISOString());
     return {ok:true, via:"jsonp"};
@@ -1746,7 +1788,7 @@ async function estimateNutrientsViaCloud(queryText, opts={}){
 
   if(!base){
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"estimate", q: queryText, k: dishKey}, {requireSession:false}));
+    const res = await cloudCall(cfg.scriptUrl, cloudAuthParams({a:"estimate", q: queryText, k: dishKey}, {requireSession:false}));
     if(!res || !res.ok) throw new Error(res?.error || "Estimate failed");
     base = res.nutrients || res.estimate || res;
     await setCachedNutrients(dishKey, base);
@@ -2365,7 +2407,7 @@ async function cloudAnalyze(rows, windowLabel){
   const cfg = getCloudCfg();
   try{
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"analyze", window: windowLabel, rows: JSON.stringify(rows || [])}, {requireSession:false}));
+    const res = await cloudCall(cfg.scriptUrl, cloudAuthParams({a:"analyze", window: windowLabel, rows: JSON.stringify(rows || [])}, {requireSession:false}));
     if(!res || !res.ok) return null;
     return res.analysis || null;
   }catch(e){
@@ -2870,7 +2912,7 @@ async function estimateCustomExerciseCalories(text){
     const cfg = getCloudCfg();
     if(!cloudReady()) return 0;
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"estimateExercise", text}, {requireSession:false}));
+    const res = await cloudCall(cfg.scriptUrl, cloudAuthParams({a:"estimateExercise", text}, {requireSession:false}));
     if(res && res.ok) return num0(res.kcal);
   }catch(e){}
   return 0;
@@ -3117,7 +3159,7 @@ async function handleCredentialResponse(response){
   // Prefer server-side validation via session bootstrap (also proves the token is accepted).
   try{
     // Only requires id_token once; returns short session_key for future calls.
-    const res = await jsonp(getCloudScriptUrl(), {a:"session", t: token});
+    const res = await cloudCall(getCloudScriptUrl(), {a:"session", t: token});
     if(!res || !res.ok || !res.session_key){
       throw new Error(res?.error || "Session bootstrap failed");
     }
@@ -3257,6 +3299,25 @@ window.addEventListener("unhandledrejection", (e)=>{ try{ console.error(e.reason
     const l = (localStorage.getItem(IDTOKEN_LOCAL_KEY) || "").trim();
     if(!s && l) sessionStorage.setItem(IDTOKEN_SESSION_KEY, l);
   }catch(e){}
+
+  // Diagnostic: log which cloud URL is active
+  const activeUrl = getCloudScriptUrl();
+  console.log("[HealthTracker] Cloud URL:", activeUrl || "(none)");
+  console.log("[HealthTracker] DEFAULT_CLOUD_SCRIPT_URL:", DEFAULT_CLOUD_SCRIPT_URL || "(none)");
+  const lsUrl = safeGetLS(CLOUD_SCRIPT_URL_STORAGE_KEY) || "";
+  if(lsUrl && lsUrl !== activeUrl) console.warn("[HealthTracker] localStorage has different URL:", lsUrl, "— active URL is DEFAULT.");
+
+  // Validate cloud URL at boot (non-blocking)
+  if(activeUrl){
+    cloudFetch(activeUrl, {a:"ping"}).then(r=>{
+      if(r && r.ok) console.log("[HealthTracker] Cloud URL ping OK:", r.email || "");
+      else console.warn("[HealthTracker] Cloud ping returned:", r);
+    }).catch(e=>{
+      console.error("[HealthTracker] Cloud URL is unreachable! Estimate/sync features won't work. Error:", e?.message || e);
+      console.error("[HealthTracker] → Check your Apps Script deployment URL. Go to Apps Script → Deploy → Manage deployments → copy the Web app URL.");
+      toast("Cloud URL unreachable. Check Apps Script deployment.");
+    });
+  }
 
   // Lock by default until a valid token for the allowed email exists.
   if(isAuthorizedSession()){
