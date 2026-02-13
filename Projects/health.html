@@ -424,7 +424,7 @@ body.auth-ok .auth-gate{display:none}
 <div id="authGate" class="auth-gate" aria-live="polite">
   <div class="auth-card">
     <div class="auth-title">Sign in required</div>
-    <div class="auth-desc">This health tracker is locked to <b>navjitdebnath5@gmail.com</b>. Sign in with that Google account to continue.</div>
+    <div class="auth-desc">This health tracker is locked to <b><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7d131c0b17140919181f131c0915483d1a101c1411531e1210">[email&#160;protected]</a></b>. Sign in with that Google account to continue.</div>
     <!-- Google Identity Services sign-in button (auto-renders even if app JS later crashes) -->
     <div id="g_id_onload"
          data-client_id="584361562824-4g0usbl8h1lb6fi4eu46ute5hkm022le.apps.googleusercontent.com"
@@ -450,7 +450,7 @@ body.auth-ok .auth-gate{display:none}
 <!-- Toast Container -->
 <div id="toastContainer"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 // Tiny DOM helpers (jQuery-like)
 const $  = (sel, root=document) => root.querySelector(sel);
@@ -1140,15 +1140,14 @@ function getIdToken(){
     if(s) return s;
   } catch(e){}
   try { return (localStorage.getItem(IDTOKEN_LOCAL_KEY) || "").trim(); } catch(e){ return ""; }
-} catch(e){ return ""; }
 }
 function setIdToken(token){
   try { sessionStorage.setItem(IDTOKEN_SESSION_KEY, (token||"").trim()); } catch(e){}
+  try { localStorage.setItem(IDTOKEN_LOCAL_KEY, (token||"").trim()); } catch(e){}
 }
 function clearIdToken(){
   try { sessionStorage.removeItem(IDTOKEN_SESSION_KEY); } catch(e){}
   try { localStorage.removeItem(IDTOKEN_LOCAL_KEY); } catch(e){}
-} catch(e){}
 }
 
 // Short-lived server session (avoids very long id_token in JSONP URLs)
@@ -1220,8 +1219,6 @@ function parseJwtPayload(jwt){
     const jsonStr = (window.TextDecoder ? new TextDecoder("utf-8").decode(bytes) : bin);
     return JSON.parse(jsonStr);
   }catch(e){ return null; }
-}
-catch(e){ return null; }
 }
 function isTokenFresh(){
   const tok = getIdToken();
@@ -3137,10 +3134,6 @@ async function handleCredentialResponse(response){
     if(!_appStarted) startApp();
   }
 }
-unlockApp();
-  toast("Signed in ✓");
-  if(!_appStarted) startApp();
-}
 
 function initGoogleSignIn(){
   const msg = document.getElementById("authGateMsg");
@@ -3265,10 +3258,4 @@ window.addEventListener("unhandledrejection", (e)=>{ try{ console.error(e.reason
 
 // Make sure inline onclick handlers always resolve (esp. in strict browsers)
 try{
-  Object.assign(window, {shiftDate, goToday, switchTab, showModal, closeModal, addWater, addWaterCustom, undoWater, saveSleep, saveWeight, saveBurn, saveActivity, toggleExercise, toggleSupp, removeFood, syncNow, signOutAndReload, renderTrends, flushCloudSync, exportCSV, addCustomFoodAI, addCustomFoodManual, addAllPlan, addFromPlan, setDashboardRange, signOut, retryGoogleSignIn});
-}catch(e){}
-
-</script>
-
-</body>
-</html>
+  Object.assign(window, {shiftDate, goToday, switchTab, showModal, closeModal, addWater, addWaterCustom, undoWater, saveSleep, saveWeight, saveBurn, saveActivity, toggleExercise, toggleSup
