@@ -1116,6 +1116,12 @@ function normalizeCloudScriptUrl(url){
 }
 
 function getCloudScriptUrl(){
+  // Prefer the hardcoded default (updated with each deployment).
+  // Only fall back to localStorage if no default is set (user-provided URL).
+  if(DEFAULT_CLOUD_SCRIPT_URL && DEFAULT_CLOUD_SCRIPT_URL.trim()){
+    return normalizeCloudScriptUrl(DEFAULT_CLOUD_SCRIPT_URL);
+  }
+
   const v = normalizeCloudScriptUrl((safeGetLS(CLOUD_SCRIPT_URL_STORAGE_KEY) || ""));
   if(v) return v;
 
@@ -1128,7 +1134,7 @@ function getCloudScriptUrl(){
     }
   }catch(e){}
 
-  return (DEFAULT_CLOUD_SCRIPT_URL || "").trim();
+  return "";
 }
 function setCloudScriptUrl(url){
   safeSetLS(CLOUD_SCRIPT_URL_STORAGE_KEY, normalizeCloudScriptUrl(url));
@@ -1198,11 +1204,17 @@ async function ensureCloudSession(){
   if(isSessionFresh()) return true;
   if(!isAuthorizedSession()) throw new Error("Not signed in");
 
-  const res = await jsonp(getCloudScriptUrl(), {a:"session", t:getIdToken()});
-  if(!res || !res.ok || !res.session_key) throw new Error(res?.error || "Session failed");
-  const ttlS = isFinite(+res.ttl_s) ? (+res.ttl_s) : 900;
-  setSession(res.session_key, Date.now() + ttlS*1000);
-  return true;
+  try{
+    const res = await jsonp(getCloudScriptUrl(), {a:"session", t:getIdToken()});
+    if(!res || !res.ok || !res.session_key) throw new Error(res?.error || "Session failed");
+    const ttlS = isFinite(+res.ttl_s) ? (+res.ttl_s) : 900;
+    setSession(res.session_key, Date.now() + ttlS*1000);
+    return true;
+  }catch(e){
+    console.warn("Session bootstrap failed, falling back to id_token auth:", e?.message || e);
+    SESSION_DISABLED = true;
+    return false;
+  }
 }
 
 
@@ -1630,7 +1642,7 @@ async function cloudFetchLatestRow(dateKey){
   const cfg = getCloudCfg();
   try{
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"latest", dateKey}, {requireSession:true}));
+    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"latest", dateKey}, {requireSession:false}));
     if(!res || !res.ok) return null;
     return res.row || null;
   }catch(e){
@@ -1644,7 +1656,7 @@ async function cloudFetchRange(startDateKey, endDateKey){
   const cfg = getCloudCfg();
   try{
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"range", start:startDateKey, end:endDateKey}, {requireSession:true}));
+    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"range", start:startDateKey, end:endDateKey}, {requireSession:false}));
     if(!res || !res.ok) return [];
     return Array.isArray(res.rows) ? res.rows : [];
   }catch(e){
@@ -1689,7 +1701,7 @@ async function cloudAppendSnapshot(dateKey, {source="manual", beacon=false}={}){
   }catch(e){
     // Last resort: JSONP (may fail for large payloads)
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"upsertDay", payload, dateKey, source}, {requireSession:true}));
+    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"upsertDay", payload, dateKey, source}, {requireSession:false}));
     if(!res || !res.ok) throw new Error(res?.error || "Upsert failed");
     localStorage.setItem(LAST_PUSH_KEY, new Date().toISOString());
     return {ok:true, via:"jsonp"};
@@ -1734,7 +1746,7 @@ async function estimateNutrientsViaCloud(queryText, opts={}){
 
   if(!base){
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"estimate", q: queryText, k: dishKey}, {requireSession:true}));
+    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"estimate", q: queryText, k: dishKey}, {requireSession:false}));
     if(!res || !res.ok) throw new Error(res?.error || "Estimate failed");
     base = res.nutrients || res.estimate || res;
     await setCachedNutrients(dishKey, base);
@@ -2353,7 +2365,7 @@ async function cloudAnalyze(rows, windowLabel){
   const cfg = getCloudCfg();
   try{
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"analyze", window: windowLabel, rows: JSON.stringify(rows || [])}, {requireSession:true}));
+    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"analyze", window: windowLabel, rows: JSON.stringify(rows || [])}, {requireSession:false}));
     if(!res || !res.ok) return null;
     return res.analysis || null;
   }catch(e){
@@ -2858,7 +2870,7 @@ async function estimateCustomExerciseCalories(text){
     const cfg = getCloudCfg();
     if(!cloudReady()) return 0;
     await ensureCloudSession();
-    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"estimateExercise", text}, {requireSession:true}));
+    const res = await jsonp(cfg.scriptUrl, cloudAuthParams({a:"estimateExercise", text}, {requireSession:false}));
     if(res && res.ok) return num0(res.kcal);
   }catch(e){}
   return 0;
