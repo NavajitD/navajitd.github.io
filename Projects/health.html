@@ -3404,31 +3404,36 @@ window.addEventListener("unhandledrejection", (e)=>{ try{ console.error(e.reason
 })();
 
 // --- Mobile Pull-to-Refresh ---
+// --- Mobile Pull-to-Refresh ---
 let pullStartY = 0;
 document.addEventListener('touchstart', (e) => {
-  // Only track the pull if we are at the very top of the page
-  if (window.scrollY === 0) {
+  // Use <= 0 because mobile rubber-banding makes window.scrollY negative
+  if (window.scrollY <= 0) {
     pullStartY = e.touches[0].clientY;
   } else {
     pullStartY = 0;
   }
 }, {passive: true});
 
-document.addEventListener('touchend', (e) => {
+function checkPullToRefresh(e) {
   if (pullStartY === 0) return;
   
   let pullEndY = e.changedTouches[0].clientY;
   let pullDistance = pullEndY - pullStartY;
   
-  // If dragged down by more than 150px and released while at the top
-  if (pullDistance > 150 && window.scrollY === 0) {
+  // Lowered threshold to 120px and checking for <= 0 to account for the bounce
+  if (pullDistance > 120 && window.scrollY <= 0) {
     toast("↻ Refreshing...");
     setTimeout(() => {
       window.location.reload();
     }, 400);
   }
   pullStartY = 0; // reset
-}, {passive: true});
+}
+
+document.addEventListener('touchend', checkPullToRefresh, {passive: true});
+// Catch the event if the mobile OS hijacks the swipe gesture mid-drag
+document.addEventListener('touchcancel', checkPullToRefresh, {passive: true});
 
 // Make sure inline onclick handlers always resolve (esp. in strict browsers)
 try{
