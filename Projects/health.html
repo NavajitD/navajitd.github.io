@@ -2981,7 +2981,8 @@ function renderSleepTab(){
 
 // ─── DASHBOARD ──────────────────────────────────────
 async function loadDashboard(){
-  const rangeN = dashboardRange==="monthly" ? 30 : 7;
+  // 91 days is exactly 13 weeks, making the math perfect for a weekly aggregation
+  const rangeN = dashboardRange==="quarterly" ? 91 : (dashboardRange==="monthly" ? 30 : 7);
   const days = [];
 
   for(let i=rangeN-1;i>=0;i--){
@@ -3002,9 +3003,7 @@ async function loadDashboard(){
     });
   }
 
-  const barOpts = (dashboardRange==="monthly") ? {showVals:false, labelEvery:5} : {showVals:true, labelEvery:1};
-
-
+  // Averages are always based on the most recent 7 days of raw data
   const avgDays = days.slice(-7);
   const avgDen = avgDays.length || 1;
 
@@ -3017,29 +3016,53 @@ async function loadDashboard(){
     return b.length ? (b.reduce((s,d)=>s+d.bmi,0)/b.length) : null;
   })();
 
-    document.getElementById("tabContent").innerHTML = `
-    <!-- Body -->
+  // Intelligent Chunking: Group into weekly averages for the 90-day view
+  let displayDays = days;
+  if (dashboardRange === "quarterly") {
+    const weeks = [];
+    for(let i=0; i<days.length; i+=7) {
+      const chunk = days.slice(i, i+7);
+      const wDays = chunk.length;
+      
+      const avgW = chunk.map(d=>d.weight).filter(w=>w!==null);
+      const avgB = chunk.map(d=>d.bmi).filter(b=>b!==null);
+
+      weeks.push({
+        date: chunk[chunk.length-1].date,
+        day: chunk[chunk.length-1].date.slice(5), // Label is the date of the week's end
+        cal: Math.round(chunk.reduce((s,d)=>s+d.cal,0)/wDays),
+        calBurned: Math.round(chunk.reduce((s,d)=>s+d.calBurned,0)/wDays),
+        protein: Math.round(chunk.reduce((s,d)=>s+d.protein,0)/wDays),
+        water: Math.round(chunk.reduce((s,d)=>s+d.water,0)/wDays),
+        sleep: chunk.reduce((s,d)=>s+d.sleep,0)/wDays,
+        weight: avgW.length ? avgW.reduce((s,w)=>s+w,0)/avgW.length : null,
+        bmi: avgB.length ? avgB.reduce((s,b)=>s+b,0)/avgB.length : null
+      });
+    }
+    displayDays = weeks;
+  }
+
+  // Label configuration
+  let barOpts = {showVals:true, labelEvery:1};
+  if (dashboardRange === "monthly") barOpts = {showVals:false, labelEvery:5};
+  if (dashboardRange === "quarterly") barOpts = {showVals:false, labelEvery:2}; // Label every 2 weeks
+
+  const rangeTitle = dashboardRange==="quarterly" ? "90‑Day (Weekly Avg)" : (dashboardRange==="monthly" ? "30‑Day" : "Weekly");
+
+  document.getElementById("tabContent").innerHTML = `
     <div class="card">
       <div class="card-title">Body</div>
-      <div class="sleep-form" style="margin-bottom:.75rem">
-        <div class="sleep-field"><label>Weight (kg)</label><input type="number" step="0.1" id="weightInput" value="${dayData.weight??""}" placeholder="e.g. 62.5" ${dayData.weightSetAt?"disabled":""}></div>
-        <div class="sleep-field"><label>BMI</label><input type="text" value="${dayData.weight? (calcBMI(dayData.weight).toFixed(1)) : "–"}" disabled style="background:var(--bg2)"></div>
+      <div class="sleep-form" style="align-items:flex-end; margin-bottom:0">
+        <div class="sleep-field" style="flex:1">
+          <label>Weight (kg)</label>
+          <input type="number" step="0.1" id="weightInput" value="${dayData.weight??""}" placeholder="e.g. 62.5">
+        </div>
+        <div class="sleep-field" style="width:80px; flex:none;">
+          <label>BMI</label>
+          <input type="text" value="${dayData.weight? (calcBMI(dayData.weight).toFixed(1)) : "–"}" disabled style="background:var(--bg2)">
+        </div>
+        <button class="sleep-save" style="width:auto; padding:.625rem 1rem;" onclick="saveWeight()">Save</button>
       </div>
-      <button class="sleep-save" onclick="saveWeight()" ${dayData.weightSetAt?"disabled":""}>Save weight</button>
-      <button class="sleep-save secondary" onclick="document.getElementById('weightInput').value=''; saveWeight()">Clear</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Trends</div>
-      <div class="filter-controls" style="margin-bottom:.5rem">
-        <button class="filter-btn" onclick="renderTrends('week')">Last week · daily</button>
-        <button class="filter-btn" onclick="renderTrends('month')">Last month · weekly</button>
-        <button class="filter-btn" onclick="renderTrends('quarter')">Last quarter · weekly</button>
-      </div>
-      <div style="font-size:.75rem;color:var(--muted);line-height:1.4">
-        Sync first if you just updated today's values.
-      </div>
-      <div id="trendPanel" style="margin-top:1rem"></div>
     </div>
 
     <div class="card">
@@ -3055,50 +3078,42 @@ async function loadDashboard(){
     </div>
 
     <div class="filter-controls" style="justify-content:center; margin-bottom:1.5rem;">
-      <button class="filter-btn ${dashboardRange==="weekly"?"active":""}" onclick="setDashboardRange('weekly')">Charts: 7d</button>
-      <button class="filter-btn ${dashboardRange==="monthly"?"active":""}" onclick="setDashboardRange('monthly')">Charts: 30d</button>
+      <button class="filter-btn ${dashboardRange==="weekly"?"active":""}" onclick="setDashboardRange('weekly')">Last 7d trends</button>
+      <button class="filter-btn ${dashboardRange==="monthly"?"active":""}" onclick="setDashboardRange('monthly')">Last 30d trends</button>
+      <button class="filter-btn ${dashboardRange==="quarterly"?"active":""}" onclick="setDashboardRange('quarterly')">Last 90d trends</button>
     </div>
 
     <div class="card">
-      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Weight (kg)</div>
-      ${trendLine(days, "weight", "var(--accent)", "kg")}
+      <div class="chart-title">${rangeTitle} Weight (kg)</div>
+      ${trendLine(displayDays, "weight", "var(--accent)", "kg")}
+    </div>
+    <div class="card">
+      <div class="chart-title">${rangeTitle} BMI</div>
+      ${trendLine(displayDays, "bmi", "var(--orange)", "")}
     </div>
 
-    <!-- Body trends -->
     <div class="card">
-      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Weight (kg)</div>
-      ${trendLine(days, "weight", "var(--accent)", "kg")}
+      <div class="chart-title">${rangeTitle} Calories Intake</div>
+      ${chartBars(displayDays, "cal", "var(--accent)", TARGETS.cal * 1.2, barOpts)}
     </div>
     <div class="card">
-      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} BMI</div>
-      ${trendLine(days, "bmi", "var(--orange)", "")}
-    </div>
-
-    <!-- Calories -->
-    <div class="card">
-      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Calories Intake</div>
-      ${chartBars(days, "cal", "var(--accent)", TARGETS.cal * 1.2, barOpts)}
-    </div>
-    <div class="card">
-      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Calories Burned</div>
-      ${chartBars(days, "calBurned", "var(--green)", 900, barOpts)}
+      <div class="chart-title">${rangeTitle} Calories Burned</div>
+      ${chartBars(displayDays, "calBurned", "var(--green)", 900, barOpts)}
     </div>
 
-    <!-- Protein / Water / Sleep -->
     <div class="card">
-      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Protein (g)</div>
-      ${chartBars(days, "protein", "var(--green)", TARGETS.protein * 1.2, barOpts)}
+      <div class="chart-title">${rangeTitle} Protein (g)</div>
+      ${chartBars(displayDays, "protein", "var(--green)", TARGETS.protein * 1.2, barOpts)}
     </div>
     <div class="card">
-      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Water (ml)</div>
-      ${chartBars(days, "water", "var(--accent)", TARGETS.water * 1.1, barOpts)}
+      <div class="chart-title">${rangeTitle} Water (ml)</div>
+      ${chartBars(displayDays, "water", "var(--accent)", TARGETS.water * 1.1, barOpts)}
     </div>
     <div class="card">
-      <div class="chart-title">${dashboardRange==="weekly"?"Weekly":"30‑Day"} Sleep (hrs)</div>
-      ${chartBars(days, "sleep", "#7c3aed", 10, barOpts)}
+      <div class="chart-title">${rangeTitle} Sleep (hrs)</div>
+      ${chartBars(displayDays, "sleep", "#7c3aed", 10, barOpts)}
     </div>
 
-    <!-- Targets -->
     <div class="card">
       <div class="card-title">Targets</div>
       <div class="stats-row" style="flex-wrap:wrap">
@@ -3112,7 +3127,6 @@ async function loadDashboard(){
         <div class="stat-box"><div class="stat-val">${TARGETS.burn}</div><div class="stat-label">burn (kcal)</div></div>
       </div>
     </div>
-
   `;
 }
 
