@@ -363,9 +363,7 @@ body.auth-ok .auth-gate{display:none}
     <div class="header-left">
       <div class="logo"><a href="/">Navajit D</a> <span style="font-weight:400;color:var(--muted)">/ </span><span style="font-weight:600;color:var(--accent)">health</span></div>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-        <!-- Dark icon -->
         <svg class="icon icon-dark" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <!-- Light icon -->
         <svg class="icon icon-light" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       </button>
     </div>
@@ -379,7 +377,6 @@ body.auth-ok .auth-gate{display:none}
 </div>
 
 <div class="app" id="app">
-  <!-- Date Nav -->
   <div class="date-nav">
     <button onclick="shiftDate(-1)">← prev</button>
     <div>
@@ -389,11 +386,9 @@ body.auth-ok .auth-gate{display:none}
     <button onclick="shiftDate(1)">next →</button>
   </div>
 
-  <!-- Tab Content -->
   <div id="tabContent"></div>
 </div>
 
-<!-- Bottom Nav -->
 <nav class="bottom-nav">
   <div class="bottom-nav-inner">
     <div class="nav-item active" data-tab="today" onclick="switchTab('today')">
@@ -420,12 +415,10 @@ body.auth-ok .auth-gate{display:none}
 </nav>
 
 
-<!-- Auth Gate -->
 <div id="authGate" class="auth-gate" aria-live="polite">
   <div class="auth-card">
     <div class="auth-title">Sign in required</div>
     <div class="auth-desc">This health tracker is locked to <b>navjitdebnath5@gmail.com</b>. Sign in with that Google account to continue.</div>
-    <!-- Google Identity Services sign-in button (auto-renders even if app JS later crashes) -->
     <div id="g_id_onload"
          data-client_id="584361562824-4g0usbl8h1lb6fi4eu46ute5hkm022le.apps.googleusercontent.com"
          data-callback="handleCredentialResponse"
@@ -439,14 +432,11 @@ body.auth-ok .auth-gate{display:none}
          data-shape="rectangular"
          data-logo_alignment="left"></div>
 
-    <!-- Fallback (shown if GIS fails to render) -->
-<div class="auth-meta" id="authGateMsg"></div>
+    <div class="auth-meta" id="authGateMsg"></div>
   </div>
 </div>
 
-<!-- Modal Container -->
 <div id="modalContainer"></div>
-<!-- Toast Container -->
 <div id="toastContainer"></div>
 
 <script>
@@ -1602,6 +1592,72 @@ row["Haircare Done"] = checklistAllDone(dayData.haircareChecks, haircareTasksFor
   return row;
 }
 
+// ── FIX 1: Client-Side Merge to avoid race conditions ──
+function mergeClientPayloads_(local, remote) {
+  if (!local) return normalizeDay(remote);
+  if (!remote) return normalizeDay(local);
+
+  const merged = normalizeDay(local); // Base it off local to preserve caches & derived
+
+  const mergeArr = (arr1, arr2) => {
+    const m = new Map();
+    [...(arr1 || []), ...(arr2 || [])].forEach(item => {
+      if (!item.id) return;
+      const ex = m.get(item.id);
+      if (!ex) {
+        m.set(item.id, item);
+      } else {
+        if (item.deletedAt && !ex.deletedAt) m.set(item.id, item);
+        else if (!item.deletedAt && ex.deletedAt) {} // keep ex
+        else {
+          const t1 = new Date(ex.ts || ex.addedAt || 0).getTime();
+          const t2 = new Date(item.ts || item.addedAt || 0).getTime();
+          if (t2 > t1) m.set(item.id, item);
+        }
+      }
+    });
+    return Array.from(m.values());
+  };
+
+  merged.foods = mergeArr(local.foods, remote.foods);
+  merged.waterLogs = mergeArr(local.waterLogs, remote.waterLogs);
+  merged.stepLogs = mergeArr(local.stepLogs, remote.stepLogs);
+  merged.customExercises = mergeArr(local.customExercises, remote.customExercises);
+
+  const mergeMap = (m1, m2) => {
+    const out = { ...(m1 || {}) };
+    for (const [k, v] of Object.entries(m2 || {})) {
+      if (!out[k] || v.ts > out[k].ts) out[k] = v;
+    }
+    return out;
+  };
+
+  merged.supplementChecks = mergeMap(local.supplementChecks, remote.supplementChecks);
+  merged.exerciseChecks = mergeMap(local.exerciseChecks, remote.exerciseChecks);
+  merged.skincareChecks = mergeMap(local.skincareChecks, remote.skincareChecks);
+  merged.haircareChecks = mergeMap(local.haircareChecks, remote.haircareChecks);
+
+  if (remote.sleep?.setAt) {
+    const rT = new Date(remote.sleep.setAt).getTime();
+    const lT = new Date(local.sleep?.setAt || 0).getTime();
+    if (rT > lT) merged.sleep = remote.sleep;
+  }
+  
+  if (remote.weightSetAt) {
+    const rT = new Date(remote.weightSetAt).getTime();
+    const lT = new Date(local.weightSetAt || 0).getTime();
+    if (rT > lT) {
+      merged.weight = remote.weight;
+      merged.weightSetAt = remote.weightSetAt;
+    }
+  }
+
+  merged.serverRev = Math.max(local.serverRev || 0, remote.serverRev || 0);
+  merged.updatedAt = new Date().toISOString();
+  
+  return merged;
+}
+
 function applySheetRowToDay(row, {save=false}={}){
   if(!row) return;
 
@@ -1609,10 +1665,20 @@ function applySheetRowToDay(row, {save=false}={}){
   const payloadStr = String(row["Payload JSON"] || "").trim();
   if(payloadStr){
     try{
-      const payload = JSON.parse(payloadStr);
-      dayData = normalizeDay(payload);
-      // carry server revision for this day (helps detect staleness)
-      dayData.serverRev = Math.round(num0(row["Rev"]));
+      let payload = JSON.parse(payloadStr);
+      payload.serverRev = Math.round(num0(row["Rev"]));
+
+      // FIX 2: Guard against overwriting unsynced local changes
+      const isDirty = getDirtyDates().includes(selectedDate);
+      const localTime = new Date(dayData.updatedAt || 0).getTime();
+      const remoteTime = new Date(payload.updatedAt || 0).getTime();
+      
+      if (isDirty || localTime > remoteTime) {
+        dayData = mergeClientPayloads_(dayData, payload);
+      } else {
+        dayData = normalizeDay(payload);
+      }
+      
       recomputeDerived(selectedDate);
       if(save) saveDay();
       render();
@@ -2633,7 +2699,6 @@ function renderToday(t, plan){
   })();
 
   return `
-    <!-- Calories + Macros -->
     <div class="card">
       <div class="ring-wrap">
         <div class="ring-stack">
@@ -2660,7 +2725,6 @@ function renderToday(t, plan){
             <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.fat/TARGETS.fat*100)}%;background:var(--orange)"></div></div>
           </div>
 
-          <!-- Macro split bar -->
           <div style="margin-top:.5rem">
             <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--ring-track)">
               <div style="width:${t.protein/totalMacro*100}%;background:var(--accent);transition:width .5s"></div>
@@ -2684,7 +2748,6 @@ function renderToday(t, plan){
       </div>
     </div>
 
-    <!-- Food Log -->
     <div class="card">
       <div class="card-title"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg> Food Log</div>
       <div class="food-actions">
@@ -2698,13 +2761,11 @@ function renderToday(t, plan){
       </div>
     </div>
 
-    <!-- Supplements -->
     <div class="card">
       <div class="card-title"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg> Supplements</div>
       ${suppList}
     </div>
 
-    <!-- Skincare -->
     <div class="card">
       <div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/></svg> Skincare <span class="card-title-status">${skincareStatus(dayData)}</span></div>
       <div class="checklist">
@@ -2714,7 +2775,6 @@ function renderToday(t, plan){
         }).join("")}
       </div>
     </div>
-    <!-- Haircare -->
     <div class="card">
       ${(()=>{ 
         const tasks = haircareTasksForDate(selectedDate);
@@ -3307,6 +3367,9 @@ async function syncNow(){
     toast("Syncing…");
     await cloudAppendSnapshot(selectedDate, {source:"manual"});
 
+    // FIX 3: Wait 2.5s for no-cors server processing to avoid clobbering latest data
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
     const latest = await cloudFetchLatestRow(selectedDate);
     if(latest) applySheetRowToDay(latest, {save:true});
 
@@ -3343,10 +3406,19 @@ async function syncNow(){
   }
 }
 
-function startApp(){
+async function startApp(){
   _appStarted = true;
   setupAutoSync();
-  loadDay().catch(()=>{});
+  await loadDay().catch(()=>{});
+
+  // FIX 3: Push first if dirty, wait 1.5s, then pull
+  if (getDirtyDates().includes(selectedDate) && cloudReady()) {
+    try {
+      await cloudAppendSnapshot(selectedDate, {source:"boot_sync"});
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    } catch(e) {}
+  }
+
   cloudFetchLatestRow(selectedDate).then(r=>{ 
     if(r) applySheetRowToDay(r,{save:true}); 
 
