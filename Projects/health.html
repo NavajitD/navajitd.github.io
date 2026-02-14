@@ -430,8 +430,7 @@ body.auth-ok .auth-gate{display:none}
          data-client_id="584361562824-4g0usbl8h1lb6fi4eu46ute5hkm022le.apps.googleusercontent.com"
          data-callback="handleCredentialResponse"
          data-auto_prompt="false"
-         data-ux_mode="popup"
-         data-itp_support="true"></div>
+         data-ux_mode="popup"></div>
     <div class="g_id_signin"
          data-type="standard"
          data-size="large"
@@ -1901,7 +1900,8 @@ function addFood(food){
 }
 function removeFood(id){
   if(!confirmDelete()) return;
-  dayData.foods = activeItems(dayData.foods||[]).map(f => f.id===id ? {...f, deletedAt:new Date().toISOString()} : f);
+  // FIX: Map over the full array, don't use activeItems() here! This preserves tombstones for the server.
+  dayData.foods = (dayData.foods||[]).map(f => f.id===id ? {...f, deletedAt:new Date().toISOString()} : f);
   touchDay();
   recomputeDerived(selectedDate);
   saveDay(); render(); toast("Removed");
@@ -2596,10 +2596,13 @@ function renderToday(t, plan){
   const totalMacro = (t.protein + t.carbs + t.fat) || 1;
 
   let foodList = "";
-  if(dayData.foods.length===0){
+  // FIX: Filter foods visually so deleted items immediately disappear from the screen
+  const activeFoods = activeItems(dayData.foods); 
+
+  if(activeFoods.length===0){
     foodList = `<div class="empty-state"><div class="empty-icon">🍽</div>No foods logged yet<br><span style="font-size:.6875rem">Tap "from plan" to add today's meals</span></div>`;
   } else {
-    foodList = dayData.foods.map(f=>`<div class="food-item">
+    foodList = activeFoods.map(f=>`<div class="food-item">
       <div class="food-icon">${MEAL_ICONS[f.meal]||"🍽"}</div>
       <div class="food-info"><div class="food-name">${escapeHtml(f.name)} ${f.estimated?'<span style="color:var(--muted);font-size:.625rem;font-weight:400">· AI</span>':""}</div>
         <div class="food-meta">${escapeHtml(f.meal)} · P:${Math.round((+f.protein||0))}g C:${Math.round((+f.carbs||0))}g F:${Math.round((+f.fat||0))}g</div></div>
@@ -3156,41 +3159,34 @@ async function handleCredentialResponse(response){
   const token = response && response.credential ? String(response.credential) : "";
   if(!token) return;
 
-  // Persist token (sessionStorage + localStorage) so navigation/redirects don't lose auth.
   setIdToken(token);
 
-  // Prefer server-side validation via session bootstrap (also proves the token is accepted).
-  try{
-    // Only requires id_token once; returns short session_key for future calls.
-    const res = await cloudCall(getCloudScriptUrl(), {a:"session", t: token});
-    if(!res || !res.ok || !res.session_key){
-      throw new Error(res?.error || "Session bootstrap failed");
-    }
-    const ttlS = isFinite(+res.ttl_s) ? (+res.ttl_s) : 900;
-    setSession(res.session_key, Date.now() + ttlS*1000);
-
-    unlockApp();
-    toast("Signed in ✓");
-    if(!_appStarted) startApp();
+  // FIX: Validate the token locally and unlock instantly for snappy UX
+  const email = (parseJwtPayload(token)?.email || "").toLowerCase();
+  const okEmail = email && email === String(ALLOWED_EMAIL).toLowerCase();
+  if(!okEmail) {
+    clearIdToken();
+    clearSession();
+    toast("Sign-in failed: Unauthorized email");
     return;
-  }catch(e){
-    // Fallback: local JWT check (useful if cloud URL misconfigured/offline).
-    const email = (parseJwtPayload(token)?.email || "").toLowerCase();
-    const okEmail = email && email === String(ALLOWED_EMAIL).toLowerCase();
-    const okFresh = (()=>{ const p=parseJwtPayload(token)||{}; const exp=+p.exp||0; const now=Math.floor(Date.now()/1000); return exp > (now+30); })();
-    if(!(okEmail && okFresh)){
-      clearIdToken();
-      clearSession();
-      lockApp();
-      toast("Sign-in failed: " + (e?.message || "unauthorized"));
-      return;
+  }
+
+  unlockApp();
+  toast("Signed in ✓");
+  if(!_appStarted) startApp();
+
+  // Bootstrap the heavy server session silently in the background
+  try{
+    const res = await cloudCall(getCloudScriptUrl(), {a:"session", t: token});
+    if(res && res.session_key){
+      const ttlS = isFinite(+res.ttl_s) ? (+res.ttl_s) : 900;
+      setSession(res.session_key, Date.now() + ttlS*1000);
     }
-    // Allow app to run in "offline" mode even if cloud session can't be created immediately.
-    unlockApp();
-    toast("Signed in ✓ (offline)");
-    if(!_appStarted) startApp();
+  }catch(e){
+    console.warn("Background session bootstrap failed:", e);
   }
 }
+ 
 
 function initGoogleSignIn(){
   const msg = document.getElementById("authGateMsg");
@@ -3251,7 +3247,6 @@ function signOut(){
   toast("Signed out");
 }
 
-
 async function syncNow(){
   if(!cloudReady()){
     toast("Sign in to sync");
@@ -3259,36 +3254,82 @@ async function syncNow(){
     return;
   }
 
-  let pushed = false;
   try{
     toast("Syncing…");
     await cloudAppendSnapshot(selectedDate, {source:"manual"});
-    pushed = true;
 
-    try{
-      const latest = await cloudFetchLatestRow(selectedDate);
-      if(latest) applySheetRowToDay(latest, {save:true});
-      toast("Synced ✓");
-    }catch(pullErr){
-      console.error(pullErr);
-      toast("Pushed ✓ (pull failed)");
+    const latest = await cloudFetchLatestRow(selectedDate);
+    if(latest) applySheetRowToDay(latest, {save:true});
+
+    // FIX: Manual sync now also pulls the last 14 days of history
+    const start = dateKeyNDaysAgo(14); 
+    const rows = await cloudFetchRange(start, todayStr());
+    if(rows && rows.length){
+      await Promise.all(rows.map(async r => {
+        const dk = r._dateKey || String(r["Date (timestamp)"]||"").slice(0,10);
+        if(dk && dk !== selectedDate){
+          const payloadStr = String(r["Payload JSON"] || "").trim();
+          if(payloadStr){
+            try{
+              const existing = await dbGet(dk);
+              const incomingRev = Math.round(num0(r["Rev"]));
+              const localRev = Math.round(num0(existing?.serverRev));
+              // Only overwrite if server has a newer revision
+              if(!existing || incomingRev > localRev){
+                const d = normalizeDay(JSON.parse(payloadStr));
+                d.serverRev = incomingRev;
+                await dbSet(dk, d);
+              }
+            }catch(e){}
+          }
+        }
+      }));
     }
+
+    if(currentTab === "dashboard") loadDashboard();
+    toast("Synced ✓");
   }catch(pushErr){
     console.error(pushErr);
     toast("Sync failed: " + String(pushErr?.message || pushErr || ""));
   }
 }
 
-function signOutAndReload(){
-  signOut();
-  try{ window.location.href = '/projects.html'; }catch(e){}
-}
-
 function startApp(){
   _appStarted = true;
   setupAutoSync();
   loadDay().catch(()=>{});
-  cloudFetchLatestRow(selectedDate).then(r=>{ if(r) applySheetRowToDay(r,{save:true}); }).catch(()=>{});
+  cloudFetchLatestRow(selectedDate).then(r=>{ 
+    if(r) applySheetRowToDay(r,{save:true}); 
+
+    // FIX: Background backfill for new devices
+    const start = dateKeyNDaysAgo(7);
+    cloudFetchRange(start, todayStr()).then(rows => {
+      if(rows && rows.length){
+        let updated = false;
+        Promise.all(rows.map(async r => {
+          const dk = r._dateKey || String(r["Date (timestamp)"]||"").slice(0,10);
+          if(dk && dk !== selectedDate){
+            const existing = await dbGet(dk);
+            // If local DB for this day is empty, pull it from the cloud payload
+            if(!existing || (!existing.foods?.length && !existing.calBurned && !existing.water)){
+              const payloadStr = String(r["Payload JSON"] || "").trim();
+              if(payloadStr){
+                try{
+                  const d = normalizeDay(JSON.parse(payloadStr));
+                  d.serverRev = Math.round(num0(r["Rev"]));
+                  await dbSet(dk, d);
+                  updated = true;
+                }catch(e){}
+              }
+            }
+          }
+        })).then(() => {
+          if(updated && currentTab==="dashboard") loadDashboard();
+        });
+      }
+    }).catch(()=>{});
+
+  }).catch(()=>{});
 }
 
 // Global error visibility (helps on mobile when DevTools isn't handy)
