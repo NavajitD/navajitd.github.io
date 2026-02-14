@@ -1965,11 +1965,8 @@ function toggleExercise(label){
   saveDay();
   render();
 }
+
 function saveSleep(){
-  if(dayData.sleep?.setAt){
-    toast("Sleep already saved for today");
-    return;
-  }
   const hrsRaw = document.getElementById("sleepHours")?.value;
   const hrs = hrsRaw==="" ? 0 : parseFloat(hrsRaw);
   const bt = document.getElementById("sleepBed")?.value || "23:00";
@@ -1990,7 +1987,9 @@ function saveSleep(){
   dayData.sleep = {...(dayData.sleep||{}), bedtime:bt, wakeup:wu, hours:h, setAt:new Date().toISOString()};
   touchDay();
   recomputeDerived(selectedDate);
-  saveDay(); render(); toast("Sleep saved");
+  saveDay(); 
+  render(); 
+  toast("Sleep saved");
 }
 
 function clearSleep(){
@@ -2018,21 +2017,16 @@ function saveWeight(){
   const raw = document.getElementById("weightInput")?.value;
   const w = raw==="" ? null : parseFloat(raw);
 
-  // Clear weight (allowed)
+  // Clear weight (allowed if empty input submitted)
   if(w===null){
-    if(dayData.weightSetAt && !confirmDelete()) return;
     dayData.weight = null;
     dayData.weightSetAt = "";
     dayData.bmi = null;
     touchDay();
     recomputeDerived(selectedDate);
-    saveDay(); render(); toast("Weight cleared");
-    return;
-  }
-
-  // Once-per-day lock
-  if(dayData.weightSetAt){
-    toast("Weight already saved for today");
+    saveDay(); 
+    render(); 
+    toast("Weight cleared");
     return;
   }
 
@@ -2043,8 +2037,11 @@ function saveWeight(){
   localStorage.setItem("HT_LAST_WEIGHT_KG", String(ww));
   touchDay();
   recomputeDerived(selectedDate);
-  saveDay(); render(); toast("Weight saved");
+  saveDay(); 
+  render(); 
+  toast("Weight saved");
 }
+
 function saveBurn(){ return saveActivity(); }
 
 function saveActivity(){
@@ -2971,14 +2968,14 @@ function renderSleepTab(){
         <div class="sleep-field" style="flex:1"><label>Sleep (hrs)</label><input type="number" step="0.1" min="0" id="sleepHours" value="${dayData.sleep?.hours||0}" placeholder="e.g. 7.5"></div>
       </div>
       <div class="sleep-form">
-        <div class="sleep-field"><label>Bedtime</label><input type="time" id="sleepBed" value="${dayData.sleep?.bedtime||"23:00"}" ${dayData.sleep?.setAt?"disabled":""}></div>
-        <div class="sleep-field"><label>Wake-up</label><input type="time" id="sleepWake" value="${dayData.sleep?.wakeup||"07:00"}" ${dayData.sleep?.setAt?"disabled":""}></div>
+        <div class="sleep-field"><label>Bedtime</label><input type="time" id="sleepBed" value="${dayData.sleep?.bedtime||"23:00"}"></div>
+        <div class="sleep-field"><label>Wake-up</label><input type="time" id="sleepWake" value="${dayData.sleep?.wakeup||"07:00"}"></div>
       </div>
-      <button class="sleep-save" onclick="saveSleep()" ${dayData.sleep?.setAt?"disabled":""}>Save sleep</button>
-      <button class="sleep-save secondary" onclick="clearSleep()">Clear</button>
+      <button class="sleep-save" onclick="saveSleep()">Save</button>
     </div>
   `;
 }
+   
 
 // ─── DASHBOARD ──────────────────────────────────────
 async function loadDashboard(){
@@ -3029,11 +3026,10 @@ async function loadDashboard(){
       </div>
 
       <div class="sleep-form" style="margin-bottom:.75rem">
-        <div class="sleep-field"><label>Weight (kg)</label><input type="number" step="0.1" id="weightInput" value="${dayData.weight??""}" placeholder="e.g. 62.5" ${dayData.weightSetAt?"disabled":""}></div>
+        <div class="sleep-field"><label>Weight (kg)</label><input type="number" step="0.1" id="weightInput" value="${dayData.weight??""}" placeholder="e.g. 62.5"></div>
         <div class="sleep-field"><label>BMI</label><input type="text" value="${dayData.weight? (calcBMI(dayData.weight).toFixed(1)) : "–"}" disabled style="background:var(--bg2)"></div>
       </div>
-      <button class="sleep-save" onclick="saveWeight()" ${dayData.weightSetAt?"disabled":""}>Save weight</button>
-      <button class="sleep-save secondary" onclick="document.getElementById('weightInput').value=''; saveWeight()">Clear</button>
+      <button class="sleep-save" onclick="saveWeight()">Save</button>
     </div>
 
     <!-- Trends from Google Sheet -->
