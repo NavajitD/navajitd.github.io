@@ -103,7 +103,7 @@
     </footer>
 
 <script>
-const BLOG_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEce-1ROr07-iw24Hcm_PrwoIbqPt5ZOO8YUFEYYoKZ9vwRFeX-iKmkBpuX2T8LoZ3Qg/exec";
+const BLOG_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8TvdpRImp9--UHINhEWzisrA_YHFvAcCu5JFPYNQnoJNuz7W6LWcThI7k7sWUrOtj0g/exec";
 
 const POSTS_PER_BATCH = 5;
 const EXCERPT_CACHE_TTL = 5 * 50 * 1000;
@@ -123,11 +123,20 @@ function getScriptUrl() { return BLOG_SCRIPT_URL || localStorage.getItem('blog_s
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-IN', { year:'numeric', month:'long', day:'numeric' }); }
 
-function jsonp(url, params = {}) {
+// ─── Upgraded to Smart Fetch (Solves the Window/Browser Bug) ───
+async function smartFetch(url, params = {}) {
+    const u = new URL(url);
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+    
+    try {
+        const res = await fetch(u.toString(), { redirect: "follow" });
+        if (res.ok) return await res.json();
+    } catch (e) {
+        console.warn("Fetch blocked (likely by extension), falling back to JSONP.");
+    }
+    
     return new Promise((resolve, reject) => {
         const cb = '__blog_' + Math.random().toString(36).slice(2);
-        const u = new URL(url);
-        Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
         u.searchParams.set('prefix', cb);
         let done = false;
         window[cb] = (data) => { if (done) return; done = true; cleanup(); resolve(data); };
@@ -136,39 +145,37 @@ function jsonp(url, params = {}) {
         s.onerror = () => { if (done) return; done = true; cleanup(); reject(new Error('Request failed')); };
         function cleanup() { try { delete window[cb]; } catch(e) {} s.remove(); }
         document.head.appendChild(s);
+        setTimeout(() => { if(!done) { done = true; cleanup(); reject(new Error('Timeout')); } }, 15000);
     });
 }
 
-function getCachedExc(id) {
-    try { const r = sessionStorage.getItem('bexc_' + id); if (!r) return null; const p = JSON.parse(r); return (Date.now() - p.ts < EXCERPT_CACHE_TTL) ? p : null; } catch(e) { return null; }
+function getCachedExc(id, modTime) {
+    try { const r = sessionStorage.getItem('bexc_' + id); if (!r) return null; const p = JSON.parse(r); if (p.mod !== modTime) return null; return (Date.now() - p.ts < EXCERPT_CACHE_TTL) ? p : null; } catch(e) { return null; }
 }
-function setCachedExc(id, d) { try { sessionStorage.setItem('bexc_' + id, JSON.stringify({ ...d, ts: Date.now() })); } catch(e) {} }
+function setCachedExc(id, modTime, d) { try { sessionStorage.setItem('bexc_' + id, JSON.stringify({ ...d, mod: modTime, ts: Date.now() })); } catch(e) {} }
 
 async function fetchPostList() {
     const url = getScriptUrl();
     if (!url) throw new Error('NO_URL');
-    const res = await jsonp(url, { action: 'list' });
+    const res = await smartFetch(url, { action: 'list' });
     if (!res?.ok) throw new Error(res?.error || 'Failed');
     return res.posts || [];
 }
-async function fetchExcerpt(id) {
-    const cached = getCachedExc(id);
+
+async function fetchExcerpt(id, modTime) {
+    const cached = getCachedExc(id, modTime);
     if (cached) return cached;
     const url = getScriptUrl();
     if (!url) return null;
     try {
-        const res = await jsonp(url, { action: 'excerpt', id });
+        const res = await smartFetch(url, { action: 'excerpt', id, mod: modTime || '' });
         if (!res?.ok) return null;
         
-        // --- modification starts ---
         let rawText = res.excerpt || '';
-        // Split by newlines, remove the first 2 lines, and join the rest back together
         let processedText = rawText.split(/\r?\n/).slice(2).join('\n').trim();
         
         const d = { excerpt: processedText, readTime: res.readTime || '' };
-        // --- modification ends ---
-        
-        setCachedExc(id, d);
+        setCachedExc(id, modTime, d);
         return d;
     } catch(e) { return null; }
 }
@@ -176,7 +183,7 @@ async function fetchExcerpt(id) {
 function renderCard(post) {
     const card = document.createElement('a');
     card.className = 'blog-card';
-    card.href = `/blog-post.html?id=${post.id}`;
+    card.href = `/blog-post.html?id=${post.id}&mod=${post.modifiedTime}`;
     card.innerHTML = `
         <div class="blog-card-date">${fmtDate(post.modifiedTime)}</div>
         <div class="blog-card-title">${esc(post.title)}</div>
@@ -184,16 +191,21 @@ function renderCard(post) {
         <div class="blog-card-reading" data-rid="${post.id}"></div>`;
     return card;
 }
+
 function renderBatch() {
     if (renderedCount >= allPosts.length || isLoadingMore) return;
     isLoadingMore = true;
     const c = document.getElementById('blogContainer');
     const end = Math.min(renderedCount + POSTS_PER_BATCH, allPosts.length);
-    for (let i = renderedCount; i < end; i++) { c.appendChild(renderCard(allPosts[i])); loadExc(allPosts[i].id); }
+    for (let i = renderedCount; i < end; i++) { 
+        c.appendChild(renderCard(allPosts[i])); 
+        loadExc(allPosts[i].id, allPosts[i].modifiedTime); 
+    }
     renderedCount = end; isLoadingMore = false;
 }
-async function loadExc(id) {
-    const d = await fetchExcerpt(id);
+
+async function loadExc(id, modTime) {
+    const d = await fetchExcerpt(id, modTime);
     const el = document.querySelector(`.blog-card-excerpt[data-fid="${id}"]`);
     const rl = document.querySelector(`.blog-card-reading[data-rid="${id}"]`);
     if (el) { el.classList.remove('loading'); el.textContent = d?.excerpt ? d.excerpt + (d.excerpt.length >= 240 ? '…' : '') : ''; }
@@ -201,14 +213,7 @@ async function loadExc(id) {
 }
 
 function showSetup() {
-    document.getElementById('blogContainer').innerHTML = `<div class="setup-banner">
-        <strong>Blog setup required</strong><br><br>
-        1. Create a new Apps Script project and paste the code from <code>BlogProxy.gs</code><br>
-        2. Deploy → Web App (Execute as: Me, Access: Anyone)<br>
-        3. Copy the deployment URL and paste it into <code>BLOG_SCRIPT_URL</code> in <code>blog.html</code> and <code>blog-post.html</code><br><br>
-        Or set it once in your browser console:<br>
-        <code>localStorage.setItem('blog_script_url', 'https://script.google.com/macros/s/…/exec')</code>
-    </div>`;
+    document.getElementById('blogContainer').innerHTML = `<div class="setup-banner">... Setup required ...</div>`;
 }
 
 function setupScroll() {
@@ -221,7 +226,7 @@ function setupScroll() {
         allPosts = await fetchPostList();
         if (location.hash === '#latest' && allPosts.length) { location.replace(`/blog-post.html?id=${allPosts[0].id}`); return; }
         document.getElementById('loadingState')?.remove();
-        if (!allPosts.length) { document.getElementById('blogContainer').innerHTML = '<div class="empty-state"><div style="font-size:1.5rem;margin-bottom:.5rem;opacity:.4">📝</div>No posts yet.</div>'; return; }
+        if (!allPosts.length) { document.getElementById('blogContainer').innerHTML = '<div class="empty-state">No posts yet.</div>'; return; }
         renderBatch(); setupScroll();
     } catch(e) {
         if (e.message === 'NO_URL') showSetup();
@@ -229,5 +234,6 @@ function setupScroll() {
     }
 })();
 </script>
+    
 </body>
 </html>
