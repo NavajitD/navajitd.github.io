@@ -113,28 +113,31 @@
     </footer>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-// CONFIG — Same Apps Script URL as blog.html
-// ═══════════════════════════════════════════════════════════════
-const BLOG_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEce-1ROr07-iw24Hcm_PrwoIbqPt5ZOO8YUFEYYoKZ9vwRFeX-iKmkBpuX2T8LoZ3Qg/exec";
+const BLOG_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8TvdpRImp9--UHINhEWzisrA_YHFvAcCu5JFPYNQnoJNuz7W6LWcThI7k7sWUrOtj0g/exec";
 const CONTENT_CACHE_TTL = 10 * 60 * 1000;
 
-// ═══ TOPBAR SCROLL ═══
 const topbar = document.getElementById('topbar');
 window.addEventListener('scroll', () => { topbar.classList.toggle('scrolled', window.scrollY > 8); }, { passive: true });
 
-// ═══ HELPERS ═══
 function getScriptUrl() { return BLOG_SCRIPT_URL || localStorage.getItem('blog_script_url') || ''; }
 function getFileId() { return new URLSearchParams(location.search).get('id') || ''; }
+function getModTime() { return new URLSearchParams(location.search).get('mod') || ''; }
 function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-IN', { year:'numeric', month:'long', day:'numeric' }); }
 function readTime(text) { return Math.max(1, Math.round(text.split(/\s+/).filter(Boolean).length / 200)) + ' min read'; }
 
-// ═══ JSONP ═══
-function jsonp(url, params = {}) {
+// ─── Upgraded to Smart Fetch ───
+async function smartFetch(url, params = {}) {
+    const u = new URL(url);
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+    try {
+        const res = await fetch(u.toString(), { redirect: "follow" });
+        if (res.ok) return await res.json();
+    } catch (e) {
+        console.warn("Fetch blocked, using JSONP fallback.");
+    }
+    
     return new Promise((resolve, reject) => {
         const cb = '__bp_' + Math.random().toString(36).slice(2);
-        const u = new URL(url);
-        Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
         u.searchParams.set('prefix', cb);
         let done = false;
         window[cb] = (d) => { if (done) return; done = true; cleanup(); resolve(d); };
@@ -143,70 +146,57 @@ function jsonp(url, params = {}) {
         s.onerror = () => { if (done) return; done = true; cleanup(); reject(new Error('Request failed')); };
         function cleanup() { try { delete window[cb]; } catch(e) {} s.remove(); }
         document.head.appendChild(s);
+        setTimeout(() => { if(!done) { done = true; cleanup(); reject(new Error('Timeout')); } }, 15000);
     });
 }
 
-// ═══ CACHE ═══
-function getCached(id) {
-    try { const r = sessionStorage.getItem('bpost_' + id); if (!r) return null; const p = JSON.parse(r); return (Date.now() - p.ts < CONTENT_CACHE_TTL) ? p : null; } catch(e) { return null; }
+function getCached(id, modTime) {
+    try { const r = sessionStorage.getItem('bpost_' + id); if (!r) return null; const p = JSON.parse(r); if (p.mod !== modTime) return null; return (Date.now() - p.ts < CONTENT_CACHE_TTL) ? p : null; } catch(e) { return null; }
 }
-function setCache(id, d) { try { sessionStorage.setItem('bpost_' + id, JSON.stringify({ ...d, ts: Date.now() })); } catch(e) {} }
+function setCache(id, modTime, d) { try { sessionStorage.setItem('bpost_' + id, JSON.stringify({ ...d, mod: modTime, ts: Date.now() })); } catch(e) {} }
 
-// ═══ SANITIZE GOOGLE DOCS HTML ═══
-// Returns { html, author } — author is extracted from the first line, which is then removed from the body.
 function sanitize(raw) {
     const doc = new DOMParser().parseFromString(raw, 'text/html');
     doc.querySelectorAll('style').forEach(el => el.remove());
     const body = doc.body;
     if (!body) return { html: '', author: '' };
 
-    // Responsive images
     body.querySelectorAll('img').forEach(img => { img.removeAttribute('style'); img.removeAttribute('width'); img.removeAttribute('height'); });
 
-    // Fix Google redirect links
     body.querySelectorAll('a').forEach(a => {
         const href = a.getAttribute('href') || '';
         if (href.startsWith('http') || href.startsWith('//')) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener noreferrer'); }
         if (href.includes('google.com/url?q=')) { try { const real = new URL(href).searchParams.get('q'); if (real) a.setAttribute('href', real); } catch(e) {} }
     });
 
-    // Strip inline styles (keep text-align for centered content)
     body.querySelectorAll('[style]').forEach(el => {
         const align = el.style.textAlign;
         el.removeAttribute('style');
         if (align && align !== 'start' && align !== 'left') el.style.textAlign = align;
     });
 
-    // Remove Google doc classes
     body.querySelectorAll('[class]').forEach(el => el.removeAttribute('class'));
 
-    // Extract author from first non-empty text element, then remove it
     let author = '';
     const children = Array.from(body.children);
     for (const child of children) {
         const text = (child.textContent || '').trim();
-        if (text) {
-            author = text;
-            child.remove();
-            break;
-        }
+        if (text) { author = text; child.remove(); break; }
     }
 
     return { html: body.innerHTML, author };
 }
 
-// ═══ LOAD POST ═══
-async function loadPost(fileId) {
+async function loadPost(fileId, modTime) {
     const url = getScriptUrl();
     if (!url) { showError('Blog script URL not configured. See <a href="/blog.html">blog setup</a>.'); return; }
     if (!fileId) { showError('No post ID. <a href="/blog.html">Back to blog</a>'); return; }
 
-    // Check cache
-    const cached = getCached(fileId);
+    const cached = getCached(fileId, modTime);
     if (cached) { renderPost(cached); return; }
 
     try {
-        const res = await jsonp(url, { action: 'post', id: fileId });
+        const res = await smartFetch(url, { action: 'post', id: fileId, mod: modTime || '' });
         if (!res?.ok) throw new Error(res?.error || 'Failed to load');
 
         const { html: cleanHtml, author } = sanitize(res.html || '');
@@ -222,7 +212,7 @@ async function loadPost(fileId) {
             readTime: readTime(plainText)
         };
 
-        setCache(fileId, data);
+        setCache(fileId, modTime, data);
         renderPost(data);
     } catch(e) {
         showError('Failed to load post: ' + e.message);
@@ -245,8 +235,8 @@ function showError(msg) {
     document.getElementById('loadingState').innerHTML = `<div style="color:#dc2626">${msg}</div><div style="margin-top:1rem"><a href="/blog.html" style="color:var(--accent);font-family:var(--font-mono);font-size:.8125rem">← Back to blog</a></div>`;
 }
 
-// ═══ BOOT ═══
-loadPost(getFileId());
+loadPost(getFileId(), getModTime());
 </script>
+    
 </body>
 </html>
