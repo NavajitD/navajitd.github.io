@@ -2196,11 +2196,12 @@ function renderWaterModal(){
 }
 
 function addWaterCustom(){
-  const raw = document.getElementById("waterCustomInput")?.value;
+  const el = document.getElementById("waterQuickInput") || document.getElementById("waterCustomInput");
+  const raw = el?.value;
   const ml = raw==="" ? 0 : parseInt(raw,10);
   if(!isFinite(ml) || ml<=0){ toast("Enter valid mL"); return; }
   addWater(ml);
-  closeModal();
+  if(el) el.value = "";
 }
 
 
@@ -2737,33 +2738,35 @@ function renderWater(){
 
   let logHtml = "";
   if(logs.length > 0){
-    logHtml = `<div class="card"><div class="card-title">Today's Log</div><div class="water-log">
+    logHtml = `<div class="card"><div class="card-title"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg> Today's Log</div>
       ${logs.map(l=>`<div class="water-log-item">
         <span class="water-log-time">${fmtTime(l.ts)}</span>
-        <span class="water-log-amt">+${Math.round(num0(l.ml))}ml</span>
+        <span class="water-log-amt">+${Math.round(num0(l.ml))} ml</span>
         <button class="log-del" onclick="if(confirmDelete()) removeWaterLog('${l.id}')">✕</button>
       </div>`).join("")}
-    </div></div>`;
+    </div>`;
   }
 
   return `
-    <div class="card" style="text-align:center;padding:2rem">
-      <div class="ring-container" style="width:150px;height:150px;margin:0 auto">
-        ${svgRing(pct, 150, 10, "var(--accent)")}
-        <div class="ring-center">
-          <div style="font-size:.875rem;margin-bottom:.125rem">💧</div>
-          <div class="ring-big">${(waterMl/1000).toFixed(1)}</div>
-          <div class="ring-small">/ 3.5 L</div>
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg> Water Intake</div>
+      <div style="text-align:center;padding:.75rem 0 1rem">
+        <div class="ring-container" style="width:120px;height:120px;margin:0 auto">
+          ${svgRing(pct, 120, 8, "var(--accent)")}
+          <div class="ring-center">
+            <div style="font-size:.75rem;margin-bottom:.125rem">💧</div>
+            <div class="ring-big">${(waterMl/1000).toFixed(1)}</div>
+            <div class="ring-small">/ ${(TARGETS.water/1000).toFixed(1)} L</div>
+          </div>
         </div>
       </div>
-      <div class="muted" style="margin-top:.75rem">Tap to add water</div>
-      <div class="water-buttons">
-        <button class="btn water-btn" onclick="addWater(250)">+250ml</button>
-        <button class="btn water-btn" onclick="addWater(500)">+500ml</button>
-        <button class="btn water-btn" onclick="addWater(750)">+750ml</button>
-        <button class="btn water-btn" onclick="addWater(1000)">+1L</button>
+      <div style="display:flex;gap:.5rem;align-items:stretch">
+        <button class="food-btn food-btn-primary" onclick="addWater(250)" style="flex:0 0 auto;padding:.5rem .875rem;font-size:.75rem">+ 250 ml</button>
+        <div style="display:flex;flex:1;gap:.375rem;align-items:stretch">
+          <input type="number" id="waterQuickInput" placeholder="ml" min="0" step="10" style="flex:1;min-width:0;font-size:.8125rem;padding:.375rem .5rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2)">
+          <button class="food-btn" onclick="addWaterCustom()" style="flex:0 0 auto;padding:.5rem .75rem;font-size:.75rem">Add</button>
+        </div>
       </div>
-      <button class="btn secondary" onclick="undoWater()">Remove last</button>
     </div>
     ${logHtml}
   `;
