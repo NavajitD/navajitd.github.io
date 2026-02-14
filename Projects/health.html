@@ -977,7 +977,9 @@ function estimateWorkoutCalories(workout, weightKg){
 function recomputeDerived(dateKey){
   const workout = WORKOUT_PLAN[dow(dateKey)];
   dayData.water = activeItems(dayData.waterLogs).reduce((sum,l)=>sum + num0(l.ml), 0);
-  dayData.steps = activeItems(dayData.stepLogs).reduce((mx,l)=>Math.max(mx, Math.round(num0(l.steps))), 0);
+  
+  // FIXED: Sum up the steps instead of taking the maximum value
+  dayData.steps = activeItems(dayData.stepLogs).reduce((sum,l)=>sum + Math.round(num0(l.steps)), 0);
 
   const w = getEffectiveWeightKg();
   const walk = estimateWalkCalories(dayData.steps, w);
@@ -2781,55 +2783,63 @@ function renderActivity(workout){
   const stepLogs = activeItems(dayData.stepLogs||[]).slice().sort((a,b)=>a.ts-b.ts);
   const calBurn = Math.round(num0(dayData.calBurned));
 
-  const burnCard = `
+  return `
     <div class="card">
       <div class="card-title"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg> Activity</div>
 
-      <div class="sleep-form" style="margin-bottom:.75rem">
+      <div class="sleep-form" style="margin-bottom:.75rem; align-items:flex-end;">
         <div class="sleep-field" style="flex:1">
           <label>Steps (add entry)</label>
           <input type="number" id="stepsInput" placeholder="e.g. 8500">
         </div>
-        <div class="sleep-field" style="width:160px">
+        <div class="sleep-field" style="width:100px; flex:none;">
           <label>Calories burnt</label>
-          <input type="number" value="${calBurn}" disabled>
+          <input type="number" value="${calBurn}" disabled style="background:var(--bg2)">
         </div>
-        <button class="btn" onclick="saveActivity()">Add</button>
+        <button class="sleep-save" style="width:auto; padding:.625rem 1rem;" onclick="saveActivity()">Add</button>
       </div>
 
       <div class="micro-row" style="margin:.5rem 0 .75rem; gap:.5rem">
-        <div class="badge">Steps today: <b>${stepsMax}</b></div>
+        <div style="font-size:var(--fs-xs); background:var(--bg2); padding:.25rem .5rem; border-radius:4px; display:inline-block;">Steps today: <b>${stepsMax}</b></div>
       </div>
 
       ${stepLogs.length ? `
         <div style="margin:.25rem 0 .75rem">
-          <div class="muted" style="margin-bottom:.35rem">Step entries</div>
+          <div style="font-size:var(--fs-xs); color:var(--muted); margin-bottom:.35rem">Step entries</div>
           ${stepLogs.map(l=>`
             <div class="water-log-item">
               <span>+${l.steps} steps</span>
-              <span class="muted">${fmtTime(l.ts)}</span>
+              <span style="color:var(--muted); font-size:var(--fs-xs)">${fmtTime(l.ts)}</span>
               <button class="log-del" onclick="if(confirmDelete()) removeStepLog('${l.id}')">✕</button>
             </div>
           `).join("")}
         </div>
       ` : ""}
 
-      <div class="muted" style="margin:.5rem 0 .25rem">Workout routine (check/uncheck)</div>
-      ${renderWorkoutChecks(workout)}
+      <div style="margin-top:1.5rem; margin-bottom:1rem; border-top:1px dashed var(--border); padding-top:1rem;">
+        <div class="card-title" style="margin-bottom:.5rem; text-transform:none;">Workout Routine: ${workout ? escapeHtml(workout.name) : "Rest"}</div>
+        ${renderWorkoutChecks(workout)}
+      </div>
 
-      <div style="margin-top:.75rem">
-        <div class="muted" style="margin-bottom:.35rem">Custom exercise</div>
-        <div class="sleep-form" style="gap:.5rem">
-          <input id="customExerciseInput" placeholder="e.g. 20 min swimming" style="flex:1">
-          <button class="btn" onclick="addCustomExercise()">Add</button>
+      <div style="margin-top:1.5rem; margin-bottom:.25rem; border-top:1px dashed var(--border); padding-top:1rem;">
+        <div class="card-title" style="margin-bottom:.5rem; text-transform:none;">Custom Exercise</div>
+        <div class="sleep-form" style="gap:.5rem; align-items:flex-end; margin-bottom:0;">
+          <div class="sleep-field" style="flex:1">
+            <label>Description</label>
+            <input id="customExerciseInput" placeholder="e.g. 20 min swimming">
+          </div>
+          <div class="sleep-field" style="width:80px; flex:none;">
+            <label>kcal (opt)</label>
+            <input type="number" id="customKcalInput" placeholder="kcal">
+          </div>
+          <button class="sleep-save" style="width:auto; padding:.625rem 1rem;" onclick="addCustomExercise()">Add</button>
         </div>
-        <div id="customExerciseList" style="margin-top:.5rem"></div>
+        <div id="customExerciseList" style="margin-top:.75rem"></div>
       </div>
     </div>
   `;
-  return burnCard;
 }
-
+ 
 function fmtTime(ts){
   try{
     return new Date(ts).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
@@ -2837,41 +2847,55 @@ function fmtTime(ts){
 }
 
 function renderWorkoutChecks(workout){
-  if(!workout) return `<div class="muted">No workout plan found.</div>`;
+  if(!workout) return `<div style="font-size:var(--fs-xs); color:var(--muted);">No workout plan found.</div>`;
   return `
-    <div class="workout-box">
-      <div class="workout-name">${workout.name}</div>
-      <div class="workout-exercises">
-        ${workout.exercises.map(ex=>{
-          const checked = lwwGet(dayData.exerciseChecks, ex) ? "checked" : "";
-          return `<label class="chk"><input type="checkbox" ${checked} onchange="toggleExercise('${escapeHtml(ex)}')"> ${escapeHtml(ex)}</label>`;
-        }).join("")}
-      </div>
+    <div class="workout-exercises">
+      ${workout.exercises.map(ex=>{
+        const checked = lwwGet(dayData.exerciseChecks, ex);
+        return `<div class="ex-item ${checked?'done':''}" onclick="toggleExercise('${escapeHtml(ex)}')">
+          <div class="ex-check">${checked?'✓':''}</div>
+          <div class="ex-name">${escapeHtml(ex)}</div>
+        </div>`;
+      }).join("")}
     </div>
   `;
 }
 
 async function addCustomExercise(){
   const el = $("#customExerciseInput");
+  const elKcal = $("#customKcalInput"); // Get the new manual calorie input
   if(!el) return;
+  
   const text = String(el.value||"").trim();
   if(!text) return;
+  
+  const manualKcal = elKcal && elKcal.value ? Math.round(num0(elKcal.value)) : 0;
+  
   el.value = "";
-  const entry = {id: genId("cx"), text, calories_kcal:0, ts: Date.now(), deletedAt:""};
+  if(elKcal) elKcal.value = "";
+  
+  const entry = {id: genId("cx"), text, calories_kcal: manualKcal, ts: Date.now(), deletedAt:""};
   dayData.customExercises = [...(dayData.customExercises||[]), entry];
   touchDay();
   recomputeDerived(selectedDate);
-  saveDay();
+  saveDay().catch(e => console.error(e)); // Prevents unhandled promise rejections
   renderCustomExerciseList();
 
-  try{
-    const kcal = await estimateCustomExerciseCalories(text);
-    dayData.customExercises = (dayData.customExercises||[]).map(x=>x.id===entry.id ? {...x, calories_kcal: Math.round(num0(kcal))} : x);
-    touchDay();
-    recomputeDerived(selectedDate);
-    saveDay();
-    renderCustomExerciseList();
-  }catch(e){}
+  // Only ask AI if manual calories weren't provided
+  if (manualKcal === 0) {
+    try {
+      const kcal = await estimateCustomExerciseCalories(text);
+      if (kcal > 0) {
+        dayData.customExercises = (dayData.customExercises||[]).map(x=>x.id===entry.id ? {...x, calories_kcal: Math.round(num0(kcal))} : x);
+        touchDay();
+        recomputeDerived(selectedDate);
+        saveDay().catch(e => console.error(e));
+        renderCustomExerciseList();
+      }
+    } catch(e) {
+      console.error("AI estimation failed", e);
+    }
+  }
 }
 
 function removeCustomExercise(id){
@@ -3245,6 +3269,19 @@ function signOut(){
   try{ if(window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect(); }catch(e){}
   lockApp();
   toast("Signed out");
+}
+
+// Add this missing function right here:
+function signOutAndReload(){
+  signOut();
+  
+  // Wait a brief moment to ensure Google auth state clears properly before navigating away
+  setTimeout(() => {
+    // Redirects to the root/projects page and jumps down to the Health Tracker section
+    // Note: If your portfolio URL or section ID is different, update "/#health-tracker" 
+    // to match (e.g., "/projects.html#health" or "/#projects").
+    window.location.href = "/#health-tracker"; 
+  }, 250);
 }
 
 async function syncNow(){
