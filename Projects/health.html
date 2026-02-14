@@ -3271,16 +3271,13 @@ function signOut(){
   toast("Signed out");
 }
 
-// Add this missing function right here:
 function signOutAndReload(){
   signOut();
   
   // Wait a brief moment to ensure Google auth state clears properly before navigating away
   setTimeout(() => {
-    // Redirects to the root/projects page and jumps down to the Health Tracker section
-    // Note: If your portfolio URL or section ID is different, update "/#health-tracker" 
-    // to match (e.g., "/projects.html#health" or "/#projects").
-    window.location.href = "/#health-tracker"; 
+    // Corrected to point to the projects page explicitly
+    window.location.href = "/projects.html#health-tracker"; 
   }, 250);
 }
 
@@ -3409,6 +3406,33 @@ window.addEventListener("unhandledrejection", (e)=>{ try{ console.error(e.reason
   }
   waitForGoogleSignIn();
 })();
+
+// --- Mobile Pull-to-Refresh ---
+let pullStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  // Only track the pull if we are at the very top of the page
+  if (window.scrollY === 0) {
+    pullStartY = e.touches[0].clientY;
+  } else {
+    pullStartY = 0;
+  }
+}, {passive: true});
+
+document.addEventListener('touchend', (e) => {
+  if (pullStartY === 0) return;
+  
+  let pullEndY = e.changedTouches[0].clientY;
+  let pullDistance = pullEndY - pullStartY;
+  
+  // If dragged down by more than 150px and released while at the top
+  if (pullDistance > 150 && window.scrollY === 0) {
+    toast("↻ Refreshing...");
+    setTimeout(() => {
+      window.location.reload();
+    }, 400);
+  }
+  pullStartY = 0; // reset
+}, {passive: true});
 
 // Make sure inline onclick handlers always resolve (esp. in strict browsers)
 try{
