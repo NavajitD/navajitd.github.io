@@ -670,6 +670,7 @@ function toggleChecklist(kind, id){
   touchDay();
   recomputeDerived(selectedDate);
   saveDay();
+  render(); // Added: Re-renders the UI to immediately show completion status
 }
 
 const MEAL_ICONS = {"Breakfast":"☕","Mid-Morning":"🍎","Lunch":"🌤","Afternoon":"☕","Dinner":"🌅","Before Bed":"🌙","Snack":"🍪"};
@@ -2707,23 +2708,22 @@ function renderToday(t, plan){
       <div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/></svg> Skincare <span class="card-title-status">${skincareStatus(dayData)}</span></div>
       <div class="checklist">
         ${SKINCARE_TASKS.map(tk=>{
-          const on = !!(dayData.skincareChecks||{})[tk.id];
+          const on = lwwGet(dayData.skincareChecks, tk.id); // Fixed: Now checks the actual boolean value
           return `<label class="check-item ${tk.required===false?'optional':''}"><input type="checkbox" ${on?"checked":""} onchange="toggleChecklist('skincare','${tk.id}')"><span>${escapeHtml(tk.label)}${tk.required===false?' <span class="opt-tag">(optional)</span>':''}</span></label>`;
         }).join("")}
       </div>
     </div>
-
     <!-- Haircare -->
     <div class="card">
       ${(()=>{ 
         const tasks = haircareTasksForDate(selectedDate);
         const done = checklistAllDone(dayData.haircareChecks, tasks);
-        const checked = tasks.filter(tk=>!!(dayData.haircareChecks||{})[tk.id]).length;
+        const checked = tasks.filter(tk=>lwwGet(dayData.haircareChecks, tk.id)).length; // Fixed
         return `
           <div class="card-title"><svg viewBox="0 0 24 24"><path d="M4 6h16v3H4z"/><path d="M6 9v12M9 9v12M12 9v12M15 9v12M18 9v12"/></svg> Haircare <span class="card-title-status">${done ? "✅" : ""}</span></div>
           <div class="checklist">
             ${tasks.map(tk=>{
-              const on = !!(dayData.haircareChecks||{})[tk.id];
+              const on = lwwGet(dayData.haircareChecks, tk.id); // Fixed: Now checks the actual boolean value
               return `<label class="check-item"><input type="checkbox" ${on?"checked":""} onchange="toggleChecklist('haircare','${tk.id}')"><span>${escapeHtml(tk.label)}</span></label>`;
             }).join("")}
           </div>
