@@ -1658,51 +1658,29 @@ function mergeClientPayloads_(local, remote) {
   return merged;
 }
 
-// ── FIX 2: applySheetRowToDay optimized to prevent infinite ping-pong pushes
 function applySheetRowToDay(row, {save=false}={}){
   if(!row) return;
 
+  // Preferred: Payload JSON v2
   const payloadStr = String(row["Payload JSON"] || "").trim();
   if(payloadStr){
     try{
       let payload = JSON.parse(payloadStr);
       payload.serverRev = Math.round(num0(row["Rev"]));
 
+      // FIX 2: Guard against overwriting unsynced local changes
       const isDirty = getDirtyDates().includes(selectedDate);
       const localTime = new Date(dayData.updatedAt || 0).getTime();
       const remoteTime = new Date(payload.updatedAt || 0).getTime();
-
-      // Skip if we're perfectly in sync with the server
-      const sameRev = payload.serverRev > 0 && payload.serverRev === dayData.serverRev;
-      if (sameRev && !isDirty && localTime >= remoteTime) {
-        return; // Already up to date!
-      }
-
-      let wasMerged = false;
-      if (isDirty) {
-        // Unsynced changes locally. Merge them!
+      
+      if (isDirty || localTime > remoteTime) {
         dayData = mergeClientPayloads_(dayData, payload);
-        wasMerged = true;
-      } else if (remoteTime > localTime || payload.serverRev > (dayData.serverRev || 0)) {
-        // Mobile is clean but server is newer (e.g., you updated on the laptop).
-        // Safely overwrite the local state.
-        dayData = normalizeDay(payload);
       } else {
-        return; // Local is clean and newer/same
+        dayData = normalizeDay(payload);
       }
       
       recomputeDerived(selectedDate);
-
-      if(save) {
-        if (wasMerged) {
-           saveDay(); // Saves to DB, marks dirty, and importantly, queues an upsert for the unified data
-        } else {
-           // We just cleanly pulled down the laptop's state. 
-           // Save to local IndexedDB WITHOUT marking dirty, so we don't unnecessarily push it back!
-           dayData.updatedAt = payload.updatedAt || new Date().toISOString();
-           dbSet(selectedDate, dayData).catch(()=>{});
-        }
-      }
+      if(save) saveDay();
       render();
       return;
     }catch(e){
@@ -1710,7 +1688,7 @@ function applySheetRowToDay(row, {save=false}={}){
     }
   }
 
-  // Legacy row fallback...
+  // Legacy row fallback: pull summary values + manual totals
   dayData.water = num0(row["Water Intake (mL)"]);
   dayData.calBurned = num0(row["Calories Burnt (kcal)"]);
   dayData.steps = num0(row["Steps"]);
@@ -1721,8 +1699,10 @@ function applySheetRowToDay(row, {save=false}={}){
   dayData.weight = (w>0 ? Math.round(w*10)/10 : null);
   dayData.bmi = (dayData.weight ? (bmi>0 ? Math.round(bmi*10)/10 : Math.round(calcBMI(dayData.weight)*10)/10) : null);
 
+  // Legacy routine completion flags
   const scDone = String(row["Skincare Done"]||"").toLowerCase()==="yes";
   const hcDone = String(row["Haircare Done"]||"").toLowerCase()==="yes";
+  // Ensure LWW maps exist even when legacy flags are "no"
   dayData.skincareChecks = {};
   dayData.haircareChecks = {};
   if(scDone){
@@ -1737,9 +1717,24 @@ function applySheetRowToDay(row, {save=false}={}){
     protein: num0(row["Protein (g)"]),
     carbs: num0(row["Carbs (g)"]),
     fat: num0(row["Fat (g)"]),
-    fiber: num0(row["Fiber (g)"])
+    fiber: num0(row["Fiber (g)"]),
+    micros: {
+      calcium_mg: num0(row["Calcium (mg)"]),
+      iron_mg: num0(row["Iron (mg)"]),
+      potassium_mg: num0(row["Potassium (mg)"]),
+      sodium_mg: num0(row["Sodium (mg)"]),
+      magnesium_mg: num0(row["Magnesium (mg)"]),
+      zinc_mg: num0(row["Zinc (mg)"]),
+      vitamin_a_mg: num0(row["Vitamin A (mg)"]),
+      vitamin_c_mg: num0(row["Vitamin C (mg)"]),
+      vitamin_d_mg: num0(row["Vitamin D (mg)"]),
+      vitamin_e_mg: num0(row["Vitamin E (mg)"]),
+      folate_mg: num0(row["Folate (mg)"]),
+      vitamin_b12_mg: num0(row["Vitamin B12 (mg)"])
+    }
   };
 
+  // Back-compat step log / water log single entry
   if(dayData.water>0 && (!dayData.waterLogs || !dayData.waterLogs.length)){
     dayData.waterLogs = [{id:genId("water_legacy"), ml: dayData.water, ts: Date.now(), deletedAt:""}];
   }
@@ -3361,7 +3356,6 @@ function signOutAndReload(){
   }, 250);
 }
 
-// ── FIX 3: Push-after-pull to prevent clobbering ──
 async function syncNow(){
   if(!cloudReady()){
     toast("Sign in to sync");
@@ -3371,27 +3365,15 @@ async function syncNow(){
 
   try{
     toast("Syncing…");
+    await cloudAppendSnapshot(selectedDate, {source:"manual"});
 
-    // 1. PULL FIRST to secure any new data from the laptop before we push the mobile's state
+    // FIX 3: Wait 2.5s for no-cors server processing to avoid clobbering latest data
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
     const latest = await cloudFetchLatestRow(selectedDate);
-    if(latest) {
-      // applySheetRowToDay smartly merges if needed, or adopts server state silently
-      applySheetRowToDay(latest, {save:true});
-    }
+    if(latest) applySheetRowToDay(latest, {save:true});
 
-    // 2. Clear any debounced auto-upserts so we can do a synchronous push
-    if(cloudUpsertTimers[selectedDate]){
-      clearTimeout(cloudUpsertTimers[selectedDate]);
-      cloudUpsertTimers[selectedDate] = null;
-    }
-
-    // 3. PUSH ONLY IF DIRTY (i.e. if we had pending local changes, or our merge made us dirty)
-    if (getDirtyDates().includes(selectedDate)) {
-       await cloudAppendSnapshot(selectedDate, {source:"manual"});
-       clearDirty(selectedDate);
-    }
-
-    // 4. Background History backfill
+    // FIX: Manual sync now also pulls the last 14 days of history
     const start = dateKeyNDaysAgo(14); 
     const rows = await cloudFetchRange(start, todayStr());
     if(rows && rows.length){
@@ -3404,18 +3386,11 @@ async function syncNow(){
               const existing = await dbGet(dk);
               const incomingRev = Math.round(num0(r["Rev"]));
               const localRev = Math.round(num0(existing?.serverRev));
-              
+              // Only overwrite if server has a newer revision
               if(!existing || incomingRev > localRev){
-                const isPastDirty = getDirtyDates().includes(dk);
-                if (isPastDirty && existing) {
-                   const merged = mergeClientPayloads_(existing, JSON.parse(payloadStr));
-                   await dbSet(dk, merged);
-                   queueCloudUpsert(dk);
-                } else {
-                   const d = normalizeDay(JSON.parse(payloadStr));
-                   d.serverRev = incomingRev;
-                   await dbSet(dk, d);
-                }
+                const d = normalizeDay(JSON.parse(payloadStr));
+                d.serverRev = incomingRev;
+                await dbSet(dk, d);
               }
             }catch(e){}
           }
@@ -3431,17 +3406,23 @@ async function syncNow(){
   }
 }
 
-// ── FIX 3: startApp also respects Pull-first to avoid blindly overwriting ──
 async function startApp(){
   _appStarted = true;
   setupAutoSync();
   await loadDay().catch(()=>{});
 
-  // Pull first when the app boots up
+  // FIX 3: Push first if dirty, wait 1.5s, then pull
+  if (getDirtyDates().includes(selectedDate) && cloudReady()) {
+    try {
+      await cloudAppendSnapshot(selectedDate, {source:"boot_sync"});
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    } catch(e) {}
+  }
+
   cloudFetchLatestRow(selectedDate).then(r=>{ 
     if(r) applySheetRowToDay(r,{save:true}); 
 
-    // Background backfill for history/new devices
+    // FIX: Background backfill for new devices
     const start = dateKeyNDaysAgo(7);
     cloudFetchRange(start, todayStr()).then(rows => {
       if(rows && rows.length){
@@ -3449,28 +3430,18 @@ async function startApp(){
         Promise.all(rows.map(async r => {
           const dk = r._dateKey || String(r["Date (timestamp)"]||"").slice(0,10);
           if(dk && dk !== selectedDate){
-            const payloadStr = String(r["Payload JSON"] || "").trim();
-            if(payloadStr){
-              try{
-                const existing = await dbGet(dk);
-                const incomingRev = Math.round(num0(r["Rev"]));
-                const localRev = Math.round(num0(existing?.serverRev));
-                const isPastDirty = getDirtyDates().includes(dk);
-
-                // If local DB for this day is empty, or server has newer revision
-                if(!existing || incomingRev > localRev || (!existing.foods?.length && !existing.calBurned && !existing.water)){
-                  if (isPastDirty && existing) {
-                    const merged = mergeClientPayloads_(existing, JSON.parse(payloadStr));
-                    await dbSet(dk, merged);
-                    queueCloudUpsert(dk);
-                  } else {
-                    const d = normalizeDay(JSON.parse(payloadStr));
-                    d.serverRev = incomingRev;
-                    await dbSet(dk, d);
-                  }
+            const existing = await dbGet(dk);
+            // If local DB for this day is empty, pull it from the cloud payload
+            if(!existing || (!existing.foods?.length && !existing.calBurned && !existing.water)){
+              const payloadStr = String(r["Payload JSON"] || "").trim();
+              if(payloadStr){
+                try{
+                  const d = normalizeDay(JSON.parse(payloadStr));
+                  d.serverRev = Math.round(num0(r["Rev"]));
+                  await dbSet(dk, d);
                   updated = true;
-                }
-              }catch(e){}
+                }catch(e){}
+              }
             }
           }
         })).then(() => {
