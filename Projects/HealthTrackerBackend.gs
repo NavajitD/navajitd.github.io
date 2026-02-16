@@ -1188,10 +1188,16 @@ function stripPortionInfo_(query){
 }
 
 function extractExplicitGrams_(query){
-  // Only extract when user specifies an exact weight (e.g., "200g", "150 gm", "100 ml")
   const q = String(query||"").toLowerCase();
-  const gm = q.match(/(\d+\.?\d*)\s*(g\b|gm\b|gram|ml\b)/);
-  if(gm) return parseFloat(gm[1]) || null;
+  // Match "200g", "150 gm" etc. but NOT "28g protein", "9g fat", "94g carbs"
+  const macroWords = /^(protein|fat|carb|fibre|fiber|kcal|cal)/;
+  const re = /(\d+\.?\d*)\s*(g\b|gm\b|gram|ml\b)/g;
+  let m;
+  while((m = re.exec(q)) !== null){
+    const after = q.slice(m.index + m[0].length).trim();
+    if(macroWords.test(after)) continue;
+    return parseFloat(m[1]) || null;
+  }
   return null;
 }
 
@@ -1807,15 +1813,15 @@ function upsertDay_(dateKey, payloadStr, {source="manual", email=""}={}){
     let mergedPayload = incoming;
 
     let latestRev = 0;
-    if(latest && latest.row){
-      const p0 = String(latest.row["Payload JSON"] || "").trim();
+    if(latest){
+      const p0 = String(latest["Payload JSON"] || "").trim();
       if(p0){
         try{
           const existing = parseJson_(p0);
           mergedPayload = mergePayload_(existing, incoming);
         }catch(e){}
       }
-      latestRev = num_(latest.row["Rev"]);
+      latestRev = toNum_(latest["Rev"]);
     }
 
     // Compute summary from merged payload so sheet totals always match logs
