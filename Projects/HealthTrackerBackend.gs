@@ -465,20 +465,11 @@ function groqChatJson_(messages){
   return parseJson_(txt);
 }
 // ───────────────────────────────────────────────────────────────
-// USDA FoodData Central (FDC) helpers + cache (FoodDB sheet)
-// Set script property: FDC_API_KEY
+// Cache (FoodDB sheet)
 const FOODDB_SHEET_NAME = "FoodDB";
-const FDC_API_PROP = "FDC_API_KEY";
 
 // Bump this whenever the estimation pipeline changes significantly.
-// Old cached entries with a different (or missing) version will be re-estimated.
 const NUTRIENT_CACHE_VERSION_ = 3;
-
-function getFdcKey_(){
-  const key = PropertiesService.getScriptProperties().getProperty(FDC_API_PROP);
-  if(!key) throw new Error("Missing FDC_API_KEY in script properties");
-  return key;
-}
 
 function getOrCreateFoodDb_(){
   const ss = SpreadsheetApp.openById(SHEET_ID);
@@ -499,11 +490,11 @@ function getOrCreateFoodDb_(){
 function findFoodDbRowByKey_(sh, dishKey){
   const last = sh.getLastRow();
   if(last < 2) return null;
-  const values = sh.getRange(2,1,last-1,1).getValues(); // keys col
+  const values = sh.getRange(2,1,last-1,1).getValues();
   const needle = String(dishKey||"").toLowerCase().trim();
   for(let i=0;i<values.length;i++){
     if(String(values[i][0]||"").toLowerCase().trim() === needle){
-      return i+2; // actual row index
+      return i+2;
     }
   }
   return null;
@@ -516,23 +507,22 @@ function getCachedFoodNutrients_(dishKey){
   const jsonStr = sh.getRange(row,6).getValue();
   if(!jsonStr) return null;
   const parsed = parseJson_(jsonStr);
-  // Invalidate entries from older pipeline versions
   if(!parsed || parsed._cacheVersion !== NUTRIENT_CACHE_VERSION_) return null;
   return parsed;
 }
 
-function setCachedFoodNutrients_(dishKey, query, fdcMeta, nutrients){
+function setCachedFoodNutrients_(dishKey, query, meta, nutrients){
   const sh = getOrCreateFoodDb_();
   const row = findFoodDbRowByKey_(sh, dishKey);
   const now = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd'T'HH:mm:ss");
-  // Embed cache version so stale entries auto-refresh on pipeline changes
   const toStore = Object.assign({}, nutrients || {}, {_cacheVersion: NUTRIENT_CACHE_VERSION_});
+
   const payload = [
     String(dishKey||"").toLowerCase().trim(),
     String(query||"").trim(),
-    fdcMeta?.fdcId || "",
-    fdcMeta?.description || "",
-    fdcMeta?.dataType || "",
+    meta?.fdcId || "", // Keep empty so we don't break old sheet schema
+    meta?.description || "",
+    meta?.dataType || "",
     JSON.stringify(toStore),
     now
   ];
@@ -543,252 +533,14 @@ function setCachedFoodNutrients_(dishKey, query, fdcMeta, nutrients){
   }
 }
 
-// Map USDA nutrient IDs (common) to app keys.
-// FDC food details returns nutrient.id + amount + unitName.
-const FDC_ID_MAP = {
-  // Macros
-  1008: "calories_kcal", // Energy (kcal)
-  1009: "energy_kj",     // Energy (kJ)
-  1003: "protein_g",
-  1005: "carbs_g",
-  1004: "fat_g",
-  1079: "fiber_g",
-
-  // Minerals
-  1087: "calcium_mg",
-  1089: "iron_mg",
-  1090: "magnesium_mg",
-  1091: "phosphorus_mg",
-  1092: "potassium_mg",
-  1093: "sodium_mg",
-  1095: "zinc_mg",
-  1098: "copper_mg",
-  1101: "manganese_mg",
-  1103: "selenium_ug",
-
-  // Vitamins
-  1162: "vitamin_c_mg",
-  1165: "thiamin_mg",
-  1166: "riboflavin_mg",
-  1167: "niacin_mg",
-  1170: "pantothenic_mg",
-  1175: "vitamin_b6_mg",
-  1177: "folate_ug",
-  1178: "vitamin_b12_ug",
-  1185: "vitamin_k_ug",
-  1106: "vitamin_a_ug", // Vitamin A, RAE (µg)
-  1114: "vitamin_d_ug", // Vitamin D (D2 + D3) (µg)
-  1109: "vitamin_e_mg"  // Vitamin E (alpha-tocopherol) (mg)
-};
-
-// Fallback name-based mapping for cases where IDs differ / are missing.
-function mapByName_(name){
-  const n = String(name||"").toLowerCase();
-  if(n.includes("vitamin a") && n.includes("rae")) return "vitamin_a_ug";
-  if(n.includes("vitamin d") && (n.includes("d2") || n.includes("d3") || n.includes("d2 + d3") || n.includes("total"))) return "vitamin_d_ug";
-  if(n.includes("vitamin c")) return "vitamin_c_mg";
-  if(n.includes("vitamin e") && n.includes("alpha")) return "vitamin_e_mg";
-  if(n.includes("vitamin k")) return "vitamin_k_ug";
-  if(n.includes("thiamin")) return "thiamin_mg";
-  if(n.includes("riboflavin")) return "riboflavin_mg";
-  if(n.includes("niacin")) return "niacin_mg";
-  if(n.includes("pantothenic")) return "pantothenic_mg";
-  if(n.includes("vitamin b-6") || n.includes("vitamin b6")) return "vitamin_b6_mg";
-  if(n.includes("folate")) return "folate_ug";
-  if(n.includes("vitamin b-12") || n.includes("vitamin b12")) return "vitamin_b12_ug";
-  if(n.includes("selenium")) return "selenium_ug";
-  if(n.includes("manganese")) return "manganese_mg";
-  if(n.includes("copper")) return "copper_mg";
-  if(n.includes("zinc")) return "zinc_mg";
-  if(n.includes("magnesium")) return "magnesium_mg";
-  if(n.includes("phosphorus")) return "phosphorus_mg";
-  if(n.includes("potassium")) return "potassium_mg";
-  if(n.includes("sodium")) return "sodium_mg";
-  if(n.includes("iron")) return "iron_mg";
-  if(n.includes("calcium")) return "calcium_mg";
-  if(n.includes("fiber")) return "fiber_g";
-  if(n.includes("energy") && n.includes("kcal")) return "calories_kcal";
-  if(n.includes("protein")) return "protein_g";
-  if(n.includes("carbohydrate")) return "carbs_g";
-  if(n.includes("total lipid") || n.includes("fat")) return "fat_g";
-  return null;
-}
-
-function looksLikeBranded_(query){
-  const q = String(query||"").toLowerCase();
-  // Brand signals: proper nouns, product names, "bar", "pack", specific brand patterns
-  return /\b(protein bar|granola bar|energy bar|cereal|biscuit|cookie|chips|crackers|yogurt cup|instant noodle|maggi|cup noodle|oreo|kitkat|amul|mother dairy|epigamia|yoga bar|ritebite|max protein|muesli|cornflakes|oats|quaker|kellogg|britannia|parle|haldiram|lays|kurkure|pepsi|coca[- ]?cola|sprite|fanta|redbull|red bull|monster|gatorade|tropicana|real juice|paper boat|sting|bournvita|horlicks|complan|boost|ensure|protinex|hershey|cadbury|nestle|magnum|kwality|havmor|baskin|mcdonald|mcd|burger king|domino|subway|kfc|pizza hut|starbucks|dunkin)\b/.test(q)
-    || /\b(brand|pack|packet|sachet|bottle|can|bar|scoop)\b/.test(q);
-}
-
-function fdcSearchBest_(query, opts){
-  const key = getFdcKey_();
-  const url = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=" + encodeURIComponent(key);
-
-  // Clean query: strip portion descriptors for better FDC matching
-  const cleanQ = stripPortionInfo_(query);
-  const searchQ = cleanQ || String(query||"").trim();
-
-  const branded = (opts && opts.preferBranded) || looksLikeBranded_(query);
-
-  const payload = {
-    query: searchQ,
-    pageSize: 5,
-    dataType: branded
-      ? ["Branded"]  // For packaged foods, only search Branded (has label data)
-      : ["Foundation","Survey (FNDDS)","SR Legacy","Branded"]
-  };
-
-  const res = UrlFetchApp.fetch(url, {
-    method: "post",
-    contentType: "application/json",
-    muteHttpExceptions: true,
-    payload: JSON.stringify(payload)
-  });
-  const code = res.getResponseCode();
-  if(code < 200 || code >= 300){
-    throw new Error("FDC search failed (" + code + "): " + res.getContentText().slice(0,300));
-  }
-  const data = JSON.parse(res.getContentText());
-  let foods = data.foods || [];
-
-  // If branded search returned nothing, retry with all dataTypes
-  if(!foods.length && branded){
-    payload.dataType = ["Foundation","Survey (FNDDS)","SR Legacy","Branded"];
-    const res2 = UrlFetchApp.fetch(url, {
-      method: "post",
-      contentType: "application/json",
-      muteHttpExceptions: true,
-      payload: JSON.stringify(payload)
-    });
-    if(res2.getResponseCode() >= 200 && res2.getResponseCode() < 300){
-      const data2 = JSON.parse(res2.getContentText());
-      foods = data2.foods || [];
-    }
-  }
-
-  if(!foods.length) throw new Error("No FDC matches for query: " + searchQ);
-
-  // For branded queries, prefer Branded (has label data); otherwise prefer Foundation/Survey
-  const preferredOrder = branded
-    ? {"Branded":1, "Survey (FNDDS)":2, "SR Legacy":3, "Foundation":4}
-    : {"Foundation":1, "Survey (FNDDS)":2, "SR Legacy":3, "Branded":4};
-
-  foods.sort((a,b)=> (preferredOrder[a.dataType]||99) - (preferredOrder[b.dataType]||99));
-  return foods[0];
-}
-
-function fdcFoodDetails_(fdcId){
-  const key = getFdcKey_();
-  const url = "https://api.nal.usda.gov/fdc/v1/food/" + encodeURIComponent(fdcId) + "?api_key=" + encodeURIComponent(key);
-  const res = UrlFetchApp.fetch(url, {muteHttpExceptions:true});
-  const code = res.getResponseCode();
-  if(code < 200 || code >= 300){
-    throw new Error("FDC details failed (" + code + "): " + res.getContentText().slice(0,300));
-  }
-  return JSON.parse(res.getContentText());
-}
-
-function extractNutrientsFromFdc_(food){
-  const out = {
-    calories_kcal: 0,
-    protein_g: 0,
-    carbs_g: 0,
-    fat_g: 0,
-    fiber_g: 0,
-    micros: {},
-    _meta: {} // internal metadata, not returned to client
-  };
-
-  // Extract serving size from Branded foods (label data)
-  if(food.servingSize && isFinite(+food.servingSize) && +food.servingSize > 0){
-    out._meta.servingSize = +food.servingSize;
-    out._meta.servingSizeUnit = food.servingSizeUnit || "g";
-    out._meta.householdServingFullText = food.householdServingFullText || "";
-  }
-  if(food.brandName) out._meta.brandName = food.brandName;
-  if(food.brandOwner) out._meta.brandOwner = food.brandOwner;
-  if(food.dataType) out._meta.dataType = food.dataType;
-
-  const nutrients = food.foodNutrients || [];
-  for(const fn of nutrients){
-    const amt = (fn.amount===0 || fn.amount) ? +fn.amount : null;
-    if(amt===null || !isFinite(amt)) continue;
-
-    const nid = fn.nutrient && fn.nutrient.id ? +fn.nutrient.id : null;
-    const nname = fn.nutrient && fn.nutrient.name ? fn.nutrient.name : (fn.nutrientName || "");
-    const key = (nid && FDC_ID_MAP[nid]) ? FDC_ID_MAP[nid] : mapByName_(nname);
-    if(!key) continue;
-
-    if(key === "calories_kcal") out.calories_kcal = amt;
-    else if(key === "protein_g") out.protein_g = amt;
-    else if(key === "carbs_g") out.carbs_g = amt;
-    else if(key === "fat_g") out.fat_g = amt;
-    else if(key === "fiber_g") out.fiber_g = amt;
-    else if(key === "energy_kj") out.energy_kj = amt;
-    else out.micros[key] = amt;
-  }
-
-  // If kcal missing but kJ present, convert (1 kcal = 4.184 kJ)
-  if((!out.calories_kcal || out.calories_kcal===0) && isFinite(+out.energy_kj) && (+out.energy_kj)>0){
-    out.calories_kcal = (+out.energy_kj) / 4.184;
-  }
-
-  // Defensive defaults
-  out.calories_kcal = +out.calories_kcal || 0;
-  out.protein_g = +out.protein_g || 0;
-  out.carbs_g = +out.carbs_g || 0;
-  out.fat_g = +out.fat_g || 0;
-  out.fiber_g = +out.fiber_g || 0;
-
-  return out;
-}
-
-// Scale FDC per-100g nutrients to a serving size (for Branded foods with label data)
-function scaleFdcToServing_(nutrients, servingG){
-  if(!servingG || servingG <= 0) return nutrients;
-  const factor = servingG / 100;
-  const out = {
-    calories_kcal: Math.round(nutrients.calories_kcal * factor),
-    protein_g: Math.round(nutrients.protein_g * factor * 10) / 10,
-    carbs_g: Math.round(nutrients.carbs_g * factor * 10) / 10,
-    fat_g: Math.round(nutrients.fat_g * factor * 10) / 10,
-    fiber_g: Math.round(nutrients.fiber_g * factor * 10) / 10,
-    micros: {}
-  };
-  if(nutrients.micros){
-    for(const [k,v] of Object.entries(nutrients.micros)){
-      out.micros[k] = Math.round((+v||0) * factor * 100) / 100;
-    }
-  }
-  return out;
-}
-
-
-
 /* ──────────────────────────────────────────────────────────────────────────
-   LLM nutrient estimation (fallback when FoodData Central returns missing/partial data)
-
-   Notes:
-   - Groq Chat Completions (OpenAI-compatible) endpoint:
-     POST https://api.groq.com/openai/v1/chat/completions
-   - `llama-3.3-70b-versatile` supports JSON Object Mode via:
-     response_format: { type: "json_object" }
-   - Groq server-side web search is available via Compound systems (e.g., `groq/compound-mini`)
-     with compound_custom.tools.enabled_tools including "web_search".
-
-   Required Script Properties:
-   - GROQ_API_KEY (used for both score analysis + nutrient estimation)
-   Optional Script Properties:
-   - GROQ_NUTRIENT_MODEL (default: llama-3.3-70b-versatile)
-   - GROQ_WEB_MODEL (default: groq/compound-mini)
+   LLM nutrient estimation 
 ────────────────────────────────────────────────────────────────────────── */
 
 const GROQ_CHAT_ENDPOINT_ = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_DEFAULT_NUTRIENT_MODEL_ = "llama-3.3-70b-versatile";
 const GROQ_DEFAULT_WEB_MODEL_ = "groq/compound-mini";
 
-// Must match the MICROS keys in the front-end.
 const NUTRIENT_MICRO_KEYS_ = [
   "vitamin_a_ug","vitamin_c_mg","vitamin_d_ug","vitamin_e_mg","vitamin_k_ug",
   "thiamin_mg","riboflavin_mg","niacin_mg","pantothenic_mg","vitamin_b6_mg","biotin_ug","folate_ug","vitamin_b12_ug",
@@ -819,7 +571,6 @@ function groqRequest_(payload, extraHeaders){
     payload: JSON.stringify(payload),
     muteHttpExceptions: true
   });
-
   const code = res.getResponseCode();
   const txt = res.getContentText() || "";
   if(code < 200 || code >= 300){
@@ -846,7 +597,6 @@ function sanitizeNutrients_(obj){
     fiber_g: 0,
     micros: {}
   };
-
   if(!obj || typeof obj !== "object") return out;
 
   function num(v){
@@ -871,28 +621,19 @@ function sanitizeNutrients_(obj){
 
 function nutrientsLooksEmpty_(nutrients, food){
   if(!nutrients || typeof nutrients !== "object") return true;
-
-  // If API response explicitly has no nutrient list, treat as empty.
-  const listLen = (food && Array.isArray(food.foodNutrients)) ? food.foodNutrients.length : null;
-  if(listLen === 0) return true;
-
   const kcal = +nutrients.calories_kcal || 0;
   const p = +nutrients.protein_g || 0;
   const c = +nutrients.carbs_g || 0;
   const f = +nutrients.fat_g || 0;
   const fib = +nutrients.fiber_g || 0;
   const microsCount = (nutrients.micros && typeof nutrients.micros === "object") ? Object.keys(nutrients.micros).length : 0;
-
-  // "No nutrients" usually manifests as everything zero and no micros keys.
   if((kcal + p + c + f + fib) === 0 && microsCount === 0) return true;
-
   return false;
 }
 
 function nutrientsLooksPartial_(nutrients, query){
   if(!nutrients || typeof nutrients !== "object") return true;
   if(nutrientsLooksEmpty_(nutrients, null)) return true;
-
   const kcal = +nutrients.calories_kcal || 0;
   const p = +nutrients.protein_g || 0;
   const c = +nutrients.carbs_g || 0;
@@ -901,13 +642,8 @@ function nutrientsLooksPartial_(nutrients, query){
   const microsCount = (nutrients.micros && typeof nutrients.micros === "object") ? Object.keys(nutrients.micros).length : 0;
 
   const q = String(query || "").toLowerCase();
-
-  // If query describes a specific portion, FDC per-100g data needs LLM scaling
   if(hasPortionDescriptor_(q)) return true;
-
-  // Composite foods often get mapped to a single item by FDC
   const looksComposite = /(\+| and |&|,|\/)/.test(q);
-
   if(kcal > 0 && (p + c + f + fib) === 0 && microsCount < 5) return true;
   if(microsCount === 0) return true;
   if(looksComposite && microsCount < 12) return true;
@@ -918,30 +654,15 @@ function nutrientsLooksPartial_(nutrients, query){
 
 function hasPortionDescriptor_(query){
   const q = String(query || "").toLowerCase();
-  // Standard unit-based portions: "5 counts", "1 katori", "200g", etc.
-  if(/\d+\s*(meal|katori|bowl|plate|cup|piece|slice|roti|rotis|paratha|parathas|chapati|chapatis|glass|scoop|tbsp|tablespoon|tsp|teaspoon|serving|pcs?|nos?|g\b|gm\b|gram|ml\b|oz\b|small|medium|large|half)/.test(q)) return true;// Countable food items: "5 momos", "2 samosas", "3 idlis", "4 puris"
+  if(/\d+\s*(meal|katori|bowl|plate|cup|piece|slice|roti|rotis|paratha|parathas|chapati|chapatis|glass|scoop|tbsp|tablespoon|tsp|teaspoon|serving|pcs?|nos?|g\b|gm\b|gram|ml\b|oz\b|small|medium|large|half)/.test(q)) return true;
   if(/\d+\s*(momos?|samosas?|pakoras?|vadas?|idlis?|dosas?|puris?|cutlets?|tikkas?|kebabs?|wings?|drumsticks?|nuggets?|cookies?|biscuits?)/.test(q)) return true;
-  // Word-based portions: "one bowl", "half a plate"
   if(/\b(a |one |two |three |four |five |six |half a?)\s*(katori|bowl|plate|cup|piece|slice|roti|paratha|chapati|glass|scoop|serving|momo|samosa|idli|dosa|puri)/i.test(q)) return true;
-  // Parenthetical count: "(5 momos)", "(2 pieces)"
   if(/\(\s*\d+\s*(momos?|pieces?|pcs?|nos?|servings?)/.test(q)) return true;
   return false;
 }
 
-function shouldUseWebSearchForEstimate_(query, fdcNutrients){
-  const q = String(query || "").toLowerCase();
-  if(/(\+| and |&|,|\/)/.test(q)) return true;
-  if(hasPortionDescriptor_(q)) return true;
-  if(looksLikeBranded_(q)) return true; // Branded foods need label data from web
-  const microsCount = (fdcNutrients && fdcNutrients.micros && typeof fdcNutrients.micros === "object") ? Object.keys(fdcNutrients.micros).length : 0;
-  if(!fdcNutrients || nutrientsLooksEmpty_(fdcNutrients, null) || microsCount === 0) return true;
-  return false;
-}
-
 function groqWebContext_(foodText){
-  // Use Groq Compound (server-side tool orchestration) to pull quick, high-signal web context.
   const model = getGroqWebModel_();
-
   const prompt = [
     "Use web search to find nutrition facts for the food described below.",
     "If a specific portion/serving is mentioned (e.g., '1 katori', '1 bowl', '2 rotis', '1 bar', '1 packet'), find nutrition for THAT serving size.",
@@ -979,12 +700,9 @@ function groqWebContext_(foodText){
       }
     }
   };
-
   const resp = groqRequest_(payload);
   const msg = (((resp||{}).choices||[])[0]||{}).message || {};
   const digest = String(msg.content || "").trim();
-
-  // executed_tools can be large; keep a compact excerpt.
   let toolsText = "";
   const executed = msg.executed_tools;
   if(Array.isArray(executed) && executed.length){
@@ -1005,7 +723,6 @@ function groqEstimateNutrients_(foodText, opts){
   const q = String(foodText || "").trim();
 
   let webCtx = "";
-  const fdc = (opts && opts.fdcNutrients) ? opts.fdcNutrients : null;
   if(opts && opts.useWebSearch){
     try{ webCtx = groqWebContext_(q); }catch(_){}
   }
@@ -1019,7 +736,6 @@ function groqEstimateNutrients_(foodText, opts){
     fiber_g: "number (total grams for the described portion)",
     micros: Object.fromEntries(NUTRIENT_MICRO_KEYS_.map(k => [k, "number"]))
   };
-
   const sys = [
     "You are a careful nutrition facts estimator for a health tracking app.",
     "Return ONLY a JSON object (no markdown, no extra text).",
@@ -1030,7 +746,7 @@ function groqEstimateNutrients_(foodText, opts){
     "3. First estimate the serving weight in grams (estimated_serving_g), then calculate all nutrients for that weight.",
     "4. For Indian foods: 1 katori ≈ 150-180g, 1 roti ≈ 40g, 1 plate rice ≈ 180-200g, 1 bowl dal ≈ 150-180g.",
     "5. For BRANDED/PACKAGED foods (protein bars, cereal, biscuits, drinks, etc.):",
-    "   - Use the exact nutrition label data if available from web context or FDC reference.",
+    "   - Use the exact nutrition label data if available from web context.",
     "   - Serving size is printed on the pack — use that, not a generic estimate.",
     "   - Common examples: Yoga Bar protein bar ~60g, packet Maggi ~70g, Oreo pack ~11g per cookie.",
     "6. SANITY CHECK: calories must roughly equal (protein_g × 4) + (carbs_g × 4) + (fat_g × 9). If they don't add up, fix the values.",
@@ -1043,31 +759,12 @@ function groqEstimateNutrients_(foodText, opts){
     JSON.stringify(schema)
   ].join("\n");
 
-  // Include FDC serving size info if available
-  let fdcContext = "";
-  if(fdc){
-    const meta = fdc._meta || {};
-    if(meta.servingSize > 0){
-      fdcContext = "FDC Branded data (per 100g, label serving = " + meta.servingSize + (meta.servingSizeUnit||"g") +
-        (meta.householdServingFullText ? ", household: " + meta.householdServingFullText : "") +
-        (meta.brandName ? ", brand: " + meta.brandName : "") + "):\n";
-    } else {
-      fdcContext = "Reference: FDC per-100g nutrients (scale to described serving):\n";
-    }
-    // Clean _meta before sending to LLM
-    const fdcClean = Object.assign({}, fdc);
-    delete fdcClean._meta;
-    fdcContext += clampStr_(JSON.stringify(fdcClean), 6000);
-  }
-
   const user = [
     "Food description:",
     q,
     "",
-    fdcContext || "",
     webCtx ? ("Web context (may include per-serving or per-100g data — scale appropriately):\n" + webCtx) : "",
   ].filter(Boolean).join("\n\n");
-
   const payload = {
     model,
     temperature: 0,
@@ -1077,17 +774,13 @@ function groqEstimateNutrients_(foodText, opts){
       { role: "user", content: user }
     ]
   };
-
   const resp = groqRequest_(payload);
   const txt = extractAssistantText_(resp);
   const parsed = parseJson_(txt);
   const result = sanitizeNutrients_(parsed);
-
-  // Sanity check: macros should roughly account for calories (4/4/9 rule)
   const macroKcal = (result.protein_g * 4) + (result.carbs_g * 4) + (result.fat_g * 9);
   if(result.calories_kcal > 0 && macroKcal > 0){
     const ratio = macroKcal / result.calories_kcal;
-    // If macros account for less than 60% or more than 140% of stated calories, adjust calories
     if(ratio < 0.6 || ratio > 1.4){
       result.calories_kcal = Math.round(macroKcal);
     }
@@ -1099,7 +792,6 @@ function groqEstimateNutrients_(foodText, opts){
 // ── Indian Food Reference Table (per 100g cooked/prepared) ──────────────
 // Source: IFCT 2017 (Indian Food Composition Tables), NIN Hyderabad,
 // HealthifyMe verified data, and cross-referenced with USDA SR Legacy.
-// All values are for COOKED/PREPARED form, not raw ingredients.
 const INDIAN_FOOD_REF_ = {
   // ── Curries & Gravies ──
   "chicken keema":       {calories_kcal:175, protein_g:15, carbs_g:4,  fat_g:11, fiber_g:0.5, micros:{iron_mg:1.5, zinc_mg:2.8, vitamin_b12_ug:0.5, sodium_mg:320, potassium_mg:220, phosphorus_mg:160, selenium_ug:15, niacin_mg:4}},
@@ -1166,39 +858,21 @@ const INDIAN_FOOD_REF_ = {
   "chai":                {calories_kcal:50,  protein_g:2,  carbs_g:7,  fat_g:1.5,fiber_g:0,   micros:{calcium_mg:60}},
 };
 
-// Portion weight estimation is now handled by llmEstimatePortionGrams_() instead of a static lookup.
-
 function lookupIndianFoodRef_(query){
   const q = String(query||"").toLowerCase().trim();
-  // Strip portion descriptors for matching
   const cleaned = stripPortionInfo_(q);
-
-  // Try exact match first
   if(INDIAN_FOOD_REF_[cleaned]) return {key: cleaned, ref: INDIAN_FOOD_REF_[cleaned]};
-
-  // Fuzzy match: prefer the most specific key that matches the query
   let bestKey = null, bestScore = 0, bestKeyLen = 0;
   const qWords = cleaned.split(/\s+/);
 
   for(const key of Object.keys(INDIAN_FOOD_REF_)){
     const keyWords = key.split(/\s+/);
-
-    // Forward: what fraction of key words appear in query?
     const fwdMatches = keyWords.filter(w => qWords.some(qw => qw.includes(w) || w.includes(qw))).length;
-    const fwdScore = fwdMatches / keyWords.length; // 1.0 = all key words found in query
-
-    if(fwdScore < 0.6) continue; // too weak
-
-    // Backward: what fraction of query words appear in key?
+    const fwdScore = fwdMatches / keyWords.length; 
+    if(fwdScore < 0.6) continue;
     const bwdMatches = qWords.filter(qw => keyWords.some(w => qw.includes(w) || w.includes(qw))).length;
-    const bwdScore = bwdMatches / qWords.length; // 1.0 = all query words found in key
-
-    // Combined: geometric mean balances both directions.
-    // "egg fried rice" vs "rice": fwd=1.0 bwd=0.33 → combined=0.58 (weak)
-    // "egg fried rice" vs "fried rice": fwd=1.0 bwd=0.67 → combined=0.82 (strong)
+    const bwdScore = bwdMatches / qWords.length;
     const combined = Math.sqrt(fwdScore * bwdScore);
-
-    // On tied scores, prefer more specific keys (longer = more words matched)
     if(combined > bestScore || (combined === bestScore && keyWords.length > bestKeyLen)){
       bestScore = combined;
       bestKey = key;
@@ -1206,25 +880,20 @@ function lookupIndianFoodRef_(query){
     }
   }
 
-  // Require reasonable combined score
   if(bestKey && bestScore >= 0.9) return {key: bestKey, ref: INDIAN_FOOD_REF_[bestKey]};
   return null;
 }
 
 function stripPortionInfo_(query){
   let q = String(query||"").toLowerCase().trim();
-  // Remove parenthetical portion info: "(1 katori)", "(200g)", "(1 bowl)"
   q = q.replace(/\([^)]*\)/g, "").trim();
-  // Remove leading count + portion: "1 katori of", "2 cups", "1 bowl"
   q = q.replace(/^\d+\.?\d*\s*(meal|katori|bowl|plate|cup|piece|slice|glass|scoop|serving|pcs?|nos?|g\b|gm\b|gram|ml\b|oz\b|small|medium|large|half)\s*(of\s+)?/i, "").trim();
-  // Remove trailing portion: "chicken keema 1 katori"
   q = q.replace(/\s+\d+\.?\d*\s*(meal|katori|bowl|plate|cup|piece|slice|glass|g\b|gm\b|ml\b)$/i, "").trim();
   return q;
 }
 
 function extractExplicitGrams_(query){
   const q = String(query||"").toLowerCase();
-  // Match "200g", "150 gm" etc. but NOT "28g protein", "9g fat", "94g carbs"
   const macroWords = /^(protein|fat|carb|fibre|fiber|kcal|cal)/;
   const re = /(\d+\.?\d*)\s*(g\b|gm\b|gram|ml\b)/g;
   let m;
@@ -1236,8 +905,6 @@ function extractExplicitGrams_(query){
   return null;
 }
 
-// Ask LLM to estimate portion weight for a described serving.
-// This is a fast, focused call — just returns a number.
 function llmEstimatePortionGrams_(foodDescription){
   const model = getGroqNutrientModel_();
   const q = String(foodDescription || "").trim();
@@ -1254,6 +921,7 @@ function llmEstimatePortionGrams_(foodDescription){
     "- roti/chapati: 35-45g each, paratha: 60-80g, naan: 80-100g",
     "- dosa: 80-120g, idli: 35-45g each, momo: 20-25g each, samosa: 50-60g each",
     "- glass of milk/lassi: 200ml",
+    "- 'meal' or 'thali': Estimate the total weight of the full spread contextually based on the cuisine.",
     "If no portion is mentioned, estimate for 1 standard home-cooked serving."
   ].join("\n");
 
@@ -1267,25 +935,21 @@ function llmEstimatePortionGrams_(foodDescription){
       { role: "user", content: "How many grams is: " + q }
     ]
   };
-
   const resp = groqRequest_(payload);
   const txt = extractAssistantText_(resp);
   const parsed = parseJson_(txt);
   const g = +(parsed.grams || parsed.weight || parsed.g || 0);
-  // Sanity: clamp to reasonable range
   if(isFinite(g) && g >= 5 && g <= 2000) return Math.round(g);
-  return 150; // safe default
+  return 150;
 }
 
 function estimatePortionGrams_(query){
-  // If user specifies exact grams, use that directly (no LLM call needed)
   const explicit = extractExplicitGrams_(query);
   if(explicit) return explicit;
-  // Otherwise, ask LLM to estimate based on the food + portion description
   try{
     return llmEstimatePortionGrams_(query);
   }catch(_){
-    return 150; // safe fallback
+    return 150; 
   }
 }
 
@@ -1308,46 +972,36 @@ function scaleRefToServing_(ref, portionG){
 }
 
 function fallbackNutrients_(query){
-  // Try Indian food reference table first
   const lookup = lookupIndianFoodRef_(query);
   if(lookup){
     const portionG = estimatePortionGrams_(query);
     if(portionG){
       return scaleRefToServing_(lookup.ref, portionG);
     }
-    // Return per-100g if no portion detected
     return JSON.parse(JSON.stringify(lookup.ref));
   }
   return null;
 }
 
-
 function estimateNutrientsCached_(dishKey, query){
   const key = String(dishKey||"").toLowerCase().trim();
   const q = String(query||dishKey||"").trim();
-
-  // Check cache first (but skip stale/partial data)
+  
   const cached = getCachedFoodNutrients_(key);
   if(cached && typeof cached === "object" && Object.keys(cached).length){
     if(!nutrientsLooksPartial_(cached, q)) return cached;
   }
 
-  // --- STEP 1: Indian Food Reference Table (highest accuracy for Indian foods) ---
+  // --- STEP 1: Indian Food Reference Table ---
   const refLookup = lookupIndianFoodRef_(q);
   if(refLookup){
-    // If user specifies exact grams (e.g., "200g chicken keema"), use that directly
     const explicitG = extractExplicitGrams_(q);
-
     if(explicitG){
-      // User gave exact weight — just scale ref, then enrich micros only
       const refScaled = scaleRefToServing_(refLookup.ref, explicitG);
       try{
         const enriched = enrichWithLlm_(q, refLookup.ref);
         if(enriched && enriched.nutrients){
-          // Override with exact-gram scaling (ignore LLM's portion estimate)
           const result = scaleRefToServing_(refLookup.ref, explicitG);
-          // But use LLM's micro estimates (already per-portion from enrichWithLlm_)
-          // Re-scale LLM micros from LLM's portionG to our explicitG
           const llmFactor = explicitG / (enriched.portionG || explicitG);
           for(const k of NUTRIENT_MICRO_KEYS_){
             if((result.micros[k] || 0) === 0 && enriched.nutrients.micros[k] > 0){
@@ -1362,95 +1016,21 @@ function estimateNutrientsCached_(dishKey, query){
       return refScaled;
     }
 
-    // No explicit grams — use LLM to estimate portion weight AND fill micros in one call
     try{
       const enriched = enrichWithLlm_(q, refLookup.ref);
       if(enriched && enriched.nutrients){
         setCachedFoodNutrients_(key, q, {fdcId:"", description:"ref+llm: "+refLookup.key+" @"+enriched.portionG+"g", dataType:"ref+llm"}, enriched.nutrients);
         return enriched.nutrients;
       }
-    }catch(_){
-      // LLM failed; use fallback portion estimation
-    }
+    }catch(_){}
 
-    // Fallback: use llmEstimatePortionGrams_ separately (or default 150g)
     const portionG = estimatePortionGrams_(q) || 150;
     const refScaled = scaleRefToServing_(refLookup.ref, portionG);
     setCachedFoodNutrients_(key, q, {fdcId:"", description:"ref: "+refLookup.key, dataType:"ref"}, refScaled);
     return refScaled;
   }
 
-  // --- STEP 2: For non-Indian foods, try USDA FDC ---
-  // Fast-fail: FDC can't handle multi-item combinations or complex prepared foods. Skip to LLM.
-  const looksComposite = /(\+| and | with |&|,|\bmomo\b|\btikka\b|\bsushi\b|\bpizza\b|\bpasta\b|\bburger\b|\broll\b|\bsandwich\b|\bwrap\b|\bthali\b)/i.test(q);
-
-  // ONLY run FDC if it's a simple, single-ingredient/branded food
-  if(!looksComposite){
-  const isBranded = looksLikeBranded_(q);
-  try{
-    const best = fdcSearchBest_(q, {preferBranded: isBranded});
-    
-    // High confidence check for FDC
-    const qWords = stripPortionInfo_(q).split(/\s+/).filter(w=>w.length>2);
-    const descLower = String(best.description).toLowerCase();
-    const matchCount = qWords.filter(w => descLower.includes(w)).length;
-    // Ensure at least 50% of meaningful words from the user's query are in the FDC label
-    const isHighConfidenceFdc = (qWords.length === 0) || (matchCount / qWords.length >= 0.5); 
-    
-    if(!isHighConfidenceFdc) throw new Error("FDC match low confidence, skipping to LLM");
-
-    const food = fdcFoodDetails_(best.fdcId);
-    const nutrientsPer100g = extractNutrientsFromFdc_(food);
-
-    if(nutrientsLooksEmpty_(nutrientsPer100g, food)){
-      throw new Error("FDC returned empty nutrients for: " + q);
-    }
-
-    // For Branded foods with serving size data, scale to one serving
-    const meta = nutrientsPer100g._meta || {};
-    let nutrients = nutrientsPer100g;
-    let servingDesc = "";
-
-    if(meta.dataType === "Branded" && meta.servingSize > 0){
-      // User specified explicit grams? Use that. Otherwise use label serving size.
-      const explicitG = extractExplicitGrams_(q);
-      const servingG = explicitG || meta.servingSize;
-      nutrients = scaleFdcToServing_(nutrientsPer100g, servingG);
-      servingDesc = (meta.brandName ? meta.brandName + " " : "") +
-        (meta.householdServingFullText || servingG + (meta.servingSizeUnit || "g"));
-    } else if(hasPortionDescriptor_(q)){
-      // Non-branded but has portion — use LLM to estimate portion weight
-      const explicitG = extractExplicitGrams_(q);
-      if(explicitG){
-        nutrients = scaleFdcToServing_(nutrientsPer100g, explicitG);
-      }
-      // else: let LLM handle it in the partial check below
-    }
-
-    // Clean up internal metadata before caching
-    delete nutrients._meta;
-
-    if(nutrientsLooksPartial_(nutrients, q)){
-      try{
-        const llm = groqEstimateNutrients_(q, {
-          fdcNutrients: nutrientsPer100g,
-          useWebSearch: shouldUseWebSearchForEstimate_(q, nutrientsPer100g)
-        });
-        if(llm && typeof llm === "object"){
-          setCachedFoodNutrients_(key, q, {fdcId:best.fdcId, description:best.description + (servingDesc ? " | " + servingDesc : ""), dataType:"llm+fdc"}, llm);
-          return llm;
-        }
-      }catch(_ignoreLlmFillErr){}
-    }
-
-    setCachedFoodNutrients_(key, q, {fdcId:best.fdcId, description:best.description + (servingDesc ? " | " + servingDesc : ""), dataType:best.dataType}, nutrients);
-    return nutrients;
-  }catch(fdcErr){
-    // FDC failed - continue to LLM
-  }
-  } // end if(!looksComposite)
-
-  // --- STEP 3: Full LLM estimation with web search ---
+  // --- STEP 2: Full LLM estimation with web search ---
   try{
     const llm = groqEstimateNutrients_(q, {useWebSearch:true});
     if(llm && typeof llm === "object"){
@@ -1459,16 +1039,15 @@ function estimateNutrientsCached_(dishKey, query){
     }
   }catch(_ignoreLlmErr){}
 
-  // --- STEP 4: Static fallback ---
+  // --- STEP 3: Static fallback ---
   const fb = fallbackNutrients_(q);
   if(fb) return fb;
-
+  
   throw new Error("Could not estimate nutrients for: " + q);
 }
 
 // Enrich reference-table macros with LLM-estimated micros AND portion weight.
-// Keeps macros from ref (trusted), only fills in micro gaps.
-// Returns {nutrients, portionG} so caller can scale.
+
 function enrichWithLlm_(foodText, refPer100g){
   const model = getGroqNutrientModel_();
   const q = String(foodText || "").trim();
