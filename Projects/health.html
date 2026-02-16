@@ -2270,12 +2270,51 @@ function addWaterCustom(){
   if(el) el.value = "";
 }
 
+function parseExplicitMacros(text){
+  const t = String(text || "").toLowerCase();
+  const protein = t.match(/(\d+\.?\d*)\s*g?\s*protein/);
+  const fat     = t.match(/(\d+\.?\d*)\s*g?\s*fat/);
+  const carbs   = t.match(/(\d+\.?\d*)\s*g?\s*carb/);
+  const fiber   = t.match(/(\d+\.?\d*)\s*g?\s*fib(?:re|er)/);
+  const kcal    = t.match(/(\d+\.?\d*)\s*kcal/);
+  const hasKcal = kcal && +kcal[1] > 0;
+  const hasMacros = protein && carbs && fat;
+  if(!hasKcal && !hasMacros) return null;
+  const p = protein ? +protein[1] : 0;
+  const f = fat ? +fat[1] : 0;
+  const c = carbs ? +carbs[1] : 0;
+  const fib = fiber ? +fiber[1] : 0;
+  const cal = hasKcal ? +kcal[1] : Math.round(p*4 + c*4 + f*9);
+  return { calories_kcal:cal, protein_g:p, carbs_g:c, fat_g:f, fiber_g:fib, micros:{} };
+}
 
 async function addCustomFoodAI(){
   const n = document.getElementById("cfName").value.trim();
   const portion = document.getElementById("cfPortion").value.trim();
   const meal = document.getElementById("cfMeal").value;
   if(!n) return toast("Dish name required");
+
+  const dishText = portion ? `${n} (${portion})` : n;
+
+  // Fast path: user provided explicit macros — no API call needed
+  const explicit = parseExplicitMacros(dishText);
+  if(explicit){
+    const cleanName = n.replace(/\s*\([^)]*\)\s*$/, "").trim() || n;
+    addFood({
+      name: cleanName, desc: portion, meal,
+      cal: Math.round(explicit.calories_kcal),
+      protein: explicit.protein_g,
+      carbs: explicit.carbs_g,
+      fat: explicit.fat_g,
+      fiber: explicit.fiber_g,
+      micros: {},
+      estimated: false
+    });
+    closeModal();
+    toast("Added ✓ (from your macros)");
+    setTimeout(()=>hydrateMicrosForCurrentDay().catch(()=>{}), 80);
+    return;
+  }
 
   if(!cloudReady()){
     toast("Sign in to use AI estimates");
@@ -2284,16 +2323,12 @@ async function addCustomFoodAI(){
     return;
   }
 
-  const dishText = portion ? `${n} (${portion})` : n;
   toast("Estimating…");
   try{
     const nutrients = await estimateNutrientsViaCloud(dishText);
     const cal = Math.round(+nutrients.calories_kcal || 0);
     addFood({
-      name:n,
-      desc:portion,
-      meal,
-      cal,
+      name:n, desc:portion, meal, cal,
       protein:+nutrients.protein_g || 0,
       carbs:+nutrients.carbs_g || 0,
       fat:+nutrients.fat_g || 0,
@@ -2308,6 +2343,7 @@ async function addCustomFoodAI(){
     toast("Estimate failed: " + (e && e.message ? e.message : String(e)));
   }
 }
+  
 function addCustomFoodManual(){
   const n = document.getElementById("cfName").value.trim();
   const meal = document.getElementById("cfMeal").value;
@@ -3406,9 +3442,23 @@ async function syncNow(){
   }
 }
 
+function checkTokenHealth(){
+  if(!_appStarted || !getIdToken()) return;
+  if(isTokenFresh()) return;
+  clearSession();
+  SESSION_DISABLED = false;
+  toast("Session expired — signing in…");
+  try{
+    if(window.google && google.accounts && google.accounts.id){
+      google.accounts.id.prompt();
+    }
+  }catch(e){}
+}
+
 async function startApp(){
   _appStarted = true;
   setupAutoSync();
+  setInterval(checkTokenHealth, 60000);
   await loadDay().catch(()=>{});
 
   // FIX 3: Push first if dirty, wait 1.5s, then pull
