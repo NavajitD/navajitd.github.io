@@ -1854,12 +1854,16 @@ async function estimateNutrientsViaCloud(queryText, opts={}){
   const cachedBase = await getCachedNutrients(dishKey);
   let base = cachedBase;
 
-  if(!base){
+  // We skip cache if we strictly want forced LLM micros for a manual override
+  if(!base || opts.forceLlmMicros){
     await ensureCloudSession();
-    const res = await cloudCall(cfg.scriptUrl, cloudAuthParams({a:"estimate", q: queryText, k: dishKey}, {requireSession:false}));
+    const params = {a:"estimate", q: queryText, k: dishKey};
+    if (opts.forceLlmMicros) params.forceLlmMicros = "true";
+    
+    const res = await cloudCall(cfg.scriptUrl, cloudAuthParams(params, {requireSession:false}));
     if(!res || !res.ok) throw new Error(res?.error || "Estimate failed");
     base = res.nutrients || res.estimate || res;
-    await setCachedNutrients(dishKey, base);
+    if(!opts.forceLlmMicros) await setCachedNutrients(dishKey, base);
   }
 
   if(opts && isFinite(+opts.targetCalories) && (+opts.targetCalories)>0 && isFinite(+base?.calories_kcal) && (+base.calories_kcal)>0){
@@ -1906,45 +1910,76 @@ async function hydrateMicrosForCurrentDay(){
   if(!cloudReady()) return;
   if(!dayData?.foods?.length) return;
 
+  // Find all foods that are missing their micronutrients
+  const pending = dayData.foods.filter(f => {
+    const needsMicros = !f.micros || Object.keys(f.micros).length === 0;
+    return needsMicros && (f.lookup || f.name);
+  });
+
+  if(pending.length === 0) return;
+
   _hydratingMicros = true;
   try{
-    for(const f of dayData.foods){
-      // If already hydrated with micros, skip
-      if(f.micros && Object.keys(f.micros).length) continue;
-
+    const itemsToFetch = pending.map(f => {
       const lookup = (f.lookup || f.name || "");
       const queryText = (f.lookupQuery || ((f.name||"") + (f.desc ? (" " + f.desc) : ""))).trim();
-      if(!queryText) continue;
+      return {
+        id: f.id,
+        q: queryText,
+        k: lookup || queryText,
+        forceLlmMicros: !!f.hasManualMacros
+      };
+    });
 
-      try{
-        const nutrients = await estimateNutrientsViaCloud(queryText, {
-          dishKey: lookup || queryText,
-          targetCalories: (f.fromPlan ? (+f.cal||0) : 0)
-        });
+    const cfg = getCloudCfg();
+    await ensureCloudSession();
+    
+    // Fetch them all at once
+    const res = await cloudCall(cfg.scriptUrl, cloudAuthParams({
+      a: "estimatebatch",
+      items: JSON.stringify(itemsToFetch)
+    }, {requireSession:false}));
 
-        if(nutrients && typeof nutrients === "object"){
-          if(nutrients.micros && typeof nutrients.micros === "object"){
-            f.micros = nutrients.micros;
+    if(res && res.ok && res.results){
+      let updated = false;
+      
+      res.results.forEach(r => {
+        if(r.ok && r.nutrients){
+          const f = dayData.foods.find(x => x.id === r.id);
+          if(f){
+            let finalNutrients = r.nutrients;
+            const targetCal = f.fromPlan ? (+f.cal||0) : 0;
+            
+            // Client-side scaling
+            if(targetCal > 0 && isFinite(+finalNutrients.calories_kcal) && (+finalNutrients.calories_kcal) > 0){
+               finalNutrients = scaleNutrients(finalNutrients, targetCal);
+            }
+
+            f.micros = finalNutrients.micros || {};
+
+            // Only overwrite macros if the user didn't manually supply them in the UI
+            if (!f.hasManualMacros) {
+              if(isFinite(+finalNutrients.protein_g)) f.protein = +finalNutrients.protein_g;
+              if(isFinite(+finalNutrients.carbs_g))   f.carbs   = +finalNutrients.carbs_g;
+              if(isFinite(+finalNutrients.fat_g))     f.fat     = +finalNutrients.fat_g;
+              if(isFinite(+finalNutrients.fiber_g))   f.fiber   = +finalNutrients.fiber_g;
+
+              if(!f.fromPlan && (!isFinite(+f.cal) || (+f.cal)<=0) && isFinite(+finalNutrients.calories_kcal)){
+                f.cal = +finalNutrients.calories_kcal;
+              }
+            }
+            updated = true;
           }
-
-          // Overwrite macros/fiber with USDA-based values (accurate), but keep plan calories as the serving anchor
-          if(isFinite(+nutrients.protein_g)) f.protein = +nutrients.protein_g;
-          if(isFinite(+nutrients.carbs_g))   f.carbs   = +nutrients.carbs_g;
-          if(isFinite(+nutrients.fat_g))     f.fat     = +nutrients.fat_g;
-          if(isFinite(+nutrients.fiber_g))   f.fiber   = +nutrients.fiber_g;
-
-          // For non-plan items, if calories weren't set, use USDA calories
-          if(!f.fromPlan && (!isFinite(+f.cal) || (+f.cal)<=0) && isFinite(+nutrients.calories_kcal)){
-            f.cal = +nutrients.calories_kcal;
-          }
-
-          await saveDay();
-          scheduleRender();
         }
-      }catch(e){
-        // ignore per-food errors
+      });
+
+      if(updated){
+        await saveDay();
+        scheduleRender();
       }
     }
+  } catch(e) {
+    console.error("Batch hydration failed", e);
   } finally {
     _hydratingMicros = false;
   }
@@ -2221,29 +2256,46 @@ function addAllPlan(){
 
 function renderCustomModal(){
   return `<div class="modal-overlay"><div class="modal">
-    <div class="modal-head"><div class="modal-title">Add Dish</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-head"><div class="modal-title">Add Custom Food</div><button class="modal-close" onclick="closeModal()">✕</button></div>
     <div class="modal-body">
       <div class="custom-grid">
-        <input class="custom-full" id="cfName" placeholder="Dish name (e.g., Chicken biryani)">
-        <input class="custom-full" id="cfPortion" placeholder="Portion (optional) e.g., 1 bowl / 2 rotis / 200g">
-        <select class="custom-full" id="cfMeal"><option>Breakfast</option><option>Mid-Morning</option><option>Lunch</option><option>Afternoon</option><option>Dinner</option><option>Snack</option></select>
+        <input class="custom-full" id="cfName" placeholder="Name of dish (e.g., Chicken biryani)*">
+        
+        <div class="custom-full" style="display:flex; gap:.5rem">
+          <input type="number" id="cfPortionNum" placeholder="Amount*" style="flex:1" min="0.1" step="0.1">
+          <select id="cfPortionUnit" style="flex:1">
+            <option value="meal">meal</option>
+            <option value="katori">katori</option>
+            <option value="bowl">bowl</option>
+            <option value="cup">cup</option>
+            <option value="count">count (pcs)</option>
+            <option value="g">g</option>
+            <option value="mL">mL</option>
+          </select>
+        </div>
+        
+        <select class="custom-full" id="cfMeal">
+          <option>Breakfast</option><option>Mid-Morning</option><option>Lunch</option>
+          <option>Afternoon</option><option>Dinner</option><option>Snack</option>
+        </select>
       </div>
-      <div class="export-desc" style="margin-top:-.25rem">Uses Groq Llama‑3.3‑70B (via Apps Script) to estimate calories, macros, and micronutrients. Estimates are approximate.</div>
-      <button class="plan-add-all" onclick="addCustomFoodAI()">Estimate & add</button>
 
-      <details style="margin-top:1rem">
-        <summary style="cursor:pointer;font-size:.6875rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Manual entry (offline fallback)</summary>
+      <details id="cfOptionalMacros" style="margin-top:1rem">
+        <summary style="cursor:pointer;font-size:.6875rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Optional Macros</summary>
         <div class="custom-grid" style="margin-top:.75rem">
-          <input id="cfCal" type="number" placeholder="Calories">
+          <input id="cfCal" type="number" placeholder="Calories (kcal)">
           <input id="cfPro" type="number" placeholder="Protein (g)">
           <input id="cfCarb" type="number" placeholder="Carbs (g)">
           <input id="cfFat" type="number" placeholder="Fat (g)">
+          <input id="cfFib" type="number" placeholder="Fibre (g)">
         </div>
-        <button class="plan-add-all" style="background:var(--bg2);color:var(--text);border:1px solid var(--border)" onclick="addCustomFoodManual()">Add manually</button>
+        <div class="export-hint" style="text-align:left; margin-top:.5rem;">If provided, AI will only fetch micronutrients in the background. If left blank, AI/DBs will calculate everything.</div>
       </details>
+
+      <button class="plan-add-all" style="margin-top:1.25rem" onclick="addCustomFoodUnified()">Add Food</button>
     </div>
   </div></div>`;
-}
+}  
 
 function renderWaterModal(){
   return `<div class="modal-overlay"><div class="modal">
@@ -2288,78 +2340,74 @@ function parseExplicitMacros(text){
   return { calories_kcal:cal, protein_g:p, carbs_g:c, fat_g:f, fiber_g:fib, micros:{} };
 }
 
-async function addCustomFoodAI(){
+async function addCustomFoodUnified(){
   const n = document.getElementById("cfName").value.trim();
-  const portion = document.getElementById("cfPortion").value.trim();
+  const pNum = document.getElementById("cfPortionNum").value;
+  const pUnit = document.getElementById("cfPortionUnit").value;
   const meal = document.getElementById("cfMeal").value;
-  if(!n) return toast("Dish name required");
 
-  const dishText = portion ? `${n} (${portion})` : n;
+  if(!n || !pNum) return toast("Dish name and portion amount are mandatory");
 
-  // Fast path: user provided explicit macros — no API call needed
-  const explicit = parseExplicitMacros(dishText);
-  if(explicit){
-    const cleanName = n.replace(/\s*\([^)]*\)\s*$/, "").trim() || n;
+  const c = document.getElementById("cfCal").value;
+  const pro = document.getElementById("cfPro").value;
+  const carb = document.getElementById("cfCarb").value;
+  const fat = document.getElementById("cfFat").value;
+  const fib = document.getElementById("cfFib").value;
+
+  const hasMacros = (c !== "" || pro !== "" || carb !== "" || fat !== "");
+  const unitStr = pUnit === "count" ? "pcs" : pUnit;
+  const dishText = `${n} (${pNum} ${unitStr})`;
+
+  if (hasMacros) {
+    // Rule 1: Macros provided. Add to UI immediately, fetch micros via AI later.
     addFood({
-      name: cleanName, desc: portion, meal,
-      cal: Math.round(explicit.calories_kcal),
-      protein: explicit.protein_g,
-      carbs: explicit.carbs_g,
-      fat: explicit.fat_g,
-      fiber: explicit.fiber_g,
+      name: n,
+      desc: `${pNum} ${unitStr}`,
+      meal: meal,
+      cal: Math.round(+c || 0),
+      protein: +pro || 0,
+      carbs: +carb || 0,
+      fat: +fat || 0,
+      fiber: +fib || 0,
       micros: {},
-      estimated: false
+      estimated: false,
+      hasManualMacros: true // Flags background task not to overwrite macros
     });
     closeModal();
-    toast("Added ✓ (from your macros)");
+    // Background hydration kicks in 80ms later
     setTimeout(()=>hydrateMicrosForCurrentDay().catch(()=>{}), 80);
-    return;
-  }
+  } else {
+    // Rule 2: No macros provided. Estimate everything now.
+    if(!cloudReady()){
+      toast("Sign in to use AI estimates");
+      closeModal();
+      try{ google?.accounts?.id?.prompt(); }catch(e){}
+      return;
+    }
 
-  if(!cloudReady()){
-    toast("Sign in to use AI estimates");
-    closeModal();
-    try{ google?.accounts?.id?.prompt(); }catch(e){}
-    return;
-  }
-
-  toast("Estimating…");
-  try{
-    const nutrients = await estimateNutrientsViaCloud(dishText);
-    const cal = Math.round(+nutrients.calories_kcal || 0);
-    addFood({
-      name:n, desc:portion, meal, cal,
-      protein:+nutrients.protein_g || 0,
-      carbs:+nutrients.carbs_g || 0,
-      fat:+nutrients.fat_g || 0,
-      fiber:+nutrients.fiber_g || 0,
-      micros:nutrients.micros || {},
-      estimated:true
-    });
-    closeModal();
-    toast("Added ✓ (AI estimate)");
-  }catch(e){
-    console.error("Estimate failed", e);
-    toast("Estimate failed: " + (e && e.message ? e.message : String(e)));
+    toast("Estimating macros...");
+    try{
+      const nutrients = await estimateNutrientsViaCloud(dishText);
+      addFood({
+        name: n,
+        desc: `${pNum} ${unitStr}`,
+        meal: meal,
+        cal: Math.round(+nutrients.calories_kcal || 0),
+        protein: +nutrients.protein_g || 0,
+        carbs: +nutrients.carbs_g || 0,
+        fat: +nutrients.fat_g || 0,
+        fiber: +nutrients.fiber_g || 0,
+        micros: nutrients.micros || {},
+        estimated: true
+      });
+      closeModal();
+      toast("Added ✓ (Estimated)");
+    }catch(e){
+      console.error("Estimate failed", e);
+      toast("Estimate failed: " + (e && e.message ? e.message : String(e)));
+    }
   }
 }
-  
-function addCustomFoodManual(){
-  const n = document.getElementById("cfName").value.trim();
-  const meal = document.getElementById("cfMeal").value;
-  const c = +document.getElementById("cfCal").value;
-  if(!n||!c) return toast("Name & calories required");
-  addFood({
-    name:n, meal,
-    cal:c,
-    protein:+document.getElementById("cfPro").value||0,
-    carbs:+document.getElementById("cfCarb").value||0,
-    fat:+document.getElementById("cfFat").value||0,
-    fiber:0
-  });
-  closeModal();
-}
-
 
 function renderExportModal(){
   return `<div class="modal-overlay"><div class="modal">
@@ -2688,9 +2736,49 @@ function renderMicrosDetails(micros){
   `;
 }
 
+// ─── ADAPTIVE TARGETS ────────────────────────────────
+function getDynamicTargets() {
+  // Start with base user targets
+  let dt = { ...TARGETS };
+  
+  const isToday = selectedDate === todayStr();
+  const hour = new Date().getHours(); // 0-23
+  const isPastDate = selectedDate < todayStr();
+
+  // Rule 1: Creatine & Water
+  const creatineTaken = (dayData.supplementsTaken || []).includes("creatine");
+  if (!creatineTaken && (isPastDate || (isToday && hour >= 18))) {
+    dt.water = Math.max(2000, dt.water - 500); // Reduce by 500ml
+    dt._waterAdjusted = true; // Flag for UI feedback
+  }
+
+  // Rule 2: Workout & Calories
+  const routineDone = (dayData.exercises || []).length > 0;
+  const customDone = (dayData.customExercises || []).length > 0;
+  const workoutDone = routineDone || customDone;
+
+  if (!workoutDone && (isPastDate || (isToday && hour >= 20))) {
+    const oldCal = dt.cal;
+    
+    dt.cal = Math.max(1200, dt.cal - 200);       // Reduce max calories by 200
+    dt.calMin = Math.max(1000, dt.calMin - 200); // Shift the minimum bound down too
+    dt._calAdjusted = true; // Flag for UI feedback
+    
+    // Proportional macro reduction
+    const ratio = dt.cal / oldCal;
+    dt.protein = Math.round(dt.protein * ratio);
+    dt.carbs = Math.round(dt.carbs * ratio);
+    dt.fat = Math.round(dt.fat * ratio);
+  }
+
+  return dt;
+}
+
 function renderToday(t, plan){
-  const calPct = (t.cal/TARGETS.cal)*100;
-  const remaining = TARGETS.cal - t.cal;
+  const dt = getDynamicTargets(); // Use adaptive targets
+  
+  const calPct = (t.cal/dt.cal)*100;
+  const remaining = dt.cal - t.cal;
   const burned = dayData.calBurned || 0;
   const net = t.cal - burned;
 
@@ -2700,7 +2788,6 @@ function renderToday(t, plan){
   const totalMacro = (t.protein + t.carbs + t.fat) || 1;
 
   let foodList = "";
-  // FIX: Filter foods visually so deleted items immediately disappear from the screen
   const activeFoods = activeItems(dayData.foods); 
 
   if(activeFoods.length===0){
@@ -2727,8 +2814,8 @@ function renderToday(t, plan){
 
   const tipsHtml = (()=>{ 
     const tips=[];
-    if(t.protein < TARGETS.protein*0.7) tips.push("Add a high‑protein item today (egg/curd/chicken/paneer/whey).");
-    if((dayData.water||0) < TARGETS.water*0.6) tips.push("You’re behind on water—log a few glasses in the Water tab.");
+    if(t.protein < dt.protein*0.7) tips.push("Add a high‑protein item today (egg/curd/chicken/paneer/whey).");
+    if((dayData.water||0) < dt.water*0.6) tips.push("You’re behind on water—log a few glasses in the Water tab.");
     if((dayData.steps||0) < TARGETS.steps*0.6) tips.push("A 15–20 min walk can quickly boost steps.");
     if((dayData.sleep?.hours||0) < TARGETS.sleep*0.7) tips.push("Try to protect an 8h sleep window (plan recommends ~11pm–7am).");
     return tips.length ? (`<b>${dayPrefix}:</b> `+tips.join(" ")) : `<b>${dayPrefix}:</b> You’re on track—keep it steady.`;
@@ -2739,26 +2826,27 @@ function renderToday(t, plan){
       <div class="ring-wrap">
         <div class="ring-stack">
           <div class="ring-container" style="width:110px;height:110px">
-          ${svgRing(calPct, 110, 8, t.cal>TARGETS.cal?"var(--red)":"var(--accent)")}
+          ${svgRing(calPct, 110, 8, t.cal>dt.cal?"var(--red)":"var(--accent)")}
           <div class="ring-center">
             <div class="ring-big">${t.cal}</div>
-            <div class="ring-small">/ ${TARGETS.cal} kcal</div>
+            <div class="ring-small">/ ${dt.cal} kcal</div>
           </div>
           </div>
-          <div class="ring-goal"><b>Goal</b>: ${TARGETS.calMin}–${TARGETS.cal} kcal</div>
+          <div class="ring-goal"><b>Goal</b>: ${dt.calMin}–${dt.cal} kcal</div>
+          ${dt._calAdjusted ? `<div style="color:var(--orange); font-size:10px; font-weight:600;">💡 Rest Day: -200 kcal</div>` : ''}
         </div>
         <div class="ring-info">
           <div class="prog">
-            <div class="prog-header"><span class="prog-label">Protein</span><span class="prog-val" style="color:var(--accent)">${t.protein}/${TARGETS.protein}g</span></div>
-            <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.protein/TARGETS.protein*100)}%;background:var(--accent)"></div></div>
+            <div class="prog-header"><span class="prog-label">Protein</span><span class="prog-val" style="color:var(--accent)">${t.protein}/${dt.protein}g</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.protein/dt.protein*100)}%;background:var(--accent)"></div></div>
           </div>
           <div class="prog">
-            <div class="prog-header"><span class="prog-label">Carbs</span><span class="prog-val" style="color:var(--yellow)">${t.carbs}/${TARGETS.carbs}g</span></div>
-            <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.carbs/TARGETS.carbs*100)}%;background:var(--yellow)"></div></div>
+            <div class="prog-header"><span class="prog-label">Carbs</span><span class="prog-val" style="color:var(--yellow)">${t.carbs}/${dt.carbs}g</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.carbs/dt.carbs*100)}%;background:var(--yellow)"></div></div>
           </div>
           <div class="prog">
-            <div class="prog-header"><span class="prog-label">Fats</span><span class="prog-val" style="color:var(--orange)">${t.fat}/${TARGETS.fat}g</span></div>
-            <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.fat/TARGETS.fat*100)}%;background:var(--orange)"></div></div>
+            <div class="prog-header"><span class="prog-label">Fats</span><span class="prog-val" style="color:var(--orange)">${t.fat}/${dt.fat}g</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,t.fat/dt.fat*100)}%;background:var(--orange)"></div></div>
           </div>
 
           <div style="margin-top:.5rem">
@@ -2832,8 +2920,10 @@ function renderToday(t, plan){
 
 // ─── WATER TAB ──────────────────────────────────────
 function renderWater(){
+  const dt = getDynamicTargets(); // Use adaptive targets
+  
   const waterMl = num0(dayData.water);
-  const pct = (waterMl/TARGETS.water)*100;
+  const pct = (waterMl/dt.water)*100;
   const logs = activeItems(dayData.waterLogs||[]).slice().sort((a,b)=>a.ts-b.ts);
 
   let logHtml = "";
@@ -2856,9 +2946,10 @@ function renderWater(){
           <div class="ring-center">
             <div style="font-size:.75rem;margin-bottom:.125rem">💧</div>
             <div class="ring-big">${(waterMl/1000).toFixed(1)}</div>
-            <div class="ring-small">/ ${(TARGETS.water/1000).toFixed(1)} L</div>
+            <div class="ring-small">/ ${(dt.water/1000).toFixed(1)} L</div>
           </div>
         </div>
+        ${dt._waterAdjusted ? `<div style="color:var(--orange); font-size:10px; font-weight:600; margin-top:8px;">💡 Adjusted: -0.5L (No creatine logged)</div>` : ''}
       </div>
       <div style="display:flex;gap:.5rem;align-items:stretch">
         <button class="food-btn food-btn-primary" onclick="addWater(250)" style="flex:0 0 auto;padding:.5rem .875rem;font-size:.75rem">+ 250 ml</button>
@@ -3112,6 +3203,51 @@ async function loadDashboard(){
     return b.length ? (b.reduce((s,d)=>s+d.bmi,0)/b.length) : null;
   })();
 
+  // --- NEW: Weekly Micronutrient Gaps Check ---
+  let microDeficitsHtml = "";
+  if (avgDays.length === 7 && avgDays.every(d => d.cal > 0)) {
+    const weeklyMicros = {};
+    avgDays.forEach(d => {
+      if(d.micros) {
+        for(const [k, v] of Object.entries(d.micros)) {
+           weeklyMicros[k] = (weeklyMicros[k] || 0) + (+v || 0);
+        }
+      }
+    });
+
+    const missingMicros = [];
+    MICROS.forEach(m => {
+      const weeklyTarget = m.target * 7;
+      const actual = weeklyMicros[m.key] || 0;
+      if (actual < weeklyTarget) {
+        missingMicros.push(`<b>${m.label}</b> (${Math.round(actual)}/${weeklyTarget} ${m.unit})`);
+      }
+    });
+
+    if (missingMicros.length > 0) {
+      microDeficitsHtml = `
+        <div class="card" style="border-color:var(--orange); background:rgba(234, 88, 12, 0.05);">
+          <div class="card-title" style="color:var(--orange)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Weekly Micronutrient Gaps</div>
+          <div style="font-size:var(--fs-xs); color:var(--text); line-height:1.5;">
+            You've logged food every day this week, but missed the 7-day targets for: 
+            ${missingMicros.join(", ")}.
+            <div style="margin-top:.5rem; color:var(--muted); font-size:10px;">AI estimations are approximate. Consider adding foods rich in these or checking your supplement intake.</div>
+          </div>
+        </div>
+      `;
+    } else {
+      microDeficitsHtml = `
+        <div class="card" style="border-color:var(--green); background:rgba(22, 163, 74, 0.05);">
+          <div class="card-title" style="color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Weekly Micronutrients Met</div>
+          <div style="font-size:var(--fs-xs); color:var(--text); line-height:1.5;">
+            Great job! You hit your 7-day targets for all tracked micronutrients.
+          </div>
+        </div>
+      `;
+    }
+  }
+  // --------------------------------------------
+
   // Intelligent Chunking: Group into weekly averages for the 90-day view
   let displayDays = days;
   if (dashboardRange === "quarterly") {
@@ -3172,6 +3308,8 @@ async function loadDashboard(){
         <div class="stat-box"><div class="stat-val">${avgBmi!==null ? avgBmi.toFixed(1) : "–"}</div><div class="stat-label">avg bmi</div></div>
       </div>
     </div>
+
+    ${microDeficitsHtml}
 
     <div class="filter-controls" style="justify-content:center; margin-bottom:1.5rem;">
       <button class="filter-btn ${dashboardRange==="weekly"?"active":""}" onclick="setDashboardRange('weekly')">Last 7d trends</button>
@@ -3578,7 +3716,7 @@ document.addEventListener('touchcancel', checkPullToRefresh, {passive: true});
 
 // Make sure inline onclick handlers always resolve (esp. in strict browsers)
 try{
-  Object.assign(window, {shiftDate, goToday, switchTab, showModal, closeModal, addWater, addWaterCustom, undoWater, saveSleep, saveWeight, saveBurn, saveActivity, toggleExercise, toggleSupp, addCustomExercise, addCustomFoodAI, addCustomFoodManual, addAllPlan, removeFood, clearSleep, exportCSV, confirmDelete, removeCustomExercise, removeStepLog, removeWaterLog, renderTrends, setDashboardRange, syncNow, signOutAndReload, retryGoogleSignIn, handleCredentialResponse});
+  Object.assign(window, {shiftDate, goToday, switchTab, showModal, closeModal, addWater, addWaterCustom, undoWater, saveSleep, saveWeight, saveBurn, saveActivity, toggleExercise, toggleSupp, addCustomExercise, addCustomFoodUnified, addAllPlan, removeFood, clearSleep, exportCSV, confirmDelete, removeCustomExercise, removeStepLog, removeWaterLog, renderTrends, setDashboardRange, syncNow, signOutAndReload, retryGoogleSignIn, handleCredentialResponse});
 }catch(e){}
 
 </script>
