@@ -100,9 +100,39 @@ function doGet(e){
       const q = String(p.q || p.dish || "").trim();
       const dishKey = String(p.k || p.dishKey || q || "").toLowerCase().trim();
       const query = String(p.q || p.query || q || dishKey).trim();
+      const forceLlmMicros = (String(p.forceLlmMicros) === "true");
+      
       if(!dishKey) throw new Error("Missing dish/dishKey");
-      const nutrients = estimateNutrientsCached_(dishKey, query);
+      
+      let nutrients;
+      if (forceLlmMicros) {
+        // Rule 1: Bypass DBs and force LLM web search for micros directly
+        nutrients = groqEstimateNutrients_(query, {useWebSearch: true});
+      } else {
+        // Rule 2: Normal flow
+        nutrients = estimateNutrientsCached_(dishKey, query);
+      }
       out = {ok:true, nutrients};
+    }
+    }else if(action === "estimatebatch"){
+      const items = parseJson_(p.items || "[]");
+      const results = [];
+      for(const item of items){
+        const dishKey = String(item.k || item.dishKey || item.q || "").toLowerCase().trim();
+        const query = String(item.q || item.query || dishKey).trim();
+        const forceLlmMicros = (String(item.forceLlmMicros) === "true");
+        if(!dishKey) continue;
+        
+        try {
+          let nutrients = forceLlmMicros 
+            ? groqEstimateNutrients_(query, {useWebSearch:true})
+            : estimateNutrientsCached_(dishKey, query);
+          results.push({id: item.id, ok: true, nutrients});
+        } catch(err) {
+          results.push({id: item.id, ok: false, error: String(err)});
+        }
+      }
+      out = {ok:true, results};
     }else if(action === "analyze"){
       const rows = parseJson_(p.rows || "[]");
       const windowLabel = String(p.window || "").slice(0,64);
@@ -154,13 +184,43 @@ function doPost(e){
       return output_({ok:true, session_key:sess.session_key, ttl_s:sess.ttl_s}, prefix);
     }
 
-    if(action === "estimate"){
+    }else if(action === "estimate"){
       const q = String(p.q || p.dish || "").trim();
       const dishKey = String(p.k || p.dishKey || q || "").toLowerCase().trim();
       const query = String(p.q || p.query || q || dishKey).trim();
+      const forceLlmMicros = (String(p.forceLlmMicros) === "true");
+      
       if(!dishKey) throw new Error("Missing dish/dishKey");
-      const nutrients = estimateNutrientsCached_(dishKey, query);
-      return output_({ok:true, nutrients}, prefix);
+      
+      let nutrients;
+      if (forceLlmMicros) {
+        // Rule 1: Bypass DBs and force LLM web search for micros directly
+        nutrients = groqEstimateNutrients_(query, {useWebSearch: true});
+      } else {
+        // Rule 2: Normal flow
+        nutrients = estimateNutrientsCached_(dishKey, query);
+      }
+      out = {ok:true, nutrients};
+    }
+    if(action === "estimatebatch"){
+      const items = parseJson_(p.items || "[]");
+      const results = [];
+      for(const item of items){
+        const dishKey = String(item.k || item.dishKey || item.q || "").toLowerCase().trim();
+        const query = String(item.q || item.query || dishKey).trim();
+        const forceLlmMicros = (String(item.forceLlmMicros) === "true");
+        if(!dishKey) continue;
+        
+        try {
+          let nutrients = forceLlmMicros 
+            ? groqEstimateNutrients_(query, {useWebSearch:true})
+            : estimateNutrientsCached_(dishKey, query);
+          results.push({id: item.id, ok: true, nutrients});
+        } catch(err) {
+          results.push({id: item.id, ok: false, error: String(err)});
+        }
+      }
+      return output_({ok:true, results}, prefix);
     }
 
     if(action === "latest"){
@@ -882,9 +942,8 @@ function nutrientsLooksPartial_(nutrients, query){
 
 function hasPortionDescriptor_(query){
   const q = String(query || "").toLowerCase();
-  // Standard unit-based portions: "5 pieces", "1 katori", "200g", etc.
-  if(/\d+\s*(katori|bowl|plate|cup|piece|slice|roti|rotis|paratha|parathas|chapati|chapatis|glass|scoop|tbsp|tablespoon|tsp|teaspoon|serving|pcs?|nos?|g\b|gm\b|gram|ml\b|oz\b|small|medium|large|half)/.test(q)) return true;
-  // Countable food items: "5 momos", "2 samosas", "3 idlis", "4 puris"
+  // Standard unit-based portions: "5 counts", "1 katori", "200g", etc.
+  if(/\d+\s*(meal|katori|bowl|plate|cup|piece|slice|roti|rotis|paratha|parathas|chapati|chapatis|glass|scoop|tbsp|tablespoon|tsp|teaspoon|serving|pcs?|nos?|g\b|gm\b|gram|ml\b|oz\b|small|medium|large|half)/.test(q)) return true;// Countable food items: "5 momos", "2 samosas", "3 idlis", "4 puris"
   if(/\d+\s*(momos?|samosas?|pakoras?|vadas?|idlis?|dosas?|puris?|cutlets?|tikkas?|kebabs?|wings?|drumsticks?|nuggets?|cookies?|biscuits?)/.test(q)) return true;
   // Word-based portions: "one bowl", "half a plate"
   if(/\b(a |one |two |three |four |five |six |half a?)\s*(katori|bowl|plate|cup|piece|slice|roti|paratha|chapati|glass|scoop|serving|momo|samosa|idli|dosa|puri)/i.test(q)) return true;
@@ -990,7 +1049,7 @@ function groqEstimateNutrients_(foodText, opts){
     "Return ONLY a JSON object (no markdown, no extra text).",
     "",
     "CRITICAL RULES:",
-    "1. If the user specifies a portion (e.g., '1 katori', '1 bowl', '2 eggs', '1 plate', '1 cup', '1 bar', '1 packet'), estimate nutrients for THAT EXACT PORTION.",
+    "1. If the user specifies a portion (e.g., '1 katori', '1 bowl', '2 eggs', '1 plate', '1 meal', '1 packet'), estimate nutrients for THAT EXACT PORTION. For a 'meal' or 'thali', gauge the weight contextually (e.g. a Rajasthani thali is 700g+, a light meal is 350g).",
     "2. If no portion is specified, estimate for ONE STANDARD SERVING of the food.",
     "3. First estimate the serving weight in grams (estimated_serving_g), then calculate all nutrients for that weight.",
     "4. For Indian foods: 1 katori ≈ 150-180g, 1 roti ≈ 40g, 1 plate rice ≈ 180-200g, 1 bowl dal ≈ 150-180g.",
@@ -1172,7 +1231,7 @@ function lookupIndianFoodRef_(query){
   }
 
   // Require reasonable combined score
-  if(bestKey && bestScore >= 0.5) return {key: bestKey, ref: INDIAN_FOOD_REF_[bestKey]};
+  if(bestKey && bestScore >= 0.9) return {key: bestKey, ref: INDIAN_FOOD_REF_[bestKey]};
   return null;
 }
 
@@ -1181,9 +1240,9 @@ function stripPortionInfo_(query){
   // Remove parenthetical portion info: "(1 katori)", "(200g)", "(1 bowl)"
   q = q.replace(/\([^)]*\)/g, "").trim();
   // Remove leading count + portion: "1 katori of", "2 cups", "1 bowl"
-  q = q.replace(/^\d+\.?\d*\s*(katori|bowl|plate|cup|piece|slice|glass|scoop|serving|pcs?|nos?|g\b|gm\b|gram|ml\b|oz\b|small|medium|large|half)\s*(of\s+)?/i, "").trim();
+  q = q.replace(/^\d+\.?\d*\s*(meal|katori|bowl|plate|cup|piece|slice|glass|scoop|serving|pcs?|nos?|g\b|gm\b|gram|ml\b|oz\b|small|medium|large|half)\s*(of\s+)?/i, "").trim();
   // Remove trailing portion: "chicken keema 1 katori"
-  q = q.replace(/\s+\d+\.?\d*\s*(katori|bowl|plate|cup|piece|slice|glass|g\b|gm\b|ml\b)$/i, "").trim();
+  q = q.replace(/\s+\d+\.?\d*\s*(meal|katori|bowl|plate|cup|piece|slice|glass|g\b|gm\b|ml\b)$/i, "").trim();
   return q;
 }
 
@@ -1354,6 +1413,16 @@ function estimateNutrientsCached_(dishKey, query){
   const isBranded = looksLikeBranded_(q);
   try{
     const best = fdcSearchBest_(q, {preferBranded: isBranded});
+    
+    // High confidence check for FDC
+    const qWords = stripPortionInfo_(q).split(/\s+/).filter(w=>w.length>2);
+    const descLower = String(best.description).toLowerCase();
+    const matchCount = qWords.filter(w => descLower.includes(w)).length;
+    // Ensure at least 50% of meaningful words from the user's query are in the FDC label
+    const isHighConfidenceFdc = (qWords.length === 0) || (matchCount / qWords.length >= 0.5); 
+    
+    if(!isHighConfidenceFdc) throw new Error("FDC match low confidence, skipping to LLM");
+
     const food = fdcFoodDetails_(best.fdcId);
     const nutrientsPer100g = extractNutrientsFromFdc_(food);
 
@@ -1431,24 +1500,19 @@ function enrichWithLlm_(foodText, refPer100g){
   const existingMicros = refPer100g.micros || {};
 
   const sys = [
-    "You are a nutrition assistant. You will receive per-100g nutrient data for a food.",
-    "Your TWO jobs:",
-    "1. Estimate the weight in grams of the described portion (estimated_serving_g).",
-    "   Consider the specific food density — thick keema ~150-180g per katori, thin rasam ~180-200g.",
-    "   Common Indian portions: katori 150-200g, roti 35-45g, paratha 60-80g, naan 80-100g,",
-    "   dosa 80-120g, idli 35-45g each, momo 20-25g each, samosa 50-60g each, plate rice 180-220g, bowl dal 150-200g, glass 200ml.",
-    "   If no portion is mentioned, use one standard home-cooked serving.",
-    "2. Estimate MICRONUTRIENTS that are currently 0/missing for that serving size.",
-    "",
-    "Return ONLY a JSON object with:",
-    "  estimated_serving_g: number,",
-    "  micros: { ... all 25 micro keys with values FOR THE DESCRIBED PORTION }",
-    "",
-    "DO NOT return macros — they will be calculated from the verified per-100g data.",
-    "",
-    "Micronutrient keys:",
-    JSON.stringify(NUTRIENT_MICRO_KEYS_)
-  ].join("\n");
+    "You estimate the weight in grams of a described food portion.",
+    "Return ONLY a JSON object: {\"grams\": <number>}",
+    "Consider the SPECIFIC food when estimating — a katori of thick keema weighs ~150-180g,",
+    "while a katori of thin rasam weighs ~180-200g, a roti weighs ~35-45g, etc.",
+    "Common Indian portions:",
+    "- katori/bowl: 150-200g depending on food density",
+    "- plate of rice: 180-220g, plate of biryani: 200-250g",
+    "- roti/chapati: 35-45g each, paratha: 60-80g, naan: 80-100g",
+    "- dosa: 80-120g, idli: 35-45g each, momo: 20-25g each, samosa: 50-60g each",
+    "- glass of milk/lassi: 200ml",
+    "- 'meal' or 'thali': Estimate the total weight of the full spread contextually based on the cuisine. A heavy traditional thali (e.g., Rajasthani, Bengali fish thali) weighs much more (600-900g+) than a light meal (300-400g).",
+    "If no portion is mentioned, estimate for 1 standard home-cooked serving."
+  ].join("\n");;
 
   const user = [
     "Food: " + q,
