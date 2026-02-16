@@ -55,7 +55,6 @@ function doGet(e){
   try{
     const action = (p.action || p.a || "ping").toLowerCase();
 
-    // Create/refresh a short session key (used by the HTML app for JSONP GET calls)
     if(action === "session"){
       const auth = requireAuthWithIdToken_(p);
       const sess = createSession_(auth.email, auth.info);
@@ -63,18 +62,17 @@ function doGet(e){
     }
 
     const email = requireAuth_(p);
-
     let out = null;
+
     if(action === "ping"){
       out = {ok:true, email, tz:TZ, sheet:SHEET_NAME};
-
-}else if(action === "upsertday"){
-  const dateKey = String(p.dateKey || "").trim();
-  const payloadStr = String(p.payload || "").trim();
-  if(!dateKey) throw new Error("Missing dateKey");
-  if(!payloadStr) throw new Error("Missing payload");
-  const res = upsertDay_(dateKey, payloadStr, {source:p.source || "manual", email});
-  out = {ok:true, upserted:true, ...res};
+    }else if(action === "upsertday"){
+      const dateKey = String(p.dateKey || "").trim();
+      const payloadStr = String(p.payload || "").trim();
+      if(!dateKey) throw new Error("Missing dateKey");
+      if(!payloadStr) throw new Error("Missing payload");
+      const res = upsertDay_(dateKey, payloadStr, {source:p.source || "manual", email});
+      out = {ok:true, upserted:true, ...res};
     }else if(action === "append"){
       const row = parseJson_(p.row || "{}");
       const res = appendRow_(row, {source:p.source || "manual", email});
@@ -85,7 +83,6 @@ function doGet(e){
       const kcal = estimateExerciseKcal_(text);
       out = {ok:true, kcal};
     }else if(action === "latest"){
-
       const dateKey = String(p.dateKey || "").trim();
       if(!dateKey) throw new Error("Missing dateKey");
       const row = getLatestRowForDate_(dateKey);
@@ -100,20 +97,9 @@ function doGet(e){
       const q = String(p.q || p.dish || "").trim();
       const dishKey = String(p.k || p.dishKey || q || "").toLowerCase().trim();
       const query = String(p.q || p.query || q || dishKey).trim();
-      const forceLlmMicros = (String(p.forceLlmMicros) === "true");
-      
       if(!dishKey) throw new Error("Missing dish/dishKey");
-      
-      let nutrients;
-      if (forceLlmMicros) {
-        // Rule 1: Bypass DBs and force LLM web search for micros directly
-        nutrients = groqEstimateNutrients_(query, {useWebSearch: true});
-      } else {
-        // Rule 2: Normal flow
-        nutrients = estimateNutrientsCached_(dishKey, query);
-      }
+      const nutrients = estimateNutrientsCached_(dishKey, query);
       out = {ok:true, nutrients};
-    }
     }else if(action === "estimatebatch"){
       const items = parseJson_(p.items || "[]");
       const results = [];
@@ -178,30 +164,20 @@ function doPost(e){
     }
 
     if(action === "session"){
-      // POST-based session bootstrap
       const auth = requireAuthWithIdToken_(p);
       const sess = createSession_(auth.email, auth.info);
       return output_({ok:true, session_key:sess.session_key, ttl_s:sess.ttl_s}, prefix);
     }
 
-    }else if(action === "estimate"){
+    if(action === "estimate"){
       const q = String(p.q || p.dish || "").trim();
       const dishKey = String(p.k || p.dishKey || q || "").toLowerCase().trim();
       const query = String(p.q || p.query || q || dishKey).trim();
-      const forceLlmMicros = (String(p.forceLlmMicros) === "true");
-      
       if(!dishKey) throw new Error("Missing dish/dishKey");
-      
-      let nutrients;
-      if (forceLlmMicros) {
-        // Rule 1: Bypass DBs and force LLM web search for micros directly
-        nutrients = groqEstimateNutrients_(query, {useWebSearch: true});
-      } else {
-        // Rule 2: Normal flow
-        nutrients = estimateNutrientsCached_(dishKey, query);
-      }
-      out = {ok:true, nutrients};
+      const nutrients = estimateNutrientsCached_(dishKey, query);
+      return output_({ok:true, nutrients}, prefix);
     }
+
     if(action === "estimatebatch"){
       const items = parseJson_(p.items || "[]");
       const results = [];
