@@ -1942,23 +1942,31 @@ async function hydrateMicrosForCurrentDay(){
 
     if(res && res.ok && res.results){
       let updated = false;
-      
+
       res.results.forEach(r => {
         if(r.ok && r.nutrients){
           const f = dayData.foods.find(x => x.id === r.id);
           if(f){
             let finalNutrients = r.nutrients;
-            const targetCal = f.fromPlan ? (+f.cal||0) : 0;
-            
-            // Client-side scaling
-            if(targetCal > 0 && isFinite(+finalNutrients.calories_kcal) && (+finalNutrients.calories_kcal) > 0){
-               finalNutrients = scaleNutrients(finalNutrients, targetCal);
-            }
+            const aiCal = +finalNutrients.calories_kcal || 0;
 
-            f.micros = finalNutrients.micros || {};
+            if(f.hasManualMacros){
+              // ── Macros are sacrosanct: only take micros, scaled to user's calories ──
+              const userCal = +f.cal || 0;
+              const microScale = (userCal > 0 && aiCal > 0) ? (userCal / aiCal) : 1;
+              const scaledMicros = {};
+              for(const [k, v] of Object.entries(finalNutrients.micros || {})){
+                scaledMicros[k] = Math.round((+v || 0) * microScale * 100) / 100;
+              }
+              f.micros = scaledMicros;
+            } else {
+              // ── AI provides everything — scale to plan target if applicable ──
+              const targetCal = f.fromPlan ? (+f.cal||0) : 0;
+              if(targetCal > 0 && aiCal > 0){
+                finalNutrients = scaleNutrients(finalNutrients, targetCal);
+              }
+              f.micros = finalNutrients.micros || {};
 
-            // Only overwrite macros if the user didn't manually supply them in the UI
-            if (!f.hasManualMacros) {
               if(isFinite(+finalNutrients.protein_g)) f.protein = +finalNutrients.protein_g;
               if(isFinite(+finalNutrients.carbs_g))   f.carbs   = +finalNutrients.carbs_g;
               if(isFinite(+finalNutrients.fat_g))     f.fat     = +finalNutrients.fat_g;
@@ -2281,15 +2289,19 @@ function renderCustomModal(){
       </div>
 
       <details id="cfOptionalMacros" style="margin-top:1rem">
-        <summary style="cursor:pointer;font-size:.6875rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Optional Macros</summary>
+        <summary style="cursor:pointer;font-size:.6875rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Override Macros (optional)</summary>
         <div class="custom-grid" style="margin-top:.75rem">
-          <input id="cfCal" type="number" placeholder="Calories (kcal)">
+          <input id="cfCal" type="number" placeholder="Calories (kcal) — auto from P/C/F">
           <input id="cfPro" type="number" placeholder="Protein (g)">
           <input id="cfCarb" type="number" placeholder="Carbs (g)">
           <input id="cfFat" type="number" placeholder="Fat (g)">
           <input id="cfFib" type="number" placeholder="Fibre (g)">
         </div>
-        <div class="export-hint" style="text-align:left; margin-top:.5rem;">If provided, AI will only fetch micronutrients in the background. If left blank, AI/DBs will calculate everything.</div>
+        <div class="export-hint" style="text-align:left; margin-top:.5rem;">
+          <b>Your macros are sacrosanct</b> — if you fill these in, they are recorded as-is (never overwritten by AI). Calories are auto-derived from P×4 + C×4 + F×9 if left blank.<br>
+          AI will estimate <b>micronutrients only</b> in the background, scaled to your calorie count.<br><br>
+          <b>Leave blank</b> to let AI + nutrition DBs estimate everything from the dish name and portion.
+        </div>
       </details>
 
       <button class="plan-add-all" style="margin-top:1.25rem" onclick="addCustomFoodUnified()">Add Food</button>
@@ -2359,23 +2371,30 @@ async function addCustomFoodUnified(){
   const dishText = `${n} (${pNum} ${unitStr})`;
 
   if (hasMacros) {
-    // Rule 1: Macros provided. Add to UI immediately, fetch micros via AI later.
+    // Rule 1: Macros provided — sacrosanct. Add to UI immediately, fetch micros via AI later.
+    const pVal = +pro || 0;
+    const cVal = +carb || 0;
+    const fVal = +fat || 0;
+    const fibVal = +fib || 0;
+    // Auto-derive calories from macros when cal field is empty
+    const calVal = (c !== "") ? Math.round(+c) : Math.round(pVal*4 + cVal*4 + fVal*9);
     addFood({
       name: n,
       desc: `${pNum} ${unitStr}`,
       meal: meal,
-      cal: Math.round(+c || 0),
-      protein: +pro || 0,
-      carbs: +carb || 0,
-      fat: +fat || 0,
-      fiber: +fib || 0,
+      cal: calVal,
+      protein: pVal,
+      carbs: cVal,
+      fat: fVal,
+      fiber: fibVal,
       micros: {},
       estimated: false,
-      hasManualMacros: true // Flags background task not to overwrite macros
+      hasManualMacros: true // Flags background task: don't overwrite macros, only scale micros
     });
     closeModal();
     // Background hydration kicks in 80ms later
     setTimeout(()=>hydrateMicrosForCurrentDay().catch(()=>{}), 80);
+    
   } else {
     // Rule 2: No macros provided. Estimate everything now.
     if(!cloudReady()){
