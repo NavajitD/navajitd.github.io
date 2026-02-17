@@ -78,7 +78,7 @@
             font-size: 1.15rem; font-weight: 600; letter-spacing: -0.02em;
         }
         .header-left .icon { font-size: 1.3rem; }
-        .header-right { display: flex; align-items: center; gap: 0.75rem; }
+        .header-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
         .user-avatar {
             width: 28px; height: 28px; border-radius: 50%;
             border: 1.5px solid var(--border-color); cursor: pointer;
@@ -91,7 +91,7 @@
             width: 2.5rem; height: 2rem; border-radius: 6px;
             border: 1px solid var(--border-color); background: var(--bg-color);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s ease; position: relative;
+            transition: all 0.3s ease; position: relative; flex-shrink: 0;
         }
         .theme-toggle:hover { border-color: var(--accent-color); }
         .theme-toggle svg {
@@ -244,6 +244,29 @@
         }
         .empty-state .icon { font-size: 2rem; margin-bottom: 0.75rem; }
         .empty-state p { font-size: 0.9rem; }
+
+        /* ─── CSV Export ─── */
+        .csv-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 0.75rem;
+        }
+        .csv-btn {
+            font-family: var(--font-sans); font-size: 0.8rem; font-weight: 500;
+            padding: 0.5rem 0.7rem; border-radius: 5px;
+            border: 1px solid var(--border-color); background: var(--card-bg);
+            color: var(--text-color); cursor: pointer;
+            transition: all 0.2s ease; text-align: center;
+        }
+        .csv-btn:hover {
+            border-color: var(--accent-color); color: var(--accent-color);
+        }
+        .csv-section-label {
+            font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--muted-color); margin-bottom: 0.6rem;
+        }
+        @media (max-width: 600px) {
+            .csv-grid { grid-template-columns: 1fr 1fr; }
+        }
 
         /* ─── Analytics ─── */
         .analytics-section { margin-bottom: 2rem; }
@@ -573,6 +596,7 @@
         <!-- ─── RECENT TAB ─── -->
         <div id="tab-recent" class="tab-content">
             <div id="recentList" class="recent-list"></div>
+            <div id="csvExportSection" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-color);"></div>
         </div>
 
         <!-- ─── ANALYTICS TAB ─── -->
@@ -1016,6 +1040,68 @@
                     <span class="recent-item-amount">₹${e.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                 </div>`;
         }).join('');
+        
+        renderCSVExport();
+    }
+
+    function renderCSVExport() {
+    const container = document.getElementById('csvExportSection');
+    if (allExpenses.length === 0) { container.innerHTML = ''; return; }
+
+    // Get unique month-year combos from data
+    const monthYears = {};
+    allExpenses.forEach(e => {
+        const d = e.date instanceof Date ? e.date : new Date(e.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleString('en', { month: 'short', year: 'numeric' });
+        monthYears[key] = label;
+    });
+
+    const sorted = Object.entries(monthYears).sort((a, b) => b[0].localeCompare(a[0]));
+
+    container.innerHTML = `
+        <div class="csv-section-label">Export as CSV</div>
+        <div class="csv-grid">
+            ${sorted.map(([key, label]) =>
+                `<button class="csv-btn" onclick="downloadCSV('${key}')">${label}</button>`
+            ).join('')}
+        </div>`;
+    }
+
+    function downloadCSV(monthKey) {
+        const [year, month] = monthKey.split('-').map(Number);
+        const filtered = allExpenses.filter(e => {
+            const d = e.date instanceof Date ? e.date : new Date(e.date);
+            return d.getFullYear() === year && d.getMonth() + 1 === month;
+        });
+    
+        if (filtered.length === 0) { toast('No data for this month', 'error'); return; }
+    
+        const headers = ['Date', 'Expense', 'Category', 'Amount', 'Original Amount', 'Payment Method', 'Shared', 'Billing Cycle'];
+        const rows = filtered.map(e => {
+            const d = e.date instanceof Date ? e.date : new Date(e.date);
+            return [
+                d.toISOString().split('T')[0],
+                `"${(e.expenseName || '').replace(/"/g, '""')}"`,
+                e.category,
+                e.amount,
+                e.originalAmount || e.amount,
+                e.paymentMethod,
+                e.shared || 'No',
+                e.billingCycle || ''
+            ].join(',');
+        });
+    
+        const csv = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const monthName = new Date(year, month - 1).toLocaleString('en', { month: 'long' });
+        a.download = `expenses-${monthName}-${year}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast(`Downloaded ${monthName} ${year}`, 'success');
     }
 
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
