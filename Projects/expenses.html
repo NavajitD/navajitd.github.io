@@ -533,6 +533,17 @@
                         <input type="date" id="expDate">
                     </div>
                     <div id="billingInfo" class="billing-info" style="display:none;"></div>
+                    <div id="cardPicker" class="form-group full-width" style="display:none;">
+                        <label>Credit Card</label>
+                        <div style="display:flex;gap:0.6rem;">
+                            <label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
+                                <input type="radio" name="cardType" value="Sapphiro" style="accent-color:var(--accent-color);" checked> Sapphiro
+                            </label>
+                            <label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
+                                <input type="radio" name="cardType" value="Neucard" style="accent-color:var(--accent-color);"> Neucard
+                            </label>
+                        </div>
+                    </div>
                     <div class="form-group full-width">
                         <div class="shared-row">
                             <input type="checkbox" id="expShared" onchange="toggleShared()">
@@ -715,6 +726,46 @@
     });
 
     /* ═══════════════════════════════════════════════════
+       AUTO-CATEGORIZATION (keyword match, instant)
+       ═══════════════════════════════════════════════════ */
+    const CATEGORY_KEYWORDS = {
+        'Auto/Cab': ['uber','ola','cab','auto','taxi','ride','rapido','lyft'],
+        'Eating out': ['zomato','swiggy','restaurant','cafe','coffee','chai','dinner','lunch','breakfast','biryani','pizza','burger','dominos','starbucks','mcd','kfc','dine'],
+        'Groceries': ['bigbasket','blinkit','zepto','grocery','vegetables','fruits','milk','supermarket','dmart','more','reliance fresh'],
+        'Public transport': ['metro','bus','train','namma','bmtc','irctc','ticket'],
+        'Bike': ['petrol','fuel','servicing','helmet','tyre'],
+        'Rent/Maintenance': ['rent','maintenance','society','hoa'],
+        'Electricity': ['electricity','bescom','power bill'],
+        'Internet': ['wifi','broadband','jio','airtel','internet','bsnl'],
+        'Phone': ['recharge','mobile','phone bill'],
+        'Medical expenses': ['pharmacy','medicine','doctor','hospital','clinic','apollo','medplus','1mg','pharmeasy'],
+        'Entertainment': ['netflix','spotify','prime','hotstar','subscription','youtube'],
+        'Cinema': ['movie','cinema','pvr','inox','film','imax'],
+        'Clothes': ['clothes','shirt','shoes','amazon fashion','myntra','ajio','shopping'],
+        'Flights': ['flight','airline','indigo','spicejet','air india','vistara','goair','airport'],
+        'Travel': ['hotel','hostel','airbnb','oyo','booking','resort','trip'],
+        'Education': ['course','book','udemy','coursera','class','tuition'],
+        'Gift': ['gift','present','birthday','anniversary'],
+        'Investment': ['invest','mutual fund','sip','stock','zerodha','groww'],
+        'Insurance': ['insurance','premium','lic','policy'],
+        'Liquor': ['beer','wine','whiskey','liquor','bar','pub','brewery'],
+        'Party': ['party','celebration','event'],
+        'Games/Sports': ['gym','sport','badminton','cricket','football','game','decathlon'],
+        'Household supplies': ['cleaning','detergent','mop','broom','tissue','toiletries'],
+        'Furniture': ['furniture','ikea','chair','desk','table','shelf','mattress'],
+        'Services': ['haircut','salon','laundry','dry clean','plumber','electrician','repair'],
+        'Gas': ['gas','cylinder','lpg','indane','bharat gas','hp gas'],
+    };
+
+    function autoCategory(name) {
+        const lower = name.toLowerCase();
+        for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+            if (keywords.some(kw => lower.includes(kw))) return cat;
+        }
+        return null;
+    }
+
+    /* ═══════════════════════════════════════════════════
        INIT
        ═══════════════════════════════════════════════════ */
     function initApp() {
@@ -725,6 +776,18 @@
         document.getElementById('expPayment').addEventListener('change', updateBillingInfo);
         document.getElementById('expDate').addEventListener('change', updateBillingInfo);
         updateBillingInfo();
+
+        // Auto-categorize on expense name input (debounced, 150ms)
+        let autoTimer = null;
+        document.getElementById('expName').addEventListener('input', function() {
+            clearTimeout(autoTimer);
+            autoTimer = setTimeout(() => {
+                const match = autoCategory(this.value);
+                if (match) {
+                    document.getElementById('expCategory').value = match;
+                }
+            }, 150);
+        });
 
         // Load data from Firestore
         loadExpenses();
@@ -777,40 +840,45 @@
             if (splitAmt > 0) finalAmount = splitAmt;
         }
 
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span> Adding...';
+        // Resolve payment method (Credit card → CC - Sapphiro / CC - Neucard)
+        const resolvedPayment = payment === 'Credit card'
+            ? 'CC - ' + (document.querySelector('input[name="cardType"]:checked')?.value || 'Sapphiro')
+            : payment;
 
-        try {
-            const doc = {
-                expenseName: name,
-                category: category,
-                amount: finalAmount,
-                originalAmount: originalAmount,
-                date: dateObj,
-                month: dateObj.toLocaleString('en', { month: 'long' }),
-                year: dateObj.getFullYear(),
-                paymentMethod: payment,
-                shared: shared ? 'Yes' : 'No',
-                billingCycle: payment === 'Credit card' ? getBillingCycle(dateObj) : '',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
+        const docData = {
+            expenseName: name,
+            category: category,
+            amount: finalAmount,
+            originalAmount: originalAmount,
+            date: dateObj,
+            month: dateObj.toLocaleString('en', { month: 'long' }),
+            year: dateObj.getFullYear(),
+            paymentMethod: resolvedPayment,
+            shared: shared ? 'Yes' : 'No',
+            billingCycle: payment === 'Credit card' ? getBillingCycle(dateObj) : '',
+            timestamp: new Date()
+        };
 
-            if (shared) {
-                doc.splitBetween = parseInt(document.getElementById('splitCount').value) || 2;
-                doc.splitAmount = finalAmount;
-            }
-
-            await getCollection().add(doc);
-            toast('Expense added!', 'success');
-            resetForm();
-            await loadExpenses();
-        } catch (err) {
-            toast('Error: ' + err.message, 'error');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Add Expense';
+        if (shared) {
+            docData.splitBetween = parseInt(document.getElementById('splitCount').value) || 2;
+            docData.splitAmount = finalAmount;
         }
+
+        // Optimistic UI: update instantly, write to Firestore in background
+        allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
+        renderRecent();
+        toast('Expense added!', 'success');
+        resetForm();
+        document.getElementById('expName').focus();
+
+        // Fire-and-forget Firestore write
+        getCollection().add({
+            ...docData,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => {
+            toast('Sync failed — will retry', 'error');
+            console.error(err);
+        });
     }
 
     /* ═══════════════════════════════════════════════════
@@ -822,6 +890,8 @@
         document.getElementById('expCategory').selectedIndex = 0;
         document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('expShared').checked = false;
+        const sapphiro = document.querySelector('input[name="cardType"][value="Sapphiro"]');
+        if (sapphiro) sapphiro.checked = true;
         toggleShared();
         updateBillingInfo();
     }
@@ -845,11 +915,14 @@
         const payment = document.getElementById('expPayment').value;
         const dateStr = document.getElementById('expDate').value;
         const el = document.getElementById('billingInfo');
+        const cardPicker = document.getElementById('cardPicker');
         if (payment === 'Credit card' && dateStr) {
             el.textContent = 'Billing Cycle: ' + getBillingCycle(new Date(dateStr + 'T00:00:00'));
             el.style.display = 'block';
+            cardPicker.style.display = 'block';
         } else {
             el.style.display = 'none';
+            cardPicker.style.display = 'none';
         }
     }
 
