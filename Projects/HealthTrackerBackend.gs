@@ -539,7 +539,7 @@ function setCachedFoodNutrients_(dishKey, query, meta, nutrients){
 
 const GROQ_CHAT_ENDPOINT_ = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_DEFAULT_NUTRIENT_MODEL_ = "llama-3.3-70b-versatile";
-const GROQ_DEFAULT_WEB_MODEL_ = "groq/compound-mini";
+const GROQ_DEFAULT_WEB_MODEL_ = "groq/compound-beta";
 
 const NUTRIENT_MICRO_KEYS_ = [
   "vitamin_a_ug","vitamin_c_mg","vitamin_d_ug","vitamin_e_mg","vitamin_k_ug",
