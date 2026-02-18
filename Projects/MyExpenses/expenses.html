@@ -819,7 +819,7 @@
     });
 
     function signInWithGoogle() {
-        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => toast('Sign-in failed: ' + e.message, 'error'));
+        auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
     }
     function signOut() {
         auth.signOut();
