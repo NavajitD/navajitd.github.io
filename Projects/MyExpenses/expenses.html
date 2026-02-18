@@ -686,6 +686,13 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    
+    // Handle redirect result on page reload
+    auth.getRedirectResult().catch(err => {
+        if (err.code !== 'auth/credential-already-in-use') {
+            console.error('Redirect auth error:', err);
+        }
+    });
 
     /* ═══════════════════════════════════════════════════
        STATE
