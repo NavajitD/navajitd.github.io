@@ -673,26 +673,19 @@
        CONFIG — Replace with your own values
        ═══════════════════════════════════════════════════ */
     const firebaseConfig = {
-        apiKey: "AIzaSyDWK-pRnYW1uYS2IfqfW-H9lNNzB-UZlFc",
-        authDomain: "expense-tracker-navajitd.firebaseapp.com",
-        projectId: "expense-tracker-navajitd",
-        storageBucket: "expense-tracker-navajitd.firebasestorage.app",
-        messagingSenderId: "417980148545",
-        appId: "1:417980148545:web:b8a7a0bdb59905a8098fc0"
+      apiKey: "AIzaSyDWK-pRnYW1uYS2IfqfW-H9lNNzB-UZlFc",
+      authDomain: "expense-tracker-navajitd.firebaseapp.com",
+      projectId: "expense-tracker-navajitd",
+      storageBucket: "expense-tracker-navajitd.firebasestorage.app",
+      messagingSenderId: "417980148545",
+      appId: "1:417980148545:web:b8a7a0bdb59905a8098fc0"
     };
-        
+            
     const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbw5V3t2L8D_vZ2pUO5p9B_4ry-kHpsjK781ec1vLrjL7hbga91CPkR343rb0I_h9rgt/exec";
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    
-    // Handle redirect result on page reload
-    auth.getRedirectResult().catch(err => {
-        if (err.code !== 'auth/credential-already-in-use') {
-            console.error('Redirect auth error:', err);
-        }
-    });
 
     /* ═══════════════════════════════════════════════════
        STATE
@@ -809,9 +802,10 @@
                 document.getElementById('mainApp').style.display = 'block';
                 initApp();
             } else {
-                // New user — check cap
-                const usersSnap = await db.collection('users').get();
-                if (usersSnap.size >= 15) {
+                // New user — check cap via counter doc (avoids collection-wide read)
+                const statsDoc = await db.collection('metadata').doc('stats').get();
+                const userCount = statsDoc.exists ? (statsDoc.data().userCount || 0) : 0;
+                if (userCount >= 15) {
                     document.getElementById('capScreen').style.display = 'flex';
                     return;
                 }
@@ -826,7 +820,7 @@
     });
 
     function signInWithGoogle() {
-        auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => toast('Sign-in failed: ' + e.message, 'error'));
     }
     function signOut() {
         auth.signOut();
@@ -948,7 +942,23 @@
         };
 
         try {
-            await db.collection('users').doc(currentUser.uid).set(profile);
+            // Atomic transaction: re-check cap + create profile + increment counter
+            const statsRef = db.collection('metadata').doc('stats');
+            const userRef = db.collection('users').doc(currentUser.uid);
+
+            await db.runTransaction(async (tx) => {
+                const statsDoc = await tx.get(statsRef);
+                const userCount = statsDoc.exists ? (statsDoc.data().userCount || 0) : 0;
+                if (userCount >= 15) {
+                    throw new Error('USER_CAP_REACHED');
+                }
+                tx.set(userRef, profile);
+                if (statsDoc.exists) {
+                    tx.update(statsRef, { userCount: firebase.firestore.FieldValue.increment(1) });
+                } else {
+                    tx.set(statsRef, { userCount: 1 });
+                }
+            });
             userProfile = profile;
             applyUserProfile();
             document.getElementById('onboardingScreen').style.display = 'none';
@@ -956,6 +966,11 @@
             toast('Setup complete!', 'success');
             initApp();
         } catch (err) {
+            if (err.message === 'USER_CAP_REACHED') {
+                document.getElementById('onboardingScreen').style.display = 'none';
+                document.getElementById('capScreen').style.display = 'flex';
+                return;
+            }
             toast('Error: ' + err.message, 'error');
         } finally {
             btn.disabled = false; btn.textContent = 'Save & Start Tracking';
@@ -1278,6 +1293,7 @@
             const batch = db.batch();
             snap.docs.forEach(d => batch.delete(d.ref));
             batch.delete(db.collection('users').doc(currentUser.uid));
+            batch.update(db.collection('metadata').doc('stats'), { userCount: firebase.firestore.FieldValue.increment(-1) });
             await batch.commit();
             closeDeleteModal();
             localStorage.removeItem('pinnedSuggestions');
