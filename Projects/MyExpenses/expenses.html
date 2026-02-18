@@ -488,10 +488,10 @@
             <div class="chip-grid" id="onboardPayments"></div>
             <div class="add-custom-row">
                 <input type="text" id="customPaymentInput" placeholder="Add custom...">
-                <button onclick="addCustomChip('onboardPayments','customPaymentInput')">+ Add</button>
+                <button onclick="addCustomChip('onboardPayments','customPaymentInput'); updateCCVisibility();">+ Add</button>
             </div>
         </div>
-        <div class="onboard-section">
+        <div class="onboard-section" id="onboardCCSection" style="display:none;">
             <div class="onboard-section-label">Credit Cards</div>
             <div class="onboard-section-hint">Name your credit cards (shown when you select CC as payment)</div>
             <div class="cc-names-list" id="onboardCCNames"></div>
@@ -673,14 +673,14 @@
        CONFIG — Replace with your own values
        ═══════════════════════════════════════════════════ */
     const firebaseConfig = {
-      apiKey: "AIzaSyDWK-pRnYW1uYS2IfqfW-H9lNNzB-UZlFc",
-      authDomain: "expense-tracker-navajitd.firebaseapp.com",
-      projectId: "expense-tracker-navajitd",
-      storageBucket: "expense-tracker-navajitd.firebasestorage.app",
-      messagingSenderId: "417980148545",
-      appId: "1:417980148545:web:b8a7a0bdb59905a8098fc0"
+        apiKey: "AIzaSyDWK-pRnYW1uYS2IfqfW-H9lNNzB-UZlFc",
+        authDomain: "expense-tracker-navajitd.firebaseapp.com",
+        projectId: "expense-tracker-navajitd",
+        storageBucket: "expense-tracker-navajitd.firebasestorage.app",
+        messagingSenderId: "417980148545",
+        appId: "1:417980148545:web:b8a7a0bdb59905a8098fc0"
     };
-            
+        
     const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbw5V3t2L8D_vZ2pUO5p9B_4ry-kHpsjK781ec1vLrjL7hbga91CPkR343rb0I_h9rgt/exec";
 
     firebase.initializeApp(firebaseConfig);
@@ -842,13 +842,20 @@
 
     function initOnboarding() {
         document.getElementById('onboardPayments').innerHTML =
-            DEFAULT_PAYMENTS.map(p => `<span class="chip selected" onclick="this.classList.toggle('selected')">${p}</span>`).join('');
+            DEFAULT_PAYMENTS.map(p => `<span class="chip selected" onclick="this.classList.toggle('selected'); updateCCVisibility();">${p}</span>`).join('');
         document.getElementById('onboardCategories').innerHTML =
             DEFAULT_CATEGORIES.map(c => `<span class="chip selected" onclick="this.classList.toggle('selected')">${c}</span>`).join('');
         onboardCCNames = ['Sapphiro', 'Neucard'];
         renderCCNames();
         onboardThemeMap = JSON.parse(JSON.stringify(DEFAULT_THEMES));
         renderOnboardThemes();
+        updateCCVisibility();
+    }
+
+    function updateCCVisibility() {
+        const payments = getSelectedChips('onboardPayments');
+        const hasCC = payments.some(p => p.toLowerCase().includes('credit card'));
+        document.getElementById('onboardCCSection').style.display = hasCC ? 'block' : 'none';
     }
 
     function addCustomChip(gridId, inputId) {
@@ -862,7 +869,7 @@
         const chip = document.createElement('span');
         chip.className = 'chip selected';
         chip.textContent = val;
-        chip.onclick = () => chip.classList.toggle('selected');
+        chip.onclick = () => { chip.classList.toggle('selected'); if (gridId === 'onboardPayments') updateCCVisibility(); };
         grid.appendChild(chip);
         input.value = '';
     }
@@ -921,6 +928,9 @@
         if (payments.length === 0) { toast('Select at least one payment method', 'error'); btn.disabled = false; btn.textContent = 'Save & Start Tracking'; return; }
         if (categories.length === 0) { toast('Select at least one category', 'error'); btn.disabled = false; btn.textContent = 'Save & Start Tracking'; return; }
 
+        const hasCC = payments.some(p => p.toLowerCase().includes('credit card'));
+        if (hasCC && onboardCCNames.length === 0) { toast('Add at least one credit card name', 'error'); btn.disabled = false; btn.textContent = 'Save & Start Tracking'; return; }
+
         const themes = {};
         for (const [t, cats] of Object.entries(onboardThemeMap)) {
             const f = cats.filter(c => categories.includes(c));
@@ -935,29 +945,22 @@
             email: currentUser.email || '',
             photoURL: currentUser.photoURL || '',
             paymentMethods: payments,
-            creditCards: onboardCCNames,
+            creditCards: hasCC ? onboardCCNames : [],
             categories: categories,
             themes: themes,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         try {
-            // Atomic transaction: re-check cap + create profile + increment counter
             const statsRef = db.collection('metadata').doc('stats');
-            const userRef = db.collection('users').doc(currentUser.uid);
-
             await db.runTransaction(async (tx) => {
                 const statsDoc = await tx.get(statsRef);
                 const userCount = statsDoc.exists ? (statsDoc.data().userCount || 0) : 0;
                 if (userCount >= 15) {
                     throw new Error('USER_CAP_REACHED');
                 }
-                tx.set(userRef, profile);
-                if (statsDoc.exists) {
-                    tx.update(statsRef, { userCount: firebase.firestore.FieldValue.increment(1) });
-                } else {
-                    tx.set(statsRef, { userCount: 1 });
-                }
+                tx.set(db.collection('users').doc(currentUser.uid), profile);
+                tx.set(statsRef, { userCount: userCount + 1 }, { merge: true });
             });
             userProfile = profile;
             applyUserProfile();
@@ -1293,8 +1296,14 @@
             const batch = db.batch();
             snap.docs.forEach(d => batch.delete(d.ref));
             batch.delete(db.collection('users').doc(currentUser.uid));
-            batch.update(db.collection('metadata').doc('stats'), { userCount: firebase.firestore.FieldValue.increment(-1) });
             await batch.commit();
+            // Decrement user counter
+            const statsRef = db.collection('metadata').doc('stats');
+            await db.runTransaction(async (tx) => {
+                const statsDoc = await tx.get(statsRef);
+                const count = statsDoc.exists ? (statsDoc.data().userCount || 0) : 0;
+                tx.set(statsRef, { userCount: Math.max(0, count - 1) }, { merge: true });
+            });
             closeDeleteModal();
             localStorage.removeItem('pinnedSuggestions');
             toast('Account deleted', 'success');
