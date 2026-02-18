@@ -680,7 +680,8 @@
         messagingSenderId: "YOUR_SENDER_ID",
         appId: "YOUR_APP_ID"
     };
-    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY";
+        
+    const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbw5V3t2L8D_vZ2pUO5p9B_4ry-kHpsjK781ec1vLrjL7hbga91CPkR343rb0I_h9rgt/exec";
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -1616,8 +1617,8 @@
         const query = quickPrompt || input.value.trim();
         if (!query) return;
 
-        if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY') {
-            toast('Set your Gemini API key first', 'error'); return;
+        if (!GEMINI_PROXY_URL || GEMINI_PROXY_URL.includes('YOUR_DEPLOYMENT')) {
+            toast('Set your Gemini proxy URL first', 'error'); return;
         }
 
         appendChat('user', query);
@@ -1645,17 +1646,14 @@ Rules:
         }
 
         try {
-            const res = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        system_instruction: { parts: [{ text: systemPrompt }] },
-                        contents
-                    })
-                }
-            );
+            const res = await fetch(GEMINI_PROXY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    system_instruction: { parts: [{ text: systemPrompt }] },
+                    contents
+                })
+            });
 
             const data = await res.json();
             const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I couldn\'t generate a response.';
