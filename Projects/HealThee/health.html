@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>HealthTracker+</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%3E%0A%3Crect%20width%3D%2732%27%20height%3D%2732%27%20rx%3D%276%27%20fill%3D%27%2350C878%27%2F%3E%0A%3Cpath%20d%3D%27M16%2027s-8.6-5-11.2-10.9C2.6%2011.5%205.4%207.5%209.2%207.5c2.3%200%204.2%201.3%205.1%203%200%200%200%20.1.1.1%200%200%200-.1.1-.1%201-1.7%202.9-3%205.1-3%203.8%200%206.6%204%204.4%208.6C24.6%2022%2016%2027%2016%2027z%27%20fill%3D%27white%27%20opacity%3D%270.95%27%2F%3E%0A%3C%2Fsvg%3E">
+
+<style>
+:root {
+  --text: #0a1f00; --bg: #ffffff; --card: #ffffff; --bg2: #f9fafb;
+  --accent: #2563eb; --muted: #6b7280; --border: #e5e7eb;
+  --green: #16a34a; --orange: #ea580c; --yellow: #eab308; --red: #dc2626;
+  --font: "Inconsolata", monospace; --radius: 12px; --max-w: 42rem;
+}
+[data-theme="dark"] {
+  --text: #e7f5ea; --bg: #050806; --card: #0b120d; --bg2: #0e1912;
+  --accent: #22c55e; --muted: #9fb0a6; --border: #1f2f26;
+  --green: #22c55e; --orange: #fb923c; --yellow: #facc15; --red: #f87171;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.5;padding-bottom:5rem;max-width:var(--max-w);margin:0 auto;transition:background .3s,color .3s}
+
+/* Layout & Utils */
+.header{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--border);padding:.8rem 1rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;backdrop-filter:blur(8px);background:rgba(255,255,255,0.85)}
+[data-theme="dark"] .header{background:rgba(5,8,6,0.85)}
+
+.logo{font-weight:700;font-size:1.1rem;letter-spacing:-.02em}
+.logo span{color:var(--accent)}
+
+.theme-toggle{width:2rem;height:2rem;border-radius:50%;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.theme-toggle svg{width:16px;height:16px;stroke:var(--text);fill:none;stroke-width:2}
+
+.date-nav{display:flex;align-items:center;justify-content:center;gap:1rem;margin-bottom:1.5rem}
+.date-nav button{background:none;border:none;font-size:1.2rem;color:var(--muted);cursor:pointer;padding:0 .5rem}
+.date-label{font-weight:700;font-size:1rem;min-width:9rem;text-align:center}
+
+.app{padding:0 1rem}
+.card{border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,0.02)}
+.card-title{font-size:.75rem;font-weight:600;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;letter-spacing:0.05em}
+
+/* Rings & Stats */
+.ring-wrap{display:flex;gap:1.5rem;align-items:center}
+.ring-container{position:relative;width:100px;height:100px;flex-shrink:0}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-big{font-size:1.4rem;font-weight:700;line-height:1}
+.ring-small{font-size:.7rem;color:var(--muted)}
+.ring-info{flex:1}
+
+.prog{margin-bottom:.6rem}
+.prog-head{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.2rem}
+.prog-track{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.prog-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-top:1rem}
+.stat-box{background:var(--bg2);padding:.6rem;border-radius:8px;text-align:center;border:1px solid var(--border)}
+.stat-val{font-weight:700;font-size:1rem}
+.stat-lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase}
+
+/* Food Log */
+.food-item{display:flex;align-items:center;gap:.8rem;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.food-item:last-child{border-bottom:none}
+.food-icon{width:2rem;height:2rem;background:var(--bg2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.food-info{flex:1;min-width:0}
+.food-name{font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.food-meta{font-size:.75rem;color:var(--muted)}
+.food-cal{font-weight:700;font-size:.9rem;margin-right:.5rem}
+.food-del{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:0 .25rem}
+.food-del:hover{color:var(--red)}
+
+.action-btns{display:flex;gap:.5rem;margin-bottom:1rem}
+.btn{flex:1;padding:.6rem;border:1px solid var(--border);border-radius:8px;background:var(--bg2);font-weight:600;font-size:.85rem;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;gap:.4rem}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Checklists */
+.checklist{display:grid;gap:.5rem}
+.check-item{display:flex;align-items:center;gap:.8rem;padding:.6rem;border-radius:8px;cursor:pointer;transition:background .2s}
+.check-item:hover{background:var(--bg2)}
+.check-box{width:1.2rem;height:1.2rem;border:2px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.check-item.checked .check-box{background:var(--accent);border-color:var(--accent);color:white}
+.check-label{flex:1;font-size:.9rem}
+
+/* Navigation */
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom);z-index:50}
+.nav-inner{display:flex;justify-content:space-around;max-width:var(--max-w);margin:0 auto}
+.nav-item{padding:.6rem;display:flex;flex-direction:column;align-items:center;color:var(--muted);cursor:pointer;flex:1}
+.nav-item svg{width:22px;height:22px;stroke-width:2;margin-bottom:2px}
+.nav-item span{font-size:.65rem;font-weight:600}
+.nav-item.active{color:var(--accent)}
+
+/* Modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:60;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);width:100%;max-width:var(--max-w);border-radius:16px 16px 0 0;padding:1.5rem;max-height:85vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+.input-group{margin-bottom:1rem}
+.input-group label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:.4rem;text-transform:uppercase}
+.input-field{width:100%;padding:.7rem;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:1rem;background:var(--bg);color:var(--text);outline:none}
+.input-field:focus{border-color:var(--accent)}
+.input-row{display:flex;gap:.8rem}
+
+/* Toast */
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:.6rem 1.2rem;border-radius:20px;font-size:.85rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+.toast.vis{opacity:1}
+
+/* Auth */
+.auth-screen{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center}
+.auth-btn{background:#fff;color:#333;border:1px solid #ddd;padding:.8rem 1.5rem;border-radius:24px;font-weight:600;display:flex;align-items:center;gap:.6rem;font-size:1rem;margin-top:2rem;box-shadow:0 2px 5px rgba(0,0,0,0.1);cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="auth-screen" id="authScreen">
+  <div style="font-size:3rem;margin-bottom:1rem">❤️</div>
+  <h1 style="font-size:1.8rem;margin-bottom:.5rem">HealthTracker+</h1>
+  <p style="color:var(--muted)">Syncs in real-time across devices.</p>
+  <button class="auth-btn" onclick="signIn()">
+    <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.715H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.159 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+    Sign in with Google
+  </button>
+</div>
+
+<div class="header">
+  <div class="logo">Health<span>Tracker+</span></div>
+  <div style="display:flex;gap:1rem;align-items:center">
+     <div id="userEmail" style="font-size:0.7rem;color:var(--muted)"></div>
+     <button class="theme-toggle" onclick="toggleTheme()">
+       <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+     </button>
+     <button class="theme-toggle" onclick="signOut()" style="border-color:transparent;color:var(--red)">
+       <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+     </button>
+  </div>
+</div>
+
+<div class="app" id="mainApp" style="display:none">
+  <div class="date-nav">
+    <button onclick="changeDate(-1)">←</button>
+    <div class="date-label" id="dateLabel">Today</div>
+    <button onclick="changeDate(1)">→</button>
+  </div>
+
+  <div id="tab-today" class="tab-content">
+    <div class="card">
+      <div class="ring-wrap">
+        <div class="ring-container">
+           <svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg)">
+             <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg2)" stroke-width="8"/>
+             <circle id="calRing" cx="50" cy="50" r="42" fill="none" stroke="var(--accent)" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round"/>
+           </svg>
+           <div class="ring-center">
+             <div class="ring-big" id="valCal">0</div>
+             <div class="ring-small">kcal</div>
+           </div>
+        </div>
+        <div class="ring-info">
+          <div class="prog"><div class="prog-head"><span>Protein</span><span id="txtPro">0/120g</span></div><div class="prog-track"><div class="prog-fill" id="barPro" style="width:0%;background:var(--accent)"></div></div></div>
+          <div class="prog"><div class="prog-head"><span>Carbs</span><span id="txtCarb">0/260g</span></div><div class="prog-track"><div class="prog-fill" id="barCarb" style="width:0%;background:var(--yellow)"></div></div></div>
+          <div class="prog"><div class="prog-head"><span>Fats</span><span id="txtFat">0/70g</span></div><div class="prog-track"><div class="prog-fill" id="barFat" style="width:0%;background:var(--orange)"></div></div></div>
+        </div>
+      </div>
+      <div class="stats-grid">
+         <div class="stat-box"><div class="stat-val" id="valWater">0</div><div class="stat-lbl">Water (ml)</div></div>
+         <div class="stat-box"><div class="stat-val" id="valSteps">0</div><div class="stat-lbl">Steps</div></div>
+         <div class="stat-box"><div class="stat-val" id="valSleep">0</div><div class="stat-lbl">Sleep (h)</div></div>
+      </div>
+    </div>
+
+    <div class="action-btns">
+      <button class="btn btn-primary" onclick="openFoodModal()">+ Food</button>
+      <button class="btn" onclick="addWater(250)">+ 250ml 💧</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Food Log</div>
+      <div id="foodList"></div>
+      <div id="emptyState" style="text-align:center;padding:1rem;color:var(--muted);font-size:.85rem">No food logged today</div>
+    </div>
+
+    <div class="card">
+       <div class="card-title">Supplements</div>
+       <div class="checklist" id="suppList"></div>
+    </div>
+
+    <div class="card">
+       <div class="card-title">Skincare</div>
+       <div class="checklist" id="skinList"></div>
+    </div>
+
+  </div> <div id="tab-activity" class="tab-content" style="display:none">
+    <div class="card">
+      <div class="card-title">Activity & Steps</div>
+      <div class="input-group">
+         <label>Steps Today</label>
+         <div class="input-row">
+           <input type="number" id="inpSteps" class="input-field" placeholder="0">
+           <button class="btn btn-primary" onclick="saveSteps()">Save</button>
+         </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Workout Routine</div>
+      <div class="checklist" id="workoutList"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="foodModal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h3 style="font-size:1.2rem">Add Food</h3>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:1.5rem;color:var(--muted)">✕</button>
+    </div>
+    
+    <div class="input-group">
+      <label>What did you eat?</label>
+      <input id="foodQuery" class="input-field" placeholder="e.g. 2 eggs and toast" onkeydown="if(event.key==='Enter') aiEstimate()">
+    </div>
+    
+    <div style="display:flex;gap:1rem;margin-bottom:1.5rem">
+       <button class="btn btn-primary" id="btnAi" onclick="aiEstimate()">✨ AI Estimate</button>
+       <button class="btn" onclick="toggleManual()">Manual Entry</button>
+    </div>
+
+    <div id="manualFields" style="display:none;animation:slideUp .2s">
+      <div class="input-group"><label>Name</label><input id="mName" class="input-field"></div>
+      <div class="input-row">
+        <div class="input-group"><label>Cals</label><input type="number" id="mCal" class="input-field"></div>
+        <div class="input-group"><label>Protein</label><input type="number" id="mPro" class="input-field"></div>
+      </div>
+      <div class="input-row">
+        <div class="input-group"><label>Carbs</label><input type="number" id="mCarb" class="input-field"></div>
+        <div class="input-group"><label>Fat</label><input type="number" id="mFat" class="input-field"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="saveManualFood()">Add Food</button>
+    </div>
+  </div>
+</div>
+
+<nav class="nav" id="btmNav" style="display:none">
+  <div class="nav-inner">
+    <div class="nav-item active" onclick="switchTab('today', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span>Today</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('activity', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <span>Activity</span>
+    </div>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+/* REPLACE THIS CONFIG WITH YOUR FIREBASE PROJECT SETTINGS 
+   Go to Firebase Console -> Project Settings -> General -> Your Apps -> Web
+*/
+const firebaseConfig = {
+  apiKey: "AIzaSyCNv0FCjq0ohtMAUtGT52Suwwz9OJv66y0",
+  authDomain: "fitness-tracker-navajitd.firebaseapp.com",
+  projectId: "fitness-tracker-navajitd",
+  storageBucket: "fitness-tracker-navajitd.firebasestorage.app",
+  messagingSenderId: "189690685694",
+  appId: "1:189690685694:web:9446f0382e65d860b35daf"
+};
+
+
+// --- Backend Proxy URL for AI (Deploy the .gs file provided below) ---
+const AI_PROXY_URL = "https://script.google.com/macros/s/AKfycbzLCxJ3V6XOpQedZZyOeam6PQykX6vAWaQNrE7VsJq9Y6z8an4iTcWwP09chY420S7o/exec";
+
+// Initialize
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+// Enable offline persistence
+db.enablePersistence().catch(err => console.log("Persistence error:", err));
+
+// State
+let currentUser = null;
+let currentDate = new Date();
+let unsubscribeDay = null; // Firestore listener
+let dayData = defaultDay();
+
+const TARGETS = { cal: 2100, pro: 120, carb: 260, fat: 70, water: 3000, steps: 8000 };
+
+// --- Helpers ---
+const $ = id => document.getElementById(id);
+const toast = msg => {
+  const t = $("toast"); t.innerText = msg; t.classList.add("vis");
+  setTimeout(()=>t.classList.remove("vis"), 2500);
+};
+
+// Date helper: Returns YYYY-MM-DD in LOCAL time (fixes the UTC bug)
+function getLocalISODate(d) {
+  const offset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - offset).toISOString().split('T')[0];
+}
+
+function defaultDay() {
+  return { 
+    foods: [], water: 0, steps: 0, sleep: 0, 
+    supplements: {}, skincare: {}, workout: {} 
+  };
+}
+
+// --- Auth ---
+auth.onAuthStateChanged(user => {
+  if(user) {
+    currentUser = user;
+    $("authScreen").style.display = "none";
+    $("mainApp").style.display = "block";
+    $("btmNav").style.display = "block";
+    $("userEmail").innerText = user.email;
+    initDayListener();
+  } else {
+    $("authScreen").style.display = "flex";
+    $("mainApp").style.display = "none";
+    $("btmNav").style.display = "none";
+  }
+});
+
+function signIn() {
+  const p = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(p).catch(e => toast(e.message));
+}
+function signOut() { auth.signOut(); }
+
+// --- Sync Logic (The Core Fix) ---
+function initDayListener() {
+  if(unsubscribeDay) unsubscribeDay(); // stop listening to old date
+  
+  const dateKey = getLocalISODate(currentDate);
+  $("dateLabel").innerText = (dateKey === getLocalISODate(new Date())) ? "Today" : dateKey;
+
+  // Real-time listener: This fires immediately on local write (optimistic) AND when server updates
+  unsubscribeDay = db.collection("users").doc(currentUser.uid)
+    .collection("days").doc(dateKey)
+    .onSnapshot(doc => {
+      dayData = doc.exists ? doc.data() : defaultDay();
+      renderUI();
+    }, err => console.log(err));
+}
+
+function updateDay(updates) {
+  if(!currentUser) return;
+  const dateKey = getLocalISODate(currentDate);
+  // Merging updates into Firestore
+  db.collection("users").doc(currentUser.uid).collection("days").doc(dateKey)
+    .set(updates, { merge: true })
+    .catch(e => toast("Sync error"));
+}
+
+function changeDate(delta) {
+  currentDate.setDate(currentDate.getDate() + delta);
+  initDayListener();
+}
+
+// --- UI Rendering ---
+function renderUI() {
+  // Macros
+  let cal=0, pro=0, carb=0, fat=0;
+  (dayData.foods || []).forEach(f => {
+    cal += f.cal; pro += f.pro; carb += f.carb; fat += f.fat;
+  });
+
+  // Rings
+  const calPct = Math.min((cal / TARGETS.cal) * 264, 264);
+  $("calRing").style.strokeDashoffset = 264 - calPct;
+  $("valCal").innerText = Math.round(cal);
+  
+  $("txtPro").innerText = `${Math.round(pro)}/${TARGETS.pro}g`;
+  $("barPro").style.width = Math.min((pro/TARGETS.pro)*100, 100) + "%";
+  
+  $("txtCarb").innerText = `${Math.round(carb)}/${TARGETS.carb}g`;
+  $("barCarb").style.width = Math.min((carb/TARGETS.carb)*100, 100) + "%";
+  
+  $("txtFat").innerText = `${Math.round(fat)}/${TARGETS.fat}g`;
+  $("barFat").style.width = Math.min((fat/TARGETS.fat)*100, 100) + "%";
+
+  // Stats
+  $("valWater").innerText = dayData.water || 0;
+  $("valSteps").innerText = dayData.steps || 0;
+  $("valSleep").innerText = dayData.sleep || 0;
+  $("inpSteps").value = dayData.steps || "";
+
+  // Food List
+  const fList = $("foodList");
+  fList.innerHTML = "";
+  if(!dayData.foods || dayData.foods.length === 0) {
+    $("emptyState").style.display = "block";
+  } else {
+    $("emptyState").style.display = "none";
+    dayData.foods.forEach((f, idx) => {
+      const div = document.createElement("div");
+      div.className = "food-item";
+      div.innerHTML = `
+        <div class="food-icon">🍽</div>
+        <div class="food-info">
+          <div class="food-name">${f.name}</div>
+          <div class="food-meta">P:${f.pro} C:${f.carb} F:${f.fat}</div>
+        </div>
+        <div class="food-cal">${f.cal}</div>
+        <button class="food-del" onclick="deleteFood(${idx})">×</button>
+      `;
+      fList.appendChild(div);
+    });
+  }
+
+  // Checklists (Supplements / Skincare / Workout)
+  renderChecklist("suppList", ["Creatine", "Multivitamin", "Fish Oil"], dayData.supplements, "supplements");
+  renderChecklist("skinList", ["Face Wash", "Moisturizer", "Sunscreen"], dayData.skincare, "skincare");
+  
+  // Workouts (Simple daily rotation or static list)
+  const workouts = ["Pushups", "Squats", "Pullups", "Plank"];
+  renderChecklist("workoutList", workouts, dayData.workout, "workout");
+}
+
+function renderChecklist(elId, items, dataMap, field) {
+  const el = $(elId);
+  el.innerHTML = "";
+  items.forEach(item => {
+    const isChecked = !!(dataMap && dataMap[item]);
+    const div = document.createElement("div");
+    div.className = `check-item ${isChecked ? 'checked' : ''}`;
+    div.onclick = () => toggleCheck(field, item, !isChecked);
+    div.innerHTML = `<div class="check-box">${isChecked?'✓':''}</div><div class="check-label">${item}</div>`;
+    el.appendChild(div);
+  });
+}
+
+// --- Actions ---
+function toggleCheck(field, item, value) {
+  const map = dayData[field] || {};
+  if(value) map[item] = true; else delete map[item];
+  updateDay({ [field]: map });
+}
+
+function addWater(amount) {
+  const current = dayData.water || 0;
+  updateDay({ water: current + amount });
+  toast(`+${amount}ml Water`);
+}
+
+function saveSteps() {
+  const s = parseInt($("inpSteps").value) || 0;
+  updateDay({ steps: s });
+  toast("Steps Saved");
+}
+
+function deleteFood(idx) {
+  const foods = [...(dayData.foods || [])];
+  foods.splice(idx, 1);
+  updateDay({ foods });
+}
+
+// --- Food Logic ---
+function openFoodModal() {
+  $("foodModal").classList.add("open");
+  $("foodQuery").focus();
+}
+function closeModal() {
+  $("foodModal").classList.remove("open");
+  $("manualFields").style.display = "none";
+  $("foodQuery").value = "";
+}
+function toggleManual() {
+  $("manualFields").style.display = "block";
+}
+
+function saveManualFood() {
+  const name = $("mName").value;
+  if(!name) return;
+  const food = {
+    name,
+    cal: parseInt($("mCal").value)||0,
+    pro: parseInt($("mPro").value)||0,
+    carb: parseInt($("mCarb").value)||0,
+    fat: parseInt($("mFat").value)||0
+  };
+  addFood(food);
+}
+
+function addFood(food) {
+  const foods = [...(dayData.foods || []), food];
+  updateDay({ foods });
+  closeModal();
+  toast("Food Added");
+}
+
+// --- AI Proxy Call ---
+async function aiEstimate() {
+  const q = $("foodQuery").value;
+  if(!q) return;
+  
+  const btn = $("btnAi");
+  btn.innerText = "Thinking...";
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(AI_PROXY_URL, {
+      method: 'POST',
+      body: JSON.stringify({ text: q })
+    });
+    const data = await res.json();
+    
+    if(data.error) throw new Error(data.error);
+    
+    // Auto-add if successful
+    addFood({
+      name: data.name || q,
+      cal: data.calories || 0,
+      pro: data.protein || 0,
+      carb: data.carbs || 0,
+      fat: data.fat || 0
+    });
+  } catch(e) {
+    toast("AI Error: " + e.message);
+    toggleManual(); // Fallback
+  } finally {
+    btn.innerText = "✨ AI Estimate";
+    btn.disabled = false;
+  }
+}
+
+// --- Tab Nav ---
+function switchTab(tab, btn) {
+  document.querySelectorAll(".tab-content").forEach(el => el.style.display="none");
+  $(`tab-${tab}`).style.display = "block";
+  document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+}
+
+// --- Theme ---
+function toggleTheme() {
+  const isDark = document.body.getAttribute("data-theme") === "dark";
+  document.body.setAttribute("data-theme", isDark ? "light" : "dark");
+}
+
+// --- PWA Service Worker ---
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
+</body>
+</html>
