@@ -169,10 +169,21 @@
 
         /* ─── Logs List ─── */
         .recent-list { display: flex; flex-direction: column; }
+        .recent-date-header {
+            font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--muted-color);
+            padding: 0.8rem 0 0.4rem; border-bottom: 1px solid var(--border-color);
+            margin-top: 0.5rem;
+        }
+        .recent-date-header:first-child { margin-top: 0; }
         .recent-item {
             display: flex; justify-content: space-between; align-items: center;
             padding: 0.85rem 0; border-bottom: 1px solid var(--border-color);
+            cursor: pointer; transition: background 0.15s ease;
+            margin: 0 -0.5rem; padding-left: 0.5rem; padding-right: 0.5rem;
+            border-radius: 4px;
         }
+        .recent-item:hover { background: var(--card-hover); }
         .recent-item:last-child { border-bottom: none; }
         .recent-item-left { display: flex; flex-direction: column; gap: 0.15rem; }
         .recent-item-name { font-weight: 500; font-size: 0.9rem; }
@@ -368,6 +379,18 @@
         .modal-danger:hover { opacity: 0.9; }
         .modal-danger:disabled { opacity: 0.4; cursor: not-allowed; }
 
+        /* ─── Edit Expense Modal ─── */
+        .edit-modal-box {
+            background: var(--bg-color); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 1.5rem; max-width: 420px; width: 92%;
+            box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto;
+        }
+        .edit-modal-box h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+        .edit-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+        .edit-modal-actions { display: flex; gap: 0.5rem; justify-content: space-between; margin-top: 1rem; }
+        .edit-modal-actions .left-actions { display: flex; }
+        .edit-modal-actions .right-actions { display: flex; gap: 0.5rem; }
+
         /* ─── Danger Zone ─── */
         .danger-zone { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
         .danger-zone-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--danger-color); margin-bottom: 0.6rem; }
@@ -427,13 +450,14 @@
         /* ─── Responsive ─── */
         @media (max-width: 600px) {
             body { padding: 1.2rem 1rem; }
-            .form-grid, .split-fields { grid-template-columns: 1fr; }
+            .form-grid, .split-fields, .edit-modal-grid { grid-template-columns: 1fr; }
             .metrics-row { grid-template-columns: 1fr; }
             .metric-card .value { font-size: 1.05rem; }
             .tab-btn { padding: 0.55rem 0.8rem; font-size: 0.8rem; }
             .filter-row { flex-direction: column; }
             .filter-row select { width: 100%; }
             .recent-item { padding: 0.7rem 0; }
+            .edit-modal-box { width: 95%; padding: 1.2rem; }
         }
     </style>
 </head>
@@ -530,6 +554,69 @@
             <div class="modal-actions">
                 <button class="modal-cancel" onclick="closeDeleteModal()">Cancel</button>
                 <button class="modal-danger" id="deleteConfirmBtn" onclick="confirmDeleteAccount()" disabled>Delete Everything</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── EDIT EXPENSE MODAL ─── -->
+    <div class="modal-overlay" id="editExpenseModal">
+        <div class="edit-modal-box">
+            <h3 id="editModalTitle">Edit Expense</h3>
+            <div class="edit-modal-grid">
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label for="editExpName">Expense Name</label>
+                    <input type="text" id="editExpName" placeholder="e.g. Uber to office" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="editExpCategory">Category</label>
+                    <select id="editExpCategory"></select>
+                </div>
+                <div class="form-group">
+                    <label for="editExpPayment">Payment Method</label>
+                    <select id="editExpPayment"></select>
+                </div>
+                <div class="form-group">
+                    <label for="editExpAmount">Amount</label>
+                    <div class="amount-input-wrap">
+                        <span class="currency">₹</span>
+                        <input type="number" id="editExpAmount" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editExpDate">Date</label>
+                    <input type="date" id="editExpDate">
+                </div>
+                <div id="editBillingInfo" class="billing-info" style="display:none;"></div>
+                <div id="editCardPicker" class="form-group" style="grid-column:1/-1;display:none;">
+                    <label>Credit Card</label>
+                    <div id="editCardPickerRadios" style="display:flex;gap:0.6rem;flex-wrap:wrap;"></div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <div class="shared-row">
+                        <input type="checkbox" id="editExpShared" onchange="toggleEditShared()">
+                        <label for="editExpShared" style="text-transform:none;font-size:0.85rem;cursor:pointer;">Shared expense</label>
+                    </div>
+                    <div class="split-fields" id="editSplitFields">
+                        <div class="form-group">
+                            <label for="editSplitCount">Split Between</label>
+                            <input type="number" id="editSplitCount" value="2" min="1" step="1" oninput="updateEditSplit()">
+                        </div>
+                        <div class="form-group">
+                            <label for="editSplitAmount">Your Share (₹)</label>
+                            <input type="number" id="editSplitAmount" step="0.01" min="0">
+                        </div>
+                        <div class="split-info" id="editSplitInfo"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-actions">
+                <div class="left-actions">
+                    <button class="modal-danger" id="editDeleteBtn" onclick="deleteExpenseFromModal()">Delete</button>
+                </div>
+                <div class="right-actions">
+                    <button class="modal-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button class="submit-btn" id="editSaveBtn" onclick="saveEditedExpense()" style="width:auto;margin-top:0;padding:0.45rem 1.2rem;font-size:0.82rem;">Save</button>
+                </div>
             </div>
         </div>
     </div>
@@ -698,6 +785,7 @@
     let chartjsLoaded = false;
     let chartjsLoading = false;
     let chatHistory = [];
+    let editingExpenseId = null;
 
     const DEFAULT_PAYMENTS = ['Cred UPI','Credit card','GPay UPI','Pine Perks','Cash','Debit card','Net Banking'];
     const DEFAULT_CATEGORIES = [
@@ -835,17 +923,18 @@
     });
 
     /* ═══════════════════════════════════════════════════
-       ONBOARDING
+       ONBOARDING  (FIX #1: chips start unselected)
        ═══════════════════════════════════════════════════ */
     let onboardCCNames = [];
     let onboardThemeMap = {};
 
     function initOnboarding() {
+        // Chips are NOT selected by default — user must choose
         document.getElementById('onboardPayments').innerHTML =
-            DEFAULT_PAYMENTS.map(p => `<span class="chip selected" onclick="this.classList.toggle('selected'); updateCCVisibility();">${p}</span>`).join('');
+            DEFAULT_PAYMENTS.map(p => `<span class="chip" onclick="this.classList.toggle('selected'); updateCCVisibility();">${p}</span>`).join('');
         document.getElementById('onboardCategories').innerHTML =
-            DEFAULT_CATEGORIES.map(c => `<span class="chip selected" onclick="this.classList.toggle('selected')">${c}</span>`).join('');
-        onboardCCNames = ['Sapphiro', 'Neucard'];
+            DEFAULT_CATEGORIES.map(c => `<span class="chip" onclick="this.classList.toggle('selected')">${c}</span>`).join('');
+        onboardCCNames = [];
         renderCCNames();
         onboardThemeMap = JSON.parse(JSON.stringify(DEFAULT_THEMES));
         renderOnboardThemes();
@@ -998,6 +1087,29 @@
             </label>`
         ).join('');
 
+        // Also populate edit modal dropdowns
+        const editCatSelect = document.getElementById('editExpCategory');
+        editCatSelect.innerHTML = (userProfile.categories || DEFAULT_CATEGORIES).map(c => `<option value="${c}">${c}</option>`).join('');
+
+        const editPaySelect = document.getElementById('editExpPayment');
+        // For edit modal, include both raw payment methods and CC- prefixed options
+        const payments = userProfile.paymentMethods || DEFAULT_PAYMENTS;
+        let editPayOptions = payments.map(p => `<option value="${p}">${p}</option>`).join('');
+        // Add CC sub-types
+        if (ccNames.length > 0) {
+            ccNames.forEach(n => {
+                editPayOptions += `<option value="CC - ${n}">CC - ${n}</option>`;
+            });
+        }
+        editPaySelect.innerHTML = editPayOptions;
+
+        // Edit modal CC picker radios
+        document.getElementById('editCardPickerRadios').innerHTML = ccNames.map((n, i) =>
+            `<label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
+                <input type="radio" name="editCardType" value="${esc(n)}" style="accent-color:var(--accent-color);" ${i === 0 ? 'checked' : ''}> ${esc(n)}
+            </label>`
+        ).join('');
+
         // Theme legend + override
         if (userProfile.themes) {
             window._profileThemes = userProfile.themes;
@@ -1018,6 +1130,10 @@
         document.getElementById('expPayment').addEventListener('change', updateBillingInfo);
         document.getElementById('expDate').addEventListener('change', updateBillingInfo);
         updateBillingInfo();
+
+        // Edit modal billing info listeners
+        document.getElementById('editExpPayment').addEventListener('change', updateEditBillingInfo);
+        document.getElementById('editExpDate').addEventListener('change', updateEditBillingInfo);
 
         // Auto-categorize (debounced)
         let autoTimer = null;
@@ -1157,6 +1273,190 @@
         }
     }
 
+    /* ─── Edit modal form helpers ─── */
+    function toggleEditShared() {
+        const s = document.getElementById('editExpShared').checked;
+        document.getElementById('editSplitFields').classList.toggle('show', s);
+        if (s) updateEditSplit();
+    }
+    function updateEditSplit() {
+        const a = parseFloat(document.getElementById('editExpAmount').value) || 0;
+        const c = parseInt(document.getElementById('editSplitCount').value) || 2;
+        const sp = c > 0 ? (a / c) : 0;
+        document.getElementById('editSplitAmount').value = sp.toFixed(2);
+        document.getElementById('editSplitInfo').textContent = a > 0 ? `₹${a.toFixed(2)} ÷ ${c} = ₹${sp.toFixed(2)}` : '';
+    }
+    function updateEditBillingInfo() {
+        const p = document.getElementById('editExpPayment').value;
+        const d = document.getElementById('editExpDate').value;
+        const el = document.getElementById('editBillingInfo');
+        const cp = document.getElementById('editCardPicker');
+        if (p === 'Credit card' && d) {
+            el.textContent = 'Billing Cycle: ' + getBillingCycle(new Date(d + 'T00:00:00'));
+            el.style.display = 'block';
+            cp.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+            cp.style.display = 'none';
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       EDIT / DELETE EXPENSE  (FIX #2)
+       ═══════════════════════════════════════════════════ */
+    function openEditModal(expenseId) {
+        const expense = allExpenses.find(e => e.id === expenseId);
+        if (!expense) return;
+        editingExpenseId = expenseId;
+
+        document.getElementById('editExpName').value = expense.expenseName || '';
+        document.getElementById('editExpCategory').value = expense.category || '';
+        document.getElementById('editExpDate').value = expense.date instanceof Date
+            ? expense.date.toISOString().split('T')[0]
+            : new Date(expense.date).toISOString().split('T')[0];
+
+        // For payment, check if it's a CC- prefixed value
+        const editPaySelect = document.getElementById('editExpPayment');
+        const payVal = expense.paymentMethod || '';
+        // Try to set the exact value (works for CC - Sapphiro etc.)
+        editPaySelect.value = payVal;
+        // If the exact value wasn't found in options, try the base "Credit card"
+        if (editPaySelect.value !== payVal && payVal.startsWith('CC - ')) {
+            editPaySelect.value = 'Credit card';
+        }
+
+        // Amount: show originalAmount if shared, otherwise amount
+        const isShared = expense.shared === 'Yes';
+        if (isShared && expense.originalAmount) {
+            document.getElementById('editExpAmount').value = expense.originalAmount;
+        } else {
+            document.getElementById('editExpAmount').value = expense.amount;
+        }
+
+        document.getElementById('editExpShared').checked = isShared;
+        if (isShared) {
+            document.getElementById('editSplitFields').classList.add('show');
+            document.getElementById('editSplitCount').value = expense.splitBetween || 2;
+            document.getElementById('editSplitAmount').value = expense.splitAmount || expense.amount;
+            updateEditSplit();
+        } else {
+            document.getElementById('editSplitFields').classList.remove('show');
+        }
+
+        updateEditBillingInfo();
+
+        // Handle CC radio selection
+        if (payVal.startsWith('CC - ')) {
+            const cardName = payVal.replace('CC - ', '');
+            const radio = document.querySelector(`input[name="editCardType"][value="${cardName}"]`);
+            if (radio) radio.checked = true;
+        }
+
+        document.getElementById('editExpenseModal').classList.add('show');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editExpenseModal').classList.remove('show');
+        editingExpenseId = null;
+    }
+
+    async function saveEditedExpense() {
+        if (!editingExpenseId) return;
+
+        const name = document.getElementById('editExpName').value.trim();
+        const category = document.getElementById('editExpCategory').value;
+        const payment = document.getElementById('editExpPayment').value;
+        const amount = parseFloat(document.getElementById('editExpAmount').value);
+        const dateStr = document.getElementById('editExpDate').value;
+        const shared = document.getElementById('editExpShared').checked;
+
+        if (!name) { toast('Enter an expense name', 'error'); return; }
+        if (!amount || amount <= 0) { toast('Enter a valid amount', 'error'); return; }
+        if (!dateStr) { toast('Select a date', 'error'); return; }
+
+        const dateObj = new Date(dateStr + 'T00:00:00');
+        let finalAmount = amount, originalAmount = amount;
+        if (shared) {
+            const s = parseFloat(document.getElementById('editSplitAmount').value);
+            if (s > 0) finalAmount = s;
+        }
+
+        // Resolve CC sub-type
+        let resolvedPayment = payment;
+        if (payment === 'Credit card') {
+            resolvedPayment = 'CC - ' + (document.querySelector('input[name="editCardType"]:checked')?.value || 'Card');
+        }
+
+        const btn = document.getElementById('editSaveBtn');
+        btn.disabled = true; btn.textContent = 'Saving...';
+
+        const updateData = {
+            expenseName: name, category, amount: finalAmount, originalAmount,
+            date: dateObj,
+            month: dateObj.toLocaleString('en', { month: 'long' }),
+            year: dateObj.getFullYear(),
+            paymentMethod: resolvedPayment,
+            shared: shared ? 'Yes' : 'No',
+            billingCycle: payment === 'Credit card' ? getBillingCycle(dateObj) : '',
+        };
+        if (shared) {
+            updateData.splitBetween = parseInt(document.getElementById('editSplitCount').value) || 2;
+            updateData.splitAmount = finalAmount;
+        }
+
+        // Optimistic local update
+        const idx = allExpenses.findIndex(e => e.id === editingExpenseId);
+        if (idx !== -1) {
+            allExpenses[idx] = { ...allExpenses[idx], ...updateData };
+        }
+        renderRecent();
+        refreshAnalytics();
+        closeEditModal();
+        toast('Expense updated!', 'success');
+
+        try {
+            if (!editingExpenseId.startsWith('pending-')) {
+                await getCollection().doc(editingExpenseId).update(updateData);
+            }
+        } catch (err) {
+            toast('Sync failed: ' + err.message, 'error');
+            console.error(err);
+        } finally {
+            btn.disabled = false; btn.textContent = 'Save';
+        }
+    }
+
+    async function deleteExpenseFromModal() {
+        if (!editingExpenseId) return;
+
+        const btn = document.getElementById('editDeleteBtn');
+        btn.disabled = true; btn.textContent = 'Deleting...';
+
+        // Optimistic local delete
+        const id = editingExpenseId;
+        allExpenses = allExpenses.filter(e => e.id !== id);
+        renderRecent();
+        refreshAnalytics();
+        closeEditModal();
+        toast('Expense deleted', 'success');
+
+        try {
+            if (!id.startsWith('pending-')) {
+                await getCollection().doc(id).delete();
+            }
+        } catch (err) {
+            toast('Delete sync failed: ' + err.message, 'error');
+            console.error(err);
+        } finally {
+            btn.disabled = false; btn.textContent = 'Delete';
+        }
+    }
+
+    // Close edit modal on overlay click
+    document.getElementById('editExpenseModal').addEventListener('click', function (e) {
+        if (e.target === this) closeEditModal();
+    });
+
     /* ═══════════════════════════════════════════════════
        TAB SWITCHING
        ═══════════════════════════════════════════════════ */
@@ -1202,19 +1502,45 @@
 
     /* ═══════════════════════════════════════════════════
        LOGS — Render + CSV Export
+       (FIX #3: All today's txns + last 10 before today)
        ═══════════════════════════════════════════════════ */
     function renderRecent() {
         const container = document.getElementById('recentList');
-        const recent = allExpenses.slice(0, 10);
-        if (recent.length === 0) {
+
+        if (allExpenses.length === 0) {
             container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No expenses recorded yet</p></div>';
             renderCSVExport();
             return;
         }
-        container.innerHTML = recent.map(e => {
+
+        // Get today's date boundary (local time, start of day)
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        // Separate today's expenses from older ones
+        const todayExpenses = [];
+        const olderExpenses = [];
+
+        allExpenses.forEach(e => {
+            const d = e.date instanceof Date ? e.date : new Date(e.date);
+            if (d >= todayStart) {
+                todayExpenses.push(e);
+            } else {
+                olderExpenses.push(e);
+            }
+        });
+
+        // Take up to 10 older expenses (already sorted desc by date from Firestore)
+        const olderSlice = olderExpenses.slice(0, 10);
+
+        // Build grouped display
+        let html = '';
+
+        // Helper to render a single expense item
+        const renderItem = (e) => {
             const d = e.date instanceof Date ? e.date : new Date(e.date);
             const ds = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-            return `<div class="recent-item">
+            return `<div class="recent-item" onclick="openEditModal('${e.id}')">
                 <div class="recent-item-left">
                     <span class="recent-item-name">${esc(e.expenseName)}</span>
                     <div class="recent-item-meta">
@@ -1226,7 +1552,36 @@
                 </div>
                 <span class="recent-item-amount">₹${e.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>`;
-        }).join('');
+        };
+
+        if (todayExpenses.length > 0) {
+            const todayTotal = todayExpenses.reduce((s, e) => s + e.amount, 0);
+            html += `<div class="recent-date-header">Today — ₹${todayTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
+            todayExpenses.forEach(e => { html += renderItem(e); });
+        }
+
+        if (olderSlice.length > 0) {
+            // Group older expenses by date
+            const dateGroups = {};
+            olderSlice.forEach(e => {
+                const d = e.date instanceof Date ? e.date : new Date(e.date);
+                const key = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                if (!dateGroups[key]) dateGroups[key] = { expenses: [], total: 0 };
+                dateGroups[key].expenses.push(e);
+                dateGroups[key].total += e.amount;
+            });
+
+            for (const [dateLabel, group] of Object.entries(dateGroups)) {
+                html += `<div class="recent-date-header">${dateLabel} — ₹${group.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
+                group.expenses.forEach(e => { html += renderItem(e); });
+            }
+        }
+
+        if (html === '') {
+            html = '<div class="empty-state"><div class="icon">📭</div><p>No expenses recorded yet</p></div>';
+        }
+
+        container.innerHTML = html;
         renderCSVExport();
     }
 
@@ -1814,6 +2169,9 @@ Rules:
             e.preventDefault();
             switchTab('add');
             document.getElementById('expName').focus();
+        }
+        if (e.key === 'Escape') {
+            closeEditModal();
         }
     });
 
