@@ -907,9 +907,39 @@
         }
     });
 
-    function signInWithGoogle() {
-        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => toast('Sign-in failed: ' + e.message, 'error'));
+    function isIOSorSafari() {
+        const ua = navigator.userAgent;
+        const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const safari = /^((?!chrome|android).)*safari/i.test(ua);
+        const standalone = window.navigator.standalone === true; // PWA on iOS
+        return iOS || safari || standalone;
     }
+
+    function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        if (isIOSorSafari()) {
+            // Redirect-based auth for iOS/Safari/PWA (popups are blocked)
+            auth.signInWithRedirect(provider).catch(e => toast('Sign-in failed: ' + e.message, 'error'));
+        } else {
+            auth.signInWithPopup(provider).catch(e => {
+                // Fallback to redirect if popup was blocked
+                if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-browser') {
+                    auth.signInWithRedirect(provider).catch(e2 => toast('Sign-in failed: ' + e2.message, 'error'));
+                } else {
+                    toast('Sign-in failed: ' + e.message, 'error');
+                }
+            });
+        }
+    }
+
+    // Handle redirect result on page load (needed for signInWithRedirect)
+    auth.getRedirectResult().then(result => {
+        // result.user will be picked up by onAuthStateChanged
+    }).catch(e => {
+        if (e.code && e.code !== 'auth/no-auth-event') {
+            toast('Sign-in failed: ' + e.message, 'error');
+        }
+    });
     function signOut() {
         auth.signOut();
         document.getElementById('userDropdown').classList.remove('show');
