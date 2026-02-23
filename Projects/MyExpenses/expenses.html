@@ -391,6 +391,10 @@
         .edit-modal-actions { display: flex; gap: 0.5rem; justify-content: space-between; margin-top: 1rem; }
         .edit-modal-actions .left-actions { display: flex; }
         .edit-modal-actions .right-actions { display: flex; gap: 0.5rem; }
+        .edit-modal-actions button {
+            font-family: var(--font-sans); font-size: 0.82rem; font-weight: 500;
+            padding: 0.45rem 1rem; border-radius: 5px; cursor: pointer; transition: all 0.15s ease;
+        }
         /* Outline danger button for edit modal delete — consistent with rest of UI */
         .btn-danger-outline {
             font-family: var(--font-sans); font-size: 0.82rem; font-weight: 500;
@@ -892,119 +896,125 @@
 
     /* ═══════════════════════════════════════════════════
        AUTH + ROUTING
-       FIX #1: Robust sign-in for incognito + iOS Safari
-       — Await redirect result before showing login screen
-       — Prevent infinite redirect loops on iOS
+       — Popup-first on ALL platforms (works on iOS from
+         direct user click). Redirect only as fallback.
+       — Uses localStorage (not sessionStorage) for
+         redirect tracking since sessionStorage can be
+         cleared during cross-origin redirect on iOS.
+       — Timestamp-based redirect detection with 120s
+         expiry prevents stale flags from causing issues.
        ═══════════════════════════════════════════════════ */
 
-    // Capture the redirect result promise immediately (before onAuthStateChanged).
-    // This resolves after Firebase checks if we're returning from a redirect.
-    const _redirectResultPromise = auth.getRedirectResult().then(result => {
-        sessionStorage.removeItem('authRedirectPending');
-        return result;
-    }).catch(e => {
-        sessionStorage.removeItem('authRedirectPending');
-        if (e.code && e.code !== 'auth/no-auth-event') {
-            console.error('Redirect auth error:', e);
-            toast('Sign-in failed: ' + e.message, 'error');
-        }
-        return null;
-    });
+    // Check if we're returning from a redirect (localStorage survives cross-origin nav)
+    const _redirectTs = parseInt(localStorage.getItem('authRedirectPending') || '0');
+    const _isReturningFromRedirect = _redirectTs > 0 && (Date.now() - _redirectTs) < 120000;
 
-    // Show loading spinner while we wait for auth resolution if a redirect is pending
-    if (sessionStorage.getItem('authRedirectPending')) {
+    // Show loading immediately if returning from redirect
+    if (_isReturningFromRedirect) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('authLoading').style.display = 'flex';
     }
 
-    auth.onAuthStateChanged(async user => {
-        if (!user) {
-            // CRITICAL: Wait for redirect result before deciding user is not signed in.
-            // This prevents the flash-of-login-screen on redirect return.
-            await _redirectResultPromise;
-
-            // Re-check: the redirect may have signed the user in by now
-            if (auth.currentUser) return; // onAuthStateChanged will fire again with the user
-
-            currentUser = null; userProfile = null;
-            document.getElementById('authLoading').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('onboardingScreen').style.display = 'none';
-            document.getElementById('capScreen').style.display = 'none';
-            document.getElementById('userMenu').style.display = 'none';
-            return;
+    // Process any pending redirect result
+    const _redirectResultPromise = auth.getRedirectResult().then(result => {
+        localStorage.removeItem('authRedirectPending');
+        return result;
+    }).catch(e => {
+        localStorage.removeItem('authRedirectPending');
+        if (e.code && e.code !== 'auth/no-auth-event') {
+            console.error('Redirect auth error:', e);
         }
-        currentUser = user;
-        document.getElementById('authLoading').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('userMenu').style.display = 'flex'; // FIX #5: flex keeps avatar aligned
-        document.getElementById('userAvatar').src = user.photoURL || '';
-
-        try {
-            const profileDoc = await db.collection('users').doc(user.uid).get();
-            if (profileDoc.exists) {
-                userProfile = profileDoc.data();
-                applyUserProfile();
-                document.getElementById('mainApp').style.display = 'block';
-                initApp();
-            } else {
-                // New user — check cap via counter doc (avoids collection-wide read)
-                const statsDoc = await db.collection('metadata').doc('stats').get();
-                const userCount = statsDoc.exists ? (statsDoc.data().userCount || 0) : 0;
-                if (userCount >= 15) {
-                    document.getElementById('capScreen').style.display = 'flex';
-                    return;
-                }
-                initOnboarding();
-                document.getElementById('onboardingScreen').style.display = 'block';
-                document.getElementById('onboardingScreen').classList.add('active');
-            }
-        } catch (err) {
-            toast('Error loading profile: ' + err.message, 'error');
-            console.error(err);
-        }
+        return null;
     });
 
-    function isIOSorSafari() {
-        const ua = navigator.userAgent;
-        const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        const safari = /^((?!chrome|android).)*safari/i.test(ua);
-        const standalone = window.navigator.standalone === true; // PWA on iOS
-        return iOS || safari || standalone;
+    auth.onAuthStateChanged(async user => {
+        if (user) {
+            // User is signed in — proceed immediately
+            localStorage.removeItem('authRedirectPending');
+            currentUser = user;
+            document.getElementById('authLoading').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('userMenu').style.display = 'flex';
+            document.getElementById('userAvatar').src = user.photoURL || '';
+
+            try {
+                const profileDoc = await db.collection('users').doc(user.uid).get();
+                if (profileDoc.exists) {
+                    userProfile = profileDoc.data();
+                    applyUserProfile();
+                    document.getElementById('mainApp').style.display = 'block';
+                    initApp();
+                } else {
+                    const statsDoc = await db.collection('metadata').doc('stats').get();
+                    const userCount = statsDoc.exists ? (statsDoc.data().userCount || 0) : 0;
+                    if (userCount >= 15) {
+                        document.getElementById('capScreen').style.display = 'flex';
+                        return;
+                    }
+                    initOnboarding();
+                    document.getElementById('onboardingScreen').style.display = 'block';
+                    document.getElementById('onboardingScreen').classList.add('active');
+                }
+            } catch (err) {
+                toast('Error loading profile: ' + err.message, 'error');
+                console.error(err);
+            }
+            return;
+        }
+
+        // No user — but if returning from redirect, wait for it to finish
+        if (_isReturningFromRedirect) {
+            await _redirectResultPromise;
+            // Give Firebase auth state a moment to propagate after redirect
+            await new Promise(r => setTimeout(r, 1500));
+            if (auth.currentUser) return; // onAuthStateChanged will re-fire with user
+        }
+
+        // Definitely no user
+        localStorage.removeItem('authRedirectPending');
+        currentUser = null; userProfile = null;
+        document.getElementById('authLoading').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('onboardingScreen').style.display = 'none';
+        document.getElementById('capScreen').style.display = 'none';
+        document.getElementById('userMenu').style.display = 'none';
+    });
+
+    function showAuthLoading() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('authLoading').style.display = 'flex';
+    }
+    function hideAuthLoading() {
+        document.getElementById('authLoading').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
     }
 
     function signInWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
-        if (isIOSorSafari()) {
-            // Redirect-based auth for iOS/Safari/PWA (popups are blocked)
-            sessionStorage.setItem('authRedirectPending', '1');
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('authLoading').style.display = 'flex';
-            auth.signInWithRedirect(provider).catch(e => {
-                sessionStorage.removeItem('authRedirectPending');
-                document.getElementById('authLoading').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
+
+        // Try popup first on ALL platforms (works on iOS from a direct click handler)
+        auth.signInWithPopup(provider).catch(e => {
+            const code = e.code || '';
+            console.warn('Popup auth failed (' + code + '), trying redirect...');
+
+            // Popup blocked/closed/unsupported → fall back to redirect
+            if (code === 'auth/popup-blocked' ||
+                code === 'auth/popup-closed-by-browser' ||
+                code === 'auth/cancelled-popup-request' ||
+                code === 'auth/operation-not-supported-in-this-environment') {
+
+                localStorage.setItem('authRedirectPending', Date.now().toString());
+                showAuthLoading();
+                auth.signInWithRedirect(provider).catch(e2 => {
+                    localStorage.removeItem('authRedirectPending');
+                    hideAuthLoading();
+                    toast('Sign-in failed: ' + e2.message, 'error');
+                });
+            } else {
                 toast('Sign-in failed: ' + e.message, 'error');
-            });
-        } else {
-            auth.signInWithPopup(provider).catch(e => {
-                // Fallback to redirect if popup was blocked
-                if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-browser') {
-                    sessionStorage.setItem('authRedirectPending', '1');
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('authLoading').style.display = 'flex';
-                    auth.signInWithRedirect(provider).catch(e2 => {
-                        sessionStorage.removeItem('authRedirectPending');
-                        document.getElementById('authLoading').style.display = 'none';
-                        document.getElementById('loginScreen').style.display = 'flex';
-                        toast('Sign-in failed: ' + e2.message, 'error');
-                    });
-                } else {
-                    toast('Sign-in failed: ' + e.message, 'error');
-                }
-            });
-        }
+            }
+        });
     }
 
     function signOut() {
