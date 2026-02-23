@@ -79,6 +79,7 @@
         .user-avatar {
             width: 28px; height: 28px; border-radius: 50%;
             border: 1.5px solid var(--border-color); cursor: pointer;
+            display: block;
         }
         .user-avatar:hover { border-color: var(--accent-color); }
 
@@ -390,6 +391,14 @@
         .edit-modal-actions { display: flex; gap: 0.5rem; justify-content: space-between; margin-top: 1rem; }
         .edit-modal-actions .left-actions { display: flex; }
         .edit-modal-actions .right-actions { display: flex; gap: 0.5rem; }
+        /* Outline danger button for edit modal delete — consistent with rest of UI */
+        .btn-danger-outline {
+            font-family: var(--font-sans); font-size: 0.82rem; font-weight: 500;
+            padding: 0.45rem 1rem; border-radius: 5px; cursor: pointer; transition: all 0.15s ease;
+            border: 1px solid var(--danger-color); background: transparent; color: var(--danger-color);
+        }
+        .btn-danger-outline:hover { background: var(--danger-color); color: #fff; }
+        .btn-danger-outline:disabled { opacity: 0.4; cursor: not-allowed; }
 
         /* ─── Danger Zone ─── */
         .danger-zone { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
@@ -443,6 +452,16 @@
         }
         .user-dropdown button:hover { background: var(--card-bg); }
 
+        /* ─── Auth Loading ─── */
+        .auth-loading {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 60vh; gap: 1rem; text-align: center;
+        }
+        .auth-loading .dot-pulse { display: flex; gap: 0.3rem; }
+        .auth-loading .dot-pulse span { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-color); animation: pulse 1.2s ease infinite; }
+        .auth-loading .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+        .auth-loading .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
@@ -482,6 +501,13 @@
             </div>
         </div>
     </header>
+
+    <!-- ─── AUTH LOADING ─── -->
+    <div id="authLoading" class="auth-loading" style="display:none;">
+        <div style="font-size: 2.5rem;">✦</div>
+        <div class="dot-pulse"><span></span><span></span><span></span></div>
+        <p style="color:var(--muted-color);font-size:0.85rem;">Signing you in...</p>
+    </div>
 
     <!-- ─── LOGIN ─── -->
     <div id="loginScreen" class="login-screen">
@@ -611,7 +637,7 @@
             </div>
             <div class="edit-modal-actions">
                 <div class="left-actions">
-                    <button class="modal-danger" id="editDeleteBtn" onclick="deleteExpenseFromModal()">Delete</button>
+                    <button class="btn-danger-outline" id="editDeleteBtn" onclick="deleteExpenseFromModal()">Delete</button>
                 </div>
                 <div class="right-actions">
                     <button class="modal-cancel" onclick="closeEditModal()">Cancel</button>
@@ -866,10 +892,42 @@
 
     /* ═══════════════════════════════════════════════════
        AUTH + ROUTING
+       FIX #1: Robust sign-in for incognito + iOS Safari
+       — Await redirect result before showing login screen
+       — Prevent infinite redirect loops on iOS
        ═══════════════════════════════════════════════════ */
+
+    // Capture the redirect result promise immediately (before onAuthStateChanged).
+    // This resolves after Firebase checks if we're returning from a redirect.
+    const _redirectResultPromise = auth.getRedirectResult().then(result => {
+        sessionStorage.removeItem('authRedirectPending');
+        return result;
+    }).catch(e => {
+        sessionStorage.removeItem('authRedirectPending');
+        if (e.code && e.code !== 'auth/no-auth-event') {
+            console.error('Redirect auth error:', e);
+            toast('Sign-in failed: ' + e.message, 'error');
+        }
+        return null;
+    });
+
+    // Show loading spinner while we wait for auth resolution if a redirect is pending
+    if (sessionStorage.getItem('authRedirectPending')) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('authLoading').style.display = 'flex';
+    }
+
     auth.onAuthStateChanged(async user => {
         if (!user) {
+            // CRITICAL: Wait for redirect result before deciding user is not signed in.
+            // This prevents the flash-of-login-screen on redirect return.
+            await _redirectResultPromise;
+
+            // Re-check: the redirect may have signed the user in by now
+            if (auth.currentUser) return; // onAuthStateChanged will fire again with the user
+
             currentUser = null; userProfile = null;
+            document.getElementById('authLoading').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('onboardingScreen').style.display = 'none';
@@ -878,8 +936,9 @@
             return;
         }
         currentUser = user;
+        document.getElementById('authLoading').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('userMenu').style.display = 'block';
+        document.getElementById('userMenu').style.display = 'flex'; // FIX #5: flex keeps avatar aligned
         document.getElementById('userAvatar').src = user.photoURL || '';
 
         try {
@@ -919,12 +978,28 @@
         const provider = new firebase.auth.GoogleAuthProvider();
         if (isIOSorSafari()) {
             // Redirect-based auth for iOS/Safari/PWA (popups are blocked)
-            auth.signInWithRedirect(provider).catch(e => toast('Sign-in failed: ' + e.message, 'error'));
+            sessionStorage.setItem('authRedirectPending', '1');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('authLoading').style.display = 'flex';
+            auth.signInWithRedirect(provider).catch(e => {
+                sessionStorage.removeItem('authRedirectPending');
+                document.getElementById('authLoading').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+                toast('Sign-in failed: ' + e.message, 'error');
+            });
         } else {
             auth.signInWithPopup(provider).catch(e => {
                 // Fallback to redirect if popup was blocked
                 if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-browser') {
-                    auth.signInWithRedirect(provider).catch(e2 => toast('Sign-in failed: ' + e2.message, 'error'));
+                    sessionStorage.setItem('authRedirectPending', '1');
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('authLoading').style.display = 'flex';
+                    auth.signInWithRedirect(provider).catch(e2 => {
+                        sessionStorage.removeItem('authRedirectPending');
+                        document.getElementById('authLoading').style.display = 'none';
+                        document.getElementById('loginScreen').style.display = 'flex';
+                        toast('Sign-in failed: ' + e2.message, 'error');
+                    });
                 } else {
                     toast('Sign-in failed: ' + e.message, 'error');
                 }
@@ -932,14 +1007,6 @@
         }
     }
 
-    // Handle redirect result on page load (needed for signInWithRedirect)
-    auth.getRedirectResult().then(result => {
-        // result.user will be picked up by onAuthStateChanged
-    }).catch(e => {
-        if (e.code && e.code !== 'auth/no-auth-event') {
-            toast('Sign-in failed: ' + e.message, 'error');
-        }
-    });
     function signOut() {
         auth.signOut();
         document.getElementById('userDropdown').classList.remove('show');
@@ -1099,6 +1166,16 @@
         }
     }
 
+    /* ═══════════════════════════════════════════════════
+       FIX #3: Credit card selection persistence (localStorage)
+       ═══════════════════════════════════════════════════ */
+    function getLastSelectedCard() {
+        try { return localStorage.getItem('lastSelectedCard') || null; } catch { return null; }
+    }
+    function saveLastSelectedCard(cardName) {
+        try { localStorage.setItem('lastSelectedCard', cardName); } catch {}
+    }
+
     function applyUserProfile() {
         if (!userProfile) return;
 
@@ -1109,13 +1186,15 @@
         const paySelect = document.getElementById('expPayment');
         paySelect.innerHTML = (userProfile.paymentMethods || DEFAULT_PAYMENTS).map(p => `<option value="${p}">${p}</option>`).join('');
 
-        // CC picker radios from profile
+        // CC picker radios from profile with localStorage-based default
         const ccNames = userProfile.creditCards || ['Sapphiro', 'Neucard'];
-        document.getElementById('cardPickerRadios').innerHTML = ccNames.map((n, i) =>
-            `<label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
-                <input type="radio" name="cardType" value="${esc(n)}" style="accent-color:var(--accent-color);" ${i === 0 ? 'checked' : ''}> ${esc(n)}
-            </label>`
-        ).join('');
+        const lastCard = getLastSelectedCard();
+        document.getElementById('cardPickerRadios').innerHTML = ccNames.map((n, i) => {
+            const isChecked = lastCard ? (n === lastCard) : (i === 0);
+            return `<label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
+                <input type="radio" name="cardType" value="${esc(n)}" style="accent-color:var(--accent-color);" ${isChecked ? 'checked' : ''} onchange="saveLastSelectedCard(this.value)"> ${esc(n)}
+            </label>`;
+        }).join('');
 
         // Also populate edit modal dropdowns
         const editCatSelect = document.getElementById('editExpCategory');
@@ -1133,12 +1212,13 @@
         }
         editPaySelect.innerHTML = editPayOptions;
 
-        // Edit modal CC picker radios
-        document.getElementById('editCardPickerRadios').innerHTML = ccNames.map((n, i) =>
-            `<label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
-                <input type="radio" name="editCardType" value="${esc(n)}" style="accent-color:var(--accent-color);" ${i === 0 ? 'checked' : ''}> ${esc(n)}
-            </label>`
-        ).join('');
+        // Edit modal CC picker radios (also with localStorage default)
+        document.getElementById('editCardPickerRadios').innerHTML = ccNames.map((n, i) => {
+            const isChecked = lastCard ? (n === lastCard) : (i === 0);
+            return `<label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
+                <input type="radio" name="editCardType" value="${esc(n)}" style="accent-color:var(--accent-color);" ${isChecked ? 'checked' : ''} onchange="saveLastSelectedCard(this.value)"> ${esc(n)}
+            </label>`;
+        }).join('');
 
         // Theme legend + override
         if (userProfile.themes) {
@@ -1194,6 +1274,14 @@
                 if (e.date && e.date.toDate) e.date = e.date.toDate();
                 else if (typeof e.date === 'string') e.date = new Date(e.date);
                 if (e.timestamp && e.timestamp.toDate) e.timestamp = e.timestamp.toDate();
+            });
+            // FIX #4: Sort by date desc, then timestamp desc (newest first within same day)
+            allExpenses.sort((a, b) => {
+                const da = a.date.getTime(), db2 = b.date.getTime();
+                if (db2 !== da) return db2 - da;
+                const ta = a.timestamp ? a.timestamp.getTime() : 0;
+                const tb = b.timestamp ? b.timestamp.getTime() : 0;
+                return tb - ta;
             });
             renderRecent();
             initFilters();
@@ -1271,8 +1359,15 @@
         document.getElementById('expCategory').selectedIndex = 0;
         document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('expShared').checked = false;
-        const first = document.querySelector('input[name="cardType"]');
-        if (first) first.checked = true;
+        // Restore last selected card (not first card)
+        const lastCard = getLastSelectedCard();
+        if (lastCard) {
+            const radio = document.querySelector(`input[name="cardType"][value="${lastCard}"]`);
+            if (radio) radio.checked = true;
+        } else {
+            const first = document.querySelector('input[name="cardType"]');
+            if (first) first.checked = true;
+        }
         toggleShared();
         updateBillingInfo();
     }
@@ -1332,7 +1427,7 @@
     }
 
     /* ═══════════════════════════════════════════════════
-       EDIT / DELETE EXPENSE  (FIX #2)
+       EDIT / DELETE EXPENSE
        ═══════════════════════════════════════════════════ */
     function openEditModal(expenseId) {
         const expense = allExpenses.find(e => e.id === expenseId);
@@ -1414,7 +1509,9 @@
         // Resolve CC sub-type
         let resolvedPayment = payment;
         if (payment === 'Credit card') {
-            resolvedPayment = 'CC - ' + (document.querySelector('input[name="editCardType"]:checked')?.value || 'Card');
+            const selectedCard = document.querySelector('input[name="editCardType"]:checked')?.value || 'Card';
+            resolvedPayment = 'CC - ' + selectedCard;
+            saveLastSelectedCard(selectedCard);
         }
 
         const btn = document.getElementById('editSaveBtn');
@@ -1532,7 +1629,8 @@
 
     /* ═══════════════════════════════════════════════════
        LOGS — Render + CSV Export
-       (FIX #3: All today's txns + last 10 before today)
+       FIX #4: All today's txns + last 10 before today,
+       sorted newest-first within each day group
        ═══════════════════════════════════════════════════ */
     function renderRecent() {
         const container = document.getElementById('recentList');
@@ -1560,7 +1658,14 @@
             }
         });
 
-        // Take up to 10 older expenses (already sorted desc by date from Firestore)
+        // Sort today's expenses by timestamp desc (newest first)
+        todayExpenses.sort((a, b) => {
+            const ta = a.timestamp ? a.timestamp.getTime() : 0;
+            const tb = b.timestamp ? b.timestamp.getTime() : 0;
+            return tb - ta;
+        });
+
+        // Take up to 10 older expenses (already sorted desc by date+timestamp from loadExpenses)
         const olderSlice = olderExpenses.slice(0, 10);
 
         // Build grouped display
@@ -1593,15 +1698,20 @@
         if (olderSlice.length > 0) {
             // Group older expenses by date
             const dateGroups = {};
+            const dateOrder = [];
             olderSlice.forEach(e => {
                 const d = e.date instanceof Date ? e.date : new Date(e.date);
                 const key = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-                if (!dateGroups[key]) dateGroups[key] = { expenses: [], total: 0 };
+                if (!dateGroups[key]) {
+                    dateGroups[key] = { expenses: [], total: 0 };
+                    dateOrder.push(key);
+                }
                 dateGroups[key].expenses.push(e);
                 dateGroups[key].total += e.amount;
             });
 
-            for (const [dateLabel, group] of Object.entries(dateGroups)) {
+            for (const dateLabel of dateOrder) {
+                const group = dateGroups[dateLabel];
                 html += `<div class="recent-date-header">${dateLabel} — ₹${group.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
                 group.expenses.forEach(e => { html += renderItem(e); });
             }
@@ -1691,6 +1801,7 @@
             });
             closeDeleteModal();
             localStorage.removeItem('pinnedSuggestions');
+            localStorage.removeItem('lastSelectedCard');
             toast('Account deleted', 'success');
             await auth.signOut();
         } catch (err) {
