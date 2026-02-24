@@ -161,9 +161,9 @@ body{font-family:var(--font);color:var(--text);background:var(--bg);line-height:
            </div>
         </div>
         <div class="ring-info">
-          <div class="prog"><div class="prog-head"><span>Protein</span><span id="txtPro">0/120g</span></div><div class="prog-track"><div class="prog-fill" id="barPro" style="width:0%;background:var(--accent)"></div></div></div>
-          <div class="prog"><div class="prog-head"><span>Carbs</span><span id="txtCarb">0/260g</span></div><div class="prog-track"><div class="prog-fill" id="barCarb" style="width:0%;background:var(--yellow)"></div></div></div>
-          <div class="prog"><div class="prog-head"><span>Fats</span><span id="txtFat">0/70g</span></div><div class="prog-track"><div class="prog-fill" id="barFat" style="width:0%;background:var(--orange)"></div></div></div>
+          <div class="prog"><div class="prog-head"><span>Protein</span><span id="txtPro">0/130g</span></div><div class="prog-track"><div class="prog-fill" id="barPro" style="width:0%;background:var(--accent)"></div></div></div>
+          <div class="prog"><div class="prog-head"><span>Carbs</span><span id="txtCarb">0/280g</span></div><div class="prog-track"><div class="prog-fill" id="barCarb" style="width:0%;background:var(--yellow)"></div></div></div>
+          <div class="prog"><div class="prog-head"><span>Fats</span><span id="txtFat">0/55g</span></div><div class="prog-track"><div class="prog-fill" id="barFat" style="width:0%;background:var(--orange)"></div></div></div>
         </div>
       </div>
       <div class="stats-grid">
@@ -295,7 +295,7 @@ let currentDate = new Date();
 let unsubscribeDay = null; // Firestore listener
 let dayData = defaultDay();
 
-const TARGETS = { cal: 2100, pro: 120, carb: 260, fat: 70, water: 3000, steps: 8000 };
+const TARGETS = { cal: 2150, pro: 130, carb: 280, fat: 55, water: 3000, steps: 8000 };
 
 // --- Helpers ---
 const $ = id => document.getElementById(id);
