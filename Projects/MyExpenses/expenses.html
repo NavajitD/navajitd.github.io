@@ -424,10 +424,18 @@
             box-shadow: var(--shadow-lg); z-index: 999;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none; white-space: nowrap;
+            display: flex; align-items: center; gap: 0.6rem;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.show { transform: translateX(-50%) translateY(0); pointer-events: auto; }
         .toast.success { background: var(--success-color); color: #fff; }
         .toast.error { background: var(--danger-color); color: #fff; }
+        .toast.update { background: var(--accent-color); color: #fff; }
+        .toast-action {
+            font-family: var(--font-sans); font-size: 0.8rem; font-weight: 700;
+            padding: 0.2rem 0.6rem; border-radius: 4px; border: 1.5px solid #fff;
+            background: transparent; color: #fff; cursor: pointer; white-space: nowrap;
+        }
+        .toast-action:hover { background: rgba(255,255,255,0.2); }
 
         /* ─── Spinner ─── */
         .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; vertical-align: middle; margin-right: 0.4rem; }
@@ -804,6 +812,17 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // Enable Firestore persistence for instant load on reopen
+    // (IndexedDB cache — snapshots fire from cache before network)
+    db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+        if (err.code === 'failed-precondition') {
+            // Multiple tabs open — persistence can only be enabled in one tab
+            console.warn('Firestore persistence unavailable: multiple tabs open');
+        } else if (err.code === 'unimplemented') {
+            console.warn('Firestore persistence not supported by this browser');
+        }
+    });
+
     /* ═══════════════════════════════════════════════════
        STATE
        ═══════════════════════════════════════════════════ */
@@ -816,6 +835,7 @@
     let chartjsLoading = false;
     let chatHistory = [];
     let editingExpenseId = null;
+    let snapshotUnsubscribe = null;
 
     const DEFAULT_PAYMENTS = ['Cred UPI','Credit card','GPay UPI','Pine Perks','Cash','Debit card','Net Banking'];
     const DEFAULT_CATEGORIES = [
@@ -896,41 +916,22 @@
 
     /* ═══════════════════════════════════════════════════
        AUTH + ROUTING
-       — Popup-first on ALL platforms (works on iOS from
-         direct user click). Redirect only as fallback.
-       — Uses localStorage (not sessionStorage) for
-         redirect tracking since sessionStorage can be
-         cleared during cross-origin redirect on iOS.
-       — Timestamp-based redirect detection with 120s
-         expiry prevents stale flags from causing issues.
+       — Popup-only on all platforms.
+       — iOS Safari blocks signInWithRedirect due to
+         storage partitioning (ITP). Popups DO work from
+         direct user click handlers on iOS.
+       — If popup fails on iOS, show guidance instead of
+         falling back to broken redirect.
        ═══════════════════════════════════════════════════ */
 
-    // Check if we're returning from a redirect (localStorage survives cross-origin nav)
-    const _redirectTs = parseInt(localStorage.getItem('authRedirectPending') || '0');
-    const _isReturningFromRedirect = _redirectTs > 0 && (Date.now() - _redirectTs) < 120000;
-
-    // Show loading immediately if returning from redirect
-    if (_isReturningFromRedirect) {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('authLoading').style.display = 'flex';
-    }
-
-    // Process any pending redirect result
-    const _redirectResultPromise = auth.getRedirectResult().then(result => {
-        localStorage.removeItem('authRedirectPending');
-        return result;
-    }).catch(e => {
-        localStorage.removeItem('authRedirectPending');
-        if (e.code && e.code !== 'auth/no-auth-event') {
-            console.error('Redirect auth error:', e);
-        }
-        return null;
-    });
+    // Track whether we already processed auth (prevent double init)
+    let _authHandled = false;
 
     auth.onAuthStateChanged(async user => {
+        if (_authHandled && !user) return; // Ignore subsequent null events
+
         if (user) {
-            // User is signed in — proceed immediately
-            localStorage.removeItem('authRedirectPending');
+            _authHandled = true;
             currentUser = user;
             document.getElementById('authLoading').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'none';
@@ -962,16 +963,7 @@
             return;
         }
 
-        // No user — but if returning from redirect, wait for it to finish
-        if (_isReturningFromRedirect) {
-            await _redirectResultPromise;
-            // Give Firebase auth state a moment to propagate after redirect
-            await new Promise(r => setTimeout(r, 1500));
-            if (auth.currentUser) return; // onAuthStateChanged will re-fire with user
-        }
-
-        // Definitely no user
-        localStorage.removeItem('authRedirectPending');
+        // No user — show login screen
         currentUser = null; userProfile = null;
         document.getElementById('authLoading').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
@@ -981,36 +973,27 @@
         document.getElementById('userMenu').style.display = 'none';
     });
 
-    function showAuthLoading() {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('authLoading').style.display = 'flex';
-    }
-    function hideAuthLoading() {
-        document.getElementById('authLoading').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'flex';
-    }
-
     function signInWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
+        const loginBtn = document.querySelector('.login-btn');
+        if (loginBtn) { loginBtn.disabled = true; loginBtn.style.opacity = '0.6'; }
 
-        // Try popup first on ALL platforms (works on iOS from a direct click handler)
-        auth.signInWithPopup(provider).catch(e => {
+        auth.signInWithPopup(provider).then(() => {
+            // Success — onAuthStateChanged will handle the rest
+        }).catch(e => {
+            if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
             const code = e.code || '';
-            console.warn('Popup auth failed (' + code + '), trying redirect...');
+            console.warn('Popup auth error:', code, e.message);
 
-            // Popup blocked/closed/unsupported → fall back to redirect
             if (code === 'auth/popup-blocked' ||
-                code === 'auth/popup-closed-by-browser' ||
-                code === 'auth/cancelled-popup-request' ||
                 code === 'auth/operation-not-supported-in-this-environment') {
-
-                localStorage.setItem('authRedirectPending', Date.now().toString());
-                showAuthLoading();
-                auth.signInWithRedirect(provider).catch(e2 => {
-                    localStorage.removeItem('authRedirectPending');
-                    hideAuthLoading();
-                    toast('Sign-in failed: ' + e2.message, 'error');
-                });
+                // This happens when browser blocks popup (e.g. not from user gesture)
+                toast('Please allow popups for this site and try again', 'error');
+            } else if (code === 'auth/popup-closed-by-browser' ||
+                       code === 'auth/cancelled-popup-request') {
+                // User closed the popup — just re-enable button, don't show error
+            } else if (code === 'auth/internal-error' || code === 'auth/network-request-failed') {
+                toast('Network error — check your connection', 'error');
             } else {
                 toast('Sign-in failed: ' + e.message, 'error');
             }
@@ -1018,6 +1001,8 @@
     }
 
     function signOut() {
+        if (snapshotUnsubscribe) { snapshotUnsubscribe(); snapshotUnsubscribe = null; }
+        _authHandled = false;
         auth.signOut();
         document.getElementById('userDropdown').classList.remove('show');
     }
@@ -1245,10 +1230,16 @@
        INIT
        ═══════════════════════════════════════════════════ */
     function initApp() {
-        document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+        // Date persistence: restore from sessionStorage or default to today
+        const savedDate = sessionStorage.getItem('expenseDate');
+        document.getElementById('expDate').value = savedDate || new Date().toISOString().split('T')[0];
+        // Persist date changes to sessionStorage
+        document.getElementById('expDate').addEventListener('change', function () {
+            sessionStorage.setItem('expenseDate', this.value);
+            updateBillingInfo();
+        });
 
         document.getElementById('expPayment').addEventListener('change', updateBillingInfo);
-        document.getElementById('expDate').addEventListener('change', updateBillingInfo);
         updateBillingInfo();
 
         // Edit modal billing info listeners
@@ -1266,44 +1257,54 @@
         });
 
         renderSuggestionsBanner();
-        loadExpenses();
+        startRealtimeSync();
     }
 
     /* ═══════════════════════════════════════════════════
-       FIRESTORE
+       FIRESTORE — Real-time sync via onSnapshot
        ═══════════════════════════════════════════════════ */
     function getCollection() {
         return db.collection('users').doc(currentUser.uid).collection('expenses');
     }
 
-    async function loadExpenses() {
-        try {
-            const snap = await getCollection().orderBy('date', 'desc').get();
-            allExpenses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            allExpenses.forEach(e => {
-                if (e.date && e.date.toDate) e.date = e.date.toDate();
-                else if (typeof e.date === 'string') e.date = new Date(e.date);
-                if (e.timestamp && e.timestamp.toDate) e.timestamp = e.timestamp.toDate();
+    function sortExpenses() {
+        allExpenses.sort((a, b) => {
+            const da = a.date.getTime(), db2 = b.date.getTime();
+            if (db2 !== da) return db2 - da;
+            const ta = a.timestamp ? a.timestamp.getTime() : 0;
+            const tb = b.timestamp ? b.timestamp.getTime() : 0;
+            return tb - ta;
+        });
+    }
+
+    function startRealtimeSync() {
+        // Unsubscribe from any previous listener (e.g. after sign-out/sign-in)
+        if (snapshotUnsubscribe) { snapshotUnsubscribe(); snapshotUnsubscribe = null; }
+
+        snapshotUnsubscribe = getCollection().orderBy('date', 'desc').onSnapshot(snap => {
+            allExpenses = snap.docs.map(d => {
+                const data = { id: d.id, ...d.data() };
+                if (data.date && data.date.toDate) data.date = data.date.toDate();
+                else if (typeof data.date === 'string') data.date = new Date(data.date);
+                if (data.timestamp && data.timestamp.toDate) data.timestamp = data.timestamp.toDate();
+                return data;
             });
-            // FIX #4: Sort by date desc, then timestamp desc (newest first within same day)
-            allExpenses.sort((a, b) => {
-                const da = a.date.getTime(), db2 = b.date.getTime();
-                if (db2 !== da) return db2 - da;
-                const ta = a.timestamp ? a.timestamp.getTime() : 0;
-                const tb = b.timestamp ? b.timestamp.getTime() : 0;
-                return tb - ta;
-            });
+            sortExpenses();
             renderRecent();
             initFilters();
             refreshAnalytics();
-        } catch (err) {
-            toast('Failed to load expenses', 'error');
-            console.error(err);
-        }
+        }, err => {
+            console.error('Snapshot error:', err);
+            toast('Sync error — pull to refresh', 'error');
+        });
     }
 
     /* ═══════════════════════════════════════════════════
-       ADD EXPENSE (Optimistic UI)
+       ADD EXPENSE
+       — Just write to Firestore; onSnapshot handles UI.
+       — Firestore local cache fires snapshot immediately
+         so the UI updates are instant (optimistic by
+         default with onSnapshot).
        ═══════════════════════════════════════════════════ */
     async function addExpense() {
         const name = document.getElementById('expName').value.trim();
@@ -1337,27 +1338,23 @@
             paymentMethod: resolvedPayment,
             shared: shared ? 'Yes' : 'No',
             billingCycle: payment === 'Credit card' ? getBillingCycle(dateObj) : '',
-            timestamp: new Date()
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
         if (shared) {
             docData.splitBetween = parseInt(document.getElementById('splitCount').value) || 2;
             docData.splitAmount = finalAmount;
         }
 
-        // Optimistic: update local, then write async
-        allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
-        renderRecent();
         toast('Expense added!', 'success');
         resetForm();
         document.getElementById('expName').focus();
 
-        getCollection().add({
-            ...docData,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(err => {
-            toast('Sync failed — will retry', 'error');
+        try {
+            await getCollection().add(docData);
+        } catch (err) {
+            toast('Sync failed: ' + err.message, 'error');
             console.error(err);
-        });
+        }
     }
 
     /* ═══════════════════════════════════════════════════
@@ -1367,7 +1364,9 @@
         document.getElementById('expName').value = '';
         document.getElementById('expAmount').value = '';
         document.getElementById('expCategory').selectedIndex = 0;
-        document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+        // Restore date from sessionStorage (persists within session)
+        const savedDate = sessionStorage.getItem('expenseDate');
+        document.getElementById('expDate').value = savedDate || new Date().toISOString().split('T')[0];
         document.getElementById('expShared').checked = false;
         // Restore last selected card (not first card)
         const lastCard = getLastSelectedCard();
@@ -1541,20 +1540,11 @@
             updateData.splitAmount = finalAmount;
         }
 
-        // Optimistic local update
-        const idx = allExpenses.findIndex(e => e.id === editingExpenseId);
-        if (idx !== -1) {
-            allExpenses[idx] = { ...allExpenses[idx], ...updateData };
-        }
-        renderRecent();
-        refreshAnalytics();
         closeEditModal();
         toast('Expense updated!', 'success');
 
         try {
-            if (!editingExpenseId.startsWith('pending-')) {
-                await getCollection().doc(editingExpenseId).update(updateData);
-            }
+            await getCollection().doc(editingExpenseId).update(updateData);
         } catch (err) {
             toast('Sync failed: ' + err.message, 'error');
             console.error(err);
@@ -1569,18 +1559,12 @@
         const btn = document.getElementById('editDeleteBtn');
         btn.disabled = true; btn.textContent = 'Deleting...';
 
-        // Optimistic local delete
         const id = editingExpenseId;
-        allExpenses = allExpenses.filter(e => e.id !== id);
-        renderRecent();
-        refreshAnalytics();
         closeEditModal();
         toast('Expense deleted', 'success');
 
         try {
-            if (!id.startsWith('pending-')) {
-                await getCollection().doc(id).delete();
-            }
+            await getCollection().doc(id).delete();
         } catch (err) {
             toast('Delete sync failed: ' + err.message, 'error');
             console.error(err);
@@ -1639,8 +1623,9 @@
 
     /* ═══════════════════════════════════════════════════
        LOGS — Render + CSV Export
-       FIX #4: All today's txns + last 10 before today,
-       sorted newest-first within each day group
+       All expenses grouped by date, newest-first.
+       Within each day, sorted by timestamp desc
+       (last added appears first).
        ═══════════════════════════════════════════════════ */
     function renderRecent() {
         const container = document.getElementById('recentList');
@@ -1651,37 +1636,28 @@
             return;
         }
 
-        // Get today's date boundary (local time, start of day)
+        // allExpenses is already sorted (date desc, timestamp desc) by sortExpenses()
+        // Group all expenses by date
         const now = new Date();
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const todayStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const yesterdayStr = yesterday.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-        // Separate today's expenses from older ones
-        const todayExpenses = [];
-        const olderExpenses = [];
-
+        const dateGroups = {};
+        const dateOrder = [];
         allExpenses.forEach(e => {
             const d = e.date instanceof Date ? e.date : new Date(e.date);
-            if (d >= todayStart) {
-                todayExpenses.push(e);
-            } else {
-                olderExpenses.push(e);
+            const key = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            if (!dateGroups[key]) {
+                dateGroups[key] = { expenses: [], total: 0 };
+                dateOrder.push(key);
             }
+            dateGroups[key].expenses.push(e);
+            dateGroups[key].total += e.amount;
         });
 
-        // Sort today's expenses by timestamp desc (newest first)
-        todayExpenses.sort((a, b) => {
-            const ta = a.timestamp ? a.timestamp.getTime() : 0;
-            const tb = b.timestamp ? b.timestamp.getTime() : 0;
-            return tb - ta;
-        });
-
-        // Take up to 10 older expenses (already sorted desc by date+timestamp from loadExpenses)
-        const olderSlice = olderExpenses.slice(0, 10);
-
-        // Build grouped display
         let html = '';
 
-        // Helper to render a single expense item
         const renderItem = (e) => {
             const d = e.date instanceof Date ? e.date : new Date(e.date);
             const ds = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -1699,39 +1675,18 @@
             </div>`;
         };
 
-        if (todayExpenses.length > 0) {
-            const todayTotal = todayExpenses.reduce((s, e) => s + e.amount, 0);
-            html += `<div class="recent-date-header">Today — ₹${todayTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
-            todayExpenses.forEach(e => { html += renderItem(e); });
+        for (const dateLabel of dateOrder) {
+            const group = dateGroups[dateLabel];
+            // Human-friendly label for today/yesterday
+            let label = dateLabel;
+            if (dateLabel === todayStr) label = 'Today';
+            else if (dateLabel === yesterdayStr) label = 'Yesterday';
+
+            html += `<div class="recent-date-header">${label} — ₹${group.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
+            group.expenses.forEach(e => { html += renderItem(e); });
         }
 
-        if (olderSlice.length > 0) {
-            // Group older expenses by date
-            const dateGroups = {};
-            const dateOrder = [];
-            olderSlice.forEach(e => {
-                const d = e.date instanceof Date ? e.date : new Date(e.date);
-                const key = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-                if (!dateGroups[key]) {
-                    dateGroups[key] = { expenses: [], total: 0 };
-                    dateOrder.push(key);
-                }
-                dateGroups[key].expenses.push(e);
-                dateGroups[key].total += e.amount;
-            });
-
-            for (const dateLabel of dateOrder) {
-                const group = dateGroups[dateLabel];
-                html += `<div class="recent-date-header">${dateLabel} — ₹${group.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
-                group.expenses.forEach(e => { html += renderItem(e); });
-            }
-        }
-
-        if (html === '') {
-            html = '<div class="empty-state"><div class="icon">📭</div><p>No expenses recorded yet</p></div>';
-        }
-
-        container.innerHTML = html;
+        container.innerHTML = html || '<div class="empty-state"><div class="icon">📭</div><p>No expenses recorded yet</p></div>';
         renderCSVExport();
     }
 
@@ -1796,6 +1751,8 @@
         if (document.getElementById('deleteConfirmInput').value.trim() !== 'DELETE') return;
         const btn = document.getElementById('deleteConfirmBtn');
         btn.disabled = true; btn.textContent = 'Deleting...';
+        // Stop real-time listener before deleting data
+        if (snapshotUnsubscribe) { snapshotUnsubscribe(); snapshotUnsubscribe = null; }
         try {
             const snap = await getCollection().get();
             const batch = db.batch();
@@ -2301,14 +2258,26 @@ Rules:
     })();
 
     /* ═══════════════════════════════════════════════════
-       TOAST
+       TOAST — supports optional action button
        ═══════════════════════════════════════════════════ */
-    function toast(msg, type = '') {
+    let _toastTimer = null;
+    function toast(msg, type = '', actionLabel, actionFn) {
+        clearTimeout(_toastTimer);
         const el = document.getElementById('toast');
-        el.textContent = msg;
+        el.innerHTML = '';
+        el.appendChild(document.createTextNode(msg));
+        if (actionLabel && actionFn) {
+            const btn = document.createElement('button');
+            btn.className = 'toast-action';
+            btn.textContent = actionLabel;
+            btn.onclick = (e) => { e.stopPropagation(); actionFn(); };
+            el.appendChild(btn);
+        }
         el.className = 'toast' + (type ? ' ' + type : '');
         requestAnimationFrame(() => el.classList.add('show'));
-        setTimeout(() => el.classList.remove('show'), 2500);
+        // Auto-dismiss after 2.5s for normal toasts, but keep update toast visible longer
+        const timeout = actionLabel ? 15000 : 2500;
+        _toastTimer = setTimeout(() => el.classList.remove('show'), timeout);
     }
 
     /* ═══════════════════════════════════════════════════
@@ -2327,10 +2296,45 @@ Rules:
     });
 
     /* ═══════════════════════════════════════════════════
-       PWA — Service Worker Registration
+       PWA — Service Worker Registration + Update Prompt
        ═══════════════════════════════════════════════════ */
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            // Check for updates periodically (every 30 minutes)
+            setInterval(() => reg.update(), 30 * 60 * 1000);
+
+            // Listen for new SW waiting to activate
+            const showUpdateToast = () => {
+                toast('New version available', 'update', 'Reload', () => {
+                    if (reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                });
+            };
+
+            if (reg.waiting) {
+                showUpdateToast();
+            }
+
+            reg.addEventListener('updatefound', () => {
+                const newSW = reg.installing;
+                if (!newSW) return;
+                newSW.addEventListener('statechange', () => {
+                    if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                        // New SW is installed but waiting — prompt user
+                        showUpdateToast();
+                    }
+                });
+            });
+        }).catch(() => {});
+
+        // When the new SW takes over, reload the page
+        let _refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (_refreshing) return;
+            _refreshing = true;
+            window.location.reload();
+        });
     }
     </script>
 </body>
