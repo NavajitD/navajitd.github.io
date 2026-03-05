@@ -38,7 +38,9 @@ self.addEventListener('fetch', e => {
       url.hostname.includes('gstatic.com') ||
       url.hostname.includes('cdn.jsdelivr.net') ||
       url.hostname.includes('script.google.com')) {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    // Don't intercept — let the browser handle POST + 302 redirect natively
+    return;
+  }
     return;
   }
 
