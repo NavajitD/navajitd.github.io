@@ -2146,6 +2146,8 @@ Rules:
                 redirect: 'follow',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
+                    system_instruction: { parts: [{ text: systemPrompt }] },
+                    contents
                 })
             });
 
