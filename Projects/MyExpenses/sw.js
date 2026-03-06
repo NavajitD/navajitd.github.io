@@ -41,8 +41,6 @@ self.addEventListener('fetch', e => {
     // Don't intercept — let the browser handle POST + 302 redirect natively
     return;
   }
-    return;
-  }
 
   // Network-only for HTML — never cache, always get fresh from server
   if (e.request.mode === 'navigate' || e.request.destination === 'document') {
