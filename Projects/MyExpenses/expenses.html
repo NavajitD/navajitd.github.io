@@ -2111,14 +2111,12 @@
             const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
             let summary = `${mn[matchedMonth]}: ₹${total.toFixed(0)}, ${pool.length} txns\n`;
             summary += catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ') + '\n';
-            // Include individual transactions for the top 3 categories to add context
-            catSorted.slice(0, 3).forEach(([cat]) => {
-                const items = pool.filter(e => e.category === cat);
-                summary += `\n${cat}:\n`;
-                items.forEach(e => {
-                    const d = e.date instanceof Date ? e.date : new Date(e.date);
-                    summary += `  ${d.getDate()}/${d.getMonth()+1} ${e.expenseName} ₹${e.amount}\n`;
-                });
+            // Top 10 transactions by value for context
+            const top10 = [...pool].sort((a, b) => b.amount - a.amount).slice(0, 10);
+            summary += `\nTop 10:\n`;
+            top10.forEach(e => {
+                const d = e.date instanceof Date ? e.date : new Date(e.date);
+                summary += `  ${d.getDate()}/${d.getMonth()+1} ${e.expenseName} | ${e.category} | ₹${e.amount}\n`;
             });
             return summary;
         }
