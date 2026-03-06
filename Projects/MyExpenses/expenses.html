@@ -424,18 +424,10 @@
             box-shadow: var(--shadow-lg); z-index: 999;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none; white-space: nowrap;
-            display: flex; align-items: center; gap: 0.6rem;
         }
-        .toast.show { transform: translateX(-50%) translateY(0); pointer-events: auto; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
         .toast.success { background: var(--success-color); color: #fff; }
         .toast.error { background: var(--danger-color); color: #fff; }
-        .toast.update { background: var(--accent-color); color: #fff; }
-        .toast-action {
-            font-family: var(--font-sans); font-size: 0.8rem; font-weight: 700;
-            padding: 0.2rem 0.6rem; border-radius: 4px; border: 1.5px solid #fff;
-            background: transparent; color: #fff; cursor: pointer; white-space: nowrap;
-        }
-        .toast-action:hover { background: rgba(255,255,255,0.2); }
 
         /* ─── Spinner ─── */
         .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; vertical-align: middle; margin-right: 0.4rem; }
@@ -806,22 +798,11 @@
         appId: "1:417980148545:web:b8a7a0bdb59905a8098fc0"
     };
         
-    const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbyc-UQbq8hsnhjzpb9Y4tOlh_gOwuIlhevq3XArxpPah20Hy9xYVog0OiFzLeEWdg4r/exec";
+    const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbw5V3t2L8D_vZ2pUO5p9B_4ry-kHpsjK781ec1vLrjL7hbga91CPkR343rb0I_h9rgt/exec";
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-
-    // Enable Firestore persistence for instant load on reopen
-    // (IndexedDB cache — snapshots fire from cache before network)
-    db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-        if (err.code === 'failed-precondition') {
-            // Multiple tabs open — persistence can only be enabled in one tab
-            console.warn('Firestore persistence unavailable: multiple tabs open');
-        } else if (err.code === 'unimplemented') {
-            console.warn('Firestore persistence not supported by this browser');
-        }
-    });
 
     /* ═══════════════════════════════════════════════════
        STATE
@@ -835,7 +816,6 @@
     let chartjsLoading = false;
     let chatHistory = [];
     let editingExpenseId = null;
-    let snapshotUnsubscribe = null;
 
     const DEFAULT_PAYMENTS = ['Cred UPI','Credit card','GPay UPI','Pine Perks','Cash','Debit card','Net Banking'];
     const DEFAULT_CATEGORIES = [
@@ -916,22 +896,41 @@
 
     /* ═══════════════════════════════════════════════════
        AUTH + ROUTING
-       — Popup-only on all platforms.
-       — iOS Safari blocks signInWithRedirect due to
-         storage partitioning (ITP). Popups DO work from
-         direct user click handlers on iOS.
-       — If popup fails on iOS, show guidance instead of
-         falling back to broken redirect.
+       — Popup-first on ALL platforms (works on iOS from
+         direct user click). Redirect only as fallback.
+       — Uses localStorage (not sessionStorage) for
+         redirect tracking since sessionStorage can be
+         cleared during cross-origin redirect on iOS.
+       — Timestamp-based redirect detection with 120s
+         expiry prevents stale flags from causing issues.
        ═══════════════════════════════════════════════════ */
 
-    // Track whether we already processed auth (prevent double init)
-    let _authHandled = false;
+    // Check if we're returning from a redirect (localStorage survives cross-origin nav)
+    const _redirectTs = parseInt(localStorage.getItem('authRedirectPending') || '0');
+    const _isReturningFromRedirect = _redirectTs > 0 && (Date.now() - _redirectTs) < 120000;
+
+    // Show loading immediately if returning from redirect
+    if (_isReturningFromRedirect) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('authLoading').style.display = 'flex';
+    }
+
+    // Process any pending redirect result
+    const _redirectResultPromise = auth.getRedirectResult().then(result => {
+        localStorage.removeItem('authRedirectPending');
+        return result;
+    }).catch(e => {
+        localStorage.removeItem('authRedirectPending');
+        if (e.code && e.code !== 'auth/no-auth-event') {
+            console.error('Redirect auth error:', e);
+        }
+        return null;
+    });
 
     auth.onAuthStateChanged(async user => {
-        if (_authHandled && !user) return; // Ignore subsequent null events
-
         if (user) {
-            _authHandled = true;
+            // User is signed in — proceed immediately
+            localStorage.removeItem('authRedirectPending');
             currentUser = user;
             document.getElementById('authLoading').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'none';
@@ -963,7 +962,16 @@
             return;
         }
 
-        // No user — show login screen
+        // No user — but if returning from redirect, wait for it to finish
+        if (_isReturningFromRedirect) {
+            await _redirectResultPromise;
+            // Give Firebase auth state a moment to propagate after redirect
+            await new Promise(r => setTimeout(r, 1500));
+            if (auth.currentUser) return; // onAuthStateChanged will re-fire with user
+        }
+
+        // Definitely no user
+        localStorage.removeItem('authRedirectPending');
         currentUser = null; userProfile = null;
         document.getElementById('authLoading').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
@@ -973,27 +981,36 @@
         document.getElementById('userMenu').style.display = 'none';
     });
 
+    function showAuthLoading() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('authLoading').style.display = 'flex';
+    }
+    function hideAuthLoading() {
+        document.getElementById('authLoading').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+    }
+
     function signInWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
-        const loginBtn = document.querySelector('.login-btn');
-        if (loginBtn) { loginBtn.disabled = true; loginBtn.style.opacity = '0.6'; }
 
-        auth.signInWithPopup(provider).then(() => {
-            // Success — onAuthStateChanged will handle the rest
-        }).catch(e => {
-            if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
+        // Try popup first on ALL platforms (works on iOS from a direct click handler)
+        auth.signInWithPopup(provider).catch(e => {
             const code = e.code || '';
-            console.warn('Popup auth error:', code, e.message);
+            console.warn('Popup auth failed (' + code + '), trying redirect...');
 
+            // Popup blocked/closed/unsupported → fall back to redirect
             if (code === 'auth/popup-blocked' ||
+                code === 'auth/popup-closed-by-browser' ||
+                code === 'auth/cancelled-popup-request' ||
                 code === 'auth/operation-not-supported-in-this-environment') {
-                // This happens when browser blocks popup (e.g. not from user gesture)
-                toast('Please allow popups for this site and try again', 'error');
-            } else if (code === 'auth/popup-closed-by-browser' ||
-                       code === 'auth/cancelled-popup-request') {
-                // User closed the popup — just re-enable button, don't show error
-            } else if (code === 'auth/internal-error' || code === 'auth/network-request-failed') {
-                toast('Network error — check your connection', 'error');
+
+                localStorage.setItem('authRedirectPending', Date.now().toString());
+                showAuthLoading();
+                auth.signInWithRedirect(provider).catch(e2 => {
+                    localStorage.removeItem('authRedirectPending');
+                    hideAuthLoading();
+                    toast('Sign-in failed: ' + e2.message, 'error');
+                });
             } else {
                 toast('Sign-in failed: ' + e.message, 'error');
             }
@@ -1001,8 +1018,6 @@
     }
 
     function signOut() {
-        if (snapshotUnsubscribe) { snapshotUnsubscribe(); snapshotUnsubscribe = null; }
-        _authHandled = false;
         auth.signOut();
         document.getElementById('userDropdown').classList.remove('show');
     }
@@ -1230,16 +1245,10 @@
        INIT
        ═══════════════════════════════════════════════════ */
     function initApp() {
-        // Date persistence: restore from sessionStorage or default to today
-        const savedDate = sessionStorage.getItem('expenseDate');
-        document.getElementById('expDate').value = savedDate || new Date().toISOString().split('T')[0];
-        // Persist date changes to sessionStorage
-        document.getElementById('expDate').addEventListener('change', function () {
-            sessionStorage.setItem('expenseDate', this.value);
-            updateBillingInfo();
-        });
+        document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
 
         document.getElementById('expPayment').addEventListener('change', updateBillingInfo);
+        document.getElementById('expDate').addEventListener('change', updateBillingInfo);
         updateBillingInfo();
 
         // Edit modal billing info listeners
@@ -1257,54 +1266,44 @@
         });
 
         renderSuggestionsBanner();
-        startRealtimeSync();
+        loadExpenses();
     }
 
     /* ═══════════════════════════════════════════════════
-       FIRESTORE — Real-time sync via onSnapshot
+       FIRESTORE
        ═══════════════════════════════════════════════════ */
     function getCollection() {
         return db.collection('users').doc(currentUser.uid).collection('expenses');
     }
 
-    function sortExpenses() {
-        allExpenses.sort((a, b) => {
-            const da = a.date.getTime(), db2 = b.date.getTime();
-            if (db2 !== da) return db2 - da;
-            const ta = a.timestamp ? a.timestamp.getTime() : 0;
-            const tb = b.timestamp ? b.timestamp.getTime() : 0;
-            return tb - ta;
-        });
-    }
-
-    function startRealtimeSync() {
-        // Unsubscribe from any previous listener (e.g. after sign-out/sign-in)
-        if (snapshotUnsubscribe) { snapshotUnsubscribe(); snapshotUnsubscribe = null; }
-
-        snapshotUnsubscribe = getCollection().orderBy('date', 'desc').onSnapshot(snap => {
-            allExpenses = snap.docs.map(d => {
-                const data = { id: d.id, ...d.data() };
-                if (data.date && data.date.toDate) data.date = data.date.toDate();
-                else if (typeof data.date === 'string') data.date = new Date(data.date);
-                if (data.timestamp && data.timestamp.toDate) data.timestamp = data.timestamp.toDate();
-                return data;
+    async function loadExpenses() {
+        try {
+            const snap = await getCollection().orderBy('date', 'desc').get();
+            allExpenses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            allExpenses.forEach(e => {
+                if (e.date && e.date.toDate) e.date = e.date.toDate();
+                else if (typeof e.date === 'string') e.date = new Date(e.date);
+                if (e.timestamp && e.timestamp.toDate) e.timestamp = e.timestamp.toDate();
             });
-            sortExpenses();
+            // FIX #4: Sort by date desc, then timestamp desc (newest first within same day)
+            allExpenses.sort((a, b) => {
+                const da = a.date.getTime(), db2 = b.date.getTime();
+                if (db2 !== da) return db2 - da;
+                const ta = a.timestamp ? a.timestamp.getTime() : 0;
+                const tb = b.timestamp ? b.timestamp.getTime() : 0;
+                return tb - ta;
+            });
             renderRecent();
             initFilters();
             refreshAnalytics();
-        }, err => {
-            console.error('Snapshot error:', err);
-            toast('Sync error — pull to refresh', 'error');
-        });
+        } catch (err) {
+            toast('Failed to load expenses', 'error');
+            console.error(err);
+        }
     }
 
     /* ═══════════════════════════════════════════════════
-       ADD EXPENSE
-       — Just write to Firestore; onSnapshot handles UI.
-       — Firestore local cache fires snapshot immediately
-         so the UI updates are instant (optimistic by
-         default with onSnapshot).
+       ADD EXPENSE (Optimistic UI)
        ═══════════════════════════════════════════════════ */
     async function addExpense() {
         const name = document.getElementById('expName').value.trim();
@@ -1338,23 +1337,27 @@
             paymentMethod: resolvedPayment,
             shared: shared ? 'Yes' : 'No',
             billingCycle: payment === 'Credit card' ? getBillingCycle(dateObj) : '',
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            timestamp: new Date()
         };
         if (shared) {
             docData.splitBetween = parseInt(document.getElementById('splitCount').value) || 2;
             docData.splitAmount = finalAmount;
         }
 
+        // Optimistic: update local, then write async
+        allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
+        renderRecent();
         toast('Expense added!', 'success');
         resetForm();
         document.getElementById('expName').focus();
 
-        try {
-            await getCollection().add(docData);
-        } catch (err) {
-            toast('Sync failed: ' + err.message, 'error');
+        getCollection().add({
+            ...docData,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => {
+            toast('Sync failed — will retry', 'error');
             console.error(err);
-        }
+        });
     }
 
     /* ═══════════════════════════════════════════════════
@@ -1364,9 +1367,7 @@
         document.getElementById('expName').value = '';
         document.getElementById('expAmount').value = '';
         document.getElementById('expCategory').selectedIndex = 0;
-        // Restore date from sessionStorage (persists within session)
-        const savedDate = sessionStorage.getItem('expenseDate');
-        document.getElementById('expDate').value = savedDate || new Date().toISOString().split('T')[0];
+        document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('expShared').checked = false;
         // Restore last selected card (not first card)
         const lastCard = getLastSelectedCard();
@@ -1540,11 +1541,20 @@
             updateData.splitAmount = finalAmount;
         }
 
+        // Optimistic local update
+        const idx = allExpenses.findIndex(e => e.id === editingExpenseId);
+        if (idx !== -1) {
+            allExpenses[idx] = { ...allExpenses[idx], ...updateData };
+        }
+        renderRecent();
+        refreshAnalytics();
         closeEditModal();
         toast('Expense updated!', 'success');
 
         try {
-            await getCollection().doc(editingExpenseId).update(updateData);
+            if (!editingExpenseId.startsWith('pending-')) {
+                await getCollection().doc(editingExpenseId).update(updateData);
+            }
         } catch (err) {
             toast('Sync failed: ' + err.message, 'error');
             console.error(err);
@@ -1559,12 +1569,18 @@
         const btn = document.getElementById('editDeleteBtn');
         btn.disabled = true; btn.textContent = 'Deleting...';
 
+        // Optimistic local delete
         const id = editingExpenseId;
+        allExpenses = allExpenses.filter(e => e.id !== id);
+        renderRecent();
+        refreshAnalytics();
         closeEditModal();
         toast('Expense deleted', 'success');
 
         try {
-            await getCollection().doc(id).delete();
+            if (!id.startsWith('pending-')) {
+                await getCollection().doc(id).delete();
+            }
         } catch (err) {
             toast('Delete sync failed: ' + err.message, 'error');
             console.error(err);
@@ -1623,9 +1639,8 @@
 
     /* ═══════════════════════════════════════════════════
        LOGS — Render + CSV Export
-       All expenses grouped by date, newest-first.
-       Within each day, sorted by timestamp desc
-       (last added appears first).
+       FIX #4: All today's txns + last 10 before today,
+       sorted newest-first within each day group
        ═══════════════════════════════════════════════════ */
     function renderRecent() {
         const container = document.getElementById('recentList');
@@ -1636,28 +1651,37 @@
             return;
         }
 
-        // allExpenses is already sorted (date desc, timestamp desc) by sortExpenses()
-        // Group all expenses by date
+        // Get today's date boundary (local time, start of day)
         const now = new Date();
-        const todayStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-        const yesterdayStr = yesterday.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        const dateGroups = {};
-        const dateOrder = [];
+        // Separate today's expenses from older ones
+        const todayExpenses = [];
+        const olderExpenses = [];
+
         allExpenses.forEach(e => {
             const d = e.date instanceof Date ? e.date : new Date(e.date);
-            const key = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-            if (!dateGroups[key]) {
-                dateGroups[key] = { expenses: [], total: 0 };
-                dateOrder.push(key);
+            if (d >= todayStart) {
+                todayExpenses.push(e);
+            } else {
+                olderExpenses.push(e);
             }
-            dateGroups[key].expenses.push(e);
-            dateGroups[key].total += e.amount;
         });
 
+        // Sort today's expenses by timestamp desc (newest first)
+        todayExpenses.sort((a, b) => {
+            const ta = a.timestamp ? a.timestamp.getTime() : 0;
+            const tb = b.timestamp ? b.timestamp.getTime() : 0;
+            return tb - ta;
+        });
+
+        // Take up to 10 older expenses (already sorted desc by date+timestamp from loadExpenses)
+        const olderSlice = olderExpenses.slice(0, 10);
+
+        // Build grouped display
         let html = '';
 
+        // Helper to render a single expense item
         const renderItem = (e) => {
             const d = e.date instanceof Date ? e.date : new Date(e.date);
             const ds = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -1675,18 +1699,39 @@
             </div>`;
         };
 
-        for (const dateLabel of dateOrder) {
-            const group = dateGroups[dateLabel];
-            // Human-friendly label for today/yesterday
-            let label = dateLabel;
-            if (dateLabel === todayStr) label = 'Today';
-            else if (dateLabel === yesterdayStr) label = 'Yesterday';
-
-            html += `<div class="recent-date-header">${label} — ₹${group.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
-            group.expenses.forEach(e => { html += renderItem(e); });
+        if (todayExpenses.length > 0) {
+            const todayTotal = todayExpenses.reduce((s, e) => s + e.amount, 0);
+            html += `<div class="recent-date-header">Today — ₹${todayTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
+            todayExpenses.forEach(e => { html += renderItem(e); });
         }
 
-        container.innerHTML = html || '<div class="empty-state"><div class="icon">📭</div><p>No expenses recorded yet</p></div>';
+        if (olderSlice.length > 0) {
+            // Group older expenses by date
+            const dateGroups = {};
+            const dateOrder = [];
+            olderSlice.forEach(e => {
+                const d = e.date instanceof Date ? e.date : new Date(e.date);
+                const key = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                if (!dateGroups[key]) {
+                    dateGroups[key] = { expenses: [], total: 0 };
+                    dateOrder.push(key);
+                }
+                dateGroups[key].expenses.push(e);
+                dateGroups[key].total += e.amount;
+            });
+
+            for (const dateLabel of dateOrder) {
+                const group = dateGroups[dateLabel];
+                html += `<div class="recent-date-header">${dateLabel} — ₹${group.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
+                group.expenses.forEach(e => { html += renderItem(e); });
+            }
+        }
+
+        if (html === '') {
+            html = '<div class="empty-state"><div class="icon">📭</div><p>No expenses recorded yet</p></div>';
+        }
+
+        container.innerHTML = html;
         renderCSVExport();
     }
 
@@ -1751,8 +1796,6 @@
         if (document.getElementById('deleteConfirmInput').value.trim() !== 'DELETE') return;
         const btn = document.getElementById('deleteConfirmBtn');
         btn.disabled = true; btn.textContent = 'Deleting...';
-        // Stop real-time listener before deleting data
-        if (snapshotUnsubscribe) { snapshotUnsubscribe(); snapshotUnsubscribe = null; }
         try {
             const snap = await getCollection().get();
             const batch = db.batch();
@@ -1997,49 +2040,122 @@
         if (allExpenses.length === 0) return 'No expense data available.';
 
         const q = query.toLowerCase();
+        const mn = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+        const mnShort = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+        // ── Detect mentioned CATEGORY from query ──
+        const userCats = userProfile?.categories || DEFAULT_CATEGORIES;
+        let matchedCat = null;
+        for (const cat of userCats) {
+            if (q.includes(cat.toLowerCase())) { matchedCat = cat; break; }
+        }
+        // Fuzzy: also check partial/common names
+        if (!matchedCat) {
+            const catAliases = {
+                'eating out': 'Eating out', 'food': 'Eating out', 'restaurant': 'Eating out', 'dining': 'Eating out',
+                'grocery': 'Groceries', 'groceries': 'Groceries',
+                'cab': 'Auto/Cab', 'auto': 'Auto/Cab', 'uber': 'Auto/Cab', 'ola': 'Auto/Cab', 'taxi': 'Auto/Cab',
+                'rent': 'Rent/Maintenance', 'maintenance': 'Rent/Maintenance',
+                'bike': 'Bike', 'petrol': 'Bike', 'fuel': 'Bike',
+                'medical': 'Medical expenses', 'doctor': 'Medical expenses', 'hospital': 'Medical expenses',
+                'clothes': 'Clothes', 'shopping': 'Clothes',
+                'entertainment': 'Entertainment', 'netflix': 'Entertainment', 'subscription': 'Entertainment',
+                'movie': 'Cinema', 'cinema': 'Cinema',
+                'travel': 'Travel', 'hotel': 'Travel', 'trip': 'Travel',
+                'flight': 'Flights', 'flights': 'Flights',
+                'liquor': 'Liquor', 'beer': 'Liquor', 'drinks': 'Liquor',
+                'furniture': 'Furniture', 'internet': 'Internet', 'electricity': 'Electricity',
+                'gym': 'Games/Sports', 'sport': 'Games/Sports',
+                'gift': 'Gift', 'invest': 'Investment', 'insurance': 'Insurance',
+                'household': 'Household supplies', 'services': 'Services', 'haircut': 'Services',
+                'gas': 'Gas', 'phone': 'Phone', 'education': 'Education',
+            };
+            for (const [alias, cat] of Object.entries(catAliases)) {
+                if (q.includes(alias) && userCats.includes(cat)) { matchedCat = cat; break; }
+            }
+        }
+
+        // ── Detect mentioned MONTH from query ──
+        let matchedMonth = null; // 0-11
+        for (let i = 0; i < 12; i++) {
+            if (q.includes(mn[i]) || q.includes(mnShort[i])) { matchedMonth = i; break; }
+        }
+        if (matchedMonth === null && /this month|current month/.test(q)) matchedMonth = new Date().getMonth();
+        if (matchedMonth === null && /last month|previous month|prev month/.test(q)) matchedMonth = (new Date().getMonth() + 11) % 12;
+
+        // ── If specific category detected: send filtered transactions (compact) ──
+        if (matchedCat) {
+            let pool = allExpenses.filter(e => e.category === matchedCat);
+            if (matchedMonth !== null) {
+                pool = pool.filter(e => e.date.getMonth() === matchedMonth);
+            }
+            if (pool.length === 0) {
+                return `No transactions found for ${matchedCat}${matchedMonth !== null ? ' in ' + mn[matchedMonth] : ''}.`;
+            }
+            const total = pool.reduce((s, e) => s + e.amount, 0);
+            let summary = `${matchedCat}${matchedMonth !== null ? ' (' + mn[matchedMonth] + ')' : ''}: ₹${total.toFixed(0)}, ${pool.length} txns\n`;
+            pool.forEach(e => {
+                const d = e.date instanceof Date ? e.date : new Date(e.date);
+                summary += `${d.getDate()}/${d.getMonth()+1} ${e.expenseName} ₹${e.amount} ${e.paymentMethod}${e.shared === 'Yes' ? ' (shared)' : ''}\n`;
+            });
+            return summary;
+        }
+
+        // ── If specific month detected (no category): send per-category breakdown for that month ──
+        if (matchedMonth !== null) {
+            const pool = allExpenses.filter(e => e.date.getMonth() === matchedMonth);
+            if (pool.length === 0) return `No transactions in ${mn[matchedMonth]}.`;
+            const total = pool.reduce((s, e) => s + e.amount, 0);
+            const catMap = {};
+            pool.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
+            const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+            let summary = `${mn[matchedMonth]}: ₹${total.toFixed(0)}, ${pool.length} txns\n`;
+            summary += catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ') + '\n';
+            // Include individual transactions for the top 3 categories to add context
+            catSorted.slice(0, 3).forEach(([cat]) => {
+                const items = pool.filter(e => e.category === cat);
+                summary += `\n${cat}:\n`;
+                items.forEach(e => {
+                    const d = e.date instanceof Date ? e.date : new Date(e.date);
+                    summary += `  ${d.getDate()}/${d.getMonth()+1} ${e.expenseName} ₹${e.amount}\n`;
+                });
+            });
+            return summary;
+        }
+
+        // ── DEFAULT: use analytics filter + aggregate (existing behavior, compact) ──
         const data = getFilteredData();
         const total = data.reduce((s, e) => s + e.amount, 0);
-
-        // Build filter label
         const mVal = document.getElementById('filterMonth').value;
         const yVal = document.getElementById('filterYear').value;
-        const mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const mnCap = ['January','February','March','April','May','June','July','August','September','October','November','December'];
         let fl = 'All Time';
-        if (mVal !== 'all' && yVal !== 'all') fl = `${mn[parseInt(mVal)]} ${yVal}`;
-        else if (mVal !== 'all') fl = mn[parseInt(mVal)];
+        if (mVal !== 'all' && yVal !== 'all') fl = `${mnCap[parseInt(mVal)]} ${yVal}`;
+        else if (mVal !== 'all') fl = mnCap[parseInt(mVal)];
         else if (yVal !== 'all') fl = yVal;
 
-        // ── ALWAYS: header + category breakdown (compact) ──
         let summary = `Period: ${fl} | Total: ₹${total.toFixed(0)} | ${data.length} txns\n`;
         const catMap = {};
         data.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
         const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
-        summary += `\nCategories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
+        summary += `Categories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
 
-        // Helper: check if section already appended
-        let hasThemes = false, hasPayments = false, hasMonthly = false, hasRecent = false;
-
-        // ── THEME DATA: patterns, lifestyle, budget, savings, goals ──
-        const wantsThemes = /theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q);
-        if (wantsThemes) {
+        // Theme data for pattern/budget/reduce queries
+        if (/theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q)) {
             const themeMap = {};
             data.forEach(e => { const t = getTheme(e.category); themeMap[t] = (themeMap[t] || 0) + e.amount; });
-            summary += `\nThemes: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
-            hasThemes = true;
+            summary += `Themes: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
         }
 
-        // ── PAYMENT DATA: cards, UPI, cash ──
-        const wantsPayments = /payment|card|upi|credit|debit|cash|sapphiro|neucard|method|cred|gpay/i.test(q);
-        if (wantsPayments) {
+        // Payment data
+        if (/payment|card|upi|credit|debit|cash|sapphiro|neucard|method|cred|gpay/i.test(q)) {
             const payMap = {};
             data.forEach(e => { payMap[e.paymentMethod] = (payMap[e.paymentMethod] || 0) + e.amount; });
-            summary += `\nPayments: ${Object.entries(payMap).sort((a,b)=>b[1]-a[1]).map(([p,a])=>`${p} ₹${a.toFixed(0)}`).join(', ')}\n`;
-            hasPayments = true;
+            summary += `Payments: ${Object.entries(payMap).sort((a,b)=>b[1]-a[1]).map(([p,a])=>`${p} ₹${a.toFixed(0)}`).join(', ')}\n`;
         }
 
-        // ── MONTHLY COMPARISON: trends, changes, spikes ──
-        const wantsMonthly = /compar|month|trend|increas|decreas|last|previous|change|vs|grow|spike|over time|history/i.test(q);
-        if (wantsMonthly) {
+        // Monthly comparison
+        if (/compar|trend|increas|decreas|previous|change|vs|grow|spike|over time|history/i.test(q)) {
             const monthMap = {};
             allExpenses.forEach(e => {
                 const d = e.date instanceof Date ? e.date : new Date(e.date);
@@ -2048,60 +2164,20 @@
                 monthMap[key].total += e.amount;
                 monthMap[key].cats[e.category] = (monthMap[key].cats[e.category] || 0) + e.amount;
             });
-            summary += `\nMonthly totals:\n`;
+            summary += `Monthly:\n`;
             Object.entries(monthMap).slice(0, 4).forEach(([m, d]) => {
-                const top = Object.entries(d.cats).sort((a, b) => b[1] - a[1]).slice(0, 10);
-                summary += `  ${m}: ₹${d.total.toFixed(0)} (top: ${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
+                const top = Object.entries(d.cats).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                summary += `  ${m}: ₹${d.total.toFixed(0)} (${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
             });
-            hasMonthly = true;
         }
 
-        // ── RECENT TRANSACTIONS: specific items ──
-        const wantsRecent = /recent|last|latest|today|yesterday|specific|what did|spent on|transaction|item|entry/i.test(q);
-        if (wantsRecent) {
-            summary += `\nRecent 10:\n`;
+        // Recent transactions
+        if (/recent|latest|today|yesterday|what did|spent on|transaction|item|entry|list|detail|break/i.test(q)) {
+            summary += `Recent:\n`;
             allExpenses.slice(0, 10).forEach(e => {
                 const d = e.date instanceof Date ? e.date : new Date(e.date);
-                summary += `  ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} ${e.expenseName} | ${e.category} | ₹${e.amount} | ${e.paymentMethod}\n`;
+                summary += `  ${d.getDate()}/${d.getMonth()+1} ${e.expenseName} | ${e.category} | ₹${e.amount}\n`;
             });
-            hasRecent = true;
-        }
-
-        // ── FULL DEEP-DIVE: include everything not already added ──
-        const wantsFull = /\ball\b|everything|full|detail|complete|comprehensive|deep|thorough|entire|whole/i.test(q);
-        if (wantsFull) {
-            if (!hasThemes) {
-                const themeMap = {};
-                data.forEach(e => { const t = getTheme(e.category); themeMap[t] = (themeMap[t] || 0) + e.amount; });
-                summary += `\nThemes: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
-            }
-            if (!hasPayments) {
-                const payMap = {};
-                data.forEach(e => { payMap[e.paymentMethod] = (payMap[e.paymentMethod] || 0) + e.amount; });
-                summary += `\nPayments: ${Object.entries(payMap).sort((a,b)=>b[1]-a[1]).map(([p,a])=>`${p} ₹${a.toFixed(0)}`).join(', ')}\n`;
-            }
-            if (!hasMonthly) {
-                const monthMap = {};
-                allExpenses.forEach(e => {
-                    const d = e.date instanceof Date ? e.date : new Date(e.date);
-                    const key = d.toLocaleString('en', { month: 'short', year: 'numeric' });
-                    if (!monthMap[key]) monthMap[key] = { total: 0, cats: {} };
-                    monthMap[key].total += e.amount;
-                    monthMap[key].cats[e.category] = (monthMap[key].cats[e.category] || 0) + e.amount;
-                });
-                summary += `\nMonthly totals:\n`;
-                Object.entries(monthMap).slice(0, 4).forEach(([m, d]) => {
-                    const top = Object.entries(d.cats).sort((a, b) => b[1] - a[1]).slice(0, 10);
-                    summary += `  ${m}: ₹${d.total.toFixed(0)} (top: ${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
-                });
-            }
-            if (!hasRecent) {
-                summary += `\nRecent 10:\n`;
-                allExpenses.slice(0, 10).forEach(e => {
-                    const d = e.date instanceof Date ? e.date : new Date(e.date);
-                    summary += `  ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} ${e.expenseName} | ${e.category} | ₹${e.amount} | ${e.paymentMethod}\n`;
-                });
-            }
         }
 
         return summary;
@@ -2151,18 +2227,8 @@ Rules:
                 })
             });
 
-            const rawText = await res.text();
-            console.log('Advisor raw response:', rawText);
-            let data;
-            try { data = JSON.parse(rawText); } catch { 
-                appendChat('assistant', 'Invalid response format. Check console.');
-                return;
-            }
-            if (data.error) {
-                appendChat('assistant', 'API error: ' + (data.error.message || JSON.stringify(data.error)));
-                return;
-            }
-            const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Unexpected response structure. Check console.';
+            const data = await res.json();
+            const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I couldn\'t generate a response.';
 
             chatHistory.push({ role: 'user', text: query });
             chatHistory.push({ role: 'assistant', text: reply });
@@ -2269,26 +2335,14 @@ Rules:
     })();
 
     /* ═══════════════════════════════════════════════════
-       TOAST — supports optional action button
+       TOAST
        ═══════════════════════════════════════════════════ */
-    let _toastTimer = null;
-    function toast(msg, type = '', actionLabel, actionFn) {
-        clearTimeout(_toastTimer);
+    function toast(msg, type = '') {
         const el = document.getElementById('toast');
-        el.innerHTML = '';
-        el.appendChild(document.createTextNode(msg));
-        if (actionLabel && actionFn) {
-            const btn = document.createElement('button');
-            btn.className = 'toast-action';
-            btn.textContent = actionLabel;
-            btn.onclick = (e) => { e.stopPropagation(); actionFn(); };
-            el.appendChild(btn);
-        }
+        el.textContent = msg;
         el.className = 'toast' + (type ? ' ' + type : '');
         requestAnimationFrame(() => el.classList.add('show'));
-        // Auto-dismiss after 2.5s for normal toasts, but keep update toast visible longer
-        const timeout = actionLabel ? 15000 : 2500;
-        _toastTimer = setTimeout(() => el.classList.remove('show'), timeout);
+        setTimeout(() => el.classList.remove('show'), 2500);
     }
 
     /* ═══════════════════════════════════════════════════
@@ -2307,45 +2361,10 @@ Rules:
     });
 
     /* ═══════════════════════════════════════════════════
-       PWA — Service Worker Registration + Update Prompt
+       PWA — Service Worker Registration
        ═══════════════════════════════════════════════════ */
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
-            // Check for updates periodically (every 30 minutes)
-            setInterval(() => reg.update(), 30 * 60 * 1000);
-
-            // Listen for new SW waiting to activate
-            const showUpdateToast = () => {
-                toast('New version available', 'update', 'Reload', () => {
-                    if (reg.waiting) {
-                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-                    }
-                });
-            };
-
-            if (reg.waiting) {
-                showUpdateToast();
-            }
-
-            reg.addEventListener('updatefound', () => {
-                const newSW = reg.installing;
-                if (!newSW) return;
-                newSW.addEventListener('statechange', () => {
-                    if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                        // New SW is installed but waiting — prompt user
-                        showUpdateToast();
-                    }
-                });
-            });
-        }).catch(() => {});
-
-        // When the new SW takes over, reload the page
-        let _refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (_refreshing) return;
-            _refreshing = true;
-            window.location.reload();
-        });
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
     </script>
 </body>
