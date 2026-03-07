@@ -2132,14 +2132,26 @@
         else if (mVal !== 'all') fl = mnCap[parseInt(mVal)];
         else if (yVal !== 'all') fl = yVal;
 
+        // For overspending/cutting queries, exclude Cost of Living categories (rent, bills, etc.)
+        const colCats = new Set((window._profileThemes || DEFAULT_THEMES)['Cost of living'] || []);
+        const isDiscretionaryQuery = /overspend|reduce|cut|save|frugal|optimi|rational|waste|unnecessary|too much|budget|limit/i.test(q);
+        const excludeCoL = isDiscretionaryQuery && !matchedCat;
+
         let summary = `Period: ${fl} | Total: ₹${total.toFixed(0)} | ${data.length} txns\n`;
         const catMap = {};
         data.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
         const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
-        summary += `Categories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
+        if (excludeCoL) {
+            const disc = catSorted.filter(([c]) => !colCats.has(c));
+            const discTotal = disc.reduce((s, [, a]) => s + a, 0);
+            summary += `Discretionary: ₹${discTotal.toFixed(0)}\n`;
+            summary += disc.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ') + '\n';
+        } else {
+            summary += `Categories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
+        }
 
-        // Theme data for pattern/budget/reduce queries
-        if (/theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q)) {
+        // Theme data — skip if we already filtered to discretionary
+        if (!excludeCoL && /theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q)) {
             const themeMap = {};
             data.forEach(e => { const t = getTheme(e.category); themeMap[t] = (themeMap[t] || 0) + e.amount; });
             summary += `Themes: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
