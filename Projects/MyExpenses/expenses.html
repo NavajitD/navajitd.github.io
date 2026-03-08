@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#131a12" media="(prefers-color-scheme: dark)">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Expenses">
 
@@ -736,20 +736,11 @@
                 <div class="metrics-row" id="metricsRow"></div>
                 <div class="sub-tabs">
                     <button class="sub-tab-btn active" onclick="switchSubTab('categories')">Categories</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('trends')">Trends</button>
                     <button class="sub-tab-btn" onclick="switchSubTab('payments')">Payments</button>
                     <button class="sub-tab-btn" onclick="switchSubTab('themes')">Themes</button>
                 </div>
                 <div id="panel-categories" class="chart-panel active">
-                    <div class="chart-container"><canvas id="chartCategories"></canvas></div>
                     <div id="categoryTable"></div>
-                </div>
-                <div id="panel-trends" class="chart-panel">
-                    <div class="trend-toggle">
-                        <button class="trend-toggle-btn active" onclick="setTrendView('weekly',this)">Weekly</button>
-                        <button class="trend-toggle-btn" onclick="setTrendView('monthly',this)">Monthly</button>
-                    </div>
-                    <div class="chart-container"><canvas id="chartTrends"></canvas></div>
                 </div>
                 <div id="panel-payments" class="chart-panel">
                     <div class="chart-container" style="max-height:320px;"><canvas id="chartPayments"></canvas></div>
@@ -798,7 +789,7 @@
         appId: "1:417980148545:web:b8a7a0bdb59905a8098fc0"
     };
         
-    const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbxdDuj6F74yp7999f_LuNmjbYBi7fmh_LnPhJbgGBgfYtUlulTNo6c0oePjwxpYJehX/exec";
+    const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbxI02w2mcZ6O6rLyzfO2TAaZqSh0yCw_sWKjDDXqScyGM_U6Hvxd3jGKCeqdkthfido/exec";
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -896,43 +887,15 @@
 
     /* ═══════════════════════════════════════════════════
        AUTH + ROUTING
-       — Popup-first on ALL platforms (works on iOS from
-         direct user click). Redirect only as fallback.
-       — Uses localStorage (not sessionStorage) for
-         redirect tracking since sessionStorage can be
-         cleared during cross-origin redirect on iOS.
-       — Timestamp-based redirect detection with 120s
-         expiry prevents stale flags from causing issues.
+       — Popup-only. No signInWithRedirect at all.
+       — iOS Safari's ITP blocks redirect-based auth
+         (storage partitioning). Popups work from direct
+         user click handlers on all platforms.
        ═══════════════════════════════════════════════════ */
-
-    // Check if we're returning from a redirect (localStorage survives cross-origin nav)
-    const _redirectTs = parseInt(localStorage.getItem('authRedirectPending') || '0');
-    const _isReturningFromRedirect = _redirectTs > 0 && (Date.now() - _redirectTs) < 120000;
-
-    // Show loading immediately if returning from redirect
-    if (_isReturningFromRedirect) {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('authLoading').style.display = 'flex';
-    }
-
-    // Process any pending redirect result
-    const _redirectResultPromise = auth.getRedirectResult().then(result => {
-        localStorage.removeItem('authRedirectPending');
-        return result;
-    }).catch(e => {
-        localStorage.removeItem('authRedirectPending');
-        if (e.code && e.code !== 'auth/no-auth-event') {
-            console.error('Redirect auth error:', e);
-        }
-        return null;
-    });
 
     auth.onAuthStateChanged(async user => {
         if (user) {
-            // User is signed in — proceed immediately
-            localStorage.removeItem('authRedirectPending');
             currentUser = user;
-            document.getElementById('authLoading').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('userMenu').style.display = 'flex';
             document.getElementById('userAvatar').src = user.photoURL || '';
@@ -962,18 +925,8 @@
             return;
         }
 
-        // No user — but if returning from redirect, wait for it to finish
-        if (_isReturningFromRedirect) {
-            await _redirectResultPromise;
-            // Give Firebase auth state a moment to propagate after redirect
-            await new Promise(r => setTimeout(r, 1500));
-            if (auth.currentUser) return; // onAuthStateChanged will re-fire with user
-        }
-
-        // Definitely no user
-        localStorage.removeItem('authRedirectPending');
+        // No user
         currentUser = null; userProfile = null;
-        document.getElementById('authLoading').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('onboardingScreen').style.display = 'none';
@@ -981,36 +934,22 @@
         document.getElementById('userMenu').style.display = 'none';
     });
 
-    function showAuthLoading() {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('authLoading').style.display = 'flex';
-    }
-    function hideAuthLoading() {
-        document.getElementById('authLoading').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'flex';
-    }
-
     function signInWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
+        const loginBtn = document.querySelector('.login-btn');
+        if (loginBtn) { loginBtn.disabled = true; loginBtn.style.opacity = '0.6'; }
 
-        // Try popup first on ALL platforms (works on iOS from a direct click handler)
-        auth.signInWithPopup(provider).catch(e => {
+        auth.signInWithPopup(provider).then(() => {
+            // onAuthStateChanged handles the rest
+        }).catch(e => {
+            if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
             const code = e.code || '';
-            console.warn('Popup auth failed (' + code + '), trying redirect...');
-
-            // Popup blocked/closed/unsupported → fall back to redirect
-            if (code === 'auth/popup-blocked' ||
-                code === 'auth/popup-closed-by-browser' ||
-                code === 'auth/cancelled-popup-request' ||
-                code === 'auth/operation-not-supported-in-this-environment') {
-
-                localStorage.setItem('authRedirectPending', Date.now().toString());
-                showAuthLoading();
-                auth.signInWithRedirect(provider).catch(e2 => {
-                    localStorage.removeItem('authRedirectPending');
-                    hideAuthLoading();
-                    toast('Sign-in failed: ' + e2.message, 'error');
-                });
+            if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+                toast('Please allow popups for this site and try again', 'error');
+            } else if (code === 'auth/popup-closed-by-browser' || code === 'auth/cancelled-popup-request') {
+                // User closed popup — just re-enable button
+            } else if (code === 'auth/network-request-failed') {
+                toast('Network error — check your connection', 'error');
             } else {
                 toast('Sign-in failed: ' + e.message, 'error');
             }
@@ -1285,14 +1224,7 @@
                 else if (typeof e.date === 'string') e.date = new Date(e.date);
                 if (e.timestamp && e.timestamp.toDate) e.timestamp = e.timestamp.toDate();
             });
-            // FIX #4: Sort by date desc, then timestamp desc (newest first within same day)
-            allExpenses.sort((a, b) => {
-                const da = a.date.getTime(), db2 = b.date.getTime();
-                if (db2 !== da) return db2 - da;
-                const ta = a.timestamp ? a.timestamp.getTime() : 0;
-                const tb = b.timestamp ? b.timestamp.getTime() : 0;
-                return tb - ta;
-            });
+            sortExpenses();
             renderRecent();
             initFilters();
             refreshAnalytics();
@@ -1300,6 +1232,16 @@
             toast('Failed to load expenses', 'error');
             console.error(err);
         }
+    }
+
+    function sortExpenses() {
+        allExpenses.sort((a, b) => {
+            const da = a.date.getTime(), db2 = b.date.getTime();
+            if (db2 !== da) return db2 - da;
+            const ta = a.timestamp ? a.timestamp.getTime() : 0;
+            const tb = b.timestamp ? b.timestamp.getTime() : 0;
+            return tb - ta;
+        });
     }
 
     /* ═══════════════════════════════════════════════════
@@ -1346,6 +1288,7 @@
 
         // Optimistic: update local, then write async
         allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
+        sortExpenses();
         renderRecent();
         toast('Expense added!', 'success');
         resetForm();
@@ -1546,6 +1489,7 @@
         if (idx !== -1) {
             allExpenses[idx] = { ...allExpenses[idx], ...updateData };
         }
+        sortExpenses();
         renderRecent();
         refreshAnalytics();
         closeEditModal();
@@ -1651,37 +1595,28 @@
             return;
         }
 
-        // Get today's date boundary (local time, start of day)
+        // allExpenses is already sorted by sortExpenses() (date desc, timestamp desc)
         const now = new Date();
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const todayStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const yesterdayStr = yesterday.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-        // Separate today's expenses from older ones
-        const todayExpenses = [];
-        const olderExpenses = [];
-
+        // Group all expenses by date (preserving sort order)
+        const dateGroups = {};
+        const dateOrder = [];
         allExpenses.forEach(e => {
             const d = e.date instanceof Date ? e.date : new Date(e.date);
-            if (d >= todayStart) {
-                todayExpenses.push(e);
-            } else {
-                olderExpenses.push(e);
+            const key = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            if (!dateGroups[key]) {
+                dateGroups[key] = { expenses: [], total: 0 };
+                dateOrder.push(key);
             }
+            dateGroups[key].expenses.push(e);
+            dateGroups[key].total += e.amount;
         });
 
-        // Sort today's expenses by timestamp desc (newest first)
-        todayExpenses.sort((a, b) => {
-            const ta = a.timestamp ? a.timestamp.getTime() : 0;
-            const tb = b.timestamp ? b.timestamp.getTime() : 0;
-            return tb - ta;
-        });
-
-        // Take up to 10 older expenses (already sorted desc by date+timestamp from loadExpenses)
-        const olderSlice = olderExpenses.slice(0, 10);
-
-        // Build grouped display
         let html = '';
 
-        // Helper to render a single expense item
         const renderItem = (e) => {
             const d = e.date instanceof Date ? e.date : new Date(e.date);
             const ds = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -1699,39 +1634,17 @@
             </div>`;
         };
 
-        if (todayExpenses.length > 0) {
-            const todayTotal = todayExpenses.reduce((s, e) => s + e.amount, 0);
-            html += `<div class="recent-date-header">Today — ₹${todayTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
-            todayExpenses.forEach(e => { html += renderItem(e); });
+        for (const dateLabel of dateOrder) {
+            const group = dateGroups[dateLabel];
+            let label = dateLabel;
+            if (dateLabel === todayStr) label = 'Today';
+            else if (dateLabel === yesterdayStr) label = 'Yesterday';
+
+            html += `<div class="recent-date-header">${label} — ₹${group.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
+            group.expenses.forEach(e => { html += renderItem(e); });
         }
 
-        if (olderSlice.length > 0) {
-            // Group older expenses by date
-            const dateGroups = {};
-            const dateOrder = [];
-            olderSlice.forEach(e => {
-                const d = e.date instanceof Date ? e.date : new Date(e.date);
-                const key = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-                if (!dateGroups[key]) {
-                    dateGroups[key] = { expenses: [], total: 0 };
-                    dateOrder.push(key);
-                }
-                dateGroups[key].expenses.push(e);
-                dateGroups[key].total += e.amount;
-            });
-
-            for (const dateLabel of dateOrder) {
-                const group = dateGroups[dateLabel];
-                html += `<div class="recent-date-header">${dateLabel} — ₹${group.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`;
-                group.expenses.forEach(e => { html += renderItem(e); });
-            }
-        }
-
-        if (html === '') {
-            html = '<div class="empty-state"><div class="icon">📭</div><p>No expenses recorded yet</p></div>';
-        }
-
-        container.innerHTML = html;
+        container.innerHTML = html || '<div class="empty-state"><div class="icon">📭</div><p>No expenses recorded yet</p></div>';
         renderCSVExport();
     }
 
@@ -1851,8 +1764,7 @@
         const data = getFilteredData();
         renderMetrics(data);
         if (!chartjsLoaded) return;
-        renderCategoryChart(data);
-        renderTrendChart(data);
+        renderCategoryTable(data);
         renderPaymentChart(data);
         renderThemeChart(data);
     }
@@ -1898,98 +1810,16 @@
     function getCSS(p) { return getComputedStyle(document.body).getPropertyValue(p).trim(); }
     const CHART_COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1'];
 
-    function renderCategoryChart(data) {
+    function renderCategoryTable(data) {
         const cm = {};
         data.forEach(e => { cm[e.category] = (cm[e.category] || 0) + e.amount; });
         const sorted = Object.entries(cm).sort((a, b) => b[1] - a[1]);
-        const labels = sorted.map(s => s[0]);
-        const values = sorted.map(s => s[1]);
-        const total = values.reduce((a, b) => a + b, 0) || 1;
-        const accent = getCSS('--accent-color');
-
-        destroyChart('chartCategories');
-        chartInstances['chartCategories'] = new Chart(document.getElementById('chartCategories').getContext('2d'), {
-            type: 'bar',
-            data: { labels, datasets: [{ data: values, backgroundColor: accent + '99', borderColor: accent, borderWidth: 1, borderRadius: 3 }] },
-            options: {
-                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { ticks: { callback: v => '₹' + v.toLocaleString('en-IN'), color: getCSS('--muted-color') }, grid: { color: getCSS('--border-color') + '44' } },
-                    y: { ticks: { color: getCSS('--text-color'), font: { family: 'Inconsolata', size: 12 } }, grid: { display: false } }
-                }
-            }
-        });
+        const total = sorted.reduce((s, [, a]) => s + a, 0) || 1;
 
         document.getElementById('categoryTable').innerHTML = sorted.length ? `<table class="category-table"><tr><th>Category</th><th>Amount</th><th>Share</th></tr>${sorted.map(([c, a]) => {
             const p = ((a / total) * 100).toFixed(1);
             return `<tr><td>${esc(c)}</td><td>₹${a.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td><td>${p}%<span class="pct-bar" style="width:${p * 0.8}px"></span></td></tr>`;
         }).join('')}</table>` : '';
-    }
-
-    function setTrendView(v, btn) {
-        currentTrendView = v;
-        document.querySelectorAll('.trend-toggle-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-        renderTrendChart(getFilteredData());
-    }
-
-    function renderTrendChart(data) {
-        if (!data.length) { destroyChart('chartTrends'); return; }
-        const groups = {};
-        data.forEach(e => {
-            let key;
-            if (currentTrendView === 'weekly') {
-                const d = e.date.getDate();
-                let r;
-                if (d <= 7) r = '01-07';
-                else if (d <= 14) r = '08-14';
-                else if (d <= 21) r = '15-21';
-                else if (d <= 28) r = '22-28';
-                else r = `29-${new Date(e.date.getFullYear(), e.date.getMonth() + 1, 0).getDate()}`;
-                key = `${r} ${e.date.toLocaleString('en', { month: 'short' })} ${e.date.getFullYear()}`;
-            } else {
-                key = e.date.toLocaleString('en', { month: 'short' }) + ' ' + e.date.getFullYear();
-            }
-            if (!groups[key]) groups[key] = {};
-            groups[key][e.category] = (groups[key][e.category] || 0) + e.amount;
-        });
-
-        const sortedKeys = Object.keys(groups).sort((a, b) => {
-            const pk = k => {
-                const p = k.split(' ');
-                if (currentTrendView === 'weekly')
-                    return new Date(parseInt(p[2]), new Date(Date.parse(p[1] + ' 1, 2000')).getMonth(), parseInt(p[0].split('-')[0]));
-                return new Date(Date.parse(k.replace(/(\w+)\s(\d+)/, '$1 1, $2')));
-            };
-            return pk(a) - pk(b);
-        });
-
-        const catTotals = {};
-        data.forEach(e => { catTotals[e.category] = (catTotals[e.category] || 0) + e.amount; });
-        const topCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).slice(0, 10).map(c => c[0]);
-
-        const datasets = topCats.map((cat, i) => ({
-            label: cat,
-            data: sortedKeys.map(k => groups[k][cat] || 0),
-            borderColor: CHART_COLORS[i % CHART_COLORS.length],
-            backgroundColor: CHART_COLORS[i % CHART_COLORS.length] + '22',
-            borderWidth: 2, pointRadius: 4, tension: 0.3, fill: false,
-        }));
-
-        destroyChart('chartTrends');
-        chartInstances['chartTrends'] = new Chart(document.getElementById('chartTrends').getContext('2d'), {
-            type: 'line',
-            data: { labels: sortedKeys, datasets },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inconsolata', size: 11 }, color: getCSS('--text-color'), padding: 15 } } },
-                scales: {
-                    x: { ticks: { color: getCSS('--muted-color'), font: { family: 'Inconsolata', size: 10 }, maxRotation: 45 }, grid: { color: getCSS('--border-color') + '44' } },
-                    y: { ticks: { callback: v => '₹' + v.toLocaleString('en-IN'), color: getCSS('--muted-color') }, grid: { color: getCSS('--border-color') + '44' } }
-                }
-            }
-        });
     }
 
     function renderPaymentChart(data) {
@@ -2040,132 +1870,49 @@
         if (allExpenses.length === 0) return 'No expense data available.';
 
         const q = query.toLowerCase();
-        const mn = ['january','february','march','april','may','june','july','august','september','october','november','december'];
-        const mnShort = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-
-        // ── Detect mentioned CATEGORY from query ──
-        const userCats = userProfile?.categories || DEFAULT_CATEGORIES;
-        let matchedCat = null;
-        for (const cat of userCats) {
-            if (q.includes(cat.toLowerCase())) { matchedCat = cat; break; }
-        }
-        // Fuzzy: also check partial/common names
-        if (!matchedCat) {
-            const catAliases = {
-                'eating out': 'Eating out', 'food': 'Eating out', 'restaurant': 'Eating out', 'dining': 'Eating out',
-                'grocery': 'Groceries', 'groceries': 'Groceries',
-                'cab': 'Auto/Cab', 'auto': 'Auto/Cab', 'uber': 'Auto/Cab', 'ola': 'Auto/Cab', 'taxi': 'Auto/Cab',
-                'rent': 'Rent/Maintenance', 'maintenance': 'Rent/Maintenance',
-                'bike': 'Bike', 'petrol': 'Bike', 'fuel': 'Bike',
-                'medical': 'Medical expenses', 'doctor': 'Medical expenses', 'hospital': 'Medical expenses',
-                'clothes': 'Clothes', 'shopping': 'Clothes',
-                'entertainment': 'Entertainment', 'netflix': 'Entertainment', 'subscription': 'Entertainment',
-                'movie': 'Cinema', 'cinema': 'Cinema',
-                'travel': 'Travel', 'hotel': 'Travel', 'trip': 'Travel',
-                'flight': 'Flights', 'flights': 'Flights',
-                'liquor': 'Liquor', 'beer': 'Liquor', 'drinks': 'Liquor',
-                'furniture': 'Furniture', 'internet': 'Internet', 'electricity': 'Electricity',
-                'gym': 'Games/Sports', 'sport': 'Games/Sports',
-                'gift': 'Gift', 'invest': 'Investment', 'insurance': 'Insurance',
-                'household': 'Household supplies', 'services': 'Services', 'haircut': 'Services',
-                'gas': 'Gas', 'phone': 'Phone', 'education': 'Education',
-            };
-            for (const [alias, cat] of Object.entries(catAliases)) {
-                if (q.includes(alias) && userCats.includes(cat)) { matchedCat = cat; break; }
-            }
-        }
-
-        // ── Detect mentioned MONTH from query ──
-        let matchedMonth = null; // 0-11
-        for (let i = 0; i < 12; i++) {
-            if (q.includes(mn[i]) || q.includes(mnShort[i])) { matchedMonth = i; break; }
-        }
-        if (matchedMonth === null && /this month|current month/.test(q)) matchedMonth = new Date().getMonth();
-        if (matchedMonth === null && /last month|previous month|prev month/.test(q)) matchedMonth = (new Date().getMonth() + 11) % 12;
-
-        // ── If specific category detected: send filtered transactions (compact) ──
-        if (matchedCat) {
-            let pool = allExpenses.filter(e => e.category === matchedCat);
-            if (matchedMonth !== null) {
-                pool = pool.filter(e => e.date.getMonth() === matchedMonth);
-            }
-            if (pool.length === 0) {
-                return `No transactions found for ${matchedCat}${matchedMonth !== null ? ' in ' + mn[matchedMonth] : ''}.`;
-            }
-            const total = pool.reduce((s, e) => s + e.amount, 0);
-            let summary = `${matchedCat}${matchedMonth !== null ? ' (' + mn[matchedMonth] + ')' : ''}: ₹${total.toFixed(0)}, ${pool.length} txns\n`;
-            pool.forEach(e => {
-                const d = e.date instanceof Date ? e.date : new Date(e.date);
-                summary += `${d.getDate()}/${d.getMonth()+1} ${e.expenseName} ₹${e.amount} ${e.paymentMethod}${e.shared === 'Yes' ? ' (shared)' : ''}\n`;
-            });
-            return summary;
-        }
-
-        // ── If specific month detected (no category): send per-category breakdown for that month ──
-        if (matchedMonth !== null) {
-            const pool = allExpenses.filter(e => e.date.getMonth() === matchedMonth);
-            if (pool.length === 0) return `No transactions in ${mn[matchedMonth]}.`;
-            const total = pool.reduce((s, e) => s + e.amount, 0);
-            const catMap = {};
-            pool.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
-            const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
-            let summary = `${mn[matchedMonth]}: ₹${total.toFixed(0)}, ${pool.length} txns\n`;
-            summary += catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ') + '\n';
-            // Top 10 transactions by value for context
-            const top10 = [...pool].sort((a, b) => b.amount - a.amount).slice(0, 10);
-            summary += `\nTop 10:\n`;
-            top10.forEach(e => {
-                const d = e.date instanceof Date ? e.date : new Date(e.date);
-                summary += `  ${d.getDate()}/${d.getMonth()+1} ${e.expenseName} | ${e.category} | ₹${e.amount}\n`;
-            });
-            return summary;
-        }
-
-        // ── DEFAULT: use analytics filter + aggregate (existing behavior, compact) ──
         const data = getFilteredData();
         const total = data.reduce((s, e) => s + e.amount, 0);
+
+        // Build filter label
         const mVal = document.getElementById('filterMonth').value;
         const yVal = document.getElementById('filterYear').value;
-        const mnCap = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
         let fl = 'All Time';
-        if (mVal !== 'all' && yVal !== 'all') fl = `${mnCap[parseInt(mVal)]} ${yVal}`;
-        else if (mVal !== 'all') fl = mnCap[parseInt(mVal)];
+        if (mVal !== 'all' && yVal !== 'all') fl = `${mn[parseInt(mVal)]} ${yVal}`;
+        else if (mVal !== 'all') fl = mn[parseInt(mVal)];
         else if (yVal !== 'all') fl = yVal;
 
-        // For overspending/cutting queries, exclude Cost of Living categories (rent, bills, etc.)
-        const colCats = new Set((window._profileThemes || DEFAULT_THEMES)['Cost of living'] || []);
-        const isDiscretionaryQuery = /overspend|reduce|cut|save|frugal|optimi|rational|waste|unnecessary|too much|budget|limit/i.test(q);
-        const excludeCoL = isDiscretionaryQuery && !matchedCat;
-
+        // ── ALWAYS: header + category breakdown (compact) ──
         let summary = `Period: ${fl} | Total: ₹${total.toFixed(0)} | ${data.length} txns\n`;
         const catMap = {};
         data.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
         const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
-        if (excludeCoL) {
-            const disc = catSorted.filter(([c]) => !colCats.has(c));
-            const discTotal = disc.reduce((s, [, a]) => s + a, 0);
-            summary += `Discretionary: ₹${discTotal.toFixed(0)}\n`;
-            summary += disc.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ') + '\n';
-        } else {
-            summary += `Categories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
-        }
+        summary += `\nCategories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
 
-        // Theme data — skip if we already filtered to discretionary
-        if (!excludeCoL && /theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q)) {
+        // Helper: check if section already appended
+        let hasThemes = false, hasPayments = false, hasMonthly = false, hasRecent = false;
+
+        // ── THEME DATA: patterns, lifestyle, budget, savings, goals ──
+        const wantsThemes = /theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q);
+        if (wantsThemes) {
             const themeMap = {};
             data.forEach(e => { const t = getTheme(e.category); themeMap[t] = (themeMap[t] || 0) + e.amount; });
-            summary += `Themes: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
+            summary += `\nThemes: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
+            hasThemes = true;
         }
 
-        // Payment data
-        if (/payment|card|upi|credit|debit|cash|sapphiro|neucard|method|cred|gpay/i.test(q)) {
+        // ── PAYMENT DATA: cards, UPI, cash ──
+        const wantsPayments = /payment|card|upi|credit|debit|cash|sapphiro|neucard|method|cred|gpay/i.test(q);
+        if (wantsPayments) {
             const payMap = {};
             data.forEach(e => { payMap[e.paymentMethod] = (payMap[e.paymentMethod] || 0) + e.amount; });
-            summary += `Payments: ${Object.entries(payMap).sort((a,b)=>b[1]-a[1]).map(([p,a])=>`${p} ₹${a.toFixed(0)}`).join(', ')}\n`;
+            summary += `\nPayments: ${Object.entries(payMap).sort((a,b)=>b[1]-a[1]).map(([p,a])=>`${p} ₹${a.toFixed(0)}`).join(', ')}\n`;
+            hasPayments = true;
         }
 
-        // Monthly comparison
-        if (/compar|trend|increas|decreas|previous|change|vs|grow|spike|over time|history/i.test(q)) {
+        // ── MONTHLY COMPARISON: trends, changes, spikes ──
+        const wantsMonthly = /compar|month|trend|increas|decreas|last|previous|change|vs|grow|spike|over time|history/i.test(q);
+        if (wantsMonthly) {
             const monthMap = {};
             allExpenses.forEach(e => {
                 const d = e.date instanceof Date ? e.date : new Date(e.date);
@@ -2174,20 +1921,60 @@
                 monthMap[key].total += e.amount;
                 monthMap[key].cats[e.category] = (monthMap[key].cats[e.category] || 0) + e.amount;
             });
-            summary += `Monthly:\n`;
+            summary += `\nMonthly totals:\n`;
             Object.entries(monthMap).slice(0, 4).forEach(([m, d]) => {
-                const top = Object.entries(d.cats).sort((a, b) => b[1] - a[1]).slice(0, 5);
-                summary += `  ${m}: ₹${d.total.toFixed(0)} (${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
+                const top = Object.entries(d.cats).sort((a, b) => b[1] - a[1]).slice(0, 10);
+                summary += `  ${m}: ₹${d.total.toFixed(0)} (top: ${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
             });
+            hasMonthly = true;
         }
 
-        // Recent transactions
-        if (/recent|latest|today|yesterday|what did|spent on|transaction|item|entry|list|detail|break/i.test(q)) {
-            summary += `Recent:\n`;
+        // ── RECENT TRANSACTIONS: specific items ──
+        const wantsRecent = /recent|last|latest|today|yesterday|specific|what did|spent on|transaction|item|entry/i.test(q);
+        if (wantsRecent) {
+            summary += `\nRecent 10:\n`;
             allExpenses.slice(0, 10).forEach(e => {
                 const d = e.date instanceof Date ? e.date : new Date(e.date);
-                summary += `  ${d.getDate()}/${d.getMonth()+1} ${e.expenseName} | ${e.category} | ₹${e.amount}\n`;
+                summary += `  ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} ${e.expenseName} | ${e.category} | ₹${e.amount} | ${e.paymentMethod}\n`;
             });
+            hasRecent = true;
+        }
+
+        // ── FULL DEEP-DIVE: include everything not already added ──
+        const wantsFull = /\ball\b|everything|full|detail|complete|comprehensive|deep|thorough|entire|whole/i.test(q);
+        if (wantsFull) {
+            if (!hasThemes) {
+                const themeMap = {};
+                data.forEach(e => { const t = getTheme(e.category); themeMap[t] = (themeMap[t] || 0) + e.amount; });
+                summary += `\nThemes: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
+            }
+            if (!hasPayments) {
+                const payMap = {};
+                data.forEach(e => { payMap[e.paymentMethod] = (payMap[e.paymentMethod] || 0) + e.amount; });
+                summary += `\nPayments: ${Object.entries(payMap).sort((a,b)=>b[1]-a[1]).map(([p,a])=>`${p} ₹${a.toFixed(0)}`).join(', ')}\n`;
+            }
+            if (!hasMonthly) {
+                const monthMap = {};
+                allExpenses.forEach(e => {
+                    const d = e.date instanceof Date ? e.date : new Date(e.date);
+                    const key = d.toLocaleString('en', { month: 'short', year: 'numeric' });
+                    if (!monthMap[key]) monthMap[key] = { total: 0, cats: {} };
+                    monthMap[key].total += e.amount;
+                    monthMap[key].cats[e.category] = (monthMap[key].cats[e.category] || 0) + e.amount;
+                });
+                summary += `\nMonthly totals:\n`;
+                Object.entries(monthMap).slice(0, 4).forEach(([m, d]) => {
+                    const top = Object.entries(d.cats).sort((a, b) => b[1] - a[1]).slice(0, 10);
+                    summary += `  ${m}: ₹${d.total.toFixed(0)} (top: ${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
+                });
+            }
+            if (!hasRecent) {
+                summary += `\nRecent 10:\n`;
+                allExpenses.slice(0, 10).forEach(e => {
+                    const d = e.date instanceof Date ? e.date : new Date(e.date);
+                    summary += `  ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} ${e.expenseName} | ${e.category} | ₹${e.amount} | ${e.paymentMethod}\n`;
+                });
+            }
         }
 
         return summary;
@@ -2229,8 +2016,7 @@ Rules:
         try {
             const res = await fetch(GEMINI_PROXY_URL, {
                 method: 'POST',
-                redirect: 'follow',
-                headers: { 'Content-Type': 'text/plain' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     system_instruction: { parts: [{ text: systemPrompt }] },
                     contents
