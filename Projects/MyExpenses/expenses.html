@@ -395,7 +395,6 @@
             font-family: var(--font-sans); font-size: 0.82rem; font-weight: 500;
             padding: 0.45rem 1rem; border-radius: 5px; cursor: pointer; transition: all 0.15s ease;
         }
-        /* Outline danger button for edit modal delete — consistent with rest of UI */
         .btn-danger-outline {
             font-family: var(--font-sans); font-size: 0.82rem; font-weight: 500;
             padding: 0.45rem 1rem; border-radius: 5px; cursor: pointer; transition: all 0.15s ease;
@@ -778,7 +777,7 @@
 
     <script>
     /* ═══════════════════════════════════════════════════
-       CONFIG — Replace with your own values
+       CONFIG
        ═══════════════════════════════════════════════════ */
     const firebaseConfig = {
         apiKey: "AIzaSyDWK-pRnYW1uYS2IfqfW-H9lNNzB-UZlFc",
@@ -789,7 +788,7 @@
         appId: "1:417980148545:web:b8a7a0bdb59905a8098fc0"
     };
         
-    const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbxI02w2mcZ6O6rLyzfO2TAaZqSh0yCw_sWKjDDXqScyGM_U6Hvxd3jGKCeqdkthfido/exec";
+    const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbzK7baOdGPIbcr25GajbytZaMKGde440Pw942XLPhdwvukCSjKb1bX0jMaucMeTsizx/exec";
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -807,6 +806,7 @@
     let chartjsLoading = false;
     let chatHistory = [];
     let editingExpenseId = null;
+    let authRedirectPending = false;
 
     const DEFAULT_PAYMENTS = ['Cred UPI','Credit card','GPay UPI','Pine Perks','Cash','Debit card','Net Banking'];
     const DEFAULT_CATEGORIES = [
@@ -887,13 +887,47 @@
 
     /* ═══════════════════════════════════════════════════
        AUTH + ROUTING
-       — Popup-only. No signInWithRedirect at all.
-       — iOS Safari's ITP blocks redirect-based auth
-         (storage partitioning). Popups work from direct
-         user click handlers on all platforms.
+       — Dual strategy: popup first, redirect fallback.
+       — iOS standalone PWA cannot open popups, so we
+         detect that and go straight to redirect.
+       — getRedirectResult() is checked on every page
+         load to complete any pending redirect sign-in.
        ═══════════════════════════════════════════════════ */
 
+    /* Detect environments where popups won't work */
+    function shouldUseRedirect() {
+        // iOS standalone PWA (added to home screen) — popups are blocked
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                          || window.navigator.standalone === true;
+        // In-app browsers (Instagram, Facebook, etc.) — popups often fail
+        const ua = navigator.userAgent || '';
+        const isInApp = /FBAN|FBAV|Instagram|Line\/|Twitter|MicroMessenger/i.test(ua);
+        return isStandalone || isInApp;
+    }
+
+    /* Check for pending redirect result on page load */
+    (async function handleRedirectResult() {
+        try {
+            const result = await auth.getRedirectResult();
+            if (result && result.user) {
+                // Redirect sign-in completed — onAuthStateChanged will handle the rest
+                console.log('[Auth] Redirect sign-in completed');
+            }
+        } catch (err) {
+            console.warn('[Auth] Redirect result error:', err.code, err.message);
+            // Don't show error for "no redirect operation" — that's normal
+            if (err.code && err.code !== 'auth/credential-already-in-use') {
+                // Clear any stale loading state
+                document.getElementById('authLoading').style.display = 'none';
+            }
+        }
+    })();
+
     auth.onAuthStateChanged(async user => {
+        // Hide auth loading regardless
+        document.getElementById('authLoading').style.display = 'none';
+        authRedirectPending = false;
+
         if (user) {
             currentUser = user;
             document.getElementById('loginScreen').style.display = 'none';
@@ -939,20 +973,45 @@
         const loginBtn = document.querySelector('.login-btn');
         if (loginBtn) { loginBtn.disabled = true; loginBtn.style.opacity = '0.6'; }
 
+        if (shouldUseRedirect()) {
+            // Standalone PWA / in-app browser: use redirect (popups are blocked)
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('authLoading').style.display = 'flex';
+            authRedirectPending = true;
+            auth.signInWithRedirect(provider);
+            return;
+        }
+
+        // Default: try popup first
         auth.signInWithPopup(provider).then(() => {
             // onAuthStateChanged handles the rest
         }).catch(e => {
-            if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
             const code = e.code || '';
-            if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
-                toast('Please allow popups for this site and try again', 'error');
-            } else if (code === 'auth/popup-closed-by-browser' || code === 'auth/cancelled-popup-request') {
-                // User closed popup — just re-enable button
-            } else if (code === 'auth/network-request-failed') {
+
+            // Popup blocked or unsupported → fall back to redirect
+            if (code === 'auth/popup-blocked' ||
+                code === 'auth/operation-not-supported-in-this-environment' ||
+                code === 'auth/internal-error') {
+                console.log('[Auth] Popup failed (' + code + '), falling back to redirect');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('authLoading').style.display = 'flex';
+                authRedirectPending = true;
+                auth.signInWithRedirect(provider);
+                return;
+            }
+
+            // User closed popup — just re-enable button
+            if (code === 'auth/popup-closed-by-browser' || code === 'auth/cancelled-popup-request') {
+                if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
+                return;
+            }
+
+            if (code === 'auth/network-request-failed') {
                 toast('Network error — check your connection', 'error');
             } else {
                 toast('Sign-in failed: ' + e.message, 'error');
             }
+            if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
         });
     }
 
@@ -969,13 +1028,12 @@
     });
 
     /* ═══════════════════════════════════════════════════
-       ONBOARDING  (FIX #1: chips start unselected)
+       ONBOARDING
        ═══════════════════════════════════════════════════ */
     let onboardCCNames = [];
     let onboardThemeMap = {};
 
     function initOnboarding() {
-        // Chips are NOT selected by default — user must choose
         document.getElementById('onboardPayments').innerHTML =
             DEFAULT_PAYMENTS.map(p => `<span class="chip" onclick="this.classList.toggle('selected'); updateCCVisibility();">${p}</span>`).join('');
         document.getElementById('onboardCategories').innerHTML =
@@ -1116,7 +1174,7 @@
     }
 
     /* ═══════════════════════════════════════════════════
-       FIX #3: Credit card selection persistence (localStorage)
+       Credit card selection persistence (localStorage)
        ═══════════════════════════════════════════════════ */
     function getLastSelectedCard() {
         try { return localStorage.getItem('lastSelectedCard') || null; } catch { return null; }
@@ -1128,14 +1186,12 @@
     function applyUserProfile() {
         if (!userProfile) return;
 
-        // Populate dropdowns from profile
         const catSelect = document.getElementById('expCategory');
         catSelect.innerHTML = (userProfile.categories || DEFAULT_CATEGORIES).map(c => `<option value="${c}">${c}</option>`).join('');
 
         const paySelect = document.getElementById('expPayment');
         paySelect.innerHTML = (userProfile.paymentMethods || DEFAULT_PAYMENTS).map(p => `<option value="${p}">${p}</option>`).join('');
 
-        // CC picker radios from profile with localStorage-based default
         const ccNames = userProfile.creditCards || ['Sapphiro', 'Neucard'];
         const lastCard = getLastSelectedCard();
         document.getElementById('cardPickerRadios').innerHTML = ccNames.map((n, i) => {
@@ -1145,15 +1201,12 @@
             </label>`;
         }).join('');
 
-        // Also populate edit modal dropdowns
         const editCatSelect = document.getElementById('editExpCategory');
         editCatSelect.innerHTML = (userProfile.categories || DEFAULT_CATEGORIES).map(c => `<option value="${c}">${c}</option>`).join('');
 
         const editPaySelect = document.getElementById('editExpPayment');
-        // For edit modal, include both raw payment methods and CC- prefixed options
         const payments = userProfile.paymentMethods || DEFAULT_PAYMENTS;
         let editPayOptions = payments.map(p => `<option value="${p}">${p}</option>`).join('');
-        // Add CC sub-types
         if (ccNames.length > 0) {
             ccNames.forEach(n => {
                 editPayOptions += `<option value="CC - ${n}">CC - ${n}</option>`;
@@ -1161,7 +1214,6 @@
         }
         editPaySelect.innerHTML = editPayOptions;
 
-        // Edit modal CC picker radios (also with localStorage default)
         document.getElementById('editCardPickerRadios').innerHTML = ccNames.map((n, i) => {
             const isChecked = lastCard ? (n === lastCard) : (i === 0);
             return `<label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
@@ -1169,7 +1221,6 @@
             </label>`;
         }).join('');
 
-        // Theme legend + override
         if (userProfile.themes) {
             window._profileThemes = userProfile.themes;
             const legend = document.getElementById('themeLegend');
@@ -1190,11 +1241,9 @@
         document.getElementById('expDate').addEventListener('change', updateBillingInfo);
         updateBillingInfo();
 
-        // Edit modal billing info listeners
         document.getElementById('editExpPayment').addEventListener('change', updateEditBillingInfo);
         document.getElementById('editExpDate').addEventListener('change', updateEditBillingInfo);
 
-        // Auto-categorize (debounced)
         let autoTimer = null;
         document.getElementById('expName').addEventListener('input', function () {
             clearTimeout(autoTimer);
@@ -1245,6 +1294,34 @@
     }
 
     /* ═══════════════════════════════════════════════════
+       ACTIVE DAYS — Skip gaps of 3+ consecutive non-
+       expense days in daily average calculations.
+       ═══════════════════════════════════════════════════ */
+    function countActiveDays(expenses) {
+        if (expenses.length === 0) return 1;
+
+        // Get sorted unique calendar days (midnight-normalised timestamps)
+        const uniqueDays = [...new Set(expenses.map(e => {
+            const d = e.date instanceof Date ? e.date : new Date(e.date);
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        }))].sort((a, b) => a - b);
+
+        if (uniqueDays.length === 0) return 1;
+
+        let active = 1; // first expense day always counts
+        for (let i = 1; i < uniqueDays.length; i++) {
+            const diffDays = (uniqueDays[i] - uniqueDays[i - 1]) / 86400000;
+            // Gap of 0-2 blank days between expense days (diffDays ≤ 3):
+            //   Normal rhythm — count the full span including gap days.
+            // Gap of 3+ blank days (diffDays ≥ 4):
+            //   User wasn't tracking — skip the gap, just count
+            //   the next expense day itself (+1).
+            active += diffDays <= 3 ? diffDays : 1;
+        }
+        return Math.max(1, active);
+    }
+
+    /* ═══════════════════════════════════════════════════
        ADD EXPENSE (Optimistic UI)
        ═══════════════════════════════════════════════════ */
     async function addExpense() {
@@ -1266,7 +1343,6 @@
             if (s > 0) finalAmount = s;
         }
 
-        // Resolve CC sub-type
         const resolvedPayment = payment === 'Credit card'
             ? 'CC - ' + (document.querySelector('input[name="cardType"]:checked')?.value || 'Card')
             : payment;
@@ -1286,7 +1362,6 @@
             docData.splitAmount = finalAmount;
         }
 
-        // Optimistic: update local, then write async
         allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
         sortExpenses();
         renderRecent();
@@ -1312,7 +1387,6 @@
         document.getElementById('expCategory').selectedIndex = 0;
         document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('expShared').checked = false;
-        // Restore last selected card (not first card)
         const lastCard = getLastSelectedCard();
         if (lastCard) {
             const radio = document.querySelector(`input[name="cardType"][value="${lastCard}"]`);
@@ -1351,7 +1425,6 @@
         }
     }
 
-    /* ─── Edit modal form helpers ─── */
     function toggleEditShared() {
         const s = document.getElementById('editExpShared').checked;
         document.getElementById('editSplitFields').classList.toggle('show', s);
@@ -1393,17 +1466,13 @@
             ? expense.date.toISOString().split('T')[0]
             : new Date(expense.date).toISOString().split('T')[0];
 
-        // For payment, check if it's a CC- prefixed value
         const editPaySelect = document.getElementById('editExpPayment');
         const payVal = expense.paymentMethod || '';
-        // Try to set the exact value (works for CC - Sapphiro etc.)
         editPaySelect.value = payVal;
-        // If the exact value wasn't found in options, try the base "Credit card"
         if (editPaySelect.value !== payVal && payVal.startsWith('CC - ')) {
             editPaySelect.value = 'Credit card';
         }
 
-        // Amount: show originalAmount if shared, otherwise amount
         const isShared = expense.shared === 'Yes';
         if (isShared && expense.originalAmount) {
             document.getElementById('editExpAmount').value = expense.originalAmount;
@@ -1423,7 +1492,6 @@
 
         updateEditBillingInfo();
 
-        // Handle CC radio selection
         if (payVal.startsWith('CC - ')) {
             const cardName = payVal.replace('CC - ', '');
             const radio = document.querySelector(`input[name="editCardType"][value="${cardName}"]`);
@@ -1459,7 +1527,6 @@
             if (s > 0) finalAmount = s;
         }
 
-        // Resolve CC sub-type
         let resolvedPayment = payment;
         if (payment === 'Credit card') {
             const selectedCard = document.querySelector('input[name="editCardType"]:checked')?.value || 'Card';
@@ -1484,7 +1551,6 @@
             updateData.splitAmount = finalAmount;
         }
 
-        // Optimistic local update
         const idx = allExpenses.findIndex(e => e.id === editingExpenseId);
         if (idx !== -1) {
             allExpenses[idx] = { ...allExpenses[idx], ...updateData };
@@ -1513,7 +1579,6 @@
         const btn = document.getElementById('editDeleteBtn');
         btn.disabled = true; btn.textContent = 'Deleting...';
 
-        // Optimistic local delete
         const id = editingExpenseId;
         allExpenses = allExpenses.filter(e => e.id !== id);
         renderRecent();
@@ -1533,7 +1598,6 @@
         }
     }
 
-    // Close edit modal on overlay click
     document.getElementById('editExpenseModal').addEventListener('click', function (e) {
         if (e.target === this) closeEditModal();
     });
@@ -1583,8 +1647,6 @@
 
     /* ═══════════════════════════════════════════════════
        LOGS — Render + CSV Export
-       FIX #4: All today's txns + last 10 before today,
-       sorted newest-first within each day group
        ═══════════════════════════════════════════════════ */
     function renderRecent() {
         const container = document.getElementById('recentList');
@@ -1595,13 +1657,11 @@
             return;
         }
 
-        // allExpenses is already sorted by sortExpenses() (date desc, timestamp desc)
         const now = new Date();
         const todayStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
         const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
         const yesterdayStr = yesterday.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-        // Group all expenses by date (preserving sort order)
         const dateGroups = {};
         const dateOrder = [];
         allExpenses.forEach(e => {
@@ -1715,7 +1775,6 @@
             snap.docs.forEach(d => batch.delete(d.ref));
             batch.delete(db.collection('users').doc(currentUser.uid));
             await batch.commit();
-            // Decrement user counter
             const statsRef = db.collection('metadata').doc('stats');
             await db.runTransaction(async (tx) => {
                 const statsDoc = await tx.get(statsRef);
@@ -1779,11 +1838,8 @@
         else if (mVal !== 'all') pl = mn[parseInt(mVal)];
         else if (yVal !== 'all') pl = yVal;
 
-        let days = 1;
-        if (data.length > 0) {
-            const ds = data.map(e => e.date.getTime());
-            days = Math.max(1, Math.ceil((Math.max(...ds) - Math.min(...ds)) / 86400000) + 1);
-        }
+        /* ── Active days (skip 3+ day gaps) ── */
+        const days = countActiveDays(data);
 
         const catMap = {};
         data.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
@@ -1799,7 +1855,7 @@
 
         document.getElementById('metricsRow').innerHTML = `
             <div class="metric-card"><div class="label">Total Spent</div><div class="value">₹${total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div><div class="sub">${pl}</div></div>
-            <div class="metric-card"><div class="label">Avg Daily</div><div class="value">₹${(total / days).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div><div class="sub">${days} days</div></div>
+            <div class="metric-card"><div class="label">Avg Daily</div><div class="value">₹${(total / days).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div><div class="sub">${days} active days</div></div>
             <div class="metric-card"><div class="label">Top Category</div><div class="value" style="font-size:0.95rem;">${esc(topCat)}</div><div class="sub">₹${topAmt.toLocaleString('en-IN', { maximumFractionDigits: 0 })} ${cn}</div></div>`;
     }
 
@@ -1873,7 +1929,6 @@
         const data = getFilteredData();
         const total = data.reduce((s, e) => s + e.amount, 0);
 
-        // Build filter label
         const mVal = document.getElementById('filterMonth').value;
         const yVal = document.getElementById('filterYear').value;
         const mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1882,17 +1937,18 @@
         else if (mVal !== 'all') fl = mn[parseInt(mVal)];
         else if (yVal !== 'all') fl = yVal;
 
-        // ── ALWAYS: header + category breakdown (compact) ──
-        let summary = `Period: ${fl} | Total: ₹${total.toFixed(0)} | ${data.length} txns\n`;
+        /* ── Active days for accurate daily avg ── */
+        const activeDays = countActiveDays(data);
+
+        let summary = `Period: ${fl} | Total: ₹${total.toFixed(0)} | ${data.length} txns | ${activeDays} active days (gaps of 3+ consecutive non-expense days excluded)\nDaily avg (active): ₹${(total / activeDays).toFixed(0)}\n`;
+
         const catMap = {};
         data.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
         const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
         summary += `\nCategories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
 
-        // Helper: check if section already appended
         let hasThemes = false, hasPayments = false, hasMonthly = false, hasRecent = false;
 
-        // ── THEME DATA: patterns, lifestyle, budget, savings, goals ──
         const wantsThemes = /theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q);
         if (wantsThemes) {
             const themeMap = {};
@@ -1901,7 +1957,6 @@
             hasThemes = true;
         }
 
-        // ── PAYMENT DATA: cards, UPI, cash ──
         const wantsPayments = /payment|card|upi|credit|debit|cash|sapphiro|neucard|method|cred|gpay/i.test(q);
         if (wantsPayments) {
             const payMap = {};
@@ -1910,26 +1965,26 @@
             hasPayments = true;
         }
 
-        // ── MONTHLY COMPARISON: trends, changes, spikes ──
         const wantsMonthly = /compar|month|trend|increas|decreas|last|previous|change|vs|grow|spike|over time|history/i.test(q);
         if (wantsMonthly) {
             const monthMap = {};
             allExpenses.forEach(e => {
                 const d = e.date instanceof Date ? e.date : new Date(e.date);
                 const key = d.toLocaleString('en', { month: 'short', year: 'numeric' });
-                if (!monthMap[key]) monthMap[key] = { total: 0, cats: {} };
+                if (!monthMap[key]) monthMap[key] = { total: 0, cats: {}, expenses: [] };
                 monthMap[key].total += e.amount;
                 monthMap[key].cats[e.category] = (monthMap[key].cats[e.category] || 0) + e.amount;
+                monthMap[key].expenses.push(e);
             });
             summary += `\nMonthly totals:\n`;
             Object.entries(monthMap).slice(0, 4).forEach(([m, d]) => {
+                const mActiveDays = countActiveDays(d.expenses);
                 const top = Object.entries(d.cats).sort((a, b) => b[1] - a[1]).slice(0, 10);
-                summary += `  ${m}: ₹${d.total.toFixed(0)} (top: ${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
+                summary += `  ${m}: ₹${d.total.toFixed(0)} over ${mActiveDays} active days, avg ₹${(d.total / mActiveDays).toFixed(0)}/day (top: ${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
             });
             hasMonthly = true;
         }
 
-        // ── RECENT TRANSACTIONS: specific items ──
         const wantsRecent = /recent|last|latest|today|yesterday|specific|what did|spent on|transaction|item|entry/i.test(q);
         if (wantsRecent) {
             summary += `\nRecent 10:\n`;
@@ -1940,7 +1995,6 @@
             hasRecent = true;
         }
 
-        // ── FULL DEEP-DIVE: include everything not already added ──
         const wantsFull = /\ball\b|everything|full|detail|complete|comprehensive|deep|thorough|entire|whole/i.test(q);
         if (wantsFull) {
             if (!hasThemes) {
@@ -1958,14 +2012,16 @@
                 allExpenses.forEach(e => {
                     const d = e.date instanceof Date ? e.date : new Date(e.date);
                     const key = d.toLocaleString('en', { month: 'short', year: 'numeric' });
-                    if (!monthMap[key]) monthMap[key] = { total: 0, cats: {} };
+                    if (!monthMap[key]) monthMap[key] = { total: 0, cats: {}, expenses: [] };
                     monthMap[key].total += e.amount;
                     monthMap[key].cats[e.category] = (monthMap[key].cats[e.category] || 0) + e.amount;
+                    monthMap[key].expenses.push(e);
                 });
                 summary += `\nMonthly totals:\n`;
                 Object.entries(monthMap).slice(0, 4).forEach(([m, d]) => {
+                    const mActiveDays = countActiveDays(d.expenses);
                     const top = Object.entries(d.cats).sort((a, b) => b[1] - a[1]).slice(0, 10);
-                    summary += `  ${m}: ₹${d.total.toFixed(0)} (top: ${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
+                    summary += `  ${m}: ₹${d.total.toFixed(0)} over ${mActiveDays} active days, avg ₹${(d.total / mActiveDays).toFixed(0)}/day (top: ${top.map(([c,a])=>`${c} ₹${a.toFixed(0)}`).join(', ')})\n`;
                 });
             }
             if (!hasRecent) {
@@ -2003,11 +2059,11 @@ Rules:
 - When suggesting changes, be actionable and reference specific categories/amounts.
 - If suggesting a spending target, frame it as: "Try to keep [category] under ₹X this month"
 - Use plain text, no markdown. Use line breaks for readability.
+- "Active days" means days where the user was actually tracking expenses (consecutive gaps of 3+ days without any expense are excluded). Always use active days for daily averages, not calendar days.
 - End responses that contain actionable suggestions with the exact line: [SUGGESTIONS] followed by each suggestion on its own line, prefixed with bullet "• ". These will be extractable by the app.`;
 
         const contents = [{ role: 'user', parts: [{ text: `Here is my expense data:\n\n${summary}\n\nUser question: ${query}` }] }];
 
-        // Add last 4 exchanges for multi-turn context
         if (chatHistory.length > 0) {
             const recent = chatHistory.slice(-8);
             contents[0].parts[0].text = `Previous conversation:\n${recent.map(h => `${h.role}: ${h.text}`).join('\n')}\n\n${contents[0].parts[0].text}`;
@@ -2122,7 +2178,6 @@ Rules:
         if (currentUser && chartjsLoaded) refreshAnalytics();
     }
 
-    // Load saved theme
     (function () {
         const saved = localStorage.getItem('theme');
         if (saved === 'colorful') document.body.setAttribute('data-theme', 'colorful');
