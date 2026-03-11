@@ -506,14 +506,14 @@
     </header>
 
     <!-- ─── AUTH LOADING ─── -->
-    <div id="authLoading" class="auth-loading" style="display:none;">
+    <div id="authLoading" class="auth-loading" style="display:flex;">
         <div style="font-size: 2.5rem;">✦</div>
         <div class="dot-pulse"><span></span><span></span><span></span></div>
         <p style="color:var(--muted-color);font-size:0.85rem;">Signing you in...</p>
     </div>
 
     <!-- ─── LOGIN ─── -->
-    <div id="loginScreen" class="login-screen">
+    <div id="loginScreen" class="login-screen" style="display:none;">
         <div style="font-size: 2.5rem;">✦</div>
         <h2>Expense Tracker</h2>
         <p>Track spending fast with clarity. Record any expense in under 5 seconds.</p>
@@ -529,7 +529,7 @@
     </div>
 
     <!-- ─── ONBOARDING ─── -->
-    <div id="onboardingScreen" class="onboarding-screen">
+    <div id="onboardingScreen" class="onboarding-screen" style="display:none;">
         <h2 style="font-size:1.2rem;font-weight:600;margin-bottom:0.3rem;">Set up your tracker</h2>
         <p style="color:var(--muted-color);font-size:0.85rem;margin-bottom:1.5rem;">Customize categories, payments, and themes. You can change these later.</p>
         <div class="onboard-section">
@@ -982,12 +982,14 @@
             cancel_on_tap_outside: false
         });
     
-        // Render the branded button inside the login screen
+        // Render the branded button inside the login screen (clear first to avoid duplicates)
+        const gisContainer = document.getElementById('gisButtonContainer');
+        gisContainer.innerHTML = '';
         google.accounts.id.renderButton(
-            document.getElementById('gisButtonContainer'),
+            gisContainer,
             {
                 type: 'standard',
-                theme: document.body.classList.contains('dark') ? 'filled_black' : 'outline',
+                theme: document.body.getAttribute('data-theme') === 'colorful' ? 'filled_black' : 'outline',
                 size: 'large',
                 text: 'signin_with',
                 shape: 'pill',
