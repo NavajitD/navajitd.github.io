@@ -2072,7 +2072,7 @@ Rules:
         try {
             const res = await fetch(GEMINI_PROXY_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
                     system_instruction: { parts: [{ text: systemPrompt }] },
                     contents
