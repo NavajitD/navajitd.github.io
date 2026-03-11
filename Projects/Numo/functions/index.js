@@ -97,7 +97,7 @@ exports.numoChat = onRequest(
 
         // Call Cerebras API with streaming
         const stream = await cerebras.chat.completions.create({
-          model: "llama-4-scout-17b-16e-instruct",
+          model: "llama3.1-8b",
           messages: messages,
           temperature: 0.7,
           max_tokens: 2048,
