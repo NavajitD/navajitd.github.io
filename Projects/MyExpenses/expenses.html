@@ -1946,16 +1946,74 @@
         const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
         summary += `\nCategories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
 
+        // Always include theme→category mapping so the model understands the structure
+        const themes = window._profileThemes || DEFAULT_THEMES;
+        summary += `\nTheme→category mapping:\n`;
+        for (const [themeName, cats] of Object.entries(themes)) {
+            const themeCats = cats.filter(c => catMap[c]); // only categories with spending
+            if (themeCats.length > 0) {
+                summary += `  ${themeName}: ${themeCats.map(c => `${c} ₹${(catMap[c]||0).toFixed(0)}`).join(', ')}\n`;
+            } else {
+                summary += `  ${themeName}: ${cats.join(', ')} (no spending this period)\n`;
+            }
+        }
+        // Show categories that don't belong to any named theme
+        const allThemed = new Set(Object.values(themes).flat());
+        const unthemed = catSorted.filter(([c]) => !allThemed.has(c));
+        if (unthemed.length > 0) {
+            summary += `  Other: ${unthemed.map(([c,a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
+        }
+
         let hasThemes = false, hasPayments = false, hasMonthly = false, hasRecent = false;
 
-        const wantsThemes = /theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q);
+        // Detect actual theme names dynamically from the user's profile
+        const themeNamesLower = Object.keys(themes).map(t => t.toLowerCase());
+        const mentionsThemeName = themeNamesLower.some(tn => q.includes(tn));
+
+        // Also detect specific category names mentioned in the query
+        const allCategoryNames = (userProfile?.categories || DEFAULT_CATEGORIES).map(c => c.toLowerCase());
+        const mentionedCategories = allCategoryNames.filter(c => q.includes(c));
+
+        const wantsThemes = mentionsThemeName || /theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q);
         if (wantsThemes) {
             const themeMap = {};
             data.forEach(e => { const t = getTheme(e.category); themeMap[t] = (themeMap[t] || 0) + e.amount; });
-            summary += `\nThemes: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
+            summary += `\nTheme totals: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
             hasThemes = true;
+
+            // If a specific theme name is mentioned, include its per-category breakdown + transactions
+            const mentionedTheme = Object.keys(themes).find(tn => q.includes(tn.toLowerCase()));
+            if (mentionedTheme) {
+                const themeCats = new Set(themes[mentionedTheme] || []);
+                const themeExpenses = data.filter(e => themeCats.has(e.category));
+                const themeCatMap = {};
+                themeExpenses.forEach(e => { themeCatMap[e.category] = (themeCatMap[e.category] || 0) + e.amount; });
+                const themeCatSorted = Object.entries(themeCatMap).sort((a, b) => b[1] - a[1]);
+                const themeTotal = themeExpenses.reduce((s, e) => s + e.amount, 0);
+                summary += `\n"${mentionedTheme}" detailed breakdown (₹${themeTotal.toFixed(0)} total across ${themeExpenses.length} txns):\n`;
+                themeCatSorted.forEach(([c, a]) => { summary += `  ${c}: ₹${a.toFixed(0)}\n`; });
+                summary += `\nRecent "${mentionedTheme}" transactions:\n`;
+                themeExpenses.slice(0, 15).forEach(e => {
+                    const d = e.date instanceof Date ? e.date : new Date(e.date);
+                    summary += `  ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} ${e.expenseName} | ${e.category} | ₹${e.amount} | ${e.paymentMethod}\n`;
+                });
+                hasRecent = true;
+            }
         }
 
+        // If a specific category name is mentioned, include transactions for that category
+        if (mentionedCategories.length > 0 && !hasRecent) {
+            const catExpenses = data.filter(e => mentionedCategories.includes(e.category.toLowerCase()));
+            if (catExpenses.length > 0) {
+                summary += `\nTransactions for "${mentionedCategories.join(', ')}":\n`;
+                catExpenses.slice(0, 15).forEach(e => {
+                    const d = e.date instanceof Date ? e.date : new Date(e.date);
+                    summary += `  ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} ${e.expenseName} | ${e.category} | ₹${e.amount} | ${e.paymentMethod}\n`;
+                });
+                hasRecent = true;
+            }
+        }
+        
         const wantsPayments = /payment|card|upi|credit|debit|cash|sapphiro|neucard|method|cred|gpay/i.test(q);
         if (wantsPayments) {
             const payMap = {};
@@ -2059,6 +2117,8 @@ Rules:
 - If suggesting a spending target, frame it as: "Try to keep [category] under ₹X this month"
 - Use plain text, no markdown. Use line breaks for readability.
 - "Active days" means days where the user was actually tracking expenses (consecutive gaps of 3+ days without any expense are excluded). Always use active days for daily averages, not calendar days.
+- The user's expenses are organized into "themes" (groupings of categories). The theme→category mapping is provided in the data. When the user asks about a theme (e.g. "Incidentals"), answer using the categories that belong to that theme.
+- If a follow-up question references a previous answer, use the conversation history to maintain context.
 - End responses that contain actionable suggestions with the exact line: [SUGGESTIONS] followed by each suggestion on its own line, prefixed with bullet "• ". These will be extractable by the app.`;
 
         const contents = [{ role: 'user', parts: [{ text: `Here is my expense data:\n\n${summary}\n\nUser question: ${query}` }] }];
@@ -2079,7 +2139,23 @@ Rules:
             });
 
             const data = await res.json();
-            const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I couldn\'t generate a response.';
+
+            // Extract reply with detailed error fallbacks
+            let reply = '';
+            if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                reply = data.candidates[0].content.parts[0].text;
+            } else if (data?.candidates?.[0]?.finishReason === 'SAFETY') {
+                reply = 'The advisor couldn\'t respond due to content filters. Try rephrasing your question.';
+            } else if (data?.error) {
+                reply = `Advisor error: ${data.error.message || data.error.status || 'Unknown error'}. Try again in a moment.`;
+                console.error('Gemini API error:', data.error);
+            } else if (data?.candidates?.length === 0 || !data?.candidates) {
+                reply = 'The advisor returned an empty response. Try rephrasing — e.g. "Show me all spending in the Incidentals theme" or be more specific about what you want to know.';
+                console.warn('Empty candidates:', JSON.stringify(data).substring(0, 500));
+            } else {
+                reply = 'Unexpected response format from advisor. Check console for details.';
+                console.warn('Unexpected Gemini response:', JSON.stringify(data).substring(0, 500));
+            }
 
             chatHistory.push({ role: 'user', text: query });
             chatHistory.push({ role: 'assistant', text: reply });
