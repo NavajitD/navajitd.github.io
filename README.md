@@ -1,1 +1,0 @@
-# navajitd.github.io
