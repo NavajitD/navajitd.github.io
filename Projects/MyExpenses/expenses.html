@@ -517,10 +517,7 @@
         <div style="font-size: 2.5rem;">✦</div>
         <h2>Expense Tracker</h2>
         <p>Track spending fast with clarity. Record any expense in under 5 seconds.</p>
-        <button class="login-btn" onclick="signInWithGoogle()">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-            Sign in with Google
-        </button>
+        <div id="gisButtonContainer"></div>
     </div>
 
     <!-- ─── CAP SCREEN ─── -->
@@ -771,6 +768,7 @@
     <div class="toast" id="toast"></div>
 
     <!-- ─── Firebase SDK ─── -->
+    <script src="https://accounts.google.com/gsi/client" async></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -787,7 +785,8 @@
         messagingSenderId: "417980148545",
         appId: "1:417980148545:web:b8a7a0bdb59905a8098fc0"
     };
-        
+
+    const GOOGLE_CLIENT_ID = "694078633783-f9k9n0p562ttlutn96vo6bnkhiijtrlu.apps.googleusercontent.com"; 
     const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbxrZVdkP3MjCBrOg0-iJH3722CiqsCC85rIFLXUHNz0sJWtUCFH2M6trWS8X6T7Rb8S/exec";
 
     firebase.initializeApp(firebaseConfig);
@@ -966,59 +965,59 @@
         document.getElementById('onboardingScreen').style.display = 'none';
         document.getElementById('capScreen').style.display = 'none';
         document.getElementById('userMenu').style.display = 'none';
-    });
+        initGoogleSignIn();
+    return;
+    }
 
-    function signInWithGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const loginBtn = document.querySelector('.login-btn');
-        if (loginBtn) { loginBtn.disabled = true; loginBtn.style.opacity = '0.6'; }
-
-        if (shouldUseRedirect()) {
-            // Standalone PWA / in-app browser: use redirect (popups are blocked)
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('authLoading').style.display = 'flex';
-            authRedirectPending = true;
-            auth.signInWithRedirect(provider);
+    function initGoogleSignIn() {
+        if (typeof google === 'undefined' || !google.accounts) {
+            // GIS script not loaded yet — retry
+            setTimeout(initGoogleSignIn, 200);
             return;
         }
-
-        // Default: try popup first
-        auth.signInWithPopup(provider).then(() => {
-            // onAuthStateChanged handles the rest
-        }).catch(e => {
-            const code = e.code || '';
-
-            // Popup blocked or unsupported → fall back to redirect
-            if (code === 'auth/popup-blocked' ||
-                code === 'auth/operation-not-supported-in-this-environment' ||
-                code === 'auth/internal-error') {
-                console.log('[Auth] Popup failed (' + code + '), falling back to redirect');
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('authLoading').style.display = 'flex';
-                authRedirectPending = true;
-                auth.signInWithRedirect(provider);
-                return;
-            }
-
-            // User closed popup — just re-enable button
-            if (code === 'auth/popup-closed-by-browser' || code === 'auth/cancelled-popup-request') {
-                if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
-                return;
-            }
-
-            if (code === 'auth/network-request-failed') {
-                toast('Network error — check your connection', 'error');
-            } else {
-                toast('Sign-in failed: ' + e.message, 'error');
-            }
-            if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGISResponse,
+            auto_select: true,       // One Tap auto-sign-in for returning users
+            cancel_on_tap_outside: false
         });
+    
+        // Render the branded button inside the login screen
+        google.accounts.id.renderButton(
+            document.getElementById('gisButtonContainer'),
+            {
+                type: 'standard',
+                theme: document.body.classList.contains('dark') ? 'filled_black' : 'outline',
+                size: 'large',
+                text: 'signin_with',
+                shape: 'pill',
+                width: 280
+            }
+        );
+    
+        // Also show One Tap prompt (appears as a small card at top-right)
+        google.accounts.id.prompt();
+    }
+    
+    async function handleGISResponse(response) {
+        try {
+            const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+            await auth.signInWithCredential(credential);
+            // onAuthStateChanged will handle the rest
+        } catch (err) {
+            toast('Sign-in failed: ' + err.message, 'error');
+            console.error('GIS sign-in error:', err);
+        }
     }
 
     function signOut() {
+        if (typeof google !== 'undefined' && google.accounts) {
+            google.accounts.id.disableAutoSelect(); // Prevent auto re-login
+        }
         auth.signOut();
         document.getElementById('userDropdown').classList.remove('show');
     }
+        
     function toggleUserMenu() {
         document.getElementById('userDropdown').classList.toggle('show');
     }
@@ -1947,16 +1946,74 @@
         const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
         summary += `\nCategories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
 
+        // Always include theme→category mapping so the model understands the structure
+        const themes = window._profileThemes || DEFAULT_THEMES;
+        summary += `\nTheme→category mapping:\n`;
+        for (const [themeName, cats] of Object.entries(themes)) {
+            const themeCats = cats.filter(c => catMap[c]); // only categories with spending
+            if (themeCats.length > 0) {
+                summary += `  ${themeName}: ${themeCats.map(c => `${c} ₹${(catMap[c]||0).toFixed(0)}`).join(', ')}\n`;
+            } else {
+                summary += `  ${themeName}: ${cats.join(', ')} (no spending this period)\n`;
+            }
+        }
+        // Show categories that don't belong to any named theme
+        const allThemed = new Set(Object.values(themes).flat());
+        const unthemed = catSorted.filter(([c]) => !allThemed.has(c));
+        if (unthemed.length > 0) {
+            summary += `  Other: ${unthemed.map(([c,a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
+        }
+
         let hasThemes = false, hasPayments = false, hasMonthly = false, hasRecent = false;
 
-        const wantsThemes = /theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q);
+        // Detect actual theme names dynamically from the user's profile
+        const themeNamesLower = Object.keys(themes).map(t => t.toLowerCase());
+        const mentionsThemeName = themeNamesLower.some(tn => q.includes(tn));
+
+        // Also detect specific category names mentioned in the query
+        const allCategoryNames = (userProfile?.categories || DEFAULT_CATEGORIES).map(c => c.toLowerCase());
+        const mentionedCategories = allCategoryNames.filter(c => q.includes(c));
+
+        const wantsThemes = mentionsThemeName || /theme|pattern|overview|habit|lifestyle|budget|save|goal|reduce|cut|optimi|frugal|essent|necessit|need|want/i.test(q);
         if (wantsThemes) {
             const themeMap = {};
             data.forEach(e => { const t = getTheme(e.category); themeMap[t] = (themeMap[t] || 0) + e.amount; });
-            summary += `\nThemes: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
+            summary += `\nTheme totals: ${Object.entries(themeMap).sort((a,b)=>b[1]-a[1]).map(([t,a])=>`${t} ₹${a.toFixed(0)}`).join(', ')}\n`;
             hasThemes = true;
+
+            // If a specific theme name is mentioned, include its per-category breakdown + transactions
+            const mentionedTheme = Object.keys(themes).find(tn => q.includes(tn.toLowerCase()));
+            if (mentionedTheme) {
+                const themeCats = new Set(themes[mentionedTheme] || []);
+                const themeExpenses = data.filter(e => themeCats.has(e.category));
+                const themeCatMap = {};
+                themeExpenses.forEach(e => { themeCatMap[e.category] = (themeCatMap[e.category] || 0) + e.amount; });
+                const themeCatSorted = Object.entries(themeCatMap).sort((a, b) => b[1] - a[1]);
+                const themeTotal = themeExpenses.reduce((s, e) => s + e.amount, 0);
+                summary += `\n"${mentionedTheme}" detailed breakdown (₹${themeTotal.toFixed(0)} total across ${themeExpenses.length} txns):\n`;
+                themeCatSorted.forEach(([c, a]) => { summary += `  ${c}: ₹${a.toFixed(0)}\n`; });
+                summary += `\nRecent "${mentionedTheme}" transactions:\n`;
+                themeExpenses.slice(0, 15).forEach(e => {
+                    const d = e.date instanceof Date ? e.date : new Date(e.date);
+                    summary += `  ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} ${e.expenseName} | ${e.category} | ₹${e.amount} | ${e.paymentMethod}\n`;
+                });
+                hasRecent = true;
+            }
         }
 
+        // If a specific category name is mentioned, include transactions for that category
+        if (mentionedCategories.length > 0 && !hasRecent) {
+            const catExpenses = data.filter(e => mentionedCategories.includes(e.category.toLowerCase()));
+            if (catExpenses.length > 0) {
+                summary += `\nTransactions for "${mentionedCategories.join(', ')}":\n`;
+                catExpenses.slice(0, 15).forEach(e => {
+                    const d = e.date instanceof Date ? e.date : new Date(e.date);
+                    summary += `  ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} ${e.expenseName} | ${e.category} | ₹${e.amount} | ${e.paymentMethod}\n`;
+                });
+                hasRecent = true;
+            }
+        }
+        
         const wantsPayments = /payment|card|upi|credit|debit|cash|sapphiro|neucard|method|cred|gpay/i.test(q);
         if (wantsPayments) {
             const payMap = {};
@@ -2060,6 +2117,8 @@ Rules:
 - If suggesting a spending target, frame it as: "Try to keep [category] under ₹X this month"
 - Use plain text, no markdown. Use line breaks for readability.
 - "Active days" means days where the user was actually tracking expenses (consecutive gaps of 3+ days without any expense are excluded). Always use active days for daily averages, not calendar days.
+- The user's expenses are organized into "themes" (groupings of categories). The theme→category mapping is provided in the data. When the user asks about a theme (e.g. "Incidentals"), answer using the categories that belong to that theme.
+- If a follow-up question references a previous answer, use the conversation history to maintain context.
 - End responses that contain actionable suggestions with the exact line: [SUGGESTIONS] followed by each suggestion on its own line, prefixed with bullet "• ". These will be extractable by the app.`;
 
         const contents = [{ role: 'user', parts: [{ text: `Here is my expense data:\n\n${summary}\n\nUser question: ${query}` }] }];
@@ -2080,7 +2139,23 @@ Rules:
             });
 
             const data = await res.json();
-            const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I couldn\'t generate a response.';
+
+            // Extract reply with detailed error fallbacks
+            let reply = '';
+            if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                reply = data.candidates[0].content.parts[0].text;
+            } else if (data?.candidates?.[0]?.finishReason === 'SAFETY') {
+                reply = 'The advisor couldn\'t respond due to content filters. Try rephrasing your question.';
+            } else if (data?.error) {
+                reply = `Advisor error: ${data.error.message || data.error.status || 'Unknown error'}. Try again in a moment.`;
+                console.error('Gemini API error:', data.error);
+            } else if (data?.candidates?.length === 0 || !data?.candidates) {
+                reply = 'The advisor returned an empty response. Try rephrasing — e.g. "Show me all spending in the Incidentals theme" or be more specific about what you want to know.';
+                console.warn('Empty candidates:', JSON.stringify(data).substring(0, 500));
+            } else {
+                reply = 'Unexpected response format from advisor. Check console for details.';
+                console.warn('Unexpected Gemini response:', JSON.stringify(data).substring(0, 500));
+            }
 
             chatHistory.push({ role: 'user', text: query });
             chatHistory.push({ role: 'assistant', text: reply });
