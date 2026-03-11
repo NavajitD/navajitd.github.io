@@ -914,15 +914,23 @@
             }
         } catch (err) {
             console.warn('[Auth] Redirect result error:', err.code, err.message);
-            // Don't show error for "no redirect operation" — that's normal
-            if (err.code && err.code !== 'auth/credential-already-in-use') {
-                // Clear any stale loading state
-                document.getElementById('authLoading').style.display = 'none';
-            }
         }
     })();
 
+    /* Fallback: if Firebase auth doesn't resolve within 6s, show the login screen */
+    let authResolved = false;
+    const authFallbackTimer = setTimeout(() => {
+        if (!authResolved) {
+            console.warn('[Auth] Timeout — showing login screen as fallback');
+            document.getElementById('authLoading').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            initGoogleSignIn();
+        }
+    }, 6000);
+
     auth.onAuthStateChanged(async user => {
+        authResolved = true;
+        clearTimeout(authFallbackTimer);
         // Hide auth loading regardless
         document.getElementById('authLoading').style.display = 'none';
         authRedirectPending = false;
