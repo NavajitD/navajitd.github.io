@@ -904,20 +904,10 @@
         return isStandalone || isInApp;
     }
 
-    /* Check for pending redirect result on page load */
-    (async function handleRedirectResult() {
-        try {
-            const result = await auth.getRedirectResult();
-            if (result && result.user) {
-                // Redirect sign-in completed — onAuthStateChanged will handle the rest
-                console.log('[Auth] Redirect sign-in completed');
-            }
-        } catch (err) {
-            console.warn('[Auth] Redirect result error:', err.code, err.message);
-        }
-    })();
-
-    /* Fallback: if Firebase auth doesn't resolve within 6s, show the login screen */
+    /* Fallback: if Firebase auth doesn't resolve within 5s, show the login screen.
+       NOTE: auth.getRedirectResult() was removed — it blocks onAuthStateChanged indefinitely
+       in Incognito, iOS standalone, and cross-origin cookie-restricted environments,
+       since this app uses GIS (signInWithCredential) not signInWithRedirect. */
     let authResolved = false;
     const authFallbackTimer = setTimeout(() => {
         if (!authResolved) {
@@ -926,7 +916,7 @@
             document.getElementById('loginScreen').style.display = 'flex';
             initGoogleSignIn();
         }
-    }, 6000);
+    }, 5000);
 
     auth.onAuthStateChanged(async user => {
         authResolved = true;
