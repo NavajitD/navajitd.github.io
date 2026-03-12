@@ -67,7 +67,7 @@
     }
 
     html {
-      font-size: 17.6px
+      font-size: 19.2px
     }
 
     body {
@@ -1616,7 +1616,7 @@
     <div class="bottom-nav-inner">
       <div class="nav-item active" data-tab="fuel" onclick="switchTab('fuel')">
         <svg viewBox="0 0 24 24">
-          <path d="M3 12h18M5 12a7 7 0 0 1 14 0M8 4v5M12 3v6M16 4v5" />
+          <path d="M2 13h20v0a10 10 0 0 1-10 10A10 10 0 0 1 2 13zM7 6c.5-1.5.5-3 0-4M12 6c.5-1.5.5-3 0-4M17 6c.5-1.5.5-3 0-4" />
         </svg>
         <span>Fuel</span>
       </div>
@@ -2366,7 +2366,7 @@
             <div class="stat-box"><div class="stat-val" style="color:var(--success)">${burned}</div><div class="stat-label">burned</div></div>
             <div class="stat-box"><div class="stat-val">${net}</div><div class="stat-label">net</div></div>
           </div>
-          <details class="micros-details"><summary><span>Micronutrients</span><span style="font-size:.62rem;font-weight:500;text-transform:none;letter-spacing:0">${met}/${MICROS.length} met</span></summary>
+          <details class="micros-details"><summary><span>Micronutrients</span><span style="font-size:.75rem;font-weight:600;text-transform:none;letter-spacing:0">${met}/${MICROS.length} met</span></summary>
             <div class="micros-scroll">${microsHtml}</div></details>
         </div>
         <div class="card">
@@ -2421,14 +2421,13 @@
         const warmupDone = warmup.every(t => lwwGet(dayData.warmupChecks, t.id));
         const warmupHtml = warmup.map(t => {
           const on = lwwGet(dayData.warmupChecks, t.id);
-          return `<div class="check-item" onclick="toggleCheck('warmupChecks','${t.id}')"><input type="checkbox" ${on ? "checked" : ""}><span style="${on ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.label)} <span style="color:var(--muted);font-size:.62rem">${t.kcal} kcal</span></span></div>`;
+          return `<div class="check-item" onclick="toggleCheck('warmupChecks','${t.id}')"><input type="checkbox" ${on ? "checked" : ""}><span style="${on ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.label)}</span></div>`;
         }).join("");
 
         // Workout checklist
         const workoutHtml = workout ? workout.exercises.map(ex => {
           const done = lwwGet(dayData.exerciseChecks, ex);
-          const kcal = EXERCISE_KCAL[ex] || 30;
-          return `<div class="check-item" onclick="toggleExercise('${esc(ex)}')"><input type="checkbox" ${done ? "checked" : ""}><span style="${done ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(ex)} <span style="color:var(--muted);font-size:.62rem">${kcal} kcal</span></span></div>`;
+          return `<div class="check-item" onclick="toggleExercise('${esc(ex)}')"><input type="checkbox" ${done ? "checked" : ""}><span style="${done ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(ex)}</span></div>`;
         }).join("") : `<div class="empty-state"><div class="empty-icon">😌</div>Rest and recover</div>`;
 
         // Cooldown checklist
@@ -2606,73 +2605,222 @@
       }
 
       /* ─── STATS TAB ─── */
+      let statsWeek = 'this'; // 'this' or 'last'
+      let statsPeriod = 7;
+
+      window.setStatsWeek = function (w) { statsWeek = w; loadStats(); }
+      window.setStatsPeriod = function (p) { statsPeriod = p; loadStats(); }
+
+      window.getBMR = function (weight, bodyFat) {
+        if (weight && bodyFat) {
+          const leanMass = weight * (1 - bodyFat / 100);
+          return 370 + (21.6 * leanMass);
+        }
+        return 1323;
+      }
+
+      window.getWeekRange = function (which) {
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0=Sun
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const monday = new Date(now); monday.setDate(now.getDate() + mondayOffset);
+        if (which === 'last') monday.setDate(monday.getDate() - 7);
+        const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+        const dates = [];
+        for (let d = new Date(monday); d <= sunday && d <= now; d.setDate(d.getDate() + 1)) {
+          dates.push(new Date(d).toISOString().split('T')[0]);
+        }
+        return dates;
+      }
+
       window.loadStats = async function () {
         const content = document.getElementById("tabContent");
         content.innerHTML = `<div class="empty-state"><div class="dot-pulse"><span></span><span></span><span></span></div><p style="margin-top:.5rem">Loading trends...</p></div>`;
         try {
-          const end = new Date(); const start = new Date(); start.setDate(start.getDate() - 6);
+          // Fetch up to 90 days of data
+          const end = new Date(); const start = new Date(); start.setDate(start.getDate() - 90);
           const startKey = start.toISOString().split("T")[0]; const endKey = end.toISOString().split("T")[0];
           const snap = await db.collection("users").doc(currentUser.uid).collection("days")
             .where(firebase.firestore.FieldPath.documentId(), ">=", startKey)
             .where(firebase.firestore.FieldPath.documentId(), "<=", endKey).get();
-          const days = [];
-          for (let i = 6; i >= 0; i--) {
-            const d = new Date(); d.setDate(d.getDate() - i); const dk = d.toISOString().split("T")[0];
-            const doc = snap.docs.find(x => x.id === dk); const dd = doc ? { ...emptyDay(), ...doc.data() } : emptyDay();
-            const t = computeTotals(dd);
-            days.push({
-              date: dk, day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()],
-              cal: t.cal, protein: t.protein, water: num0(dd.water || activeItems(dd.waterLogs || []).reduce((s, l) => s + num0(l.ml), 0)),
-              sleep: num0(dd.sleep?.hours), weight: dd.body?.weight || null
-            });
-          }
-          const avgDen = days.length || 1;
-          const avgCal = Math.round(days.reduce((s, d) => s + d.cal, 0) / avgDen);
-          const avgPro = Math.round(days.reduce((s, d) => s + d.protein, 0) / avgDen);
-          const avgWater = Math.round(days.reduce((s, d) => s + d.water, 0) / avgDen);
-          const avgSleep = Math.round(days.reduce((s, d) => s + d.sleep, 0) / avgDen * 10) / 10;
-          const weights = days.filter(d => d.weight); const avgWeight = weights.length ? Math.round(weights.reduce((s, d) => s + d.weight, 0) / weights.length * 10) / 10 : null;
+          const allDaysMap = {};
+          snap.docs.forEach(doc => { allDaysMap[doc.id] = { ...emptyDay(), ...doc.data() }; });
 
-          content.innerHTML = `
+          const getDayData = (dk) => {
+            const dd = allDaysMap[dk] || emptyDay();
+            const t = computeTotals(dd);
+            const water = num0(dd.water || activeItems(dd.waterLogs || []).reduce((s, l) => s + num0(l.ml), 0));
+            const exCal = num0(dd.exerciseCal) + num0(dd.neatCal) || (() => {
+              const steps = activeItems(dd.stepLogs || []).reduce((s, l) => s + num0(l.steps), 0);
+              const custom = activeItems(dd.customExercises || []).reduce((s, x) => s + num0(x.kcal), 0);
+              return Math.round(estimateWalkCal(steps, 70) + custom);
+            })();
+            const microsMet = MICROS.filter(m => (t.micros[m.key] || 0) >= m.target).length;
+            const delightCount = DELIGHTS.filter(d => lwwGet(dd.delightChecks, d.id)).length;
+            return {
+              date: dk, day: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date(dk+"T12:00:00").getDay()],
+              cal: t.cal, protein: t.protein, fiber: t.fiber, water, sleep: num0(dd.sleep?.hours),
+              weight: dd.body?.weight || null, bodyFat: dd.body?.bodyFat || null,
+              waist: dd.body?.waist || null, shoulders: dd.body?.shoulders || null,
+              skeletalMuscle: dd.body?.skeletalMuscle || null, visceralFat: dd.body?.visceralFat || null,
+              exCal, microsMet, delightCount
+            };
+          };
+
+          // ── SECTION 1: WEEKLY REVIEW ──
+          const weekDates = getWeekRange(statsWeek);
+          const weekDays = weekDates.map(getDayData);
+          const wLen = weekDays.length || 1;
+          const wWeights = weekDays.filter(d => d.weight);
+          const avgW = wWeights.length ? Math.round(wWeights.reduce((s,d) => s + d.weight, 0) / wWeights.length * 10) / 10 : null;
+          const avgBMI = avgW ? calcBMI(avgW) : null;
+          const wBf = weekDays.filter(d => d.bodyFat);
+          const avgBf = wBf.length ? Math.round(wBf.reduce((s,d) => s + d.bodyFat, 0) / wBf.length * 10) / 10 : null;
+          const wWaist = weekDays.filter(d => d.waist);
+          const avgWaist = wWaist.length ? Math.round(wWaist.reduce((s,d) => s + d.waist, 0) / wWaist.length * 10) / 10 : null;
+          const wSW = weekDays.filter(d => d.shoulders && d.waist);
+          const avgSW = wSW.length ? Math.round(wSW.reduce((s,d) => s + d.shoulders / d.waist, 0) / wSW.length * 100) / 100 : null;
+          const wSMM = weekDays.filter(d => d.skeletalMuscle);
+          const avgSMM = wSMM.length ? Math.round(wSMM.reduce((s,d) => s + d.skeletalMuscle, 0) / wSMM.length * 10) / 10 : null;
+          const wVF = weekDays.filter(d => d.visceralFat);
+          const avgVF = wVF.length ? Math.round(wVF.reduce((s,d) => s + d.visceralFat, 0) / wVF.length * 10) / 10 : null;
+          const avgWater = Math.round(weekDays.reduce((s,d) => s + d.water, 0) / wLen);
+          const daysActive = weekDays.filter(d => d.exCal > 0).length;
+          const daysDelight = weekDays.filter(d => d.delightCount >= 3).length;
+          const so = (k) => localStorage.getItem('HT_stats_' + k) === '1';
+          const sToggle = "localStorage.setItem('HT_stats_'+this.dataset.key,this.open?'1':'0')";
+
+          const weekLabel = statsWeek === 'this' ? 'This Week' : 'Last Week';
+          const weekReview = `
           <div class="card">
-            <div class="card-title">📊 7-Day Averages</div>
-            <div class="stats-row">
-              <div class="stat-box"><div class="stat-val">${avgCal}</div><div class="stat-label">avg cal</div></div>
-              <div class="stat-box"><div class="stat-val">${avgPro}g</div><div class="stat-label">avg protein</div></div>
-              <div class="stat-box"><div class="stat-val">${(avgWater / 1000).toFixed(1)}L</div><div class="stat-label">avg water</div></div>
-              <div class="stat-box"><div class="stat-val">${avgSleep}h</div><div class="stat-label">avg sleep</div></div>
-              ${avgWeight ? `<div class="stat-box"><div class="stat-val">${avgWeight}</div><div class="stat-label">avg weight</div></div>` : ""}
+            <div class="card-title">📅 ${weekLabel} in Review</div>
+            <div style="display:flex;gap:.3rem;margin-bottom:.6rem">
+              <button class="filter-btn ${statsWeek==='this'?'active':''}" onclick="setStatsWeek('this')">This Week</button>
+              <button class="filter-btn ${statsWeek==='last'?'active':''}" onclick="setStatsWeek('last')">Last Week</button>
             </div>
+            <div class="stats-row">
+              ${avgW ? `<div class="stat-box"><div class="stat-val">${avgW}</div><div class="stat-label">avg weight</div></div>` : ''}
+              ${avgBMI ? `<div class="stat-box"><div class="stat-val">${avgBMI.toFixed(1)}</div><div class="stat-label">avg BMI</div></div>` : ''}
+            </div>
+            ${(avgBf || avgWaist || avgSW || avgSMM || avgVF) ? `
+            <details class="move-section" data-key="weekAes" ${so('weekAes')?'open':''} ontoggle="${sToggle}" style="margin-top:.6rem">
+              <summary>Aesthetic Metrics</summary>
+              <div class="section-body"><div class="stats-row" style="margin-top:0">
+                ${avgBf !== null ? `<div class="stat-box"><div class="stat-val">${avgBf}%</div><div class="stat-label">body fat</div></div>` : ''}
+                ${avgWaist ? `<div class="stat-box"><div class="stat-val">${avgWaist}</div><div class="stat-label">waist cm</div></div>` : ''}
+                ${avgSW ? `<div class="stat-box"><div class="stat-val">${avgSW}</div><div class="stat-label">S:W ratio</div></div>` : ''}
+                ${avgSMM ? `<div class="stat-box"><div class="stat-val">${avgSMM}</div><div class="stat-label">SMM kg</div></div>` : ''}
+                ${avgVF !== null ? `<div class="stat-box"><div class="stat-val">${avgVF}</div><div class="stat-label">visc fat</div></div>` : ''}
+              </div></div>
+            </details>` : ''}
+            <div class="stats-row" style="margin-top:.5rem">
+              <div class="stat-box"><div class="stat-val">${(avgWater/1000).toFixed(1)}L</div><div class="stat-label">avg water</div></div>
+              <div class="stat-box"><div class="stat-val">${daysActive}/${wLen}</div><div class="stat-label">days active</div></div>
+              <div class="stat-box"><div class="stat-val">${daysDelight}/${wLen}</div><div class="stat-label">days of delight</div></div>
+            </div>
+          </div>`;
+
+          // ── SECTION 2: PERIOD TRENDS ──
+          const pDays = [];
+          for (let i = statsPeriod - 1; i >= 0; i--) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            pDays.push(getDayData(d.toISOString().split("T")[0]));
+          }
+
+          // Net cal = intake - BMR - exercise (including NEAT)
+          const lastW = pDays.slice().reverse().find(d => d.weight);
+          const lastBf = pDays.slice().reverse().find(d => d.bodyFat);
+          const bmr = getBMR(lastW?.weight, lastBf?.bodyFat);
+          pDays.forEach(d => { d.netCal = Math.round(d.cal - bmr - d.exCal); });
+
+          const periodLabel = statsPeriod + 'd';
+
+          // Aesthetic trend lines (only for 30d/90d)
+          let aestheticHtml = '';
+          if (statsPeriod >= 30) {
+            const aesMetrics = [
+              {key:'weight',label:'Weight',unit:'kg',ref:57,color:'var(--accent)'},
+              {key:'bodyFat',label:'Body Fat %',unit:'%',ref:12,color:'var(--orange)'},
+              {key:'waist',label:'Waist',unit:'cm',ref:72,color:'var(--warn)'},
+              {key:'skeletalMuscle',label:'Skeletal Muscle',unit:'kg',ref:28,color:'var(--success)'},
+              {key:'visceralFat',label:'Visceral Fat',unit:'',ref:4,color:'var(--danger)'}
+            ];
+            const swDays = pDays.filter(d => d.shoulders && d.waist);
+            const swData = swDays.map(d => ({...d, swRatio: Math.round(d.shoulders/d.waist*100)/100}));
+            let aesInner = aesMetrics.map(m => {
+              const pts = pDays.filter(d => d[m.key] !== null);
+              return pts.length >= 2 ? `<div style="margin-bottom:.5rem"><div class="chart-title">${m.label} (ref: ${m.ref}${m.unit})</div>${trendLineRef(pts, m.key, m.color, m.unit, m.ref)}</div>` : '';
+            }).join('');
+            if (swData.length >= 2) {
+              aesInner += `<div style="margin-bottom:.5rem"><div class="chart-title">S:W Ratio (ref: 1.6)</div>${trendLineRef(swData, 'swRatio', 'var(--purple)', '', 1.6)}</div>`;
+            }
+            if (aesInner) {
+              aestheticHtml = `<div class="card"><details class="move-section" data-key="trendAes" ${so('trendAes')?'open':''} ontoggle="${sToggle}">
+                <summary>📐 Aesthetic Metrics</summary><div class="section-body">${aesInner}</div></details></div>`;
+            }
+          }
+
+          const trendHtml = `
+          <div style="display:flex;gap:.3rem;margin-bottom:.75rem;justify-content:center">
+            <button class="filter-btn ${statsPeriod===7?'active':''}" onclick="setStatsPeriod(7)">Last 7 days</button>
+            <button class="filter-btn ${statsPeriod===30?'active':''}" onclick="setStatsPeriod(30)">Last 30 days</button>
+            <button class="filter-btn ${statsPeriod===90?'active':''}" onclick="setStatsPeriod(90)">Last 90 days</button>
           </div>
-          <div class="card"><div class="chart-title">Calories (7d)</div>${chartBars(days, "cal", "var(--accent)", getCalTarget() * 1.2)}</div>
-          <div class="card"><div class="chart-title">Protein (7d)</div>${chartBars(days, "protein", "var(--success)", TARGETS.protein * 1.2)}</div>
-          <div class="card"><div class="chart-title">Water (mL, 7d)</div>${chartBars(days, "water", "var(--blue)", TARGETS.water * 1.1)}</div>
-          <div class="card"><div class="chart-title">Sleep (hrs, 7d)</div>${chartBars(days, "sleep", "var(--purple)", 10)}</div>
-          ${weights.length >= 2 ? `<div class="card"><div class="chart-title">Weight Trend</div>${trendLine(days.filter(d => d.weight !== null), "weight", "var(--accent)", "kg")}</div>` : ""}
-        `;
+          <div class="card"><details class="move-section" data-key="tProtein" ${so('tProtein')?'open':''} ontoggle="${sToggle}">
+            <summary>🥩 Protein Intake</summary><div class="section-body">${chartBarsRef(pDays, 'protein', 'var(--success)', TARGETS.protein * 1.3, 130)}</div></details></div>
+          <div class="card"><details class="move-section" data-key="tCal" ${so('tCal')?'open':''} ontoggle="${sToggle}">
+            <summary>🔥 Calorie Intake</summary><div class="section-body">${chartBarsRef(pDays, 'cal', 'var(--accent)', getCalTarget() * 1.3)}</div></details></div>
+          <div class="card"><details class="move-section" data-key="tNet" ${so('tNet')?'open':''} ontoggle="${sToggle}">
+            <summary>⚖️ Net Calories (BMR: ${Math.round(bmr)})</summary><div class="section-body">${chartBarsNet(pDays, -250)}</div></details></div>
+          <div class="card"><details class="move-section" data-key="tMicro" ${so('tMicro')?'open':''} ontoggle="${sToggle}">
+            <summary>💊 Micronutrient Coverage</summary><div class="section-body">${chartBarsRef(pDays, 'microsMet', 'var(--purple)', MICROS.length + 1)}</div></details></div>
+          <div class="card"><details class="move-section" data-key="tSleep" ${so('tSleep')?'open':''} ontoggle="${sToggle}">
+            <summary>🌙 Sleep</summary><div class="section-body">${chartBarsRef(pDays, 'sleep', 'var(--purple)', 10, 7)}</div></details></div>
+          ${aestheticHtml}`;
+
+          content.innerHTML = weekReview + trendHtml;
         } catch (e) { content.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load stats</div>`; console.error(e); }
       }
 
-      window.chartBars = function (data, key, color, maxVal) {
+      window.chartBarsRef = function (data, key, color, maxVal, refVal) {
         const vals = data.map(d => num0(d[key]));
         if (!maxVal) maxVal = Math.max(...vals, 1);
-        return `<div class="chart-bars">${data.map((d, i) => {
+        if (refVal && refVal > maxVal) maxVal = refVal * 1.1;
+        const refPct = refVal ? (1 - refVal / maxVal) * 100 : null;
+        const showLabels = data.length <= 14;
+        return `<div style="position:relative"><div class="chart-bars">${data.map((d, i) => {
           const v = num0(d[key]); const h = maxVal > 0 ? (v / maxVal) * 75 : 0;
-          return `<div class="chart-bar-wrap"><div class="chart-bar-val">${v || ""}</div><div class="chart-bar" style="height:${Math.max(2, h)}px;background:${color}"></div><div class="chart-bar-label">${d.day || ""}</div></div>`;
-        }).join("")}</div>`;
+          return `<div class="chart-bar-wrap"><div class="chart-bar-val">${showLabels ? (v||'') : ''}</div><div class="chart-bar" style="height:${Math.max(2, h)}px;background:${color}"></div>${showLabels ? `<div class="chart-bar-label">${d.day||''}</div>` : ''}</div>`;
+        }).join("")}</div>${refPct !== null ? `<div style="position:absolute;left:0;right:0;top:calc(${refPct}% + 11px);border-top:1.5px dashed var(--muted);opacity:.5"><span style="position:absolute;right:0;top:-13px;font-size:.55rem;color:var(--muted)">${refVal}</span></div>` : ''}</div>`;
       }
 
-      window.trendLine = function (days, key, color, unit) {
-        if (days.length < 2) return `<div class="empty-state">Need 2+ entries</div>`;
+      window.chartBarsNet = function (data, refVal) {
+        const vals = data.map(d => d.netCal || 0);
+        const absMax = Math.max(Math.abs(Math.min(...vals)), Math.abs(Math.max(...vals)), Math.abs(refVal || 0), 100);
+        const maxVal = absMax * 1.2;
+        const showLabels = data.length <= 14;
+        return `<div style="position:relative"><div class="chart-bars" style="height:120px">${data.map((d) => {
+          const v = d.netCal || 0; const h = Math.abs(v) / maxVal * 50;
+          const isNeg = v < 0; const color = isNeg ? 'var(--success)' : 'var(--danger)';
+          return `<div class="chart-bar-wrap" style="justify-content:center"><div style="display:flex;flex-direction:column;align-items:center;width:100%;height:100px;justify-content:center">${!isNeg ? `<div class="chart-bar-val" style="font-size:.5rem">${v>0?'+':''}${v}</div><div style="width:100%;height:${h}px;background:${color};border-radius:3px 3px 0 0;min-height:1px"></div><div style="height:50px"></div>` : `<div style="height:50px"></div><div style="width:100%;height:${h}px;background:${color};border-radius:0 0 3px 3px;min-height:1px"></div><div class="chart-bar-val" style="font-size:.5rem">${v}</div>`}</div>${showLabels ? `<div class="chart-bar-label">${d.day||''}</div>` : ''}</div>`;
+        }).join("")}</div>${refVal !== undefined ? `<div style="position:absolute;left:0;right:0;top:${50 - (refVal/maxVal)*50}%;border-top:1.5px dashed var(--muted);opacity:.5"><span style="position:absolute;right:0;top:-12px;font-size:.55rem;color:var(--muted)">${refVal}</span></div>` : ''}<div style="position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--border);opacity:.3"></div></div>`;
+      }
+
+      window.trendLineRef = function (days, key, color, unit, refVal) {
         const pts = days.map((d, i) => ({ i, v: +d[key], label: d.day, date: d.date })).filter(p => isFinite(p.v));
-        if (pts.length < 2) return "";
-        const W = 320, H = 85, PAD = 10; let minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
+        if (pts.length < 2) return `<div class="empty-state">Need 2+ entries</div>`;
+        const W = 320, H = 85, PAD = 10;
+        let minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
+        if (refVal !== undefined) { minV = Math.min(minV, refVal); maxV = Math.max(maxV, refVal); }
         if (minV === maxV) { minV -= 1; maxV += 1; } else { const p = (maxV - minV) * .1; minV -= p; maxV += p; }
         const xFor = i => PAD + (i / (pts.length - 1)) * (W - 2 * PAD);
         const yFor = v => PAD + (1 - ((v - minV) / (maxV - minV))) * (H - 2 * PAD);
         const poly = pts.map((p, i) => `${xFor(i).toFixed(1)},${yFor(p.v).toFixed(1)}`).join(" ");
         const last = pts[pts.length - 1];
+        const refLine = refVal !== undefined ? `<line x1="${PAD}" y1="${yFor(refVal).toFixed(1)}" x2="${W-PAD}" y2="${yFor(refVal).toFixed(1)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
+        <text x="${W-PAD}" y="${yFor(refVal)-3}" fill="var(--muted)" font-size="8" text-anchor="end">${refVal}</text>` : '';
         return `<div class="trend"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        ${refLine}
         <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         ${pts.map((p, i) => `<circle cx="${xFor(i)}" cy="${yFor(p.v)}" r="3" fill="${color}"/>`).join("")}
       </svg><div class="trend-labels"><span>${pts[0].date.slice(5)}</span><span><b>${last.v.toFixed(1)}${unit ? " " + unit : ""}</b></span><span>${last.date.slice(5)}</span></div></div>`;
