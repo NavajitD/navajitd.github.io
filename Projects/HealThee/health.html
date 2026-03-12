@@ -1750,13 +1750,13 @@
       const MEAL_ICONS = { "Breakfast": "☕", "Mid-Morning": "🍎", "Lunch": "🌤", "Afternoon": "☕", "Dinner": "🌅", "Before Bed": "🌙", "Snack": "🍪" };
 
       const SUPPLEMENTS = [
-        { id: "creatine", name: "Creatine (3–5g)", freq: "daily", icon: "⚡" },
-        { id: "vitd", name: "Vitamin D (600-800 IU)", freq: "daily", icon: "☀️" },
-        { id: "omega3", name: "Omega-3 / Fish oil", freq: "daily", icon: "🐟" },
-        { id: "zincovit", name: "Zincovit", freq: "daily", icon: "💊" },
-        { id: "vitc", name: "Vitamin C", freq: "daily", icon: "🍊" },
-        { id: "ashwagandha", name: "Ashwagandha", freq: "daily", icon: "🌿" },
-        { id: "collagen", name: "Collagen peptides (8g)", freq: "daily", icon: "🧬" }
+        { id: "creatine", name: "Creatine (3–5g)", freq: "daily", icon: "⚡", micros: {} },
+        { id: "vitd", name: "Vitamin D (600-800 IU)", freq: "daily", icon: "☀️", micros: { "vitamin_d_ug": 20 } },
+        { id: "omega3", name: "Omega-3 / Fish oil", freq: "daily", icon: "🐟", micros: {} },
+        { id: "zincovit", name: "Zincovit", freq: "daily", icon: "💊", micros: { "vitamin_a_ug": 600, "vitamin_b6": 2, "vitamin_b12": 1, "vitamin_c_mg": 40, "vitamin_d_ug": 10, "zinc_mg": 10, "iron_mg": 10, "magnesium_mg": 15 } },
+        { id: "vitc", name: "Vitamin C", freq: "daily", icon: "🍊", micros: { "vitamin_c_mg": 500 } },
+        { id: "ashwagandha", name: "Ashwagandha", freq: "daily", icon: "🌿", micros: {} },
+        { id: "collagen", name: "Collagen peptides (8g)", freq: "daily", icon: "🧬", protein: 7, micros: {} }
       ];
 
       const SKINCARE_TASKS = [
@@ -1985,7 +1985,9 @@
         dayData.steps = activeItems(dayData.stepLogs).reduce((s, l) => s + Math.round(num0(l.steps)), 0);
         const w = num0(dayData.body?.weight);
         const walk = dayData.steps > 0 ? estimateWalkCal(dayData.steps, w || 70) : 0;
-        const custom = activeItems(dayData.customExercises).reduce((s, x) => s + num0(x.kcal), 0);
+        const customItems = activeItems(dayData.customExercises);
+        const customNeat = customItems.filter(x => x.isNeat).reduce((s, x) => s + num0(x.kcal), 0);
+        const customEx = customItems.filter(x => !x.isNeat).reduce((s, x) => s + num0(x.kcal), 0);
         // Exercise kcal from checked workout items
         let exKcal = 0;
         const d = dow(selectedDate);
@@ -1994,9 +1996,9 @@
         (WARMUP_PLAN[d] || []).forEach(ex => { if (lwwGet(dayData.warmupChecks, ex.id)) exKcal += num0(ex.kcal); });
         (COOLDOWN_PLAN[d] || []).forEach(ex => { if (lwwGet(dayData.cooldownChecks, ex.id)) exKcal += num0(ex.kcal); });
         PELVIC_EXERCISES.forEach(ex => { if (lwwGet(dayData.pelvicChecks, ex.id)) exKcal += num0(ex.kcal); });
-        dayData.neatCal = Math.round(walk);
-        dayData.exerciseCal = Math.round(exKcal + custom);
-        dayData.calBurned = Math.round(walk + exKcal + custom);
+        dayData.neatCal = Math.round(walk + customNeat);
+        dayData.exerciseCal = Math.round(exKcal + customEx);
+        dayData.calBurned = Math.round(dayData.neatCal + dayData.exerciseCal);
       }
 
       window.estimateWalkCal = function (steps, kg) {
@@ -2142,40 +2144,31 @@
       window.toggleSupp = async function (id) {
         const isCurrentlyTaken = lwwGet(dayData.supplementChecks, id);
         dayData.supplementChecks = lwwToggle(dayData.supplementChecks, id);
+        const supp = SUPPLEMENTS.find(s => s.id === id);
 
-        // If we are checking it OFF, do nothing else.
+        // If we are checking it OFF, remove the logged food
         if (isCurrentlyTaken) {
+          dayData.foods = (dayData.foods || []).map(f => f.suppId === id ? { ...f, deletedAt: new Date().toISOString() } : f);
           touch(); saveDay(); render();
           return;
         }
 
-        // If checking it ON, estimate macros/micros
-        const supp = SUPPLEMENTS.find(s => s.id === id);
+        // If checking it ON, instant add without LLM
         if (!supp) { touch(); saveDay(); render(); return; }
 
-        try {
-          toast(`Estimating ${supp.name}...`);
-          const sys = `You are a supplement nutrition analyzer. Estimate macros and micronutrients for the given supplement serving. Reply ONLY with JSON: {"cal": number, "protein": number, "carbs": number, "fat": number, "fiber": number, "micros": { "vitamin_a_ug": number, "vitamin_d_ug": number, "vitamin_k": number, "vitamin_b6": number, "vitamin_b12": number, "vitamin_c_mg": number, "calcium_mg": number, "iron_mg": number, "magnesium_mg": number, "sodium_mg": number, "potassium_mg": number, "zinc_mg": number }}`;
-          const prompt = `Supplement: ${supp.name} (${supp.freq})`;
-          const est = await fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b');
-
-          addFood({
-            name: supp.name,
-            desc: "Supplement",
-            meal: "Snack",
-            cal: est.cal || 0,
-            protein: est.protein || 0,
-            carbs: est.carbs || 0,
-            fat: est.fat || 0,
-            fiber: est.fiber || 0,
-            micros: est.micros || {},
-            estimated: true
-          });
-        } catch (e) {
-          console.error("Supplement estimation failed", e);
-          toast("Added (without macros/micros)", "warn");
-          touch(); saveDay(); render();
-        }
+        addFood({
+          suppId: id,
+          name: supp.name,
+          desc: "Supplement",
+          meal: "Snack",
+          cal: supp.cal || 0,
+          protein: supp.protein || 0,
+          carbs: supp.carbs || 0,
+          fat: supp.fat || 0,
+          fiber: supp.fiber || 0,
+          micros: supp.micros || {},
+          estimated: false
+        });
       }
       window.toggleExercise = function (label) {
         dayData.exerciseChecks = lwwToggle(dayData.exerciseChecks, label);
@@ -2240,7 +2233,8 @@
           }
         }
 
-        dayData.customExercises = [...(dayData.customExercises || []), { id: genId("cx"), text: t, kcal: k || 0, ts: Date.now(), deletedAt: "" }];
+        const isNeat = /walk|step|clean|chore|vacuum|garden|sweep|mop/i.test(t);
+        dayData.customExercises = [...(dayData.customExercises || []), { id: genId("cx"), text: t, kcal: k || 0, isNeat, ts: Date.now(), deletedAt: "" }];
         document.getElementById("cxText").value = ""; document.getElementById("cxKcal").value = "";
         touch(); saveDay(); render(); toast("Exercise added");
       }
@@ -2423,6 +2417,9 @@
         const sysBase = `{"fiber": number, "micros": { "vitamin_a_ug": number, "vitamin_d_ug": number, "vitamin_k": number, "vitamin_b6": number, "vitamin_b12": number, "vitamin_c_mg": number, "calcium_mg": number, "iron_mg": number, "magnesium_mg": number, "sodium_mg": number, "potassium_mg": number, "zinc_mg": number }}`;
         const sysFull = `{"name": string, "cal": number, "protein": number, "carbs": number, "fat": number, ` + sysBase.slice(1);
 
+        // Helper: check if estimation returned all-zero macros
+        const isAllZero = (est) => !est || (num0(est.cal) === 0 && num0(est.protein) === 0 && num0(est.carbs) === 0 && num0(est.fat) === 0);
+
         try {
           if (currentFoodPhotoBase64) {
             // Groq Vision pipeline
@@ -2436,9 +2433,17 @@
           } else if (isRecipe) {
             // Recipe/Ingredients processing via Cerebras
             if (!desc) { toast("Enter ingredients", "warn"); btn.textContent = "Add Food"; btn.disabled = false; return; }
-            const sysMix = `You are a recipe analyzer. Aggregate the total nutritional value for the final dish based on these ingredients. Reply ONLY with JSON: ${sysFull}`;
-            const prompt = `Recipe/Ingredients:\n${desc}`;
-            const est = await fetchLLM(prompt, sysMix, 'cerebras', 'llama3.1-8b');
+            const sysMix = `You are a recipe/food nutrition analyzer for Indian foods. Given ingredients or a dish description, estimate the TOTAL macros and micronutrients for the entire prepared dish (1 standard Indian serving). All values must be realistic and non-zero where applicable. For shakes/smoothies include all liquid + powder macros. Reply ONLY with JSON: ${sysFull}`;
+            const prompt = `Recipe/Ingredients:\n${desc}${n ? '\nDish name: ' + n : ''}`;
+            let est = await fetchLLM(prompt, sysMix, 'cerebras', 'llama3.1-8b');
+            console.log('Recipe LLM response:', JSON.stringify(est));
+            // If all macros are zero, retry with a general estimation prompt
+            if (isAllZero(est)) {
+              console.warn('Recipe estimation returned all zeros, retrying with general prompt...');
+              const retryPrompt = `Estimate nutrition for: ${n || 'Recipe'} (${desc}). Assume 1 standard Indian serving.`;
+              est = await fetchLLM(retryPrompt, `You are a nutrition estimator for Indian foods. You MUST provide realistic non-zero values for cal, protein, carbs, and fat. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+              console.log('Recipe LLM retry response:', JSON.stringify(est));
+            }
             finalData = { ...finalData, ...est, meal: meal, estimated: true };
             if (n) finalData.name = n;
             finalData.desc = desc;
@@ -2454,8 +2459,15 @@
             toast("Added with estimated micros", "success");
 
           } else {
-            const prompt = `Food: ${n} ${desc}`;
-            const est = await fetchLLM(prompt, `You are a nutrition estimator. Estimate macros, fiber, and micronutrients. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+            const prompt = `Food: ${n} ${desc}. Assume 1 standard Indian serving size. Include all macros (protein, carbs, fat) — carbs should account for any sauce, gravy, onions, spices, or starchy components.`;
+            let est = await fetchLLM(prompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros (cal, protein, carbs, fat), fiber, and micronutrients for a standard serving. Carbs must include starchy components, sauces, and gravies. All values must be realistic and non-zero where applicable. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+            console.log('Food LLM response:', JSON.stringify(est));
+            // If all macros are zero, retry
+            if (isAllZero(est)) {
+              console.warn('Food estimation returned all zeros, retrying...');
+              est = await fetchLLM(`Estimate detailed nutrition for 1 serving of ${n}. Must include realistic cal, protein, carbs, and fat values.`, `You are a nutrition database. Provide realistic non-zero nutrition values. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+              console.log('Food LLM retry response:', JSON.stringify(est));
+            }
             finalData = { ...finalData, ...est, name: n, desc: desc, meal: meal, estimated: true };
             toast("Added (AI fully estimated)", "success");
           }
@@ -2672,7 +2684,7 @@
         </div>
         <div class="card">
           <div class="card-title">👟 Steps & Activity</div>
-          <div style="font-size:.78rem;margin-bottom:.4rem">Total: <b>${steps}</b> steps · <b>${burned}</b> kcal burned</div>
+          <div style="font-size:.78rem;margin-bottom:.4rem">Total: <b>${steps}</b> steps </div>
           <div class="form-row">
             <div class="form-field"><label>Add Steps</label><input type="number" id="stepsInput" placeholder="e.g. 3000"></div>
             <button class="btn-primary" onclick="addStepEntry()">Add</button>
@@ -2745,11 +2757,12 @@
         </div>
         <div class="card">
           <div class="card-title">🌙 Sleep</div>
-          <div style="text-align:center;padding:.5rem 0">
-            <div class="ring-container" style="width:100px;height:100px;margin:0 auto">
-              ${svgRing(sleepPct, 100, 7, "var(--purple)")}
-              <div class="ring-center"><div class="ring-big">${h || "–"}</div><div class="ring-small">/ ${TARGETS.sleep}h</div></div>
-            </div>
+          <div class="water-head" style="margin-bottom:.2rem">
+            <div>${h.toFixed(1)} / ${TARGETS.sleep.toFixed(1)} h</div>
+            <div class="water-amt" style="color:var(--purple)">${Math.round(sleepPct)}%</div>
+          </div>
+          <div class="water-bar" style="margin-bottom:1rem">
+            <div class="water-fill" style="width:${Math.min(100, Math.max(0, sleepPct))}%;background:linear-gradient(90deg, var(--purple), #a78bfa)"></div>
           </div>
           <div class="form-row">
             <div class="form-field"><label>Hours</label><input type="number" id="sleepHours" step="0.1" value="${h || ""}" placeholder="e.g. 7.5"></div>
