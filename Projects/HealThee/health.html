@@ -2747,9 +2747,9 @@
               <summary>Aesthetic Metrics</summary>
               <div class="section-body"><div class="stats-row" style="margin-top:0">
                 ${avgBf !== null ? `<div class="stat-box"><div class="stat-val">${avgBf}%</div><div class="stat-label">Body Fat</div></div>` : ''}
-                ${avgWaist ? `<div class="stat-box"><div class="stat-val">${avgWaist}</div><div class="stat-label">Waist (cm)</div></div>` : ''}
-                ${avgSW ? `<div class="stat-box"><div class="stat-val">${avgSW}</div><div class="stat-label">S:W Ratio</div></div>` : ''}
-                ${avgSMM ? `<div class="stat-box"><div class="stat-val">${avgSMM}</div><div class="stat-label">Skeletal Musc.</div></div>` : ''}
+                ${avgWaist ? `<div class="stat-box"><div class="stat-val">${avgWaist}</div><div class="stat-label">Waist</div></div>` : ''}
+                ${avgSW ? `<div class="stat-box"><div class="stat-val">${avgSW}</div><div class="stat-label">Shoulder : Waist</div></div>` : ''}
+                ${avgSMM ? `<div class="stat-box"><div class="stat-val">${avgSMM}</div><div class="stat-label">Skeletal Muscle</div></div>` : ''}
                 ${avgVF !== null ? `<div class="stat-box"><div class="stat-val">${avgVF}</div><div class="stat-label">Visceral Fat</div></div>` : ''}
               </div></div>
             </details>` : ''}
@@ -2858,35 +2858,36 @@
 
       // Line chart with axes, spherical markers, and optional reference line
       window.lineChart = function (data, key, color, unit, refVal) {
-        const pts = data.map((d, i) => ({ i, v: d[key] !== null && d[key] !== undefined ? +d[key] : NaN, label: d.day || d.date?.slice(5) || '', date: d.date })).filter(p => isFinite(p.v));
-        if (pts.length < 2) return `<div class="empty-state">Need 2+ data points</div>`;
+        let pts = data.map((d, i) => ({ i, v: d[key] !== null && d[key] !== undefined ? +d[key] : NaN, label: d.day || d.date?.slice(5) || '', date: d.date })).filter(p => isFinite(p.v));
+        if (key !== 'netCal' && key !== 'microsMet') pts = pts.filter(p => p.v !== 0);
+        if (pts.length < 2) return `<div class="empty-state">Not enough data to show</div>`;
         const W = 340, H = 110, L = 35, R = 10, T = 10, B = 22;
         let minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
         if (refVal !== undefined) { minV = Math.min(minV, refVal); maxV = Math.max(maxV, refVal); }
         if (minV === maxV) { minV -= 1; maxV += 1; } else { const pad = (maxV - minV) * .12; minV -= pad; maxV += pad; }
-        const xFor = i => L + (i / (pts.length - 1)) * (W - L - R);
+        const xFor = i => L + (i / (data.length - 1)) * (W - L - R);
         const yFor = v => T + (1 - ((v - minV) / (maxV - minV))) * (H - T - B);
-        const poly = pts.map((p, i) => `${xFor(i).toFixed(1)},${yFor(p.v).toFixed(1)}`).join(" ");
+        const poly = pts.map(p => `${xFor(p.i).toFixed(1)},${yFor(p.v).toFixed(1)}`).join(" ");
         // Y-axis: 4 ticks
         const yTicks = [0, 1, 2, 3].map(i => { const v = minV + (maxV - minV) * i / 3; return { v, y: yFor(v) }; });
         // X-axis labels: first, middle, last
-        const xLabels = [pts[0], pts[Math.floor(pts.length / 2)], pts[pts.length - 1]];
-        const refLine = refVal !== undefined ? `<line x1="${L}" y1="${yFor(refVal).toFixed(1)}" x2="${W - R}" y2="${yFor(refVal).toFixed(1)}" stroke="var(--danger)" stroke-width="1" stroke-dasharray="5,3" opacity=".6"/><text x="${W - R - 2}" y="${yFor(refVal) - 3}" fill="var(--danger)" font-size="7" text-anchor="end" opacity=".8">${refVal}${unit ? ' ' + unit : ''}</text>` : '';
+        const xLabels = [{ i: 0, p: data[0], align: 'start' }, { i: Math.floor(data.length / 2), p: data[Math.floor(data.length / 2)], align: 'middle' }, { i: data.length - 1, p: data[data.length - 1], align: 'end' }];
+        const refLine = refVal !== undefined ? `<line x1="${L}" y1="${yFor(refVal).toFixed(1)}" x2="${W - R}" y2="${yFor(refVal).toFixed(1)}" stroke="var(--muted)" stroke-width=".5" stroke-dasharray="3,2" opacity=".6"/><text x="${W - R - 2}" y="${yFor(refVal) - 3}" fill="var(--muted)" font-size="5.5" text-anchor="end" opacity=".8">${refVal}${unit ? ' ' + unit : ''}</text>` : '';
         return `<div class="trend"><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
         <!-- grid lines -->
-        ${yTicks.map(t => `<line x1="${L}" y1="${t.y.toFixed(1)}" x2="${W - R}" y2="${t.y.toFixed(1)}" stroke="var(--border)" stroke-width=".5"/>`).join('')}
+        ${yTicks.map(t => `<line x1="${L}" y1="${t.y.toFixed(1)}" x2="${W - R}" y2="${t.y.toFixed(1)}" stroke="var(--border)" stroke-width=".3"/>`).join('')}
         <!-- y-axis labels -->
-        ${yTicks.map(t => `<text x="${L - 3}" y="${t.y.toFixed(1)}" fill="var(--muted)" font-size="7" text-anchor="end" dominant-baseline="middle">${Math.round(t.v)}</text>`).join('')}
+        ${yTicks.map(t => `<text x="${L - 3}" y="${t.y.toFixed(1)}" fill="var(--muted)" font-size="5.5" text-anchor="end" dominant-baseline="middle">${Math.round(t.v)}</text>`).join('')}
         <!-- ref line -->
         ${refLine}
         <!-- data line -->
-        <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        ${pts.map((p, i) => `<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(p.v).toFixed(1)}" r="3.5" fill="${color}" stroke="var(--bg)" stroke-width="1.5"/>`).join("")}
+        <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+        ${pts.map(p => `<circle cx="${xFor(p.i).toFixed(1)}" cy="${yFor(p.v).toFixed(1)}" r="2.5" fill="${color}" stroke="var(--bg)" stroke-width=".8"/>`).join("")}
         <!-- x-axis labels -->
-        ${xLabels.map((p, j) => `<text x="${xFor(pts.indexOf(p)).toFixed(1)}" y="${H - 3}" fill="var(--muted)" font-size="7" text-anchor="${j === 0 ? 'start' : j === 2 ? 'end' : 'middle'}">${p.label}</text>`).join('')}
+        ${xLabels.map(x => `<text x="${xFor(x.i).toFixed(1)}" y="${H - 3}" fill="var(--muted)" font-size="5.5" text-anchor="${x.align}">${x.p.label || x.p.date?.slice(5) || ''}</text>`).join('')}
         <!-- axis lines -->
-        <line x1="${L}" y1="${T}" x2="${L}" y2="${H - B}" stroke="var(--border)" stroke-width="1"/>
-        <line x1="${L}" y1="${H - B}" x2="${W - R}" y2="${H - B}" stroke="var(--border)" stroke-width="1"/>
+        <line x1="${L}" y1="${T}" x2="${L}" y2="${H - B}" stroke="var(--border)" stroke-width=".5"/>
+        <line x1="${L}" y1="${H - B}" x2="${W - R}" y2="${H - B}" stroke="var(--border)" stroke-width=".5"/>
       </svg></div>`;
       }
 
