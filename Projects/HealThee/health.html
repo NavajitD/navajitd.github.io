@@ -170,8 +170,8 @@ header{display:flex;justify-content:space-between;align-items:center;padding-bot
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
 /* Toast */
-.toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(80px);font-family:var(--font);font-size:.8rem;font-weight:500;padding:.55rem 1.2rem;border-radius:6px;background:var(--text);color:var(--bg);box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap}
-.toast.show{transform:translateX(-50%) translateY(0)}
+.toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(100px);opacity:0;font-family:var(--font);font-size:.8rem;font-weight:500;padding:.55rem 1.2rem;border-radius:6px;background:var(--text);color:var(--bg);box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .toast.success{background:var(--success);color:#fff}.toast.error{background:var(--danger);color:#fff}
 
 /* Empty state */
