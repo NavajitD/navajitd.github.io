@@ -1935,7 +1935,11 @@
       /* ═══════════════════════════════════════════════════
          HELPERS
          ═══════════════════════════════════════════════════ */
-      window.todayStr = function () { return new Date().toISOString().split("T")[0]; }
+      window.localDateStr = function(date = new Date()) {
+        const d = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+        return d.toISOString().split("T")[0];
+      }
+      window.todayStr = function () { return localDateStr(); }
       window.dow = function (d) { return new Date(d + "T12:00:00").getDay(); }
       window.fmtDate = function (d) { return new Date(d + "T12:00:00").toLocaleDateString("en-IN", { weekday: "short", month: "short", day: "numeric" }); }
       window.esc = function (s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
@@ -1975,6 +1979,14 @@
           t.cal += num0(f.cal); t.protein += num0(f.protein); t.carbs += num0(f.carbs); t.fat += num0(f.fat); t.fiber += num0(f.fiber);
           if (f.micros && typeof f.micros === "object") for (const [k, v] of Object.entries(f.micros)) { t.micros[k] = (t.micros[k] || 0) + num0(v); }
         }
+        
+        SUPPLEMENTS.forEach(s => {
+          if (lwwGet(d?.supplementChecks, s.id)) {
+            t.cal += num0(s.cal); t.protein += num0(s.protein); t.carbs += num0(s.carbs); t.fat += num0(s.fat); t.fiber += num0(s.fiber);
+            if (s.micros) for (const [k, v] of Object.entries(s.micros)) { t.micros[k] = (t.micros[k] || 0) + num0(v); }
+          }
+        });
+
         t.cal = Math.round(t.cal); t.protein = Math.round(t.protein * 10) / 10; t.carbs = Math.round(t.carbs * 10) / 10;
         t.fat = Math.round(t.fat * 10) / 10; t.fiber = Math.round(t.fiber * 10) / 10;
         return t;
@@ -2112,7 +2124,7 @@
 
       window.shiftDate = function (dir) {
         const d = new Date(selectedDate + "T12:00:00"); d.setDate(d.getDate() + dir);
-        selectedDate = d.toISOString().split("T")[0]; loadDay();
+        selectedDate = localDateStr(d); loadDay();
       }
 
       window.switchTab = function (tab) {
@@ -2142,33 +2154,12 @@
         touch(); saveDay(); render();
       }
       window.toggleSupp = async function (id) {
-        const isCurrentlyTaken = lwwGet(dayData.supplementChecks, id);
         dayData.supplementChecks = lwwToggle(dayData.supplementChecks, id);
-        const supp = SUPPLEMENTS.find(s => s.id === id);
 
-        // If we are checking it OFF, remove the logged food
-        if (isCurrentlyTaken) {
-          dayData.foods = (dayData.foods || []).map(f => f.suppId === id ? { ...f, deletedAt: new Date().toISOString() } : f);
-          touch(); saveDay(); render();
-          return;
-        }
-
-        // If checking it ON, instant add without LLM
-        if (!supp) { touch(); saveDay(); render(); return; }
-
-        addFood({
-          suppId: id,
-          name: supp.name,
-          desc: "Supplement",
-          meal: "Snack",
-          cal: supp.cal || 0,
-          protein: supp.protein || 0,
-          carbs: supp.carbs || 0,
-          fat: supp.fat || 0,
-          fiber: supp.fiber || 0,
-          micros: supp.micros || {},
-          estimated: false
-        });
+        // Remove any legacy logged foods for this supplement to avoid double counting
+        dayData.foods = (dayData.foods || []).map(f => f.suppId === id ? { ...f, deletedAt: new Date().toISOString() } : f);
+        
+        touch(); saveDay(); render();
       }
       window.toggleExercise = function (label) {
         dayData.exerciseChecks = lwwToggle(dayData.exerciseChecks, label);
@@ -2221,7 +2212,7 @@
         if (!k) {
           try {
             toast("Estimating kcal...");
-            const sys = `You estimate calories burned for exercises. The user weighs ${dayData.body?.weight || 70}kg. Reply ONLY with a JSON object containing a single key "kcal". Example: {"kcal": 150}`;
+            const sys = `You estimate calories burned for exercises. The user weighs ${dayData.body?.weight || 70}kg. Provide a realistic, conservative estimate without exaggerating (e.g. walking is only ~3-4 kcal/min). Reply ONLY with a JSON object containing a single key "kcal". Example: {"kcal": 150}`;
             const prompt = `Exercise: ${t}`;
             const est = await fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b');
             k = est.kcal || 0;
@@ -2453,7 +2444,16 @@
             finalData.cal = c > 0 ? c : Math.round(p * 4 + cb * 4 + f * 9);
             finalData.protein = p; finalData.carbs = cb; finalData.fat = f; finalData.fiber = fb;
             const prompt = `Food: ${n} ${desc}. Macros: ${finalData.cal}kcal, P:${p}g, C:${cb}g, F:${f}g, Fib:${fb}g.`;
-            const est = await fetchLLM(prompt, `You are a nutrition estimator. Estimate fiber (g) (if 0) and micronutrients. Reply ONLY with JSON: ${sysBase}`, 'cerebras', 'llama3.1-8b');
+            const sysMicros = `You are a nutrition estimator for Indian foods. You MUST estimate realistic non-zero micronutrients based on the food name and macros. Reply ONLY with JSON: ${sysBase}`;
+            let est = await fetchLLM(prompt, sysMicros, 'cerebras', 'llama3.1-8b');
+            
+            const isMicrosZero = Object.values(est?.micros || {}).every(v => num0(v) === 0);
+            if (isMicrosZero) {
+              console.warn('Micros estimation returned all zeros, retrying...');
+              est = await fetchLLM(`Estimate ONLY detailed micronutrients for: ${n} (${desc}). You MUST provide realistic non-zero values.`, sysMicros, 'cerebras', 'llama3.1-8b');
+              console.log('Micros retry:', JSON.stringify(est));
+            }
+            
             if (!fb) finalData.fiber = est.fiber || 0;
             finalData.micros = est.micros || {};
             toast("Added with estimated micros", "success");
@@ -2537,7 +2537,8 @@
         const calPct = (t.cal / calTarget) * 100;
         const remaining = calTarget - t.cal;
         const burned = dayData.calBurned || 0;
-        const net = t.cal - burned;
+        const bmrEstimate = getBMR(dayData.body?.weight || parseFloat(localStorage.getItem("HT_LAST_WEIGHT")) || 57, dayData.body?.bodyFat || 15);
+        const net = t.cal > 0 ? Math.round(t.cal - bmrEstimate - burned) : 0;
         const totalMacro = (t.protein + t.carbs + t.fat) || 1;
         const foods = activeItems(dayData.foods);
         const waterMl = num0(dayData.water);
@@ -2926,7 +2927,7 @@
         const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
         const dates = [];
         for (let d = new Date(monday); d <= sunday && d <= now; d.setDate(d.getDate() + 1)) {
-          dates.push(new Date(d).toISOString().split('T')[0]);
+          dates.push(localDateStr(d));
         }
         return dates;
       }
@@ -2937,7 +2938,7 @@
         try {
           // Fetch up to 90 days of data
           const end = new Date(); const start = new Date(); start.setDate(start.getDate() - 90);
-          const startKey = start.toISOString().split("T")[0]; const endKey = end.toISOString().split("T")[0];
+          const startKey = localDateStr(start); const endKey = localDateStr(end);
           const snap = await db.collection("users").doc(currentUser.uid).collection("days")
             .where(firebase.firestore.FieldPath.documentId(), ">=", startKey)
             .where(firebase.firestore.FieldPath.documentId(), "<=", endKey).get();
@@ -3023,14 +3024,17 @@
           const pDays = [];
           for (let i = statsPeriod - 1; i >= 0; i--) {
             const d = new Date(); d.setDate(d.getDate() - i);
-            pDays.push(getDayData(d.toISOString().split("T")[0]));
+            pDays.push(getDayData(localDateStr(d)));
           }
 
           // Net cal = intake - BMR - exercise (including NEAT)
-          const lastW = pDays.slice().reverse().find(d => d.weight);
-          const lastBf = pDays.slice().reverse().find(d => d.bodyFat);
-          const bmr = getBMR(lastW?.weight, lastBf?.bodyFat);
-          pDays.forEach(d => { d.netCal = d.cal > 0 ? Math.round(d.cal - bmr - d.exCal) : null; });
+          let currentBmr = 1323;
+          let lastW = pDays.slice().reverse().find(d => d.weight);
+          let lastBf = pDays.slice().reverse().find(d => d.bodyFat);
+          if (lastW) { currentBmr = getBMR(lastW.weight, lastBf?.bodyFat || 15); }
+          else { currentBmr = getBMR(parseFloat(localStorage.getItem("HT_LAST_WEIGHT")) || 57, 15); }
+          
+          pDays.forEach(d => { d.netCal = d.cal > 0 ? Math.round(d.cal - currentBmr - d.exCal) : null; });
 
           // Aggregate to weekly averages for 30d/90d
           const trendData = statsPeriod <= 7 ? pDays : aggregateWeekly(pDays);
