@@ -1515,6 +1515,15 @@
       max-width: 24rem;
       font-size: .85rem
     }
+
+    /* Collapsible move sections */
+    .move-section { border: none; margin: 0 }
+    .move-section summary { list-style: none; cursor: pointer; user-select: none; display: flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 0 }
+    .move-section summary::-webkit-details-marker { display: none }
+    .move-section summary::after { content: "▸"; margin-left: auto; font-size: .85rem; color: var(--muted); transition: transform .2s }
+    .move-section[open] summary::after { transform: rotate(90deg) }
+    .move-section[open] summary { color: var(--accent) }
+    .move-section .section-body { margin-top: .5rem }
   </style>
 </head>
 
@@ -1607,7 +1616,7 @@
     <div class="bottom-nav-inner">
       <div class="nav-item active" data-tab="fuel" onclick="switchTab('fuel')">
         <svg viewBox="0 0 24 24">
-          <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3" />
+          <path d="M3 12h18M5 12a7 7 0 0 1 14 0M8 4v5M12 3v6M16 4v5" />
         </svg>
         <span>Fuel</span>
       </div>
@@ -1822,10 +1831,10 @@
       ];
 
       const PELVIC_EXERCISES = [
-        { id: "pf_slow", label: "Slow contractions (3-5s squeeze × 10)" },
-        { id: "pf_fast", label: "Fast pulses (× 10)" },
-        { id: "pf_set2_slow", label: "Set 2: Slow contractions × 10" },
-        { id: "pf_set2_fast", label: "Set 2: Fast pulses × 10" }
+        { id: "pf_slow", label: "Slow contractions (3-5s squeeze × 10)", kcal: 3 },
+        { id: "pf_fast", label: "Fast pulses (× 10)", kcal: 2 },
+        { id: "pf_set2_slow", label: "Set 2: Slow contractions × 10", kcal: 3 },
+        { id: "pf_set2_fast", label: "Set 2: Fast pulses × 10", kcal: 2 }
       ];
 
       const FLEXIBILITY_TASKS = [
@@ -1835,6 +1844,36 @@
         { id: "flex_thoracic", label: "Thoracic openers 6/side" },
         { id: "flex_breathing", label: "2 min slow nasal breathing" }
       ];
+
+      const WARMUP_PLAN = {
+        1: [{id:"wu1_1",label:"Arm circles 30s each direction",kcal:5},{id:"wu1_2",label:"Band pull-aparts × 15",kcal:8},{id:"wu1_3",label:"Wall slides × 10",kcal:5},{id:"wu1_4",label:"Push-up walkouts × 5",kcal:10},{id:"wu1_5",label:"Empty bar OHP × 10",kcal:8}],
+        2: [{id:"wu2_1",label:"Leg swings (front/side) 10/side",kcal:8},{id:"wu2_2",label:"Bodyweight squats × 15",kcal:12},{id:"wu2_3",label:"Hip circles × 10/side",kcal:5},{id:"wu2_4",label:"Glute bridges × 15",kcal:10},{id:"wu2_5",label:"Ankle circles × 10/side",kcal:3}],
+        3: [{id:"wu3_1",label:"Cat-cow × 10",kcal:5},{id:"wu3_2",label:"Arm swings 30s",kcal:5},{id:"wu3_3",label:"Hip circles × 10/side",kcal:5},{id:"wu3_4",label:"Ankle bounces × 20",kcal:5},{id:"wu3_5",label:"Neck rolls × 5/side",kcal:3}],
+        4: [{id:"wu4_1",label:"Band pull-aparts × 15",kcal:8},{id:"wu4_2",label:"Cat-cow × 10",kcal:5},{id:"wu4_3",label:"Dead hangs 15s × 2",kcal:8},{id:"wu4_4",label:"Scapular push-ups × 10",kcal:8},{id:"wu4_5",label:"Light cable row × 12",kcal:10}],
+        5: [{id:"wu5_1",label:"Leg swings 10/side",kcal:8},{id:"wu5_2",label:"Hip hinges × 10 (bodyweight)",kcal:8},{id:"wu5_3",label:"Glute bridges × 15",kcal:10},{id:"wu5_4",label:"Bird dogs × 8/side",kcal:8},{id:"wu5_5",label:"Ankle circles × 10/side",kcal:3}],
+        6: [{id:"wu6_1",label:"Jumping jacks × 20",kcal:10},{id:"wu6_2",label:"Arm circles 30s",kcal:5},{id:"wu6_3",label:"Leg swings 10/side",kcal:8},{id:"wu6_4",label:"Bodyweight squats × 10",kcal:8},{id:"wu6_5",label:"Push-ups × 10",kcal:10}],
+        0: [{id:"wu0_1",label:"Walk warm-up 3 min",kcal:12},{id:"wu0_2",label:"Ankle circles × 10/side",kcal:3},{id:"wu0_3",label:"Leg swings 10/side",kcal:8},{id:"wu0_4",label:"High knees × 20",kcal:10},{id:"wu0_5",label:"Butt kicks × 20",kcal:10}]
+      };
+
+      const COOLDOWN_PLAN = {
+        1: [{id:"cd1_1",label:"Doorway pec stretch 30s/side",kcal:3},{id:"cd1_2",label:"Overhead tricep stretch 30s/side",kcal:3},{id:"cd1_3",label:"Cross-body shoulder stretch 30s/side",kcal:3},{id:"cd1_4",label:"Lat hang stretch 20s",kcal:3},{id:"cd1_5",label:"Thoracic twist 6/side",kcal:5}],
+        2: [{id:"cd2_1",label:"Standing quad stretch 30s/side",kcal:3},{id:"cd2_2",label:"Seated hamstring fold 45s",kcal:3},{id:"cd2_3",label:"Kneeling hip flexor stretch 30s/side",kcal:3},{id:"cd2_4",label:"Wall calf stretch 30s/side",kcal:3},{id:"cd2_5",label:"Pigeon pose 30s/side",kcal:5}],
+        3: [{id:"cd3_1",label:"Child's pose 45s",kcal:3},{id:"cd3_2",label:"Supine spinal twist 30s/side",kcal:3},{id:"cd3_3",label:"Butterfly stretch 45s",kcal:3},{id:"cd3_4",label:"Cat-cow × 8",kcal:5},{id:"cd3_5",label:"2 min slow nasal breathing",kcal:3}],
+        4: [{id:"cd4_1",label:"Lat doorway stretch 30s/side",kcal:3},{id:"cd4_2",label:"Bicep wall stretch 30s/side",kcal:3},{id:"cd4_3",label:"Rear delt stretch 30s/side",kcal:3},{id:"cd4_4",label:"Thoracic openers 6/side",kcal:5},{id:"cd4_5",label:"Child's pose 45s",kcal:3}],
+        5: [{id:"cd5_1",label:"Seated hamstring stretch 45s/side",kcal:3},{id:"cd5_2",label:"Hip flexor stretch 30s/side",kcal:3},{id:"cd5_3",label:"Figure-4 glute stretch 30s/side",kcal:3},{id:"cd5_4",label:"Supine lower back twist 30s/side",kcal:3},{id:"cd5_5",label:"Standing calf stretch 30s/side",kcal:3}],
+        6: [{id:"cd6_1",label:"Full body hang 20s × 2",kcal:5},{id:"cd6_2",label:"Chest doorway stretch 30s/side",kcal:3},{id:"cd6_3",label:"Quad stretch 30s/side",kcal:3},{id:"cd6_4",label:"Child's pose 45s",kcal:3},{id:"cd6_5",label:"2 min slow breathing",kcal:3}],
+        0: [{id:"cd0_1",label:"Hamstring stretch 60s/side",kcal:5},{id:"cd0_2",label:"Hip flexor stretch 60s/side",kcal:5},{id:"cd0_3",label:"Calf stretch 45s/side",kcal:3},{id:"cd0_4",label:"Thoracic spine mobility 3 min",kcal:8},{id:"cd0_5",label:"Slow breathing 2 min",kcal:3}]
+      };
+
+      const EXERCISE_KCAL = {
+        "Incline DB Press 4×6-10":60,"Flat Press 3×8-12":50,"Seated OHP 3×6-10":45,"Cable/Pec-Deck Fly 2-3×12-15":25,"Lateral Raise (cable) 4×12-20":30,"Triceps Rope Pressdown 3×10-15":20,"Push-ups 2×failure (optional)":15,
+        "Back Squat/Hack Squat 4×5-8":80,"Romanian Deadlift 3×6-10":60,"Leg Press 3×10-15":55,"Lying Leg Curl 3×10-15":30,"Standing Calf Raises 4×8-12":25,"Hanging Knee Raises 3×10-15":20,
+        "30-45 min easy walk":150,"Couch stretch 60s/side":5,"Deep squat hold 60s":8,"Thoracic openers 6/side":5,"Hamstring floss 10/side":5,"Shoulder wall slides 10 reps":3,
+        "Pull-ups/Lat Pulldown 4×6-12":55,"Chest-Supported Row 3×8-12":45,"Seated Cable Row 3×10-15":40,"Rear Delt Fly 3×12-20":25,"Face Pulls 2×12-20":20,"Barbell/DB Curls 3×8-12":30,"Hammer Curls 2-3×10-15":20,
+        "Trap Bar/RDL Heavy 3-4×4-8":75,"Bulgarian Split Squat 3×8-12/side":50,"Hip Thrust 3×8-12":45,"Leg Extension 2×12-15":25,"Seated Calf Raise 3×10-15":20,"Ab Wheel/Cable Crunch 3×8-15":25,"Farmer's Carries 3×30-45s (optional)":20,
+        "Lateral Raise 5×12-20":30,"Cable Fly 3×12-15":25,"Rope Pushdown 3×12-15":20,"Incline Curls 3×10-15":20,"Calves 4×10-15":25,"10 min easy incline walk":40,
+        "5 min walk warm-up":20,"5K run (conversational pace)":280,"5 min walk cool-down":20,"Hamstring stretch 60s/side":5,"Hip flexor stretch 60s/side":5,"Calf stretch 45s/side":3,"Thoracic spine mobility 5 min":8
+      };
 
       const MICROS = [
         { key: "vitamin_a_ug", label: "Vit A", unit: "µg", target: 900 },
@@ -1864,7 +1903,7 @@
         return {
           foods: [], waterLogs: [], stepLogs: [], customExercises: [],
           supplementChecks: {}, exerciseChecks: {}, skincareChecks: {}, haircareChecks: {},
-          pelvicChecks: {}, flexChecks: {}, delightChecks: {},
+          pelvicChecks: {}, flexChecks: {}, delightChecks: {}, warmupChecks: {}, cooldownChecks: {},
           sleep: { bedtime: "", wakeup: "", hours: 0 },
           body: { weight: null, bodyFat: null, waist: null, shoulders: null, skeletalMuscle: null, visceralFat: null },
           wildcardName: "",
@@ -1902,7 +1941,17 @@
         const w = num0(dayData.body?.weight);
         const walk = dayData.steps > 0 ? estimateWalkCal(dayData.steps, w || 70) : 0;
         const custom = activeItems(dayData.customExercises).reduce((s, x) => s + num0(x.kcal), 0);
-        dayData.calBurned = Math.round(walk + custom);
+        // Exercise kcal from checked workout items
+        let exKcal = 0;
+        const d = dow(selectedDate);
+        const wo = WORKOUT_PLAN[d];
+        if (wo) wo.exercises.forEach(ex => { if (lwwGet(dayData.exerciseChecks, ex)) exKcal += (EXERCISE_KCAL[ex] || 30); });
+        (WARMUP_PLAN[d] || []).forEach(ex => { if (lwwGet(dayData.warmupChecks, ex.id)) exKcal += num0(ex.kcal); });
+        (COOLDOWN_PLAN[d] || []).forEach(ex => { if (lwwGet(dayData.cooldownChecks, ex.id)) exKcal += num0(ex.kcal); });
+        PELVIC_EXERCISES.forEach(ex => { if (lwwGet(dayData.pelvicChecks, ex.id)) exKcal += num0(ex.kcal); });
+        dayData.neatCal = Math.round(walk);
+        dayData.exerciseCal = Math.round(exKcal + custom);
+        dayData.calBurned = Math.round(walk + exKcal + custom);
       }
 
       window.estimateWalkCal = function (steps, kg) {
@@ -2313,7 +2362,7 @@
           </div>
           <div class="stats-row">
             <div class="stat-box"><div class="stat-val" style="color:${remaining >= 0 ? "var(--success)" : "var(--danger)"}">${remaining}</div><div class="stat-label">kcal left</div></div>
-            <div class="stat-box"><div class="stat-val">${(() => { const fiberGoal = Math.round(14 * calTarget / 1000); const fiberLeft = Math.max(0, Math.round((fiberGoal - t.fiber) * 10) / 10); return fiberLeft + 'g'; })()}</div><div class="stat-label">${(() => { const fiberGoal = Math.round(14 * calTarget / 1000); return 'fiber left /' + fiberGoal + 'g'; })()}</div></div>
+            <div class="stat-box"><div class="stat-val">${(() => { const fiberGoal = Math.round(14 * calTarget / 1000); const fiberLeft = Math.max(0, Math.round((fiberGoal - t.fiber) * 10) / 10); return fiberLeft + 'g'; })()}</div><div class="stat-label">fiber left</div></div>
             <div class="stat-box"><div class="stat-val" style="color:var(--success)">${burned}</div><div class="stat-label">burned</div></div>
             <div class="stat-box"><div class="stat-val">${net}</div><div class="stat-label">net</div></div>
           </div>
@@ -2351,28 +2400,60 @@
 
       /* ─── MOVE TAB ─── */
       window.renderMove = function () {
-        const workout = WORKOUT_PLAN[dow(selectedDate)];
+        const dayNum = dow(selectedDate);
+        const workout = WORKOUT_PLAN[dayNum];
+        const warmup = WARMUP_PLAN[dayNum] || [];
+        const cooldown = COOLDOWN_PLAN[dayNum] || [];
         const steps = dayData.steps || 0;
         const burned = dayData.calBurned || 0;
         const stepLogs = activeItems(dayData.stepLogs || []).sort((a, b) => a.ts - b.ts);
         const customs = activeItems(dayData.customExercises || []).sort((a, b) => a.ts - b.ts);
 
-        const w = num0(dayData.body?.weight);
-        const walkCal = steps > 0 ? estimateWalkCal(steps, w || 70) : 0;
-        const customCal = customs.reduce((s, x) => s + num0(x.kcal), 0);
+        const exerciseCal = dayData.exerciseCal || 0;
+        const neatCal = dayData.neatCal || 0;
+        const exPct = exerciseCal / 400 * 100;
+        const neatPct = neatCal / 600 * 100;
 
-        const neatPct = walkCal / 600 * 100;
-        const exPct = customCal / 400 * 100;
+        const so = (k) => localStorage.getItem('HT_move_' + k) === '1';
+        const sToggle = "localStorage.setItem('HT_move_'+ this.dataset.key, this.open?'1':'0')";
+
+        // Warmup checklist
+        const warmupDone = warmup.every(t => lwwGet(dayData.warmupChecks, t.id));
+        const warmupHtml = warmup.map(t => {
+          const on = lwwGet(dayData.warmupChecks, t.id);
+          return `<div class="check-item" onclick="toggleCheck('warmupChecks','${t.id}')"><input type="checkbox" ${on ? "checked" : ""}><span style="${on ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.label)} <span style="color:var(--muted);font-size:.62rem">${t.kcal} kcal</span></span></div>`;
+        }).join("");
+
+        // Workout checklist
+        const workoutHtml = workout ? workout.exercises.map(ex => {
+          const done = lwwGet(dayData.exerciseChecks, ex);
+          const kcal = EXERCISE_KCAL[ex] || 30;
+          return `<div class="check-item" onclick="toggleExercise('${esc(ex)}')"><input type="checkbox" ${done ? "checked" : ""}><span style="${done ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(ex)} <span style="color:var(--muted);font-size:.62rem">${kcal} kcal</span></span></div>`;
+        }).join("") : `<div class="empty-state"><div class="empty-icon">😌</div>Rest and recover</div>`;
+
+        // Cooldown checklist
+        const cooldownDone = cooldown.every(t => lwwGet(dayData.cooldownChecks, t.id));
+        const cooldownHtml = cooldown.map(t => {
+          const on = lwwGet(dayData.cooldownChecks, t.id);
+          return `<div class="check-item" onclick="toggleCheck('cooldownChecks','${t.id}')"><input type="checkbox" ${on ? "checked" : ""}><span style="${on ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.label)}</span></div>`;
+        }).join("");
+
+        // Pelvic floor checklist
+        const pfDone = PELVIC_EXERCISES.every(t => lwwGet(dayData.pelvicChecks, t.id));
+        const pfHtml = PELVIC_EXERCISES.map(t => {
+          const on = lwwGet(dayData.pelvicChecks, t.id);
+          return `<div class="check-item" onclick="toggleCheck('pelvicChecks','${t.id}')"><input type="checkbox" ${on ? "checked" : ""}><span>${esc(t.label)}</span></div>`;
+        }).join("");
 
         return `
         <div class="card" style="display:flex;justify-content:space-around;padding:1.2rem 0">
           <div class="ring-container" style="width:105px;height:105px">
             ${svgRing(exPct, 105, 8, "var(--accent)")}
-            <div class="ring-center"><div class="ring-big">${Math.round(customCal)}</div><div class="ring-small" style="font-size:0.58rem;margin-top:2px">/ 400<br>EXERCISE</div></div>
+            <div class="ring-center"><div class="ring-big">${Math.round(exerciseCal)}</div><div class="ring-small" style="font-size:0.58rem;margin-top:2px">/ 400<br>EXERCISE</div></div>
           </div>
           <div class="ring-container" style="width:105px;height:105px">
             ${svgRing(neatPct, 105, 8, "var(--blue)")}
-            <div class="ring-center"><div class="ring-big">${Math.round(walkCal)}</div><div class="ring-small" style="font-size:0.58rem;margin-top:2px">/ 600<br>NEAT</div></div>
+            <div class="ring-center"><div class="ring-big">${Math.round(neatCal)}</div><div class="ring-small" style="font-size:0.58rem;margin-top:2px">/ 600<br>NEAT</div></div>
           </div>
         </div>
         <div class="card">
@@ -2385,27 +2466,31 @@
           ${stepLogs.map(l => `<div class="log-item"><span>+${l.steps} steps</span><span style="color:var(--muted);font-size:.65rem">${new Date(l.ts).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span><button class="log-del" onclick="removeStepLog('${l.id}')">✕</button></div>`).join("")}
         </div>
         <div class="card">
-          <div class="card-title">🏋️ ${workout ? esc(workout.name) : "Rest Day"}</div>
-          ${workout ? workout.exercises.map(ex => {
-          const done = lwwGet(dayData.exerciseChecks, ex);
-          return `<div class="check-item" onclick="toggleExercise('${esc(ex)}')"><input type="checkbox" ${done ? "checked" : ""}><span style="${done ? "text-decoration:line-through;opacity:.6" : ""}">${esc(ex)}</span></div>`;
-        }).join("") : `<div class="empty-state"><div class="empty-icon">😌</div>Rest and recover</div>`}
+          <details class="move-section" data-key="warmup" ${so('warmup') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>🔥 Warmup ${warmupDone ? '<span style="margin-left:.3rem">✅</span>' : ''}</summary>
+            <div class="section-body">${warmupHtml}</div>
+          </details>
         </div>
         <div class="card">
-          <div class="card-title">🧘 Flexibility / Cooldown <span class="card-title-status">${FLEXIBILITY_TASKS.every(t => lwwGet(dayData.flexChecks, t.id)) ? "✅" : ""}</span></div>
-          <div style="font-size:.68rem;color:var(--muted);margin-bottom:.4rem">Daily micro-dose: tightest areas + breathing</div>
-          ${FLEXIBILITY_TASKS.map(t => {
-          const on = lwwGet(dayData.flexChecks, t.id);
-          return `<label class="check-item"><input type="checkbox" ${on ? "checked" : ""} onchange="toggleCheck('flexChecks','${t.id}')"><span>${esc(t.label)}</span></label>`;
-        }).join("")}
+          <details class="move-section" data-key="workout" ${so('workout') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>🏋️ ${workout ? esc(workout.name) : 'Rest Day'}</summary>
+            <div class="section-body">${workoutHtml}</div>
+          </details>
         </div>
         <div class="card">
-          <div class="card-title">🏃 Pelvic Floor Training</div>
-          <div style="font-size:.68rem;color:var(--muted);margin-bottom:.4rem">3-4×/week · 6-8 min</div>
-          ${PELVIC_EXERCISES.map(t => {
-          const on = lwwGet(dayData.pelvicChecks, t.id);
-          return `<div class="check-item" onclick="toggleCheck('pelvicChecks','${t.id}')"><input type="checkbox" ${on ? "checked" : ""}><span>${esc(t.label)}</span></div>`;
-        }).join("")}
+          <details class="move-section" data-key="cooldown" ${so('cooldown') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>🧘 Cooldown ${cooldownDone ? '<span style="margin-left:.3rem">✅</span>' : ''}</summary>
+            <div class="section-body">${cooldownHtml}</div>
+          </details>
+        </div>
+        <div class="card">
+          <details class="move-section" data-key="pelvic" ${so('pelvic') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>🏃 Pelvic Floor Training ${pfDone ? '<span style="margin-left:.3rem">✅</span>' : ''}</summary>
+            <div class="section-body">
+              <div style="font-size:.68rem;color:var(--muted);margin-bottom:.4rem">3-4×/week · 6-8 min</div>
+              ${pfHtml}
+            </div>
+          </details>
         </div>
         <div class="card">
           <div class="card-title">⚡ Custom Exercise</div>
@@ -2484,7 +2569,7 @@
         const scDone = scReq.every(t => lwwGet(dayData.skincareChecks, t.id));
         const hcTasks = HAIRCARE_SCHEDULE[dow(selectedDate)] || [];
         const hcDone = hcTasks.length === 0 || hcTasks.every(t => lwwGet(dayData.haircareChecks, t.id));
-        const flexDone = FLEXIBILITY_TASKS.every(t => lwwGet(dayData.flexChecks, t.id));
+
 
         return `
         <div class="card">
