@@ -157,3 +157,91 @@ exports.numoChat = onRequest(
     });
   }
 );
+
+/**
+ * HealThee AI endpoint
+ * POST /healtheeLLM
+ * Body: { prompt, system, provider, model, isJson, base64Image }
+ */
+exports.healtheeLLM = onRequest(
+  {
+    region: "us-central1",
+    memory: "256MiB",
+    timeoutSeconds: 120,
+    secrets: ["CEREBRAS_API_KEY", "GROQ_API_KEY"],
+  },
+  (req, res) => {
+    corsHandler(req, res, async () => {
+      // Handle preflight
+      if (req.method === "OPTIONS") {
+        res.status(204).send("");
+        return;
+      }
+
+      if (req.method !== "POST") {
+        res.status(405).json({ error: "Method not allowed" });
+        return;
+      }
+
+      try {
+        const { prompt, system, provider, model, isJson, base64Image } = req.body;
+
+        if (!prompt) {
+          res.status(400).json({ error: "prompt is required" });
+          return;
+        }
+
+        const messages = [];
+        if (system) messages.push({ role: 'system', content: system });
+
+        if (base64Image) {
+          messages.push({
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              { type: 'image_url', image_url: { url: base64Image } }
+            ]
+          });
+        } else {
+          messages.push({ role: 'user', content: prompt });
+        }
+
+        const bodyOptions = {
+          model: model || (provider === 'cerebras' ? 'llama3.1-8b' : 'llama-3.3-70b-versatile'),
+          messages: messages,
+          temperature: 0.1,
+        };
+
+        if (isJson) {
+          bodyOptions.response_format = { type: 'json_object' };
+        }
+
+        let completion;
+        // Dynamically instantiate with API key from environment
+        if (provider === 'cerebras') {
+          const cerebrasClient = new OpenAI({
+            baseURL: "https://api.cerebras.ai/v1",
+            apiKey: process.env.CEREBRAS_API_KEY || "",
+          });
+          completion = await cerebrasClient.chat.completions.create(bodyOptions);
+        } else if (provider === 'groq') {
+          const groqClient = new OpenAI({
+            baseURL: "https://api.groq.com/openai/v1",
+            apiKey: process.env.GROQ_API_KEY || "",
+          });
+          completion = await groqClient.chat.completions.create(bodyOptions);
+        } else {
+          res.status(400).json({ error: "Invalid provider" });
+          return;
+        }
+
+        const content = completion.choices[0].message.content;
+        res.json({ content });
+
+      } catch (error) {
+        console.error("HealThee LLM error:", error);
+        res.status(500).json({ error: error.message || "Failed to fetch LLM" });
+      }
+    });
+  }
+);

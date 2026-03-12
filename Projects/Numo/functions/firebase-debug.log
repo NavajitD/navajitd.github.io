@@ -1,0 +1,73 @@
+[debug] [2026-03-12T17:12:21.790Z] ----------------------------------------------------------------------
+[debug] [2026-03-12T17:12:21.799Z] Command:       /usr/local/bin/node /usr/local/bin/firebase deploy --only functions:healtheeLLM
+[debug] [2026-03-12T17:12:21.799Z] CLI Version:   15.9.1
+[debug] [2026-03-12T17:12:21.799Z] Platform:      darwin
+[debug] [2026-03-12T17:12:21.799Z] Node Version:  v24.14.0
+[debug] [2026-03-12T17:12:21.799Z] Time:          Thu Mar 12 2026 22:42:21 GMT+0530 (India Standard Time)
+[debug] [2026-03-12T17:12:21.799Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-12T17:12:23.133Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-12T17:12:23.134Z] > authorizing via signed-in user (navjitdebnath5@gmail.com)
+[debug] [2026-03-12T17:12:23.134Z] [iam] checking project numo-3984a for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-03-12T17:12:23.134Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:23.134Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:23.135Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/numo-3984a:testIamPermissions [none]
+[debug] [2026-03-12T17:12:23.135Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/numo-3984a:testIamPermissions  x-goog-user-project=numo-3984a
+[debug] [2026-03-12T17:12:23.135Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/numo-3984a:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-03-12T17:12:24.496Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/numo-3984a:testIamPermissions 200
+[debug] [2026-03-12T17:12:24.496Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/numo-3984a:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-03-12T17:12:24.497Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:24.497Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:24.497Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/numo-3984a/serviceAccounts/numo-3984a@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-03-12T17:12:24.497Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/numo-3984a/serviceAccounts/numo-3984a@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-03-12T17:12:26.067Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/numo-3984a/serviceAccounts/numo-3984a@appspot.gserviceaccount.com:testIamPermissions 404
+[debug] [2026-03-12T17:12:26.068Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/numo-3984a/serviceAccounts/numo-3984a@appspot.gserviceaccount.com:testIamPermissions {"error":{"code":404,"message":"Unknown service account","status":"NOT_FOUND"}}
+[debug] [2026-03-12T17:12:26.068Z] [functions] service account IAM check errored, deploy may fail: Request to https://iam.googleapis.com/v1/projects/numo-3984a/serviceAccounts/numo-3984a@appspot.gserviceaccount.com:testIamPermissions had HTTP Error: 404, Unknown service account {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":404,"message":"Unknown service account","status":"NOT_FOUND"}},"response":{"statusCode":404}},"exit":1,"message":"Request to https://iam.googleapis.com/v1/projects/numo-3984a/serviceAccounts/numo-3984a@appspot.gserviceaccount.com:testIamPermissions had HTTP Error: 404, Unknown service account","status":404}
+[info] 
+[info] === Deploying to 'numo-3984a'...
+[info] 
+[info] i  deploying functions 
+[debug] [2026-03-12T17:12:26.073Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:26.073Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:26.073Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/numo-3984a [none]
+[debug] [2026-03-12T17:12:26.363Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/numo-3984a 200
+[debug] [2026-03-12T17:12:26.363Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/numo-3984a {"projectNumber":"952036501569","projectId":"numo-3984a","lifecycleState":"ACTIVE","name":"Numo","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-03-11T10:25:39.609374Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-03-12T17:12:26.367Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:26.367Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:26.367Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/numo-3984a/adminSdkConfig [none]
+[debug] [2026-03-12T17:12:26.782Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/numo-3984a/adminSdkConfig 200
+[debug] [2026-03-12T17:12:26.783Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/numo-3984a/adminSdkConfig {"projectId":"numo-3984a","storageBucket":"numo-3984a.firebasestorage.app"}
+[debug] [2026-03-12T17:12:26.784Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:26.784Z] Checked if tokens are valid: true, expires at: 1773337404553
+[debug] [2026-03-12T17:12:26.784Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/numo-3984a/configs [none]
+[debug] [2026-03-12T17:12:28.036Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/numo-3984a/configs 200
+[debug] [2026-03-12T17:12:28.036Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/numo-3984a/configs {}
+[debug] [2026-03-12T17:12:28.039Z] Validating nodejs source
+[warn] ⚠  functions: Runtime Node.js 20 will be deprecated on 2026-04-30 and will be decommissioned on 2026-10-30, after which you will not be able to deploy without upgrading. Consider upgrading now to avoid disruption. See https://cloud.google.com/functions/docs/runtime-support for full details on the lifecycle policy 
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-03-12T17:12:28.846Z] > [functions] package.json contents: {
+  "name": "numo-functions",
+  "description": "Numo Numerology AI Assistant - Cloud Functions",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "openai": "^4.0.0",
+    "cors": "^2.8.5"
+  }
+}
+[debug] [2026-03-12T17:12:28.846Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-03-12T17:12:28.847Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-03-12T17:12:28.851Z] Found firebase-functions binary at '/Users/navjitdebnath/Downloads/navajitd.github.io/Projects/Numo/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8324
+
+[debug] [2026-03-12T17:12:29.309Z] Got response from /__/functions.yaml {"endpoints":{"numoChat":{"availableMemoryMb":256,"timeoutSeconds":120,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"secretEnvironmentVariables":[{"key":"CEREBRAS_API_KEY"}],"labels":{},"httpsTrigger":{},"entryPoint":"numoChat"},"healtheeLLM":{"availableMemoryMb":256,"timeoutSeconds":120,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"secretEnvironmentVariables":[{"key":"CEREBRAS_API_KEY"},{"key":"GROQ_API_KEY"}],"labels":{},"httpsTrigger":{},"entryPoint":"healtheeLLM"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
