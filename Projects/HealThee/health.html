@@ -67,7 +67,7 @@
     }
 
     html {
-      font-size: 19.2px
+      font-size: 18.3px
     }
 
     body {
@@ -1517,13 +1517,50 @@
     }
 
     /* Collapsible move sections */
-    .move-section { border: none; margin: 0 }
-    .move-section summary { list-style: none; cursor: pointer; user-select: none; display: flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 0 }
-    .move-section summary::-webkit-details-marker { display: none }
-    .move-section summary::after { content: "▸"; margin-left: auto; font-size: .85rem; color: var(--muted); transition: transform .2s }
-    .move-section[open] summary::after { transform: rotate(90deg) }
-    .move-section[open] summary { color: var(--accent) }
-    .move-section .section-body { margin-top: .5rem }
+    .move-section {
+      border: none;
+      margin: 0
+    }
+
+    .move-section summary {
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 0
+    }
+
+    .move-section summary::-webkit-details-marker {
+      display: none
+    }
+
+    .move-section summary::after {
+      content: "▾";
+      margin-left: auto;
+      font-size: .9rem;
+      color: var(--text);
+      opacity: .7;
+      transition: transform .2s
+    }
+
+    .move-section[open] summary::after {
+      transform: rotate(180deg)
+    }
+
+    .move-section[open] summary {
+      color: var(--accent)
+    }
+
+    .move-section .section-body {
+      margin-top: .5rem
+    }
   </style>
 </head>
 
@@ -1616,7 +1653,8 @@
     <div class="bottom-nav-inner">
       <div class="nav-item active" data-tab="fuel" onclick="switchTab('fuel')">
         <svg viewBox="0 0 24 24">
-          <path d="M2 13h20v0a10 10 0 0 1-10 10A10 10 0 0 1 2 13zM7 6c.5-1.5.5-3 0-4M12 6c.5-1.5.5-3 0-4M17 6c.5-1.5.5-3 0-4" />
+          <path
+            d="M2 13h20v0a10 10 0 0 1-10 10A10 10 0 0 1 2 13zM7 6c.5-1.5.5-3 0-4M12 6c.5-1.5.5-3 0-4M17 6c.5-1.5.5-3 0-4" />
         </svg>
         <span>Fuel</span>
       </div>
@@ -1712,9 +1750,11 @@
       const SUPPLEMENTS = [
         { id: "creatine", name: "Creatine (3–5g)", freq: "daily", icon: "⚡" },
         { id: "vitd", name: "Vitamin D (600-800 IU)", freq: "daily", icon: "☀️" },
-        { id: "omega3", name: "Omega-3 / Fish Oil", freq: "daily", icon: "🐟" },
-        { id: "magnesium", name: "Magnesium (200-300mg)", freq: "daily", icon: "💊" },
-        { id: "vitc", name: "Vitamin C", freq: "daily", icon: "🍊" }
+        { id: "omega3", name: "Omega-3 / Fish oil", freq: "daily", icon: "🐟" },
+        { id: "zincovit", name: "Zincovit", freq: "daily", icon: "💊" },
+        { id: "vitc", name: "Vitamin C", freq: "daily", icon: "🍊" },
+        { id: "ashwagandha", name: "Ashwagandha", freq: "daily", icon: "🌿" },
+        { id: "collagen", name: "Collagen peptides (8g)", freq: "daily", icon: "🧬" }
       ];
 
       const SKINCARE_TASKS = [
@@ -1846,33 +1886,33 @@
       ];
 
       const WARMUP_PLAN = {
-        1: [{id:"wu1_1",label:"Arm circles 30s each direction",kcal:5},{id:"wu1_2",label:"Band pull-aparts × 15",kcal:8},{id:"wu1_3",label:"Wall slides × 10",kcal:5},{id:"wu1_4",label:"Push-up walkouts × 5",kcal:10},{id:"wu1_5",label:"Empty bar OHP × 10",kcal:8}],
-        2: [{id:"wu2_1",label:"Leg swings (front/side) 10/side",kcal:8},{id:"wu2_2",label:"Bodyweight squats × 15",kcal:12},{id:"wu2_3",label:"Hip circles × 10/side",kcal:5},{id:"wu2_4",label:"Glute bridges × 15",kcal:10},{id:"wu2_5",label:"Ankle circles × 10/side",kcal:3}],
-        3: [{id:"wu3_1",label:"Cat-cow × 10",kcal:5},{id:"wu3_2",label:"Arm swings 30s",kcal:5},{id:"wu3_3",label:"Hip circles × 10/side",kcal:5},{id:"wu3_4",label:"Ankle bounces × 20",kcal:5},{id:"wu3_5",label:"Neck rolls × 5/side",kcal:3}],
-        4: [{id:"wu4_1",label:"Band pull-aparts × 15",kcal:8},{id:"wu4_2",label:"Cat-cow × 10",kcal:5},{id:"wu4_3",label:"Dead hangs 15s × 2",kcal:8},{id:"wu4_4",label:"Scapular push-ups × 10",kcal:8},{id:"wu4_5",label:"Light cable row × 12",kcal:10}],
-        5: [{id:"wu5_1",label:"Leg swings 10/side",kcal:8},{id:"wu5_2",label:"Hip hinges × 10 (bodyweight)",kcal:8},{id:"wu5_3",label:"Glute bridges × 15",kcal:10},{id:"wu5_4",label:"Bird dogs × 8/side",kcal:8},{id:"wu5_5",label:"Ankle circles × 10/side",kcal:3}],
-        6: [{id:"wu6_1",label:"Jumping jacks × 20",kcal:10},{id:"wu6_2",label:"Arm circles 30s",kcal:5},{id:"wu6_3",label:"Leg swings 10/side",kcal:8},{id:"wu6_4",label:"Bodyweight squats × 10",kcal:8},{id:"wu6_5",label:"Push-ups × 10",kcal:10}],
-        0: [{id:"wu0_1",label:"Walk warm-up 3 min",kcal:12},{id:"wu0_2",label:"Ankle circles × 10/side",kcal:3},{id:"wu0_3",label:"Leg swings 10/side",kcal:8},{id:"wu0_4",label:"High knees × 20",kcal:10},{id:"wu0_5",label:"Butt kicks × 20",kcal:10}]
+        1: [{ id: "wu1_1", label: "Arm circles 30s each direction", kcal: 5 }, { id: "wu1_2", label: "Band pull-aparts × 15", kcal: 8 }, { id: "wu1_3", label: "Wall slides × 10", kcal: 5 }, { id: "wu1_4", label: "Push-up walkouts × 5", kcal: 10 }, { id: "wu1_5", label: "Empty bar OHP × 10", kcal: 8 }],
+        2: [{ id: "wu2_1", label: "Leg swings (front/side) 10/side", kcal: 8 }, { id: "wu2_2", label: "Bodyweight squats × 15", kcal: 12 }, { id: "wu2_3", label: "Hip circles × 10/side", kcal: 5 }, { id: "wu2_4", label: "Glute bridges × 15", kcal: 10 }, { id: "wu2_5", label: "Ankle circles × 10/side", kcal: 3 }],
+        3: [{ id: "wu3_1", label: "Cat-cow × 10", kcal: 5 }, { id: "wu3_2", label: "Arm swings 30s", kcal: 5 }, { id: "wu3_3", label: "Hip circles × 10/side", kcal: 5 }, { id: "wu3_4", label: "Ankle bounces × 20", kcal: 5 }, { id: "wu3_5", label: "Neck rolls × 5/side", kcal: 3 }],
+        4: [{ id: "wu4_1", label: "Band pull-aparts × 15", kcal: 8 }, { id: "wu4_2", label: "Cat-cow × 10", kcal: 5 }, { id: "wu4_3", label: "Dead hangs 15s × 2", kcal: 8 }, { id: "wu4_4", label: "Scapular push-ups × 10", kcal: 8 }, { id: "wu4_5", label: "Light cable row × 12", kcal: 10 }],
+        5: [{ id: "wu5_1", label: "Leg swings 10/side", kcal: 8 }, { id: "wu5_2", label: "Hip hinges × 10 (bodyweight)", kcal: 8 }, { id: "wu5_3", label: "Glute bridges × 15", kcal: 10 }, { id: "wu5_4", label: "Bird dogs × 8/side", kcal: 8 }, { id: "wu5_5", label: "Ankle circles × 10/side", kcal: 3 }],
+        6: [{ id: "wu6_1", label: "Jumping jacks × 20", kcal: 10 }, { id: "wu6_2", label: "Arm circles 30s", kcal: 5 }, { id: "wu6_3", label: "Leg swings 10/side", kcal: 8 }, { id: "wu6_4", label: "Bodyweight squats × 10", kcal: 8 }, { id: "wu6_5", label: "Push-ups × 10", kcal: 10 }],
+        0: [{ id: "wu0_1", label: "Walk warm-up 3 min", kcal: 12 }, { id: "wu0_2", label: "Ankle circles × 10/side", kcal: 3 }, { id: "wu0_3", label: "Leg swings 10/side", kcal: 8 }, { id: "wu0_4", label: "High knees × 20", kcal: 10 }, { id: "wu0_5", label: "Butt kicks × 20", kcal: 10 }]
       };
 
       const COOLDOWN_PLAN = {
-        1: [{id:"cd1_1",label:"Doorway pec stretch 30s/side",kcal:3},{id:"cd1_2",label:"Overhead tricep stretch 30s/side",kcal:3},{id:"cd1_3",label:"Cross-body shoulder stretch 30s/side",kcal:3},{id:"cd1_4",label:"Lat hang stretch 20s",kcal:3},{id:"cd1_5",label:"Thoracic twist 6/side",kcal:5}],
-        2: [{id:"cd2_1",label:"Standing quad stretch 30s/side",kcal:3},{id:"cd2_2",label:"Seated hamstring fold 45s",kcal:3},{id:"cd2_3",label:"Kneeling hip flexor stretch 30s/side",kcal:3},{id:"cd2_4",label:"Wall calf stretch 30s/side",kcal:3},{id:"cd2_5",label:"Pigeon pose 30s/side",kcal:5}],
-        3: [{id:"cd3_1",label:"Child's pose 45s",kcal:3},{id:"cd3_2",label:"Supine spinal twist 30s/side",kcal:3},{id:"cd3_3",label:"Butterfly stretch 45s",kcal:3},{id:"cd3_4",label:"Cat-cow × 8",kcal:5},{id:"cd3_5",label:"2 min slow nasal breathing",kcal:3}],
-        4: [{id:"cd4_1",label:"Lat doorway stretch 30s/side",kcal:3},{id:"cd4_2",label:"Bicep wall stretch 30s/side",kcal:3},{id:"cd4_3",label:"Rear delt stretch 30s/side",kcal:3},{id:"cd4_4",label:"Thoracic openers 6/side",kcal:5},{id:"cd4_5",label:"Child's pose 45s",kcal:3}],
-        5: [{id:"cd5_1",label:"Seated hamstring stretch 45s/side",kcal:3},{id:"cd5_2",label:"Hip flexor stretch 30s/side",kcal:3},{id:"cd5_3",label:"Figure-4 glute stretch 30s/side",kcal:3},{id:"cd5_4",label:"Supine lower back twist 30s/side",kcal:3},{id:"cd5_5",label:"Standing calf stretch 30s/side",kcal:3}],
-        6: [{id:"cd6_1",label:"Full body hang 20s × 2",kcal:5},{id:"cd6_2",label:"Chest doorway stretch 30s/side",kcal:3},{id:"cd6_3",label:"Quad stretch 30s/side",kcal:3},{id:"cd6_4",label:"Child's pose 45s",kcal:3},{id:"cd6_5",label:"2 min slow breathing",kcal:3}],
-        0: [{id:"cd0_1",label:"Hamstring stretch 60s/side",kcal:5},{id:"cd0_2",label:"Hip flexor stretch 60s/side",kcal:5},{id:"cd0_3",label:"Calf stretch 45s/side",kcal:3},{id:"cd0_4",label:"Thoracic spine mobility 3 min",kcal:8},{id:"cd0_5",label:"Slow breathing 2 min",kcal:3}]
+        1: [{ id: "cd1_1", label: "Doorway pec stretch 30s/side", kcal: 3 }, { id: "cd1_2", label: "Overhead tricep stretch 30s/side", kcal: 3 }, { id: "cd1_3", label: "Cross-body shoulder stretch 30s/side", kcal: 3 }, { id: "cd1_4", label: "Lat hang stretch 20s", kcal: 3 }, { id: "cd1_5", label: "Thoracic twist 6/side", kcal: 5 }],
+        2: [{ id: "cd2_1", label: "Standing quad stretch 30s/side", kcal: 3 }, { id: "cd2_2", label: "Seated hamstring fold 45s", kcal: 3 }, { id: "cd2_3", label: "Kneeling hip flexor stretch 30s/side", kcal: 3 }, { id: "cd2_4", label: "Wall calf stretch 30s/side", kcal: 3 }, { id: "cd2_5", label: "Pigeon pose 30s/side", kcal: 5 }],
+        3: [{ id: "cd3_1", label: "Child's pose 45s", kcal: 3 }, { id: "cd3_2", label: "Supine spinal twist 30s/side", kcal: 3 }, { id: "cd3_3", label: "Butterfly stretch 45s", kcal: 3 }, { id: "cd3_4", label: "Cat-cow × 8", kcal: 5 }, { id: "cd3_5", label: "2 min slow nasal breathing", kcal: 3 }],
+        4: [{ id: "cd4_1", label: "Lat doorway stretch 30s/side", kcal: 3 }, { id: "cd4_2", label: "Bicep wall stretch 30s/side", kcal: 3 }, { id: "cd4_3", label: "Rear delt stretch 30s/side", kcal: 3 }, { id: "cd4_4", label: "Thoracic openers 6/side", kcal: 5 }, { id: "cd4_5", label: "Child's pose 45s", kcal: 3 }],
+        5: [{ id: "cd5_1", label: "Seated hamstring stretch 45s/side", kcal: 3 }, { id: "cd5_2", label: "Hip flexor stretch 30s/side", kcal: 3 }, { id: "cd5_3", label: "Figure-4 glute stretch 30s/side", kcal: 3 }, { id: "cd5_4", label: "Supine lower back twist 30s/side", kcal: 3 }, { id: "cd5_5", label: "Standing calf stretch 30s/side", kcal: 3 }],
+        6: [{ id: "cd6_1", label: "Full body hang 20s × 2", kcal: 5 }, { id: "cd6_2", label: "Chest doorway stretch 30s/side", kcal: 3 }, { id: "cd6_3", label: "Quad stretch 30s/side", kcal: 3 }, { id: "cd6_4", label: "Child's pose 45s", kcal: 3 }, { id: "cd6_5", label: "2 min slow breathing", kcal: 3 }],
+        0: [{ id: "cd0_1", label: "Hamstring stretch 60s/side", kcal: 5 }, { id: "cd0_2", label: "Hip flexor stretch 60s/side", kcal: 5 }, { id: "cd0_3", label: "Calf stretch 45s/side", kcal: 3 }, { id: "cd0_4", label: "Thoracic spine mobility 3 min", kcal: 8 }, { id: "cd0_5", label: "Slow breathing 2 min", kcal: 3 }]
       };
 
       const EXERCISE_KCAL = {
-        "Incline DB Press 4×6-10":60,"Flat Press 3×8-12":50,"Seated OHP 3×6-10":45,"Cable/Pec-Deck Fly 2-3×12-15":25,"Lateral Raise (cable) 4×12-20":30,"Triceps Rope Pressdown 3×10-15":20,"Push-ups 2×failure (optional)":15,
-        "Back Squat/Hack Squat 4×5-8":80,"Romanian Deadlift 3×6-10":60,"Leg Press 3×10-15":55,"Lying Leg Curl 3×10-15":30,"Standing Calf Raises 4×8-12":25,"Hanging Knee Raises 3×10-15":20,
-        "30-45 min easy walk":150,"Couch stretch 60s/side":5,"Deep squat hold 60s":8,"Thoracic openers 6/side":5,"Hamstring floss 10/side":5,"Shoulder wall slides 10 reps":3,
-        "Pull-ups/Lat Pulldown 4×6-12":55,"Chest-Supported Row 3×8-12":45,"Seated Cable Row 3×10-15":40,"Rear Delt Fly 3×12-20":25,"Face Pulls 2×12-20":20,"Barbell/DB Curls 3×8-12":30,"Hammer Curls 2-3×10-15":20,
-        "Trap Bar/RDL Heavy 3-4×4-8":75,"Bulgarian Split Squat 3×8-12/side":50,"Hip Thrust 3×8-12":45,"Leg Extension 2×12-15":25,"Seated Calf Raise 3×10-15":20,"Ab Wheel/Cable Crunch 3×8-15":25,"Farmer's Carries 3×30-45s (optional)":20,
-        "Lateral Raise 5×12-20":30,"Cable Fly 3×12-15":25,"Rope Pushdown 3×12-15":20,"Incline Curls 3×10-15":20,"Calves 4×10-15":25,"10 min easy incline walk":40,
-        "5 min walk warm-up":20,"5K run (conversational pace)":280,"5 min walk cool-down":20,"Hamstring stretch 60s/side":5,"Hip flexor stretch 60s/side":5,"Calf stretch 45s/side":3,"Thoracic spine mobility 5 min":8
+        "Incline DB Press 4×6-10": 60, "Flat Press 3×8-12": 50, "Seated OHP 3×6-10": 45, "Cable/Pec-Deck Fly 2-3×12-15": 25, "Lateral Raise (cable) 4×12-20": 30, "Triceps Rope Pressdown 3×10-15": 20, "Push-ups 2×failure (optional)": 15,
+        "Back Squat/Hack Squat 4×5-8": 80, "Romanian Deadlift 3×6-10": 60, "Leg Press 3×10-15": 55, "Lying Leg Curl 3×10-15": 30, "Standing Calf Raises 4×8-12": 25, "Hanging Knee Raises 3×10-15": 20,
+        "30-45 min easy walk": 150, "Couch stretch 60s/side": 5, "Deep squat hold 60s": 8, "Thoracic openers 6/side": 5, "Hamstring floss 10/side": 5, "Shoulder wall slides 10 reps": 3,
+        "Pull-ups/Lat Pulldown 4×6-12": 55, "Chest-Supported Row 3×8-12": 45, "Seated Cable Row 3×10-15": 40, "Rear Delt Fly 3×12-20": 25, "Face Pulls 2×12-20": 20, "Barbell/DB Curls 3×8-12": 30, "Hammer Curls 2-3×10-15": 20,
+        "Trap Bar/RDL Heavy 3-4×4-8": 75, "Bulgarian Split Squat 3×8-12/side": 50, "Hip Thrust 3×8-12": 45, "Leg Extension 2×12-15": 25, "Seated Calf Raise 3×10-15": 20, "Ab Wheel/Cable Crunch 3×8-15": 25, "Farmer's Carries 3×30-45s (optional)": 20,
+        "Lateral Raise 5×12-20": 30, "Cable Fly 3×12-15": 25, "Rope Pushdown 3×12-15": 20, "Incline Curls 3×10-15": 20, "Calves 4×10-15": 25, "10 min easy incline walk": 40,
+        "5 min walk warm-up": 20, "5K run (conversational pace)": 280, "5 min walk cool-down": 20, "Hamstring stretch 60s/side": 5, "Hip flexor stretch 60s/side": 5, "Calf stretch 45s/side": 3, "Thoracic spine mobility 5 min": 8
       };
 
       const MICROS = [
@@ -2658,7 +2698,7 @@
             const microsMet = MICROS.filter(m => (t.micros[m.key] || 0) >= m.target).length;
             const delightCount = DELIGHTS.filter(d => lwwGet(dd.delightChecks, d.id)).length;
             return {
-              date: dk, day: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date(dk+"T12:00:00").getDay()],
+              date: dk, day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(dk + "T12:00:00").getDay()],
               cal: t.cal, protein: t.protein, fiber: t.fiber, water, sleep: num0(dd.sleep?.hours),
               weight: dd.body?.weight || null, bodyFat: dd.body?.bodyFat || null,
               waist: dd.body?.waist || null, shoulders: dd.body?.shoulders || null,
@@ -2672,19 +2712,19 @@
           const weekDays = weekDates.map(getDayData);
           const wLen = weekDays.length || 1;
           const wWeights = weekDays.filter(d => d.weight);
-          const avgW = wWeights.length ? Math.round(wWeights.reduce((s,d) => s + d.weight, 0) / wWeights.length * 10) / 10 : null;
+          const avgW = wWeights.length ? Math.round(wWeights.reduce((s, d) => s + d.weight, 0) / wWeights.length * 10) / 10 : null;
           const avgBMI = avgW ? calcBMI(avgW) : null;
           const wBf = weekDays.filter(d => d.bodyFat);
-          const avgBf = wBf.length ? Math.round(wBf.reduce((s,d) => s + d.bodyFat, 0) / wBf.length * 10) / 10 : null;
+          const avgBf = wBf.length ? Math.round(wBf.reduce((s, d) => s + d.bodyFat, 0) / wBf.length * 10) / 10 : null;
           const wWaist = weekDays.filter(d => d.waist);
-          const avgWaist = wWaist.length ? Math.round(wWaist.reduce((s,d) => s + d.waist, 0) / wWaist.length * 10) / 10 : null;
+          const avgWaist = wWaist.length ? Math.round(wWaist.reduce((s, d) => s + d.waist, 0) / wWaist.length * 10) / 10 : null;
           const wSW = weekDays.filter(d => d.shoulders && d.waist);
-          const avgSW = wSW.length ? Math.round(wSW.reduce((s,d) => s + d.shoulders / d.waist, 0) / wSW.length * 100) / 100 : null;
+          const avgSW = wSW.length ? Math.round(wSW.reduce((s, d) => s + d.shoulders / d.waist, 0) / wSW.length * 100) / 100 : null;
           const wSMM = weekDays.filter(d => d.skeletalMuscle);
-          const avgSMM = wSMM.length ? Math.round(wSMM.reduce((s,d) => s + d.skeletalMuscle, 0) / wSMM.length * 10) / 10 : null;
+          const avgSMM = wSMM.length ? Math.round(wSMM.reduce((s, d) => s + d.skeletalMuscle, 0) / wSMM.length * 10) / 10 : null;
           const wVF = weekDays.filter(d => d.visceralFat);
-          const avgVF = wVF.length ? Math.round(wVF.reduce((s,d) => s + d.visceralFat, 0) / wVF.length * 10) / 10 : null;
-          const avgWater = Math.round(weekDays.reduce((s,d) => s + d.water, 0) / wLen);
+          const avgVF = wVF.length ? Math.round(wVF.reduce((s, d) => s + d.visceralFat, 0) / wVF.length * 10) / 10 : null;
+          const avgWater = Math.round(weekDays.reduce((s, d) => s + d.water, 0) / wLen);
           const daysActive = weekDays.filter(d => d.exCal > 0).length;
           const daysDelight = weekDays.filter(d => d.delightCount >= 3).length;
           const so = (k) => localStorage.getItem('HT_stats_' + k) === '1';
@@ -2695,26 +2735,26 @@
           <div class="card">
             <div class="card-title">📅 ${weekLabel} in Review</div>
             <div style="display:flex;gap:.3rem;margin-bottom:.6rem">
-              <button class="filter-btn ${statsWeek==='this'?'active':''}" onclick="setStatsWeek('this')">This Week</button>
-              <button class="filter-btn ${statsWeek==='last'?'active':''}" onclick="setStatsWeek('last')">Last Week</button>
+              <button class="filter-btn ${statsWeek === 'this' ? 'active' : ''}" onclick="setStatsWeek('this')">This Week</button>
+              <button class="filter-btn ${statsWeek === 'last' ? 'active' : ''}" onclick="setStatsWeek('last')">Last Week</button>
             </div>
             <div class="stats-row">
               ${avgW ? `<div class="stat-box"><div class="stat-val">${avgW}</div><div class="stat-label">avg weight</div></div>` : ''}
               ${avgBMI ? `<div class="stat-box"><div class="stat-val">${avgBMI.toFixed(1)}</div><div class="stat-label">avg BMI</div></div>` : ''}
             </div>
             ${(avgBf || avgWaist || avgSW || avgSMM || avgVF) ? `
-            <details class="move-section" data-key="weekAes" ${so('weekAes')?'open':''} ontoggle="${sToggle}" style="margin-top:.6rem">
+            <details class="move-section" data-key="weekAes" ${so('weekAes') ? 'open' : ''} ontoggle="${sToggle}" style="margin-top:.6rem">
               <summary>Aesthetic Metrics</summary>
               <div class="section-body"><div class="stats-row" style="margin-top:0">
-                ${avgBf !== null ? `<div class="stat-box"><div class="stat-val">${avgBf}%</div><div class="stat-label">body fat</div></div>` : ''}
-                ${avgWaist ? `<div class="stat-box"><div class="stat-val">${avgWaist}</div><div class="stat-label">waist cm</div></div>` : ''}
-                ${avgSW ? `<div class="stat-box"><div class="stat-val">${avgSW}</div><div class="stat-label">S:W ratio</div></div>` : ''}
-                ${avgSMM ? `<div class="stat-box"><div class="stat-val">${avgSMM}</div><div class="stat-label">SMM kg</div></div>` : ''}
-                ${avgVF !== null ? `<div class="stat-box"><div class="stat-val">${avgVF}</div><div class="stat-label">visc fat</div></div>` : ''}
+                ${avgBf !== null ? `<div class="stat-box"><div class="stat-val">${avgBf}%</div><div class="stat-label">Body Fat</div></div>` : ''}
+                ${avgWaist ? `<div class="stat-box"><div class="stat-val">${avgWaist}</div><div class="stat-label">Waist (cm)</div></div>` : ''}
+                ${avgSW ? `<div class="stat-box"><div class="stat-val">${avgSW}</div><div class="stat-label">S:W Ratio</div></div>` : ''}
+                ${avgSMM ? `<div class="stat-box"><div class="stat-val">${avgSMM}</div><div class="stat-label">Skeletal Musc.</div></div>` : ''}
+                ${avgVF !== null ? `<div class="stat-box"><div class="stat-val">${avgVF}</div><div class="stat-label">Visceral Fat</div></div>` : ''}
               </div></div>
             </details>` : ''}
             <div class="stats-row" style="margin-top:.5rem">
-              <div class="stat-box"><div class="stat-val">${(avgWater/1000).toFixed(1)}L</div><div class="stat-label">avg water</div></div>
+              <div class="stat-box"><div class="stat-val">${(avgWater / 1000).toFixed(1)}L</div><div class="stat-label">avg water</div></div>
               <div class="stat-box"><div class="stat-val">${daysActive}/${wLen}</div><div class="stat-label">days active</div></div>
               <div class="stat-box"><div class="stat-val">${daysDelight}/${wLen}</div><div class="stat-label">days of delight</div></div>
             </div>
@@ -2731,22 +2771,24 @@
           const lastW = pDays.slice().reverse().find(d => d.weight);
           const lastBf = pDays.slice().reverse().find(d => d.bodyFat);
           const bmr = getBMR(lastW?.weight, lastBf?.bodyFat);
-          pDays.forEach(d => { d.netCal = Math.round(d.cal - bmr - d.exCal); });
+          pDays.forEach(d => { d.netCal = d.cal > 0 ? Math.round(d.cal - bmr - d.exCal) : null; });
 
-          const periodLabel = statsPeriod + 'd';
+          // Aggregate to weekly averages for 30d/90d
+          const trendData = statsPeriod <= 7 ? pDays : aggregateWeekly(pDays);
+          const netData = statsPeriod <= 7 ? pDays.filter(d => d.netCal !== null) : aggregateWeekly(pDays.filter(d => d.netCal !== null), 'netCal');
 
           // Aesthetic trend lines (only for 30d/90d)
           let aestheticHtml = '';
           if (statsPeriod >= 30) {
             const aesMetrics = [
-              {key:'weight',label:'Weight',unit:'kg',ref:57,color:'var(--accent)'},
-              {key:'bodyFat',label:'Body Fat %',unit:'%',ref:12,color:'var(--orange)'},
-              {key:'waist',label:'Waist',unit:'cm',ref:72,color:'var(--warn)'},
-              {key:'skeletalMuscle',label:'Skeletal Muscle',unit:'kg',ref:28,color:'var(--success)'},
-              {key:'visceralFat',label:'Visceral Fat',unit:'',ref:4,color:'var(--danger)'}
+              { key: 'weight', label: 'Weight', unit: 'kg', ref: 57, color: 'var(--accent)' },
+              { key: 'bodyFat', label: 'Body Fat %', unit: '%', ref: 12, color: 'var(--orange)' },
+              { key: 'waist', label: 'Waist', unit: 'cm', ref: 72, color: 'var(--warn)' },
+              { key: 'skeletalMuscle', label: 'Skeletal Muscle', unit: 'kg', ref: 28, color: 'var(--success)' },
+              { key: 'visceralFat', label: 'Visceral Fat', unit: '', ref: 4, color: 'var(--danger)' }
             ];
             const swDays = pDays.filter(d => d.shoulders && d.waist);
-            const swData = swDays.map(d => ({...d, swRatio: Math.round(d.shoulders/d.waist*100)/100}));
+            const swData = swDays.map(d => ({ ...d, swRatio: Math.round(d.shoulders / d.waist * 100) / 100 }));
             let aesInner = aesMetrics.map(m => {
               const pts = pDays.filter(d => d[m.key] !== null);
               return pts.length >= 2 ? `<div style="margin-bottom:.5rem"><div class="chart-title">${m.label} (ref: ${m.ref}${m.unit})</div>${trendLineRef(pts, m.key, m.color, m.unit, m.ref)}</div>` : '';
@@ -2755,31 +2797,51 @@
               aesInner += `<div style="margin-bottom:.5rem"><div class="chart-title">S:W Ratio (ref: 1.6)</div>${trendLineRef(swData, 'swRatio', 'var(--purple)', '', 1.6)}</div>`;
             }
             if (aesInner) {
-              aestheticHtml = `<div class="card"><details class="move-section" data-key="trendAes" ${so('trendAes')?'open':''} ontoggle="${sToggle}">
+              aestheticHtml = `<div class="card"><details class="move-section" data-key="trendAes" ${so('trendAes') ? 'open' : ''} ontoggle="${sToggle}">
                 <summary>📐 Aesthetic Metrics</summary><div class="section-body">${aesInner}</div></details></div>`;
             }
           }
 
           const trendHtml = `
           <div style="display:flex;gap:.3rem;margin-bottom:.75rem;justify-content:center">
-            <button class="filter-btn ${statsPeriod===7?'active':''}" onclick="setStatsPeriod(7)">Last 7 days</button>
-            <button class="filter-btn ${statsPeriod===30?'active':''}" onclick="setStatsPeriod(30)">Last 30 days</button>
-            <button class="filter-btn ${statsPeriod===90?'active':''}" onclick="setStatsPeriod(90)">Last 90 days</button>
+            <button class="filter-btn ${statsPeriod === 7 ? 'active' : ''}" onclick="setStatsPeriod(7)">Last 7 days</button>
+            <button class="filter-btn ${statsPeriod === 30 ? 'active' : ''}" onclick="setStatsPeriod(30)">Last 30 days</button>
+            <button class="filter-btn ${statsPeriod === 90 ? 'active' : ''}" onclick="setStatsPeriod(90)">Last 90 days</button>
           </div>
-          <div class="card"><details class="move-section" data-key="tProtein" ${so('tProtein')?'open':''} ontoggle="${sToggle}">
-            <summary>🥩 Protein Intake</summary><div class="section-body">${chartBarsRef(pDays, 'protein', 'var(--success)', TARGETS.protein * 1.3, 130)}</div></details></div>
-          <div class="card"><details class="move-section" data-key="tCal" ${so('tCal')?'open':''} ontoggle="${sToggle}">
-            <summary>🔥 Calorie Intake</summary><div class="section-body">${chartBarsRef(pDays, 'cal', 'var(--accent)', getCalTarget() * 1.3)}</div></details></div>
-          <div class="card"><details class="move-section" data-key="tNet" ${so('tNet')?'open':''} ontoggle="${sToggle}">
-            <summary>⚖️ Net Calories (BMR: ${Math.round(bmr)})</summary><div class="section-body">${chartBarsNet(pDays, -250)}</div></details></div>
-          <div class="card"><details class="move-section" data-key="tMicro" ${so('tMicro')?'open':''} ontoggle="${sToggle}">
-            <summary>💊 Micronutrient Coverage</summary><div class="section-body">${chartBarsRef(pDays, 'microsMet', 'var(--purple)', MICROS.length + 1)}</div></details></div>
-          <div class="card"><details class="move-section" data-key="tSleep" ${so('tSleep')?'open':''} ontoggle="${sToggle}">
-            <summary>🌙 Sleep</summary><div class="section-body">${chartBarsRef(pDays, 'sleep', 'var(--purple)', 10, 7)}</div></details></div>
+          <div class="card"><details class="move-section" data-key="tProtein" ${so('tProtein') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>💪 Protein Intake</summary><div class="section-body">${lineChart(trendData, 'protein', 'var(--success)', 'g', 130)}</div></details></div>
+          <div class="card"><details class="move-section" data-key="tCal" ${so('tCal') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>🔥 Calorie Intake</summary><div class="section-body">${lineChart(trendData, 'cal', 'var(--accent)', 'kcal', 2050)}</div></details></div>
+          <div class="card"><details class="move-section" data-key="tNet" ${so('tNet') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>⚖️ Net Calories</summary><div class="section-body">${lineChart(netData, 'netCal', 'var(--warn)', 'kcal', -250)}</div></details></div>
+          <div class="card"><details class="move-section" data-key="tMicro" ${so('tMicro') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>💊 Micronutrient Coverage</summary><div class="section-body">${chartBarsRef(trendData, 'microsMet', 'var(--purple)', MICROS.length + 1)}</div></details></div>
+          <div class="card"><details class="move-section" data-key="tSleep" ${so('tSleep') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>🌙 Sleep</summary><div class="section-body">${lineChart(trendData, 'sleep', 'var(--purple)', 'h', 7)}</div></details></div>
           ${aestheticHtml}`;
 
           content.innerHTML = weekReview + trendHtml;
         } catch (e) { content.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load stats</div>`; console.error(e); }
+      }
+
+      // Aggregate daily data into weekly averages
+      window.aggregateWeekly = function (days, extraKey) {
+        const weeks = []; let week = [];
+        days.forEach((d, i) => {
+          week.push(d);
+          const dow = new Date(d.date + 'T12:00:00').getDay();
+          if (dow === 0 || i === days.length - 1) {
+            if (week.length > 0) {
+              const avg = (k) => { const vs = week.filter(x => x[k] !== null && x[k] !== undefined).map(x => num0(x[k])); return vs.length ? Math.round(vs.reduce((a, b) => a + b, 0) / vs.length * 10) / 10 : 0; };
+              const wk = { date: week[0].date, day: week[0].date.slice(5), label: week[0].date.slice(5), cal: avg('cal'), protein: avg('protein'), sleep: avg('sleep'), water: avg('water'), microsMet: avg('microsMet'), weight: avg('weight'), bodyFat: avg('bodyFat'), waist: avg('waist'), skeletalMuscle: avg('skeletalMuscle'), visceralFat: avg('visceralFat') };
+              if (extraKey) wk[extraKey] = avg(extraKey);
+              wk.netCal = avg('netCal');
+              weeks.push(wk);
+            }
+            week = [];
+          }
+        });
+        return weeks;
       }
 
       window.chartBarsRef = function (data, key, color, maxVal, refVal) {
@@ -2790,40 +2852,46 @@
         const showLabels = data.length <= 14;
         return `<div style="position:relative"><div class="chart-bars">${data.map((d, i) => {
           const v = num0(d[key]); const h = maxVal > 0 ? (v / maxVal) * 75 : 0;
-          return `<div class="chart-bar-wrap"><div class="chart-bar-val">${showLabels ? (v||'') : ''}</div><div class="chart-bar" style="height:${Math.max(2, h)}px;background:${color}"></div>${showLabels ? `<div class="chart-bar-label">${d.day||''}</div>` : ''}</div>`;
+          return `<div class="chart-bar-wrap"><div class="chart-bar-val">${showLabels ? (v || '') : ''}</div><div class="chart-bar" style="height:${Math.max(2, h)}px;background:${color}"></div>${showLabels ? `<div class="chart-bar-label">${d.day || d.date?.slice(5) || ''}</div>` : ''}</div>`;
         }).join("")}</div>${refPct !== null ? `<div style="position:absolute;left:0;right:0;top:calc(${refPct}% + 11px);border-top:1.5px dashed var(--muted);opacity:.5"><span style="position:absolute;right:0;top:-13px;font-size:.55rem;color:var(--muted)">${refVal}</span></div>` : ''}</div>`;
       }
 
-      window.chartBarsNet = function (data, refVal) {
-        const vals = data.map(d => d.netCal || 0);
-        const absMax = Math.max(Math.abs(Math.min(...vals)), Math.abs(Math.max(...vals)), Math.abs(refVal || 0), 100);
-        const maxVal = absMax * 1.2;
-        const showLabels = data.length <= 14;
-        return `<div style="position:relative"><div class="chart-bars" style="height:120px">${data.map((d) => {
-          const v = d.netCal || 0; const h = Math.abs(v) / maxVal * 50;
-          const isNeg = v < 0; const color = isNeg ? 'var(--success)' : 'var(--danger)';
-          return `<div class="chart-bar-wrap" style="justify-content:center"><div style="display:flex;flex-direction:column;align-items:center;width:100%;height:100px;justify-content:center">${!isNeg ? `<div class="chart-bar-val" style="font-size:.5rem">${v>0?'+':''}${v}</div><div style="width:100%;height:${h}px;background:${color};border-radius:3px 3px 0 0;min-height:1px"></div><div style="height:50px"></div>` : `<div style="height:50px"></div><div style="width:100%;height:${h}px;background:${color};border-radius:0 0 3px 3px;min-height:1px"></div><div class="chart-bar-val" style="font-size:.5rem">${v}</div>`}</div>${showLabels ? `<div class="chart-bar-label">${d.day||''}</div>` : ''}</div>`;
-        }).join("")}</div>${refVal !== undefined ? `<div style="position:absolute;left:0;right:0;top:${50 - (refVal/maxVal)*50}%;border-top:1.5px dashed var(--muted);opacity:.5"><span style="position:absolute;right:0;top:-12px;font-size:.55rem;color:var(--muted)">${refVal}</span></div>` : ''}<div style="position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--border);opacity:.3"></div></div>`;
+      // Line chart with axes, spherical markers, and optional reference line
+      window.lineChart = function (data, key, color, unit, refVal) {
+        const pts = data.map((d, i) => ({ i, v: d[key] !== null && d[key] !== undefined ? +d[key] : NaN, label: d.day || d.date?.slice(5) || '', date: d.date })).filter(p => isFinite(p.v));
+        if (pts.length < 2) return `<div class="empty-state">Need 2+ data points</div>`;
+        const W = 340, H = 110, L = 35, R = 10, T = 10, B = 22;
+        let minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
+        if (refVal !== undefined) { minV = Math.min(minV, refVal); maxV = Math.max(maxV, refVal); }
+        if (minV === maxV) { minV -= 1; maxV += 1; } else { const pad = (maxV - minV) * .12; minV -= pad; maxV += pad; }
+        const xFor = i => L + (i / (pts.length - 1)) * (W - L - R);
+        const yFor = v => T + (1 - ((v - minV) / (maxV - minV))) * (H - T - B);
+        const poly = pts.map((p, i) => `${xFor(i).toFixed(1)},${yFor(p.v).toFixed(1)}`).join(" ");
+        // Y-axis: 4 ticks
+        const yTicks = [0, 1, 2, 3].map(i => { const v = minV + (maxV - minV) * i / 3; return { v, y: yFor(v) }; });
+        // X-axis labels: first, middle, last
+        const xLabels = [pts[0], pts[Math.floor(pts.length / 2)], pts[pts.length - 1]];
+        const refLine = refVal !== undefined ? `<line x1="${L}" y1="${yFor(refVal).toFixed(1)}" x2="${W - R}" y2="${yFor(refVal).toFixed(1)}" stroke="var(--danger)" stroke-width="1" stroke-dasharray="5,3" opacity=".6"/><text x="${W - R - 2}" y="${yFor(refVal) - 3}" fill="var(--danger)" font-size="7" text-anchor="end" opacity=".8">${refVal}${unit ? ' ' + unit : ''}</text>` : '';
+        return `<div class="trend"><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+        <!-- grid lines -->
+        ${yTicks.map(t => `<line x1="${L}" y1="${t.y.toFixed(1)}" x2="${W - R}" y2="${t.y.toFixed(1)}" stroke="var(--border)" stroke-width=".5"/>`).join('')}
+        <!-- y-axis labels -->
+        ${yTicks.map(t => `<text x="${L - 3}" y="${t.y.toFixed(1)}" fill="var(--muted)" font-size="7" text-anchor="end" dominant-baseline="middle">${Math.round(t.v)}</text>`).join('')}
+        <!-- ref line -->
+        ${refLine}
+        <!-- data line -->
+        <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${pts.map((p, i) => `<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(p.v).toFixed(1)}" r="3.5" fill="${color}" stroke="var(--bg)" stroke-width="1.5"/>`).join("")}
+        <!-- x-axis labels -->
+        ${xLabels.map((p, j) => `<text x="${xFor(pts.indexOf(p)).toFixed(1)}" y="${H - 3}" fill="var(--muted)" font-size="7" text-anchor="${j === 0 ? 'start' : j === 2 ? 'end' : 'middle'}">${p.label}</text>`).join('')}
+        <!-- axis lines -->
+        <line x1="${L}" y1="${T}" x2="${L}" y2="${H - B}" stroke="var(--border)" stroke-width="1"/>
+        <line x1="${L}" y1="${H - B}" x2="${W - R}" y2="${H - B}" stroke="var(--border)" stroke-width="1"/>
+      </svg></div>`;
       }
 
       window.trendLineRef = function (days, key, color, unit, refVal) {
-        const pts = days.map((d, i) => ({ i, v: +d[key], label: d.day, date: d.date })).filter(p => isFinite(p.v));
-        if (pts.length < 2) return `<div class="empty-state">Need 2+ entries</div>`;
-        const W = 320, H = 85, PAD = 10;
-        let minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
-        if (refVal !== undefined) { minV = Math.min(minV, refVal); maxV = Math.max(maxV, refVal); }
-        if (minV === maxV) { minV -= 1; maxV += 1; } else { const p = (maxV - minV) * .1; minV -= p; maxV += p; }
-        const xFor = i => PAD + (i / (pts.length - 1)) * (W - 2 * PAD);
-        const yFor = v => PAD + (1 - ((v - minV) / (maxV - minV))) * (H - 2 * PAD);
-        const poly = pts.map((p, i) => `${xFor(i).toFixed(1)},${yFor(p.v).toFixed(1)}`).join(" ");
-        const last = pts[pts.length - 1];
-        const refLine = refVal !== undefined ? `<line x1="${PAD}" y1="${yFor(refVal).toFixed(1)}" x2="${W-PAD}" y2="${yFor(refVal).toFixed(1)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
-        <text x="${W-PAD}" y="${yFor(refVal)-3}" fill="var(--muted)" font-size="8" text-anchor="end">${refVal}</text>` : '';
-        return `<div class="trend"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-        ${refLine}
-        <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        ${pts.map((p, i) => `<circle cx="${xFor(i)}" cy="${yFor(p.v)}" r="3" fill="${color}"/>`).join("")}
-      </svg><div class="trend-labels"><span>${pts[0].date.slice(5)}</span><span><b>${last.v.toFixed(1)}${unit ? " " + unit : ""}</b></span><span>${last.date.slice(5)}</span></div></div>`;
+        return lineChart(days, key, color, unit, refVal);
       }
 
       /* ═══════════════════════════════════════════════════
