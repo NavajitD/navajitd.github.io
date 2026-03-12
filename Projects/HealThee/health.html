@@ -1710,7 +1710,6 @@
       appId: "1:343148263862:web:7b104ed9f00c5d74296917"
     };
 
-    const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbxbwRPgFkIwP3rb6o5vneQdzW9UR3Yo1KcIQR1NcwNwEr2mubw0ReyEFCv6IIAfQQ1z/exec";
     const MAX_USERS = 5;
     const HEIGHT_CM = 162;
 
@@ -2143,7 +2142,7 @@
       window.toggleSupp = async function (id) {
         const isCurrentlyTaken = lwwGet(dayData.supplementChecks, id);
         dayData.supplementChecks = lwwToggle(dayData.supplementChecks, id);
-        
+
         // If we are checking it OFF, do nothing else.
         if (isCurrentlyTaken) {
           touch(); saveDay(); render();
@@ -2159,7 +2158,7 @@
           const sys = `You are a supplement nutrition analyzer. Estimate macros and micronutrients for the given supplement serving. Reply ONLY with JSON: {"cal": number, "protein": number, "carbs": number, "fat": number, "fiber": number, "micros": { "vitamin_a_ug": number, "vitamin_d_ug": number, "vitamin_k": number, "vitamin_b6": number, "vitamin_b12": number, "vitamin_c_mg": number, "calcium_mg": number, "iron_mg": number, "magnesium_mg": number, "sodium_mg": number, "potassium_mg": number, "zinc_mg": number }}`;
           const prompt = `Supplement: ${supp.name} (${supp.freq})`;
           const est = await fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b');
-          
+
           addFood({
             name: supp.name,
             desc: "Supplement",
@@ -2172,7 +2171,7 @@
             micros: est.micros || {},
             estimated: true
           });
-        } catch(e) {
+        } catch (e) {
           console.error("Supplement estimation failed", e);
           toast("Added (without macros/micros)", "warn");
           touch(); saveDay(); render();
@@ -2225,7 +2224,7 @@
         const t = document.getElementById("cxText")?.value?.trim();
         let k = Math.round(num0(document.getElementById("cxKcal")?.value));
         if (!t) { toast("Enter exercise"); return; }
-        
+
         if (!k) {
           try {
             toast("Estimating kcal...");
@@ -2234,13 +2233,13 @@
             const est = await fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b');
             k = est.kcal || 0;
             toast("Estimated " + k + " kcal", "success");
-          } catch(e) {
+          } catch (e) {
             console.error("Exercise estimation failed", e);
             toast("Estimation failed", "error");
             k = 0;
           }
         }
-        
+
         dayData.customExercises = [...(dayData.customExercises || []), { id: genId("cx"), text: t, kcal: k || 0, ts: Date.now(), deletedAt: "" }];
         document.getElementById("cxText").value = ""; document.getElementById("cxKcal").value = "";
         touch(); saveDay(); render(); toast("Exercise added");
@@ -2315,12 +2314,12 @@
           console.error("Cerebras estimation failed", e);
           toast("Added without micros (No API Key or Error)", "warn");
         }
-        
+
         addFood(finalData);
         btn.innerHTML = oldContent;
         btn.style.pointerEvents = 'auto';
       }
-      
+
       window.addAllPlan = function () {
         const plan = MEAL_PLAN[dow(selectedDate)];
         if (!plan) return;
@@ -2369,7 +2368,7 @@
       }
 
       let currentFoodPhotoBase64 = null;
-      window.toggleRecipeMode = function(el) {
+      window.toggleRecipeMode = function (el) {
         const desc = document.getElementById('cfDesc');
         const macros = document.getElementById('cfMacroInputs');
         if (el.checked) {
@@ -2381,10 +2380,10 @@
         }
       }
 
-      window.handleFoodPhoto = function(el) {
+      window.handleFoodPhoto = function (el) {
         if (!el.files || !el.files[0]) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
           currentFoodPhotoBase64 = e.target.result;
           document.getElementById('cfPhotoImg').src = currentFoodPhotoBase64;
           document.getElementById('cfPhotoPreview').style.display = 'block';
@@ -2392,7 +2391,7 @@
         reader.readAsDataURL(el.files[0]);
       }
 
-      window.clearFoodPhoto = function() {
+      window.clearFoodPhoto = function () {
         currentFoodPhotoBase64 = null;
         document.getElementById('cfPhotoUpload').value = '';
         document.getElementById('cfPhotoPreview').style.display = 'none';
@@ -2403,8 +2402,8 @@
         const meal = document.getElementById("cfMeal").value;
         const desc = document.getElementById("cfDesc").value.trim();
         const isRecipe = document.getElementById('cfIsRecipe').checked;
-        
-        let c=0, p=0, cb=0, f=0, fb=0, hasMacros=false;
+
+        let c = 0, p = 0, cb = 0, f = 0, fb = 0, hasMacros = false;
         if (!isRecipe && !currentFoodPhotoBase64) {
           if (!n) { toast("Enter a name"); return; }
           c = parseFloat(document.getElementById("cfCal").value) || 0;
@@ -2419,7 +2418,7 @@
         btn.textContent = "Estimating AI...";
         btn.disabled = true;
 
-        let finalData = { name: n || (currentFoodPhotoBase64?'Image Analysis':'Recipe'), desc, meal, cal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, micros: {}, estimated: false };
+        let finalData = { name: n || (currentFoodPhotoBase64 ? 'Image Analysis' : 'Recipe'), desc, meal, cal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, micros: {}, estimated: false };
 
         const sysBase = `{"fiber": number, "micros": { "vitamin_a_ug": number, "vitamin_d_ug": number, "vitamin_k": number, "vitamin_b6": number, "vitamin_b12": number, "vitamin_c_mg": number, "calcium_mg": number, "iron_mg": number, "magnesium_mg": number, "sodium_mg": number, "potassium_mg": number, "zinc_mg": number }}`;
         const sysFull = `{"name": string, "cal": number, "protein": number, "carbs": number, "fat": number, ` + sysBase.slice(1);
@@ -2433,7 +2432,7 @@
             if (n) finalData.name = n; // override if user provided name
             if (desc) finalData.desc = desc; // override if user provided desc
             toast("Added from Image", "success");
-            
+
           } else if (isRecipe) {
             // Recipe/Ingredients processing via Cerebras
             if (!desc) { toast("Enter ingredients", "warn"); btn.textContent = "Add Food"; btn.disabled = false; return; }
@@ -2444,7 +2443,7 @@
             if (n) finalData.name = n;
             finalData.desc = desc;
             toast("Added Recipe", "success");
-            
+
           } else if (hasMacros) {
             finalData.cal = c > 0 ? c : Math.round(p * 4 + cb * 4 + f * 9);
             finalData.protein = p; finalData.carbs = cb; finalData.fat = f; finalData.fiber = fb;
@@ -2453,14 +2452,14 @@
             if (!fb) finalData.fiber = est.fiber || 0;
             finalData.micros = est.micros || {};
             toast("Added with estimated micros", "success");
-            
+
           } else {
             const prompt = `Food: ${n} ${desc}`;
             const est = await fetchLLM(prompt, `You are a nutrition estimator. Estimate macros, fiber, and micronutrients. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
             finalData = { ...finalData, ...est, name: n, desc: desc, meal: meal, estimated: true };
             toast("Added (AI fully estimated)", "success");
           }
-          
+
           addFood(finalData);
           currentFoodPhotoBase64 = null;
           closeModal();
@@ -2828,11 +2827,11 @@
       }
 
       // LLM Fetch Utility using Numo Cloud Function Proxy
-      window.fetchLLM = async function(prompt, system, provider = 'cerebras', model = 'llama3.1-8b', isJson = true) {
+      window.fetchLLM = async function (prompt, system, provider = 'cerebras', model = 'llama3.1-8b', isJson = true) {
         const url = 'https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM';
-        
+
         const body = { prompt, system, provider, model, isJson };
-        
+
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2846,11 +2845,11 @@
 
         const data = await res.json();
         const content = data.content;
-        
+
         if (isJson) {
           try {
             return JSON.parse(content);
-          } catch(e) {
+          } catch (e) {
             console.error('Failed to parse LLM JSON:', content);
             throw new Error('LLM did not return valid JSON');
           }
@@ -2859,11 +2858,11 @@
       }
 
       // LLM Vision Fetch Utility using Numo Cloud Function Proxy
-      window.fetchVisionLLM = async function(prompt, system, base64Image, provider = 'groq', model = 'llama-3.2-90b-vision-preview', isJson = true) {
+      window.fetchVisionLLM = async function (prompt, system, base64Image, provider = 'groq', model = 'llama-3.2-90b-vision-preview', isJson = true) {
         const url = 'https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM';
-        
+
         const body = { prompt, system, base64Image, provider, model, isJson };
-        
+
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2877,11 +2876,11 @@
 
         const data = await res.json();
         const content = data.content;
-        
+
         if (isJson) {
           try {
             return JSON.parse(content);
-          } catch(e) {
+          } catch (e) {
             console.error('Failed to parse Vision LLM JSON:', content);
             throw new Error('LLM did not return valid JSON');
           }
@@ -2970,7 +2969,8 @@
           const avgSMM = wSMM.length ? Math.round(wSMM.reduce((s, d) => s + d.skeletalMuscle, 0) / wSMM.length * 10) / 10 : null;
           const wVF = weekDays.filter(d => d.visceralFat);
           const avgVF = wVF.length ? Math.round(wVF.reduce((s, d) => s + d.visceralFat, 0) / wVF.length * 10) / 10 : null;
-          const avgWater = Math.round(weekDays.reduce((s, d) => s + d.water, 0) / wLen);
+          const wWater = weekDays.filter(d => d.water > 0);
+          const avgWater = wWater.length ? Math.round(wWater.reduce((s, d) => s + d.water, 0) / wWater.length) : 0;
           const daysActive = weekDays.filter(d => d.exCal > 0).length;
           const daysDelight = weekDays.filter(d => d.delightCount >= 3).length;
           const so = (k) => localStorage.getItem('HT_stats_' + k) === '1';
@@ -3145,7 +3145,7 @@
          AI ADVISOR
          ═══════════════════════════════════════════════════ */
       let chatImageBase64 = null;
-      window.handleChatPhoto = function(el) {
+      window.handleChatPhoto = function (el) {
         if (!el.files[0]) return;
         const reader = new FileReader();
         reader.onload = e => {
@@ -3156,7 +3156,7 @@
         };
         reader.readAsDataURL(el.files[0]);
       }
-      window.clearChatPhoto = function() {
+      window.clearChatPhoto = function () {
         chatImageBase64 = null;
         document.getElementById("chatPhotoPreviewContainer").style.display = "none";
         document.getElementById("chatPhotoInput").value = "";
@@ -3169,14 +3169,14 @@
         if (!query && !hasImage) return;
 
         let userMsg = query || (hasImage ? "Analyze this image." : "");
-        appendChat("user", userMsg); 
-        
+        appendChat("user", userMsg);
+
         if (input) input.value = "";
         const imageToSend = chatImageBase64;
         clearChatPhoto();
 
         const btn = document.getElementById("chatSendBtn"); if (btn) { btn.disabled = true; btn.textContent = "..."; }
-        
+
         const t = computeTotals(dayData); const calTarget = getCalTarget();
         const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal, Foods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}`;
         const sys = `You are "HealThee Mate", a concise, warm, and highly capable health advisor for an Indian user doing a recomposition (cutting body fat, building muscle). Currency INR. Goals: ~2050 kcal training days, ~1850 rest days, 130-145g protein. Keep responses under 120 words. Format nicely using markdown.
@@ -3194,11 +3194,11 @@ Do NOT output JSON. Output regular conversational text.`;
             reply = await fetchLLM(prompt, sys, 'groq', 'llama-3.3-70b-versatile', false);
           }
           appendChat("assistant", reply.trim());
-        } catch (e) { 
-          appendChat("assistant", `Error: ${e.message}`); 
-          console.error(e); 
-        } finally { 
-          if (btn) { btn.disabled = false; btn.textContent = "Send"; } 
+        } catch (e) {
+          appendChat("assistant", `Error: ${e.message}`);
+          console.error(e);
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = "Send"; }
         }
       }
 
