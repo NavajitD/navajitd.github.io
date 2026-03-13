@@ -1371,6 +1371,10 @@
         flex-direction: column;
         align-items: stretch;
       }
+      .form-row.form-row-btn {
+        flex-direction: row;
+        align-items: flex-end;
+      }
 
       .stats-row {
         gap: .3rem
@@ -2413,14 +2417,27 @@
 
         try {
           if (currentFoodPhotoBase64) {
-            // Groq Vision pipeline
-            const pmt = `Identify the food in this image and estimate the nutritional macros and micronutrients for the entire portion shown. If it's a nutritional label, extract the values exactly. Reply ONLY with this JSON structure: ${sysFull}`;
-            const est = await fetchVisionLLM(pmt, 'You are an expert nutrition analyst.', currentFoodPhotoBase64, 'groq', 'llama-3.2-90b-vision-preview');
-            finalData = { ...finalData, ...est, meal: meal, estimated: true };
-            if (n) finalData.name = n; // override if user provided name
-            if (desc) finalData.desc = desc; // override if user provided desc
-            toast("Added from Image", "success");
-
+            // Groq Vision pipeline with text fallback
+            let visionOk = false;
+            try {
+              const pmt = `Identify the food in this image and estimate the nutritional macros and micronutrients for the entire portion shown. If it's a nutritional label, extract the values exactly. Reply ONLY with this JSON structure: ${sysFull}`;
+              const est = await fetchVisionLLM(pmt, 'You are an expert nutrition analyst.', currentFoodPhotoBase64, 'groq', 'llama-3.2-11b-vision-preview');
+              finalData = { ...finalData, ...est, meal: meal, estimated: true };
+              if (n) finalData.name = n;
+              if (desc) finalData.desc = desc;
+              toast("Added from Image", "success");
+              visionOk = true;
+            } catch (visionErr) {
+              console.warn("Vision LLM failed, falling back to text:", visionErr.message);
+            }
+            if (!visionOk) {
+              if (!n && !desc) throw new Error("Image analysis unavailable. Please add a food name.");
+              btn.textContent = "Estimating (text)...";
+              const fbPrompt = `Food: ${n || 'Food from photo'} ${desc}. Assume 1 standard Indian serving.`;
+              const est = await fetchLLM(fbPrompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros and micros. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+              finalData = { ...finalData, ...est, name: n || 'Food from photo', desc: desc || 'From photo', meal: meal, estimated: true };
+              toast("Added (text estimate – image analysis unavailable)", "warn");
+            }
           } else if (isRecipe) {
             // Recipe/Ingredients processing via Cerebras
             if (!desc) { toast("Enter ingredients", "warn"); btn.textContent = "Add Food"; btn.disabled = false; return; }
@@ -2689,9 +2706,9 @@
         <div class="card">
           <div class="card-title">👟 Steps & Activity</div>
           <div style="font-size:.78rem;margin-bottom:.4rem">Total: <b>${steps}</b> steps </div>
-          <div class="form-row">
+          <div class="form-row form-row-btn">
             <div class="form-field"><label>Add Steps</label><input type="number" id="stepsInput" placeholder="e.g. 3000"></div>
-            <button class="btn-primary" onclick="addStepEntry()">Add</button>
+            <button class="btn-primary" style="height:2.4rem" onclick="addStepEntry()">Add</button>
           </div>
           ${stepLogs.map(l => `<div class="log-item"><span>+${l.steps} steps</span><span style="color:var(--muted);font-size:.65rem">${new Date(l.ts).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span><button class="log-del" onclick="removeStepLog('${l.id}')">✕</button></div>`).join("")}
         </div>
@@ -2724,10 +2741,10 @@
         </div>
         <div class="card">
           <div class="card-title">⚡ Custom Exercise</div>
-          <div class="form-row">
+          <div class="form-row form-row-btn">
             <div class="form-field" style="flex:2"><label>Description</label><input id="cxText" placeholder="e.g. 20 min swimming"></div>
             <div class="form-field" style="flex:1"><label>kcal</label><input type="number" id="cxKcal" placeholder="opt"></div>
-            <button class="btn-primary" onclick="addCustomExercise()">Add</button>
+            <button class="btn-primary" style="height:2.4rem" onclick="addCustomExercise()">Add</button>
           </div>
           ${customs.map(x => `<div class="log-item"><span>${esc(x.text)} <span style="color:var(--muted)">(${x.kcal || 0} kcal)</span></span><button class="log-del" onclick="removeCustomExercise('${x.id}')">✕</button></div>`).join("")}
         </div>`;
@@ -2750,9 +2767,9 @@
             <div class="form-field"><label>Waist (cm)</label><input type="number" id="bWaist" step="0.1" value="${b.waist || ""}"></div>
             <div class="form-field"><label>Shoulders (cm)</label><input type="number" id="bShoulders" step="0.1" value="${b.shoulders || ""}"></div>
             <div class="form-field"><label>Skeletal Muscle (kg)</label><input type="number" id="bSMM" step="0.1" value="${b.skeletalMuscle || ""}"></div>
-            <div class="form-field"><label>Visceral Fat %</label><input type="number" id="bVisceral" step="0.1" value="${b.visceralFat || ""}"></div>
+            <div class="form-field"><label>Visceral Fat Level</label><input type="number" id="bVisceral" step="0.1" value="${b.visceralFat || ""}"></div>
           </div>
-          <button class="btn-primary" style="width:100%" onclick="saveBody()">Save Metrics</button>
+          <button class="btn-primary" style="width:100%" onclick="saveBody()">Save</button>
           ${bmi || ratio ? `<div class="stats-row" style="margin-top:.6rem">
             ${bmi ? `<div class="stat-box"><div class="stat-val">${bmi.toFixed(1)}</div><div class="stat-label">BMI</div></div>` : ""}
             ${ratio ? `<div class="stat-box"><div class="stat-val">${ratio}</div><div class="stat-label">S:W Ratio</div></div>` : ""}
@@ -2768,12 +2785,12 @@
           <div class="water-bar" style="margin-bottom:1rem">
             <div class="water-fill" style="width:${Math.min(100, Math.max(0, sleepPct))}%;background:linear-gradient(90deg, var(--purple), #a78bfa)"></div>
           </div>
-          <div class="form-row">
+          <div class="form-row form-row-btn" style="flex-wrap:nowrap">
             <div class="form-field"><label>Hours</label><input type="number" id="sleepHours" step="0.1" value="${h || ""}" placeholder="e.g. 7.5"></div>
             <div class="form-field"><label>Bedtime</label><input type="time" id="sleepBed" value="${dayData.sleep?.bedtime || "23:00"}"></div>
             <div class="form-field"><label>Wake</label><input type="time" id="sleepWake" value="${dayData.sleep?.wakeup || "07:00"}"></div>
           </div>
-          <button class="btn-primary" style="width:100%" onclick="saveSleep()">Save Sleep</button>
+          <button class="btn-primary" style="width:100%;margin-top:.4rem;" onclick="saveSleep()">Save</button>
         </div>
         <div class="card">
           <div class="card-title">✨ Nine Daily Delights</div>
@@ -2826,7 +2843,7 @@
           </div>
           </div>
           <div class="chat-messages" id="chatMessages">
-            ${(dayData.chatHistory || []).map(msg => `<div class="chat-msg ${msg.role}">${esc(msg.text)}</div>`).join("")}
+            ${(dayData.chatHistory || []).map(msg => { const stripped = (msg.text || '').replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1').replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, ''); return `<div class="chat-msg ${msg.role}">${esc(stripped)}</div>`; }).join("")}
           </div>
           <div class="chat-input-row" style="position:relative;display:flex;align-items:center;gap:.3rem">
             <button class="icon-btn" style="position:absolute;left:8px;background:none;border:none;padding:0;font-size:1.1rem" onclick="document.getElementById('chatPhotoInput').click()">📷</button>
@@ -2877,7 +2894,7 @@
       }
 
       // LLM Vision Fetch Utility using Numo Cloud Function Proxy
-      window.fetchVisionLLM = async function (prompt, system, base64Image, provider = 'groq', model = 'llama-3.2-90b-vision-preview', isJson = true) {
+      window.fetchVisionLLM = async function (prompt, system, base64Image, provider = 'groq', model = 'llama-3.2-11b-vision-preview', isJson = true) {
         const url = 'https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM';
 
         const body = { prompt, system, base64Image, provider, model, isJson };
@@ -3043,7 +3060,6 @@
 
           // Aggregate to weekly averages for 30d/90d
           const trendData = statsPeriod <= 7 ? pDays : aggregateWeekly(pDays);
-          const netData = statsPeriod <= 7 ? pDays.filter(d => d.netCal !== null) : aggregateWeekly(pDays.filter(d => d.netCal !== null), 'netCal');
 
           // Aesthetic trend lines (only for 30d/90d)
           let aestheticHtml = '';
@@ -3081,7 +3097,7 @@
           <div class="card"><details class="move-section" data-key="tCal" ${so('tCal') ? 'open' : ''} ontoggle="${sToggle}">
             <summary>🔥 Calorie Intake</summary><div class="section-body">${lineChart(trendData, 'cal', 'var(--accent)', 'kcal', 2050)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tNet" ${so('tNet') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>⚖️ Net Calories</summary><div class="section-body">${lineChart(netData, 'netCal', 'var(--warn)', 'kcal', -250)}</div></details></div>
+            <summary>⚖️ Net Calories</summary><div class="section-body">${lineChart(trendData, 'netCal', 'var(--warn)', 'kcal', -250)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tMicro" ${so('tMicro') ? 'open' : ''} ontoggle="${sToggle}">
             <summary>💊 Micronutrient Coverage</summary><div class="section-body">${chartBarsRef(trendData, 'microsMet', 'var(--purple)', MICROS.length + 1)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tSleep" ${so('tSleep') ? 'open' : ''} ontoggle="${sToggle}">
@@ -3129,11 +3145,11 @@
         let pts = data.map((d, i) => ({ i, v: d[key] !== null && d[key] !== undefined ? +d[key] : NaN, label: d.day || d.date?.slice(5) || '', date: d.date })).filter(p => isFinite(p.v));
         if (key !== 'netCal' && key !== 'microsMet') pts = pts.filter(p => p.v !== 0);
         if (pts.length < 1) return `<div class="empty-state">Not enough data to show</div>`;
-        const W = 340, H = 110, L = 35, R = 10, T = 10, B = 22;
+        const W = 340, H = 110, L = 35, R = 15, T = 10, B = 22;
         let minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
         if (refVal !== undefined) { minV = Math.min(minV, refVal); maxV = Math.max(maxV, refVal); }
         if (minV === maxV) { minV -= 1; maxV += 1; } else { const pad = (maxV - minV) * .12; minV -= pad; maxV += pad; }
-        const xFor = i => L + (i / (data.length - 1)) * (W - L - R);
+        const xFor = i => pts.length > 1 ? L + (i / (data.length - 1)) * (W - L - R) : L + (W - L - R) / 2;
         const yFor = v => T + (1 - ((v - minV) / (maxV - minV))) * (H - T - B);
         const poly = pts.map(p => `${xFor(p.i).toFixed(1)},${yFor(p.v).toFixed(1)}`).join(" ");
         // Y-axis: 4 ticks
@@ -3200,9 +3216,9 @@
         const btn = document.getElementById("chatSendBtn"); if (btn) { btn.disabled = true; btn.textContent = "..."; }
 
         const t = computeTotals(dayData); const calTarget = getCalTarget();
-        const microStr = MICROS.map(m => `${m.label}: ${(t.micros[m.key]||0).toFixed(1)}/${m.target}${m.unit}`).join(', ');
+        const microStr = MICROS.map(m => `${m.label}: ${(t.micros[m.key] || 0).toFixed(1)}/${m.target}${m.unit}`).join(', ');
         const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal\nMicros logged so far: ${microStr}\nFoods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}`;
-        const sys = `You are "HealThee Mate", a concise, warm, and highly capable health advisor for an Indian user doing a recomposition (cutting body fat, building muscle). Currency INR. Goals: ~2050 kcal training days, ~1850 rest days, 130-145g protein. Keep responses under 120 words. Format nicely using markdown.
+        const sys = `You are "HealThee Mate", a concise, warm, and highly capable health advisor for an Indian user doing a recomposition (cutting body fat, building muscle). Currency INR. Goals: ~2050 kcal training days, ~1850 rest days, 130-145g protein. Keep responses under 120 words. Use plain text only — do not use markdown, asterisks, bold, bullet points, or any special formatting.
 IMPORTANT: When asked about micro gaps, macros, water, fiber, or exercise, you MUST base your answer strictly on the numerical totals provided below. DO NOT guess or calculate nutrients from the "Foods" array.
 If the user asks for a recipe or cooking advice, check their macro constraints and suggest something that fits perfectly.
 If the user uploaded a menu photo, identify the healthiest, highest-protein option that fits their goals.
@@ -3213,11 +3229,14 @@ Do NOT output JSON. Output regular conversational text.`;
         try {
           let reply;
           if (hasImage) {
-            reply = await fetchVisionLLM(prompt, sys, imageToSend, 'groq', 'llama-3.2-90b-vision-preview', false);
+            reply = await fetchVisionLLM(prompt, sys, imageToSend, 'groq', 'llama-3.2-11b-vision-preview', false);
           } else {
             reply = await fetchLLM(prompt, sys, 'groq', 'llama-3.3-70b-versatile', false);
           }
-          appendChat("assistant", reply.trim());
+          let cleanReply = reply.trim()
+            .replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1')
+            .replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, '');
+          appendChat("assistant", cleanReply);
         } catch (e) {
           appendChat("assistant", `Error: ${e.message}`);
           console.error(e);
