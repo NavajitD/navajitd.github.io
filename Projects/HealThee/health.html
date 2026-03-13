@@ -269,26 +269,25 @@
       align-items: center;
       justify-content: center;
       min-height: 60vh;
-      gap: 1.2rem;
+      gap: 1.5rem;
       text-align: center
     }
 
     .login-screen h2 {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: 600
     }
 
     .login-screen p {
       color: var(--muted);
-      max-width: 26rem;
-      font-size: .88rem
+      max-width: 28rem;
     }
 
     .login-btn {
       font-family: var(--font);
-      font-size: .88rem;
+      font-size: .9rem;
       font-weight: 500;
-      padding: .6rem 1.5rem;
+      padding: .7rem 1.8rem;
       border-radius: 6px;
       background: var(--accent);
       color: #fff;
@@ -1369,7 +1368,8 @@
       }
 
       .form-row {
-        flex-direction: column
+        flex-direction: column;
+        align-items: stretch;
       }
 
       .stats-row {
@@ -1592,13 +1592,13 @@
   </header>
 
   <div id="authLoading" class="auth-loading" style="display:none;">
-    <div style="font-size:2rem;">♥</div>
+    <div style="font-size: 2.5rem;">♥</div>
     <div class="dot-pulse"><span></span><span></span><span></span></div>
-    <p style="color:var(--muted);font-size:.82rem;">Signing you in...</p>
+    <p style="color:var(--muted);font-size:0.85rem;">Signing you in...</p>
   </div>
 
   <div id="loginScreen" class="login-screen">
-    <div style="font-size:2rem;">♥</div>
+    <div style="font-size: 2.5rem;">♥</div>
     <h2>HealThee</h2>
     <p>Track nutrition, workouts, body composition, daily habits and more — all in one place.</p>
     <button class="login-btn" onclick="signInWithGoogle()">
@@ -1955,7 +1955,7 @@
           pelvicChecks: {}, flexChecks: {}, delightChecks: {}, warmupChecks: {}, cooldownChecks: {},
           sleep: { bedtime: "", wakeup: "", hours: 0 },
           body: { weight: null, bodyFat: null, waist: null, shoulders: null, skeletalMuscle: null, visceralFat: null },
-          wildcardName: "",
+          wildcardName: "", chatHistory: [],
           rev: 0, updatedAt: ""
         };
       }
@@ -2526,7 +2526,10 @@
         if (currentTab === "fuel") content.innerHTML = renderFuel();
         else if (currentTab === "move") content.innerHTML = renderMove();
         else if (currentTab === "well") content.innerHTML = renderBody();
-        else if (currentTab === "care") content.innerHTML = renderCare();
+        else if (currentTab === "care") {
+          content.innerHTML = renderCare();
+          setTimeout(() => { const c = document.getElementById("chatMessages"); if (c) c.scrollTop = c.scrollHeight; }, 50);
+        }
         else if (currentTab === "stats") loadStats();
       }
 
@@ -2822,7 +2825,9 @@
             <button class="food-btn" onclick="askAdvisor('Rate my nutrition and activity today out of 10')">Rate today</button>
           </div>
           </div>
-          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-messages" id="chatMessages">
+            ${(dayData.chatHistory || []).map(msg => `<div class="chat-msg ${msg.role}">${esc(msg.text)}</div>`).join("")}
+          </div>
           <div class="chat-input-row" style="position:relative;display:flex;align-items:center;gap:.3rem">
             <button class="icon-btn" style="position:absolute;left:8px;background:none;border:none;padding:0;font-size:1.1rem" onclick="document.getElementById('chatPhotoInput').click()">📷</button>
             <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleChatPhoto(this)">
@@ -3123,7 +3128,7 @@
       window.lineChart = function (data, key, color, unit, refVal) {
         let pts = data.map((d, i) => ({ i, v: d[key] !== null && d[key] !== undefined ? +d[key] : NaN, label: d.day || d.date?.slice(5) || '', date: d.date })).filter(p => isFinite(p.v));
         if (key !== 'netCal' && key !== 'microsMet') pts = pts.filter(p => p.v !== 0);
-        if (pts.length < 2) return `<div class="empty-state">Not enough data to show</div>`;
+        if (pts.length < 1) return `<div class="empty-state">Not enough data to show</div>`;
         const W = 340, H = 110, L = 35, R = 10, T = 10, B = 22;
         let minV = Math.min(...pts.map(p => p.v)), maxV = Math.max(...pts.map(p => p.v));
         if (refVal !== undefined) { minV = Math.min(minV, refVal); maxV = Math.max(maxV, refVal); }
@@ -3195,8 +3200,10 @@
         const btn = document.getElementById("chatSendBtn"); if (btn) { btn.disabled = true; btn.textContent = "..."; }
 
         const t = computeTotals(dayData); const calTarget = getCalTarget();
-        const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal, Foods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}`;
+        const microStr = MICROS.map(m => `${m.label}: ${(t.micros[m.key]||0).toFixed(1)}/${m.target}${m.unit}`).join(', ');
+        const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal\nMicros logged so far: ${microStr}\nFoods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}`;
         const sys = `You are "HealThee Mate", a concise, warm, and highly capable health advisor for an Indian user doing a recomposition (cutting body fat, building muscle). Currency INR. Goals: ~2050 kcal training days, ~1850 rest days, 130-145g protein. Keep responses under 120 words. Format nicely using markdown.
+IMPORTANT: When asked about micro gaps, macros, water, fiber, or exercise, you MUST base your answer strictly on the numerical totals provided below. DO NOT guess or calculate nutrients from the "Foods" array.
 If the user asks for a recipe or cooking advice, check their macro constraints and suggest something that fits perfectly.
 If the user uploaded a menu photo, identify the healthiest, highest-protein option that fits their goals.
 Do NOT output JSON. Output regular conversational text.`;
@@ -3220,6 +3227,9 @@ Do NOT output JSON. Output regular conversational text.`;
       }
 
       window.appendChat = function (role, text) {
+        dayData.chatHistory = dayData.chatHistory || [];
+        dayData.chatHistory.push({ role, text });
+        touch(); saveDay();
         const c = document.getElementById("chatMessages"); if (!c) return;
         const msg = document.createElement("div"); msg.className = `chat-msg ${role}`; msg.textContent = text;
         c.appendChild(msg); c.scrollTop = c.scrollHeight;
