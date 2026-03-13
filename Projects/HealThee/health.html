@@ -1935,7 +1935,7 @@
       /* ═══════════════════════════════════════════════════
          HELPERS
          ═══════════════════════════════════════════════════ */
-      window.localDateStr = function(date = new Date()) {
+      window.localDateStr = function (date = new Date()) {
         const d = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
         return d.toISOString().split("T")[0];
       }
@@ -1979,7 +1979,7 @@
           t.cal += num0(f.cal); t.protein += num0(f.protein); t.carbs += num0(f.carbs); t.fat += num0(f.fat); t.fiber += num0(f.fiber);
           if (f.micros && typeof f.micros === "object") for (const [k, v] of Object.entries(f.micros)) { t.micros[k] = (t.micros[k] || 0) + num0(v); }
         }
-        
+
         SUPPLEMENTS.forEach(s => {
           if (lwwGet(d?.supplementChecks, s.id)) {
             t.cal += num0(s.cal); t.protein += num0(s.protein); t.carbs += num0(s.carbs); t.fat += num0(s.fat); t.fiber += num0(s.fiber);
@@ -2158,7 +2158,7 @@
 
         // Remove any legacy logged foods for this supplement to avoid double counting
         dayData.foods = (dayData.foods || []).map(f => f.suppId === id ? { ...f, deletedAt: new Date().toISOString() } : f);
-        
+
         touch(); saveDay(); render();
       }
       window.toggleExercise = function (label) {
@@ -2446,14 +2446,14 @@
             const prompt = `Food: ${n} ${desc}. Macros: ${finalData.cal}kcal, P:${p}g, C:${cb}g, F:${f}g, Fib:${fb}g.`;
             const sysMicros = `You are a nutrition estimator for Indian foods. You MUST estimate realistic non-zero micronutrients based on the food name and macros. Reply ONLY with JSON: ${sysBase}`;
             let est = await fetchLLM(prompt, sysMicros, 'cerebras', 'llama3.1-8b');
-            
+
             const isMicrosZero = Object.values(est?.micros || {}).every(v => num0(v) === 0);
             if (isMicrosZero) {
               console.warn('Micros estimation returned all zeros, retrying...');
               est = await fetchLLM(`Estimate ONLY detailed micronutrients for: ${n} (${desc}). You MUST provide realistic non-zero values.`, sysMicros, 'cerebras', 'llama3.1-8b');
               console.log('Micros retry:', JSON.stringify(est));
             }
-            
+
             if (!fb) finalData.fiber = est.fiber || 0;
             finalData.micros = est.micros || {};
             toast("Added with estimated micros", "success");
@@ -2815,11 +2815,11 @@
         }).join("") : `<div class="empty-state">No haircare tasks for today</div>`}
         </div>
         <div class="card">
-          <div class="card-title">💬 AI Health Advisor</div>
+          <div class="card-title">💬 Healthee Mate</div>
           <div style="display:flex;gap:.3rem;margin-bottom:.5rem;flex-wrap:wrap">
-            <button class="food-btn" onclick="askAdvisor('Am I hitting my protein target this week?')">Protein check</button>
+            <button class="food-btn" onclick="askAdvisor('Am I hitting my protein target today?')">Protein check</button>
             <button class="food-btn" onclick="askAdvisor('What micronutrients am I low on today?')">Micro gaps</button>
-            <button class="food-btn" onclick="askAdvisor('Rate my nutrition today out of 10')">Rate today</button>
+            <button class="food-btn" onclick="askAdvisor('Rate my nutrition and activity today out of 10')">Rate today</button>
           </div>
           </div>
           <div class="chat-messages" id="chatMessages"></div>
@@ -3033,7 +3033,7 @@
           let lastBf = pDays.slice().reverse().find(d => d.bodyFat);
           if (lastW) { currentBmr = getBMR(lastW.weight, lastBf?.bodyFat || 15); }
           else { currentBmr = getBMR(parseFloat(localStorage.getItem("HT_LAST_WEIGHT")) || 57, 15); }
-          
+
           pDays.forEach(d => { d.netCal = d.cal > 0 ? Math.round(d.cal - currentBmr - d.exCal) : null; });
 
           // Aggregate to weekly averages for 30d/90d
