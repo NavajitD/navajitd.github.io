@@ -9,9 +9,10 @@
     content="HealThee is an all-in-one tracker for nutrition, workouts, body composition, and daily habits.">
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♥</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap"></noscript>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0a0f0a" media="(prefers-color-scheme: dark)">
@@ -60,6 +61,16 @@
       --blue: #60a5fa;
     }
 
+    /* Dark mode: use dark text on light-green accent backgrounds for WCAG contrast */
+    [data-theme="dark"] .btn-primary,
+    [data-theme="dark"] .food-btn-primary,
+    [data-theme="dark"] .filter-btn.active,
+    [data-theme="dark"] .chat-send,
+    [data-theme="dark"] .login-btn,
+    [data-theme="dark"] .chat-msg.user { color: #0a1f00 }
+    [data-theme="dark"] .food-btn-primary:hover,
+    [data-theme="dark"] .filter-btn.active:hover { color: #0a1f00 }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -78,7 +89,7 @@
       max-width: 44rem;
       margin: 0 auto;
       padding: 1rem 1rem 5.5rem;
-      transition: background .3s, color .3s;
+      transition: background-color .3s;
       min-height: 100vh
     }
 
@@ -146,7 +157,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all .3s;
+      transition: border-color .2s;
       position: relative;
       flex-shrink: 0
     }
@@ -161,7 +172,7 @@
       stroke: var(--text);
       fill: none;
       stroke-width: 1.5;
-      transition: all .3s
+      transition: opacity .3s
     }
 
     .theme-toggle:hover svg {
