@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>HealThee</title>
   <meta name="description"
     content="HealThee is an all-in-one tracker for nutrition, workouts, body composition, and daily habits.">
@@ -11,8 +11,14 @@
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♥</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap"></noscript>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap" media="print"
+    onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap">
+  </noscript>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0a0f0a" media="(prefers-color-scheme: dark)">
@@ -67,9 +73,14 @@
     [data-theme="dark"] .filter-btn.active,
     [data-theme="dark"] .chat-send,
     [data-theme="dark"] .login-btn,
-    [data-theme="dark"] .chat-msg.user { color: #0a1f00 }
+    [data-theme="dark"] .chat-msg.user {
+      color: #0a1f00
+    }
+
     [data-theme="dark"] .food-btn-primary:hover,
-    [data-theme="dark"] .filter-btn.active:hover { color: #0a1f00 }
+    [data-theme="dark"] .filter-btn.active:hover {
+      color: #0a1f00
+    }
 
     * {
       box-sizing: border-box;
@@ -86,9 +97,10 @@
       color: var(--text);
       background: var(--bg);
       line-height: 1.6;
+      -webkit-tap-highlight-color: transparent;
       max-width: 44rem;
       margin: 0 auto;
-      padding: 1rem 1rem 5.5rem;
+      padding: 1rem 1rem calc(5.5rem + env(safe-area-inset-bottom, 0px));
       transition: background-color .3s;
       min-height: 100vh
     }
@@ -107,9 +119,15 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: .75rem;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid var(--border)
+      padding: .6rem 1rem .75rem;
+      padding-top: calc(.6rem + env(safe-area-inset-top, 0px));
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 45;
+      background: var(--bg);
+      transition: background-color .3s
     }
 
     .hdr-left {
@@ -513,8 +531,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: .7rem;
       flex-shrink: 0
+    }
+    .food-icon i {
+      width: 13px;
+      height: 13px;
+      stroke: var(--muted);
+      stroke-width: 1.5
     }
 
     .food-info {
@@ -997,9 +1020,16 @@
     }
 
     .empty-icon {
-      font-size: 1.5rem;
       margin-bottom: .4rem;
-      opacity: .4
+      opacity: .4;
+      display: flex;
+      justify-content: center
+    }
+    .empty-icon i {
+      width: 24px;
+      height: 24px;
+      stroke: var(--muted);
+      stroke-width: 1.5
     }
 
     /* Spinner / Loading */
@@ -1382,6 +1412,7 @@
         flex-direction: column;
         align-items: stretch;
       }
+
       .form-row.form-row-btn {
         flex-direction: row;
         align-items: flex-end;
@@ -1576,13 +1607,192 @@
     .move-section .section-body {
       margin-top: .5rem
     }
+
+    /* Pull-to-refresh */
+    .ptr-indicator {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100%);
+      z-index: 200;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      transition: transform .2s, opacity .2s;
+      opacity: 0;
+      pointer-events: none
+    }
+    .ptr-indicator.visible {
+      opacity: 1
+    }
+    .ptr-indicator.refreshing {
+      animation: ptrSpin .8s linear infinite
+    }
+    @keyframes ptrSpin {
+      to { transform: translateX(-50%) rotate(360deg) }
+    }
+    .ptr-indicator svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--accent);
+      fill: none;
+      stroke-width: 2
+    }
+
+    /* Profile Modal */
+    .profile-modal .modal-body {
+      padding: 1rem
+    }
+    .profile-section {
+      margin-bottom: 1.2rem
+    }
+    .profile-section-title {
+      font-size: .72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem
+    }
+    .profile-option {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .5rem .6rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-bottom: .4rem;
+      cursor: pointer;
+      transition: all .2s;
+      font-size: .78rem
+    }
+    .profile-option:hover {
+      border-color: var(--accent)
+    }
+    .profile-option.selected {
+      border-color: var(--accent);
+      background: var(--hover)
+    }
+    .profile-option input[type="radio"],
+    .profile-option input[type="checkbox"] {
+      accent-color: var(--accent);
+      flex-shrink: 0
+    }
+    .profile-option label {
+      flex: 1;
+      cursor: pointer;
+      font-size: .78rem
+    }
+    .profile-inline-input {
+      width: 60px;
+      font-family: var(--font);
+      font-size: .78rem;
+      padding: .3rem .4rem;
+      border-radius: 5px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      text-align: center;
+      outline: none
+    }
+    .profile-inline-input:focus {
+      border-color: var(--accent)
+    }
+    .profile-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .35rem .65rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      font-size: .72rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      background: var(--bg);
+      color: var(--text);
+      margin-right: .3rem;
+      margin-bottom: .3rem
+    }
+    .profile-chip:hover {
+      border-color: var(--accent)
+    }
+    .profile-chip.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff
+    }
+    [data-theme="dark"] .profile-chip.active {
+      color: #0a1f00
+    }
+    .profile-chip i {
+      width: 14px;
+      height: 14px
+    }
+    .gamified-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .25rem .6rem;
+      border-radius: 20px;
+      font-size: .68rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--warn), var(--orange));
+      color: #fff;
+      opacity: .7
+    }
+
+    /* Lucide icon helper */
+    .icon-inline {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.125em
+    }
+    .card-title i,
+    .move-section summary i {
+      width: 16px;
+      height: 16px;
+      stroke: var(--muted);
+      stroke-width: 1.5;
+      flex-shrink: 0
+    }
+    .move-section[open] summary i {
+      stroke: var(--accent)
+    }
+    .supp-icon i {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.5
+    }
+    .delight-emoji i {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.5
+    }
   </style>
 </head>
 
 <body>
 
+  <!-- Pull-to-refresh indicator -->
+  <div class="ptr-indicator" id="ptrIndicator">
+    <svg viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+  </div>
+
   <header>
-    <div class="hdr-left"><span class="icon">♥</span>
+    <div class="hdr-left"><span class="icon" style="display:inline-flex"><svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
       <h1>HealThee</h1>
     </div>
     <div class="hdr-right">
@@ -1598,22 +1808,19 @@
       </button>
       <div class="user-menu" id="userMenu" style="display:none;">
         <img class="user-avatar" id="userAvatar" src="" alt="User Avatar" width="26" height="26"
-          onclick="toggleUserMenu()">
-        <div class="user-dropdown" id="userDropdown">
-          <button onclick="signOut()">Sign out</button>
-        </div>
+          onclick="openProfileModal()">
       </div>
     </div>
   </header>
 
   <div id="authLoading" class="auth-loading" style="display:none;">
-    <div style="font-size: 2.5rem;">♥</div>
+    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
     <div class="dot-pulse"><span></span><span></span><span></span></div>
     <p style="color:var(--muted);font-size:0.85rem;">Signing you in...</p>
   </div>
 
   <div id="loginScreen" class="login-screen">
-    <div style="font-size: 2.5rem;">♥</div>
+    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
     <h2>HealThee</h2>
     <p style="font-size:0.94rem;">Track nutrition, workouts, habits and more.<br>All in one place.</p>
     <button class="login-btn" onclick="signInWithGoogle()">
@@ -1636,7 +1843,7 @@
   </div>
 
   <div id="capScreen" class="cap-screen" style="display:none;">
-    <div style="font-size:2rem;">♥</div>
+    <div><svg width="32" height="32" viewBox="0 0 24 24" fill="var(--muted)" stroke="var(--muted)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
     <h2>App is Full</h2>
     <p>This app is limited to 5 users. Contact the admin for access.</p>
     <button class="login-btn" onclick="signOut()" style="background:var(--muted);">Sign Out</button>
@@ -1705,6 +1912,7 @@
   </nav>
 
   <div id="modalContainer"></div>
+  <div id="profileModalContainer"></div>
 
   <div class="toast" id="toast"></div>
 
@@ -1743,6 +1951,7 @@
       let selectedDate = null;
       let dayData = null;
       let chatHistory = [];
+      let userProfile = null; // Profile settings from Firestore
 
       /* ═══════════════════════════════════════════════════
          CONSTANTS: Plan, workouts, supplements, targets
@@ -1762,16 +1971,16 @@
         visceralFat: 4
       };
 
-      const MEAL_ICONS = { "Breakfast": "☕", "Mid-Morning": "🍎", "Lunch": "🌤", "Afternoon": "☕", "Dinner": "🌅", "Before Bed": "🌙", "Snack": "🍪" };
+      const MEAL_ICONS = { "Breakfast": "coffee", "Mid-Morning": "apple", "Lunch": "sun", "Afternoon": "coffee", "Dinner": "sunset", "Before Bed": "moon", "Snack": "cookie" };
 
       const SUPPLEMENTS = [
-        { id: "creatine", name: "Creatine (3–5g)", freq: "daily", icon: "⚡", micros: {} },
-        { id: "vitd", name: "Vitamin D (600-800 IU)", freq: "daily", icon: "☀️", micros: { "vitamin_d_ug": 20 } },
-        { id: "omega3", name: "Omega-3 / Fish oil", freq: "daily", icon: "🐟", micros: {} },
-        { id: "zincovit", name: "Zincovit", freq: "daily", icon: "💊", micros: { "vitamin_a_ug": 600, "vitamin_b6": 2, "vitamin_b12": 1, "vitamin_c_mg": 40, "vitamin_d_ug": 10, "zinc_mg": 10, "iron_mg": 10, "magnesium_mg": 15 } },
-        { id: "vitc", name: "Vitamin C", freq: "daily", icon: "🍊", micros: { "vitamin_c_mg": 500 } },
-        { id: "ashwagandha", name: "Ashwagandha", freq: "daily", icon: "🌿", micros: {} },
-        { id: "collagen", name: "Collagen peptides (8g)", freq: "daily", icon: "🧬", protein: 7, micros: {} }
+        { id: "creatine", name: "Creatine (3–5g)", freq: "daily", icon: "zap", micros: {} },
+        { id: "vitd", name: "Vitamin D (600-800 IU)", freq: "daily", icon: "sun", micros: { "vitamin_d_ug": 20 } },
+        { id: "omega3", name: "Omega-3 / Fish oil", freq: "daily", icon: "fish", micros: {} },
+        { id: "zincovit", name: "Zincovit", freq: "daily", icon: "pill", micros: { "vitamin_a_ug": 600, "vitamin_b6": 2, "vitamin_b12": 1, "vitamin_c_mg": 40, "vitamin_d_ug": 10, "zinc_mg": 10, "iron_mg": 10, "magnesium_mg": 15 } },
+        { id: "vitc", name: "Vitamin C", freq: "daily", icon: "citrus", micros: { "vitamin_c_mg": 500 } },
+        { id: "ashwagandha", name: "Ashwagandha", freq: "daily", icon: "leaf", micros: {} },
+        { id: "collagen", name: "Collagen peptides (8g)", freq: "daily", icon: "dna", protein: 7, micros: {} }
       ];
 
       const SKINCARE_TASKS = [
@@ -1876,15 +2085,15 @@
       };
 
       const DELIGHTS = [
-        { id: "walking", emoji: "🚶", name: "Walking Around" },
-        { id: "fellowship", emoji: "🤝", name: "Fellowship" },
-        { id: "deliciousness", emoji: "😋", name: "Deliciousness" },
-        { id: "transcendence", emoji: "🧘", name: "Transcendence" },
-        { id: "goofing", emoji: "😄", name: "Goofing" },
-        { id: "amelioration", emoji: "📈", name: "Amelioration" },
-        { id: "coitus", emoji: "❤️", name: "Coitus" },
-        { id: "enthrallment", emoji: "🎭", name: "Enthrallment" },
-        { id: "wildcard", emoji: "🃏", name: "WILDCARD" }
+        { id: "walking", icon: "footprints", name: "Walking Around" },
+        { id: "fellowship", icon: "users", name: "Fellowship" },
+        { id: "deliciousness", icon: "chef-hat", name: "Deliciousness" },
+        { id: "transcendence", icon: "sparkles", name: "Transcendence" },
+        { id: "goofing", icon: "laugh", name: "Goofing" },
+        { id: "amelioration", icon: "trending-up", name: "Amelioration" },
+        { id: "coitus", icon: "heart", name: "Coitus" },
+        { id: "enthrallment", icon: "drama", name: "Enthrallment" },
+        { id: "wildcard", icon: "shuffle", name: "WILDCARD" }
       ];
 
       const PELVIC_EXERCISES = [
@@ -1950,6 +2159,19 @@
       /* ═══════════════════════════════════════════════════
          HELPERS
          ═══════════════════════════════════════════════════ */
+      // Lucide icon helper: returns an inline <i> element string for the given icon name
+      window.lucide_icon = function (name, size = 16, extra = '') {
+        return `<i data-lucide="${name}" style="width:${size}px;height:${size}px;display:inline-flex" ${extra}></i>`;
+      }
+      // Short alias
+      window.licon = lucide_icon;
+      // Re-create Lucide icons after DOM updates
+      window.refreshIcons = function () {
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          setTimeout(() => lucide.createIcons(), 10);
+        }
+      }
+
       window.localDateStr = function (date = new Date()) {
         const d = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
         return d.toISOString().split("T")[0];
@@ -2102,9 +2324,8 @@
           toast("Sign-in failed: " + e.message, "error");
         });
       }
-      window.signOut = function () { auth.signOut(); document.getElementById("userDropdown").classList.remove("show"); }
-      window.toggleUserMenu = function () { document.getElementById("userDropdown").classList.toggle("show"); }
-      document.addEventListener("click", e => { const m = document.getElementById("userMenu"); if (m && !m.contains(e.target)) document.getElementById("userDropdown").classList.remove("show"); });
+      window.signOut = function () { auth.signOut(); }
+      // Document click listener moved or removed since dropdown is gone
 
       /* ═══════════════════════════════════════════════════
          FIRESTORE CRUD
@@ -2132,9 +2353,93 @@
       /* ═══════════════════════════════════════════════════
          INIT + NAV
          ═══════════════════════════════════════════════════ */
-      window.initApp = function () {
+      window.initApp = async function () {
         selectedDate = todayStr();
+        await loadProfile();
         loadDay();
+        setupPullToRefresh();
+      }
+
+      // ── Profile helpers ──
+      window.loadProfile = async function () {
+        try {
+          const doc = await db.collection("users").doc(currentUser.uid).get();
+          userProfile = doc.exists && doc.data().profile ? doc.data().profile : getDefaultProfile();
+        } catch (e) { console.error("Profile load failed:", e); userProfile = getDefaultProfile(); }
+      }
+
+      window.getDefaultProfile = function () {
+        return {
+          height: 162,
+          weightGoal: 'lose', // gain, lose, maintain, recompose
+          weightGoalRate: 0.5, // kg per week
+          exerciseGoal: 5, // days per week
+          trackNutrition: true,
+          trackExercise: true,
+          trackWellness: true,
+          trackSkincare: true,
+          trackHaircare: true,
+          trackTrends: true,
+          mode: 'vanilla' // vanilla or gamified
+        };
+      }
+
+      window.saveProfile = async function () {
+        try {
+          const p = collectProfileForm();
+          userProfile = p;
+          await db.collection("users").doc(currentUser.uid).set({ profile: p }, { merge: true });
+          HEIGHT_CM_DYNAMIC = p.height || 162;
+          toast("Profile saved", "success");
+          closeProfileModal();
+          render();
+        } catch (e) { toast("Save failed: " + e.message, "error"); }
+      }
+
+      let HEIGHT_CM_DYNAMIC = HEIGHT_CM;
+      // Override calcBMI to use dynamic height
+      window.calcBMI = function (kg) { return kg > 0 ? kg / ((HEIGHT_CM_DYNAMIC / 100) ** 2) : 0; }
+
+      // ── Pull-to-refresh ──
+      window.setupPullToRefresh = function () {
+        let startY = 0, pulling = false;
+        const ptr = document.getElementById("ptrIndicator");
+        const mainApp = document.getElementById("mainApp");
+
+        document.addEventListener("touchstart", e => {
+          if (window.scrollY === 0 && e.touches.length === 1) {
+            startY = e.touches[0].clientY;
+            pulling = true;
+          }
+        }, { passive: true });
+
+        document.addEventListener("touchmove", e => {
+          if (!pulling) return;
+          const dy = e.touches[0].clientY - startY;
+          if (dy > 10 && dy < 150) {
+            ptr.style.transform = `translateX(-50%) translateY(${Math.min(dy - 20, 40)}px)`;
+            ptr.classList.add("visible");
+          }
+        }, { passive: true });
+
+        document.addEventListener("touchend", e => {
+          if (!pulling) return;
+          pulling = false;
+          const dy = (e.changedTouches[0]?.clientY || 0) - startY;
+          if (dy > 80) {
+            ptr.classList.add("refreshing");
+            ptr.style.transform = `translateX(-50%) translateY(30px)`;
+            loadDay();
+            setTimeout(() => {
+              ptr.classList.remove("visible", "refreshing");
+              ptr.style.transform = `translateX(-50%) translateY(-100%)`;
+              toast("Refreshed", "success");
+            }, 600);
+          } else {
+            ptr.classList.remove("visible");
+            ptr.style.transform = `translateX(-50%) translateY(-100%)`;
+          }
+        }, { passive: true });
       }
 
       window.shiftDate = function (dir) {
@@ -2162,7 +2467,7 @@
       }
       window.addWater = function (ml) {
         dayData.waterLogs = [...(dayData.waterLogs || []), { id: genId("w"), ml: num0(ml), ts: Date.now(), deletedAt: "" }];
-        touch(); saveDay(); render(); toast("+" + ml + "ml 💧");
+        touch(); saveDay(); render(); toast("+" + ml + "ml water");
       }
       window.removeWaterLog = function (id) {
         dayData.waterLogs = (dayData.waterLogs || []).map(x => x.id === id ? { ...x, deletedAt: new Date().toISOString() } : x);
@@ -2272,6 +2577,7 @@
         else if (type === "custom") c.innerHTML = renderCustomFoodModal();
         else if (type === "water") c.innerHTML = renderWaterModal();
         c.querySelector(".modal-overlay")?.addEventListener("click", e => { if (e.target.classList.contains("modal-overlay")) closeModal(); });
+        refreshIcons();
       }
       window.closeModal = function () { document.getElementById("modalContainer").innerHTML = ""; }
 
@@ -2311,7 +2617,7 @@
           finalData.micros = est.micros || {};
           toast("Added with estimated micros", "success");
         } catch (e) {
-          console.error("Cerebras estimation failed", e);
+          console.error("Micro estimation failed", e);
           toast("Added without micros (No API Key or Error)", "warn");
         }
 
@@ -2353,10 +2659,13 @@
           <div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem;line-height:1.4">Leave macros blank to let AI estimate everything from name/portion.</div>
           
           <div style="display:flex;gap:.5rem;margin-bottom:1rem">
-            <button class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.6rem" onclick="document.getElementById('cfPhotoUpload').click()">
-              📸 Photo / Label
+            <button class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.6rem" onclick="document.getElementById('cfPhotoUpload').removeAttribute('capture'); document.getElementById('cfPhotoUpload').click()">
+              ${licon('image')} Gallery
             </button>
-            <input type="file" id="cfPhotoUpload" accept="image/*" capture="environment" style="display:none" onchange="handleFoodPhoto(this)">
+            <button class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.6rem" onclick="document.getElementById('cfPhotoUpload').setAttribute('capture', 'environment'); document.getElementById('cfPhotoUpload').click()">
+              ${licon('camera')} Camera
+            </button>
+            <input type="file" id="cfPhotoUpload" accept="image/*" style="display:none" onchange="handleFoodPhoto(this)">
           </div>
           <div id="cfPhotoPreview" style="display:none;margin-bottom:.5rem;border-radius:8px;overflow:hidden;border:1px solid var(--border);position:relative">
             <img id="cfPhotoImg" style="width:100%;display:block;max-height:150px;object-fit:cover;">
@@ -2450,7 +2759,7 @@
               toast("Added (text estimate – image analysis unavailable)", "warn");
             }
           } else if (isRecipe) {
-            // Recipe/Ingredients processing via Cerebras
+            // Recipe/Ingredients processing via LLM
             if (!desc) { toast("Enter ingredients", "warn"); btn.textContent = "Add Food"; btn.disabled = false; return; }
             const sysMix = `You are a recipe/food nutrition analyzer for Indian foods. Given ingredients or a dish description, estimate the TOTAL macros and micronutrients for the entire prepared dish (1 standard Indian serving). All values must be realistic and non-zero where applicable. For shakes/smoothies include all liquid + powder macros. Reply ONLY with JSON: ${sysFull}`;
             const prompt = `Recipe/Ingredients:\n${desc}${n ? '\nDish name: ' + n : ''}`;
@@ -2544,6 +2853,112 @@
       document.getElementById("deleteModal").addEventListener("click", e => { if (e.target === document.getElementById("deleteModal")) closeDeleteModal(); });
 
       /* ═══════════════════════════════════════════════════
+         PROFILE MODAL
+         ═══════════════════════════════════════════════════ */
+      window.openProfileModal = function () {
+        const c = document.getElementById("profileModalContainer");
+        c.innerHTML = renderProfileModal();
+        c.querySelector(".modal-overlay")?.addEventListener("click", e => { if (e.target.classList.contains("modal-overlay")) closeProfileModal(); });
+        refreshIcons();
+      }
+      
+      window.closeProfileModal = function () {
+        document.getElementById("profileModalContainer").innerHTML = "";
+      }
+
+      window.collectProfileForm = function () {
+        const p = getDefaultProfile();
+        p.height = parseFloat(document.getElementById("profHeight").value) || 162;
+        p.weightGoal = document.querySelector('input[name="profWeightGoal"]:checked')?.value || 'lose';
+        p.weightGoalRate = parseFloat(document.getElementById("profWeightRate")?.value) || 0.5;
+        p.exerciseGoal = parseInt(document.getElementById("profExGoal")?.value) || 5;
+        p.trackNutrition = document.getElementById("profTrackNut").checked;
+        p.trackExercise = document.getElementById("profTrackEx").checked;
+        p.trackWellness = document.getElementById("profTrackWell").checked;
+        p.trackSkincare = document.getElementById("profTrackSkin").checked;
+        p.trackHaircare = document.getElementById("profTrackHair").checked;
+        p.trackTrends = document.getElementById("profTrackTrends").checked;
+        p.mode = document.querySelector('input[name="profMode"]:checked')?.value || 'vanilla';
+        return p;
+      }
+
+      window.renderProfileModal = function () {
+        const p = userProfile || getDefaultProfile();
+        return `<div class="modal-overlay profile-modal"><div class="modal" style="max-height:90vh">
+          <div class="modal-head"><div class="modal-title">My Profile</div><button class="modal-close" onclick="closeProfileModal()">✕</button></div>
+          <div class="modal-body">
+            
+            <div class="profile-section">
+              <div class="profile-section-title">${licon('ruler')} Measurements</div>
+              <div class="form-row">
+                <div class="form-field"><label>Height (cm)</label>
+                  <input type="number" id="profHeight" value="${p.height}" class="profile-inline-input" style="width:100%">
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-section">
+              <div class="profile-section-title">${licon('target')} Weight Goal</div>
+              <label class="profile-option ${p.weightGoal === 'lose' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
+                <input type="radio" name="profWeightGoal" value="lose" ${p.weightGoal === 'lose' ? 'checked' : ''}> Lose weight
+                <div style="margin-left:auto;display:flex;align-items:center;gap:.3rem">
+                  <input type="number" id="profWeightRate" value="${p.weightGoalRate}" step="0.1" class="profile-inline-input" onclick="event.stopPropagation()"> <span style="font-size:.68rem;color:var(--muted)">kg / wk</span>
+                </div>
+              </label>
+              <label class="profile-option ${p.weightGoal === 'maintain' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
+                <input type="radio" name="profWeightGoal" value="maintain" ${p.weightGoal === 'maintain' ? 'checked' : ''}> Maintain
+              </label>
+              <label class="profile-option ${p.weightGoal === 'gain' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
+                <input type="radio" name="profWeightGoal" value="gain" ${p.weightGoal === 'gain' ? 'checked' : ''}> Gain mass
+              </label>
+              <label class="profile-option ${p.weightGoal === 'recompose' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
+                <input type="radio" name="profWeightGoal" value="recompose" ${p.weightGoal === 'recompose' ? 'checked' : ''}> Recompose 
+              </label>
+            </div>
+
+            <div class="profile-section">
+              <div class="profile-section-title">${licon('activity')} Exercise Goal</div>
+              <div style="display:flex;align-items:center;gap:.6rem;padding:.4rem 0">
+                <input type="range" id="profExGoal" min="0" max="7" value="${p.exerciseGoal}" style="flex:1;accent-color:var(--accent)" oninput="document.getElementById('profExGoalVal').textContent=this.value">
+                <span style="font-size:.78rem;font-weight:600"><span id="profExGoalVal">${p.exerciseGoal}</span> days/week</span>
+              </div>
+            </div>
+
+            <div class="profile-section">
+              <div class="profile-section-title">${licon('layout-dashboard')} Want to Track</div>
+              <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+                <label class="profile-chip ${p.trackNutrition ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackNut" ${p.trackNutrition ? 'checked' : ''} style="display:none"> ${licon('apple')} Nutrition</label>
+                <label class="profile-chip ${p.trackExercise ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackEx" ${p.trackExercise ? 'checked' : ''} style="display:none"> ${licon('dumbbell')} Exercise</label>
+                <label class="profile-chip ${p.trackWellness ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackWell" ${p.trackWellness ? 'checked' : ''} style="display:none"> ${licon('heart-pulse')} Wellness</label>
+                <label class="profile-chip ${p.trackSkincare ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackSkin" ${p.trackSkincare ? 'checked' : ''} style="display:none"> ${licon('sparkles')} Skincare</label>
+                <label class="profile-chip ${p.trackHaircare ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackHair" ${p.trackHaircare ? 'checked' : ''} style="display:none"> ${licon('scissors')} Haircare</label>
+                <label class="profile-chip ${p.trackTrends ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackTrends" ${p.trackTrends ? 'checked' : ''} style="display:none"> ${licon('trending-up')} Trends</label>
+              </div>
+            </div>
+
+            <div class="profile-section">
+              <div class="profile-section-title">${licon('gamepad-2')} App Mode</div>
+              <label class="profile-option ${p.mode === 'vanilla' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profMode]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
+                <input type="radio" name="profMode" value="vanilla" ${p.mode === 'vanilla' ? 'checked' : ''}> Vanilla Tracker
+              </label>
+              <label class="profile-option ${p.mode === 'gamified' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profMode]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected'); setTimeout(()=>toast('Gamified mode is under construction. You will get access shortly!', 'warn'), 100)">
+                <input type="radio" name="profMode" value="gamified" ${p.mode === 'gamified' ? 'checked' : ''}> <span class="gamified-badge">${licon('sword', 12)} Gamified</span>
+              </label>
+            </div>
+
+            <button class="btn-primary" style="width:100%;padding:.7rem;margin-top:.5rem" onclick="saveProfile()">Save Profile</button>
+            
+            <div class="danger-zone" style="margin-top:2rem">
+              <button class="btn-secondary" style="width:100%;margin-bottom:.5rem" onclick="signOut()">Sign Out</button>
+              <button class="delete-btn" style="width:100%" onclick="closeProfileModal();openDeleteModal()">Delete Account & Data</button>
+            </div>
+
+          </div>
+        </div></div>`;
+      }
+
+
+      /* ═══════════════════════════════════════════════════
          RENDER ENGINE
          ═══════════════════════════════════════════════════ */
       window.render = function () {
@@ -2559,6 +2974,7 @@
           setTimeout(() => { const c = document.getElementById("chatMessages"); if (c) c.scrollTop = c.scrollHeight; }, 50);
         }
         else if (currentTab === "stats") loadStats();
+        refreshIcons();
       }
 
       /* ─── FUEL TAB ─── */
@@ -2575,9 +2991,9 @@
         const waterMl = num0(dayData.water);
         const waterPct = (waterMl / TARGETS.water) * 100;
 
-        let foodList = foods.length === 0 ? `<div class="empty-state"><div class="empty-icon">🍽</div>No foods logged yet</div>` :
+        let foodList = foods.length === 0 ? `<div class="empty-state"><div class="empty-icon">${licon('utensils', 24)}</div>No foods logged yet</div>` :
           foods.map(f => `<div class="food-item">
-          <div class="food-icon">${MEAL_ICONS[f.meal] || "🍽"}</div>
+          <div class="food-icon">${licon(MEAL_ICONS[f.meal] || 'utensils', 13)}</div>
           <div class="food-info"><div class="food-name">${esc(f.name)}${f.estimated ? ' <span style="color:var(--muted);font-size:.58rem">AI</span>' : ""}</div>
             <div class="food-meta">${esc(f.meal)} · P:${Math.round(num0(f.protein))}g C:${Math.round(num0(f.carbs))}g F:${Math.round(num0(f.fat))}g</div></div>
           <div class="food-cal">${Math.round(num0(f.cal))}</div>
@@ -2587,7 +3003,7 @@
         let suppList = SUPPLEMENTS.map(s => {
           const taken = lwwGet(dayData.supplementChecks, s.id);
           return `<div class="supp-item ${taken ? "taken" : ""}" onclick="toggleSupp('${s.id}')">
-          <span class="supp-icon">${s.icon}</span><span class="supp-name">${esc(s.name)}</span>
+          <span class="supp-icon">${licon(s.icon)}</span><span class="supp-name">${esc(s.name)}</span>
           <span class="supp-freq">${esc(s.freq)}</span><span class="supp-check">${taken ? "✓" : ""}</span></div>`;
         }).join("");
 
@@ -2629,7 +3045,7 @@
             <div class="micros-scroll">${microsHtml}</div></details>
         </div>
         <div class="card">
-          <div class="card-title">🍽 Food Log</div>
+          <div class="card-title">${licon('utensils')} Food Log</div>
           <div class="food-actions">
             <button class="food-btn food-btn-primary" onclick="showModal('plan')">+ from plan</button>
             <button class="food-btn" onclick="showModal('custom')">+ custom</button>
@@ -2637,7 +3053,7 @@
           ${foodList}
         </div>
         <div class="card">
-          <div class="card-title">💧 Water</div>
+          <div class="card-title">${licon('droplets')} Water</div>
           <div class="water-head"><span>${(waterMl / 1000).toFixed(1)} / ${(TARGETS.water / 1000).toFixed(1)} L</span><span class="water-amt">${Math.round(waterPct)}%</span></div>
           <div class="water-bar"><div class="water-fill" style="width:${Math.min(100, waterPct)}%"></div></div>
           <div style="display:flex;gap:.4rem;margin-top:.5rem;align-items:stretch">
@@ -2652,7 +3068,7 @@
         ).join("")}</div>` : ""}
         </div>
         <div class="card">
-          <div class="card-title">💊 Supplements</div>
+          <div class="card-title">${licon('pill')} Supplements</div>
           ${suppList}
         </div>`;
       }
@@ -2687,7 +3103,7 @@
         const workoutHtml = workout ? workout.exercises.map(ex => {
           const done = lwwGet(dayData.exerciseChecks, ex);
           return `<div class="check-item" onclick="toggleExercise('${esc(ex)}')"><input type="checkbox" ${done ? "checked" : ""}><span style="${done ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(ex)}</span></div>`;
-        }).join("") : `<div class="empty-state"><div class="empty-icon">😌</div>Rest and recover</div>`;
+        }).join("") : `<div class="empty-state"><div class="empty-icon">${licon('coffee', 24)}</div>Rest and recover</div>`;
 
         // Cooldown checklist
         const cooldownDone = cooldown.every(t => lwwGet(dayData.cooldownChecks, t.id));
@@ -2715,7 +3131,7 @@
           </div>
         </div>
         <div class="card">
-          <div class="card-title">👟 Steps & Activity</div>
+          <div class="card-title">${licon('footprints')} Steps & Activity</div>
           <div style="font-size:.78rem;margin-bottom:.4rem">Total: <b>${steps}</b> steps </div>
           <div class="form-row form-row-btn">
             <div class="form-field"><label>Add Steps</label><input type="number" id="stepsInput" placeholder="e.g. 3000"></div>
@@ -2725,25 +3141,25 @@
         </div>
         <div class="card">
           <details class="move-section" data-key="warmup" ${so('warmup') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>🔥 Warmup ${warmupDone ? '<span style="margin-left:.3rem">✅</span>' : ''}</summary>
+            <summary>${licon('flame')} Warmup ${warmupDone ? `<span style="margin-left:.3rem;color:var(--success)">${licon('check-circle', 14)}</span>` : ''}</summary>
             <div class="section-body">${warmupHtml}</div>
           </details>
         </div>
         <div class="card">
           <details class="move-section" data-key="workout" ${so('workout') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>🏋️ ${workout ? esc(workout.name) : 'Rest Day'}</summary>
+            <summary>${licon('dumbbell')} ${workout ? esc(workout.name) : 'Rest Day'}</summary>
             <div class="section-body">${workoutHtml}</div>
           </details>
         </div>
         <div class="card">
           <details class="move-section" data-key="cooldown" ${so('cooldown') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>🧘 Cooldown ${cooldownDone ? '<span style="margin-left:.3rem">✅</span>' : ''}</summary>
+            <summary>${licon('wind')} Cooldown ${cooldownDone ? `<span style="margin-left:.3rem;color:var(--success)">${licon('check-circle', 14)}</span>` : ''}</summary>
             <div class="section-body">${cooldownHtml}</div>
           </details>
         </div>
         <div class="card">
           <details class="move-section" data-key="pelvic" ${so('pelvic') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>🏃 Pelvic Floor Training ${pfDone ? '<span style="margin-left:.3rem">✅</span>' : ''}</summary>
+            <summary>${licon('activity')} Pelvic Floor Training ${pfDone ? `<span style="margin-left:.3rem;color:var(--success)">${licon('check-circle', 14)}</span>` : ''}</summary>
             <div class="section-body">
               <div style="font-size:.68rem;color:var(--muted);margin-bottom:.4rem">3-4×/week · 6-8 min</div>
               ${pfHtml}
@@ -2751,7 +3167,7 @@
           </details>
         </div>
         <div class="card">
-          <div class="card-title">⚡ Custom Exercise</div>
+          <div class="card-title">${licon('zap')} Custom Exercise</div>
           <div class="form-row form-row-btn">
             <div class="form-field" style="flex:2"><label>Description</label><input id="cxText" placeholder="e.g. 20 min swimming"></div>
             <div class="form-field" style="flex:1"><label>kcal</label><input type="number" id="cxKcal" placeholder="opt"></div>
@@ -2771,24 +3187,23 @@
 
         return `
         <div class="card">
-          <div class="card-title">📏 Aesthetic Metrics</div>
-          <div class="custom-grid">
-            <div class="form-field"><label>Weight (kg)</label><input type="number" id="bWeight" step="0.1" value="${b.weight || ""}"></div>
-            <div class="form-field"><label>Body Fat %</label><input type="number" id="bBodyFat" step="0.1" value="${b.bodyFat || ""}"></div>
-            <div class="form-field"><label>Waist (cm)</label><input type="number" id="bWaist" step="0.1" value="${b.waist || ""}"></div>
-            <div class="form-field"><label>Shoulders (cm)</label><input type="number" id="bShoulders" step="0.1" value="${b.shoulders || ""}"></div>
-            <div class="form-field"><label>Skeletal Muscle (kg)</label><input type="number" id="bSMM" step="0.1" value="${b.skeletalMuscle || ""}"></div>
-            <div class="form-field"><label>Visceral Fat Level</label><input type="number" id="bVisceral" step="0.1" value="${b.visceralFat || ""}"></div>
-          </div>
-          <button class="btn-primary" style="width:100%" onclick="saveBody()">Save</button>
-          ${bmi || ratio ? `<div class="stats-row" style="margin-top:.6rem">
-            ${bmi ? `<div class="stat-box"><div class="stat-val">${bmi.toFixed(1)}</div><div class="stat-label">BMI</div></div>` : ""}
-            ${ratio ? `<div class="stat-box"><div class="stat-val">${ratio}</div><div class="stat-label">S:W Ratio</div></div>` : ""}
-            ${b.weight && b.bodyFat ? `<div class="stat-box"><div class="stat-val">${(b.weight * (1 - b.bodyFat / 100)).toFixed(1)}</div><div class="stat-label">Lean Mass (kg)</div></div>` : ""}
-          </div>`: ""}
+          <details class="move-section" data-key="aes" ${so('aes') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>${licon('ruler')} Aesthetic Metrics</summary>
+            <div class="section-body">
+              <div class="custom-grid">
+                <div class="form-field"><label>Weight (kg)</label><input type="number" id="bWeight" step="0.1" value="${b.weight || ""}"></div>
+                <div class="form-field"><label>Body Fat %</label><input type="number" id="bBodyFat" step="0.1" value="${b.bodyFat || ""}"></div>
+                <div class="form-field"><label>Waist (cm)</label><input type="number" id="bWaist" step="0.1" value="${b.waist || ""}"></div>
+                <div class="form-field"><label>Shoulders (cm)</label><input type="number" id="bShoulders" step="0.1" value="${b.shoulders || ""}"></div>
+                <div class="form-field"><label>Skeletal Muscle (kg)</label><input type="number" id="bSMM" step="0.1" value="${b.skeletalMuscle || ""}"></div>
+                <div class="form-field"><label>Visceral Fat Level</label><input type="number" id="bVisceral" step="0.1" value="${b.visceralFat || ""}"></div>
+              </div>
+              <button class="btn-primary" style="width:100%;margin-top:.4rem" onclick="saveBody()">Save Metrics</button>
+            </div>
+          </details>
         </div>
         <div class="card">
-          <div class="card-title">🌙 Sleep</div>
+          <div class="card-title">${licon('moon')} Sleep</div>
           <div class="water-head" style="margin-bottom:.2rem">
             <div>${h.toFixed(1)} / ${TARGETS.sleep.toFixed(1)} h</div>
             <div class="water-amt" style="color:var(--purple)">${Math.round(sleepPct)}%</div>
@@ -2804,14 +3219,14 @@
           <button class="btn-primary" style="width:100%;margin-top:.4rem;" onclick="saveSleep()">Save</button>
         </div>
         <div class="card">
-          <div class="card-title">✨ Nine Daily Delights</div>
+          <div class="card-title">${licon('sparkles')} Nine Daily Delights</div>
           <div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem">Check off the moments that made today good</div>
           ${DELIGHTS.map(d => {
           const on = lwwGet(dayData.delightChecks, d.id);
           const name = d.id === "wildcard" ? (dayData.wildcardName || d.name) : d.name;
           return `<div class="delight-item ${on ? "checked" : ""}" onclick="toggleDelight('${d.id}')">
               <div class="delight-dot">${on ? "✓" : ""}</div>
-              <span class="delight-emoji">${d.emoji}</span>
+              <span class="delight-emoji">${licon(d.icon)}</span>
               <span class="delight-name">${esc(name)}</span>
             </div>`;
         }).join("")}
@@ -2832,32 +3247,31 @@
 
         return `
         <div class="card">
-          <div class="card-title">🧴 Skincare <span class="card-title-status">${scDone ? "✅" : ""}</span></div>
+          <div class="card-title">${licon('droplets')} Skincare <span class="card-title-status" style="color:var(--success)">${scDone ? licon('check-circle', 14) : ""}</span></div>
           ${SKINCARE_TASKS.map(t => {
           const on = lwwGet(dayData.skincareChecks, t.id);
           return `<label class="check-item"><input type="checkbox" ${on ? "checked" : ""} onchange="toggleCheck('skincareChecks','${t.id}')"><span>${esc(t.label)}${t.req === false ? ' <span class="opt-tag">(optional)</span>' : ""}</span></label>`;
         }).join("")}
         </div>
         <div class="card">
-          <div class="card-title">💇 Haircare <span class="card-title-status">${hcDone ? "✅" : ""}</span></div>
+          <div class="card-title">${licon('scissors')} Haircare <span class="card-title-status" style="color:var(--success)">${hcDone ? licon('check-circle', 14) : ""}</span></div>
           ${hcTasks.length ? hcTasks.map(t => {
           const on = lwwGet(dayData.haircareChecks, t.id);
           return `<label class="check-item"><input type="checkbox" ${on ? "checked" : ""} onchange="toggleCheck('haircareChecks','${t.id}')"><span>${esc(t.label)}</span></label>`;
         }).join("") : `<div class="empty-state">No haircare tasks for today</div>`}
         </div>
         <div class="card">
-          <div class="card-title">💬 Healthee Mate</div>
+          <div class="card-title">${licon('message-circle')} Healthee Mate</div>
           <div style="display:flex;gap:.3rem;margin-bottom:.5rem;flex-wrap:wrap">
             <button class="food-btn" onclick="askAdvisor('Am I hitting my protein target today?')">Protein check</button>
             <button class="food-btn" onclick="askAdvisor('What micronutrients am I low on today?')">Micro gaps</button>
             <button class="food-btn" onclick="askAdvisor('Rate my nutrition and activity today out of 10')">Rate today</button>
           </div>
-          </div>
           <div class="chat-messages" id="chatMessages">
             ${(dayData.chatHistory || []).map(msg => { const stripped = (msg.text || '').replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1').replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, ''); return `<div class="chat-msg ${msg.role}">${esc(stripped)}</div>`; }).join("")}
           </div>
           <div class="chat-input-row" style="position:relative;display:flex;align-items:center;gap:.3rem">
-            <button class="icon-btn" style="position:absolute;left:8px;background:none;border:none;padding:0;font-size:1.1rem" onclick="document.getElementById('chatPhotoInput').click()">📷</button>
+            <button class="icon-btn" style="position:absolute;left:8px;background:none;border:none;padding:0;font-size:1.1rem;color:var(--muted)" onclick="document.getElementById('chatPhotoInput').click()">${licon('camera')}</button>
             <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleChatPhoto(this)">
             <input class="chat-input" id="chatInput" placeholder="Ask about your health..." style="padding-left:2.5rem" onkeydown="if(event.key==='Enter')askAdvisor()">
             <button class="chat-send" id="chatSendBtn" onclick="askAdvisor()">Send</button>
@@ -2866,42 +3280,54 @@
             <img id="chatPhotoPreview" style="max-height:80px;border-radius:8px;border:1px solid var(--border)">
             <button onclick="clearChatPhoto()" style="position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.6rem;cursor:pointer">✕</button>
           </div>
-        </div>
-        <div class="danger-zone">
-          <div class="danger-zone-label">Danger Zone</div>
-          <button class="delete-btn" onclick="openDeleteModal()">Delete Account & All Data</button>
         </div>`;
       }
 
       // LLM Fetch Utility using Numo Cloud Function Proxy
-      window.fetchLLM = async function (prompt, system, provider = 'cerebras', model = 'llama3.1-8b', isJson = true) {
+      window.fetchLLM = async function (prompt, system, provider = 'cerebras', model = 'llama3.1-8b', isJson = true, retry = true) {
         const url = 'https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM';
 
         const body = { prompt, system, provider, model, isJson };
 
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
 
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error(`API Error: ${res.status} - ${err}`);
-        }
-
-        const data = await res.json();
-        const content = data.content;
-
-        if (isJson) {
-          try {
-            return JSON.parse(content);
-          } catch (e) {
-            console.error('Failed to parse LLM JSON:', content);
-            throw new Error('LLM did not return valid JSON');
+          if (!res.ok) {
+            const err = await res.text();
+            throw new Error(`API Error: ${res.status} - ${err}`);
           }
+
+          const data = await res.json();
+          const content = data.content;
+
+          if (isJson) {
+            try {
+              return JSON.parse(content);
+            } catch (e) {
+              console.error('Failed to parse LLM JSON:', content);
+              throw new Error('LLM did not return valid JSON');
+            }
+          }
+          return content;
+        } catch (e) {
+          // Fall back to Groq on Cerebras availability errors (model not found, 503, 429, etc.)
+          const msg = e.message || '';
+          const isAvailabilityError = retry && provider === 'cerebras' && (
+            msg.includes('model_not_found') || msg.includes('does not exist') ||
+            msg.includes('503') || msg.includes('502') || msg.includes('429') ||
+            msg.includes('not_found_error') || msg.includes('overloaded') ||
+            msg.includes('unavailable') || msg.includes('capacity')
+          );
+          if (isAvailabilityError) {
+            console.warn('Cerebras unavailable, falling back to Groq:', msg);
+            return await window.fetchLLM(prompt, system, 'groq', 'llama-3.3-70b-versatile', isJson, false);
+          }
+          throw e;
         }
-        return content;
       }
 
       // LLM Vision Fetch Utility using Numo Cloud Function Proxy
@@ -3037,7 +3463,7 @@
             </div>
             ${(avgBf || avgWaist || avgSW || avgSMM || avgVF) ? `
             <details class="move-section" data-key="weekAes" ${so('weekAes') ? 'open' : ''} ontoggle="${sToggle}" style="margin-top:.6rem">
-              <summary>Aesthetic Metrics</summary>
+              <summary>${licon('ruler')} Aesthetic Metrics</summary>
               <div class="section-body"><div class="stats-row" style="margin-top:0">
                 ${avgBf !== null ? `<div class="stat-box"><div class="stat-val">${avgBf}%</div><div class="stat-label">Body Fat</div></div>` : ''}
                 ${avgWaist ? `<div class="stat-box"><div class="stat-val">${avgWaist}</div><div class="stat-label">Waist</div></div>` : ''}
@@ -3093,7 +3519,7 @@
             }
             if (aesInner) {
               aestheticHtml = `<div class="card"><details class="move-section" data-key="trendAes" ${so('trendAes') ? 'open' : ''} ontoggle="${sToggle}">
-                <summary>📐 Aesthetic Metrics</summary><div class="section-body">${aesInner}</div></details></div>`;
+                <summary>${licon('ruler')} Aesthetic Metrics</summary><div class="section-body">${aesInner}</div></details></div>`;
             }
           }
 
@@ -3104,19 +3530,20 @@
             <button class="filter-btn ${statsPeriod === 90 ? 'active' : ''}" onclick="setStatsPeriod(90)">Last 90 days</button>
           </div>
           <div class="card"><details class="move-section" data-key="tProtein" ${so('tProtein') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>💪 Protein Intake</summary><div class="section-body">${lineChart(trendData, 'protein', 'var(--success)', 'g', 130)}</div></details></div>
+            <summary>${licon('beef')} Protein Intake</summary><div class="section-body">${lineChart(trendData, 'protein', 'var(--success)', 'g', 130)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tCal" ${so('tCal') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>🔥 Calorie Intake</summary><div class="section-body">${lineChart(trendData, 'cal', 'var(--accent)', 'kcal', 2050)}</div></details></div>
+            <summary>${licon('flame')} Calorie Intake</summary><div class="section-body">${lineChart(trendData, 'cal', 'var(--accent)', 'kcal', 2050)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tNet" ${so('tNet') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>⚖️ Net Calories</summary><div class="section-body">${lineChart(trendData, 'netCal', 'var(--warn)', 'kcal', -250)}</div></details></div>
+            <summary>${licon('scale')} Net Calories</summary><div class="section-body">${lineChart(trendData, 'netCal', 'var(--warn)', 'kcal', -250)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tMicro" ${so('tMicro') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>💊 Micronutrient Coverage</summary><div class="section-body">${chartBarsRef(trendData, 'microsMet', 'var(--purple)', MICROS.length + 1)}</div></details></div>
+            <summary>${licon('pill')} Micronutrient Coverage</summary><div class="section-body">${chartBarsRef(trendData, 'microsMet', 'var(--purple)', MICROS.length + 1)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tSleep" ${so('tSleep') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>🌙 Sleep</summary><div class="section-body">${lineChart(trendData, 'sleep', 'var(--purple)', 'h', 7)}</div></details></div>
+            <summary>${licon('moon')} Sleep</summary><div class="section-body">${lineChart(trendData, 'sleep', 'var(--purple)', 'h', 7)}</div></details></div>
           ${aestheticHtml}`;
 
           content.innerHTML = weekReview + trendHtml;
-        } catch (e) { content.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load stats</div>`; console.error(e); }
+          refreshIcons();
+        } catch (e) { content.innerHTML = `<div class="empty-state"><div class="empty-icon" style="color:var(--warn)">${licon('triangle-alert', 24)}</div>Failed to load stats</div>`; refreshIcons(); console.error(e); }
       }
 
       // Aggregate daily data into weekly averages
@@ -3242,7 +3669,7 @@ Do NOT output JSON. Output regular conversational text.`;
           if (hasImage) {
             reply = await fetchVisionLLM(prompt, sys, imageToSend, 'groq', 'llama-3.2-11b-vision-preview', false);
           } else {
-            reply = await fetchLLM(prompt, sys, 'groq', 'llama-3.3-70b-versatile', false);
+            reply = await fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b', false);
           }
           let cleanReply = reply.trim()
             .replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1')
