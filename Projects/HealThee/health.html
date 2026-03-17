@@ -527,6 +527,7 @@
       justify-content: center;
       flex-shrink: 0
     }
+
     .food-icon i {
       width: 13px;
       height: 13px;
@@ -1019,6 +1020,7 @@
       display: flex;
       justify-content: center
     }
+
     .empty-icon i {
       width: 24px;
       height: 24px;
@@ -1617,20 +1619,26 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
       transition: transform .2s, opacity .2s;
       opacity: 0;
       pointer-events: none
     }
+
     .ptr-indicator.visible {
       opacity: 1
     }
+
     .ptr-indicator.refreshing {
       animation: ptrSpin .8s linear infinite
     }
+
     @keyframes ptrSpin {
-      to { transform: translateX(-50%) rotate(360deg) }
+      to {
+        transform: translateX(-50%) rotate(360deg)
+      }
     }
+
     .ptr-indicator svg {
       width: 18px;
       height: 18px;
@@ -1643,9 +1651,11 @@
     .profile-modal .modal-body {
       padding: 1rem
     }
+
     .profile-section {
       margin-bottom: 1.2rem
     }
+
     .profile-section-title {
       font-size: .72rem;
       font-weight: 600;
@@ -1657,6 +1667,7 @@
       align-items: center;
       gap: .4rem
     }
+
     .profile-option {
       display: flex;
       align-items: center;
@@ -1669,23 +1680,70 @@
       transition: all .2s;
       font-size: .78rem
     }
+
     .profile-option:hover {
       border-color: var(--accent)
     }
+
     .profile-option.selected {
       border-color: var(--accent);
       background: var(--hover)
     }
+
     .profile-option input[type="radio"],
     .profile-option input[type="checkbox"] {
       accent-color: var(--accent);
       flex-shrink: 0
     }
+
     .profile-option label {
       flex: 1;
       cursor: pointer;
       font-size: .78rem
     }
+
+    .mode-toggle-wrap {
+      display: flex;
+      justify-content: center;
+      padding: .3rem 0
+    }
+    .mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px;
+      cursor: pointer;
+      gap: 0;
+      user-select: none;
+      position: relative
+    }
+    .mode-toggle .mode-label-left,
+    .mode-toggle .mode-label-right {
+      display: flex;
+      align-items: center;
+      gap: .25rem;
+      font-size: .75rem;
+      font-weight: 500;
+      padding: .35rem .75rem;
+      border-radius: 999px;
+      transition: opacity .2s;
+      z-index: 1;
+      pointer-events: none
+    }
+    .mode-toggle .mode-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: calc(50% - 3px);
+      bottom: 3px;
+      background: var(--accent);
+      border-radius: 999px;
+      transition: transform .25s cubic-bezier(.4,0,.2,1);
+      z-index: 0
+    }
+
     .profile-inline-input {
       width: 60px;
       font-family: var(--font);
@@ -1698,9 +1756,11 @@
       text-align: center;
       outline: none
     }
+
     .profile-inline-input:focus {
       border-color: var(--accent)
     }
+
     .profile-chip {
       display: inline-flex;
       align-items: center;
@@ -1717,21 +1777,26 @@
       margin-right: .3rem;
       margin-bottom: .3rem
     }
+
     .profile-chip:hover {
       border-color: var(--accent)
     }
+
     .profile-chip.active {
       border-color: var(--accent);
       background: var(--accent);
       color: #fff
     }
+
     [data-theme="dark"] .profile-chip.active {
       color: #0a1f00
     }
+
     .profile-chip i {
       width: 14px;
       height: 14px
     }
+
     .gamified-badge {
       display: inline-flex;
       align-items: center;
@@ -1754,6 +1819,7 @@
       height: 1em;
       vertical-align: -0.125em
     }
+
     .card-title i,
     .move-section summary i {
       width: 16px;
@@ -1762,14 +1828,17 @@
       stroke-width: 1.5;
       flex-shrink: 0
     }
+
     .move-section[open] summary i {
       stroke: var(--accent)
     }
+
     .supp-icon i {
       width: 16px;
       height: 16px;
       stroke-width: 1.5
     }
+
     .delight-emoji i {
       width: 18px;
       height: 18px;
@@ -1782,11 +1851,18 @@
 
   <!-- Pull-to-refresh indicator -->
   <div class="ptr-indicator" id="ptrIndicator">
-    <svg viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+    <svg viewBox="0 0 24 24">
+      <path d="M1 4v6h6M23 20v-6h-6" />
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+    </svg>
   </div>
 
   <header>
-    <div class="hdr-left"><span class="icon" style="display:inline-flex"><svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+    <div class="hdr-left"><span class="icon" style="display:inline-flex"><svg width="20" height="20" viewBox="0 0 24 24"
+          fill="var(--accent)" stroke="var(--accent)" stroke-width="2">
+          <path
+            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg></span>
       <h1>HealThee</h1>
     </div>
     <div class="hdr-right">
@@ -1807,14 +1883,20 @@
     </div>
   </header>
 
-  <div id="authLoading" class="auth-loading" style="display:none;">
-    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+  <div id="authLoading" class="auth-loading" style="display:flex;">
+    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2">
+        <path
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg></div>
     <div class="dot-pulse"><span></span><span></span><span></span></div>
     <p style="color:var(--muted);font-size:0.85rem;">Signing you in...</p>
   </div>
 
-  <div id="loginScreen" class="login-screen">
-    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+  <div id="loginScreen" class="login-screen" style="display:none;">
+    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2">
+        <path
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg></div>
     <h2>HealThee</h2>
     <p style="font-size:0.94rem;">Track nutrition, workouts, habits and more.<br>All in one place.</p>
     <button class="login-btn" onclick="signInWithGoogle()">
@@ -1837,7 +1919,10 @@
   </div>
 
   <div id="capScreen" class="cap-screen" style="display:none;">
-    <div><svg width="32" height="32" viewBox="0 0 24 24" fill="var(--muted)" stroke="var(--muted)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+    <div><svg width="32" height="32" viewBox="0 0 24 24" fill="var(--muted)" stroke="var(--muted)" stroke-width="2">
+        <path
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg></div>
     <h2>App is Full</h2>
     <p>This app is limited to 5 users. Contact the admin for access.</p>
     <button class="login-btn" onclick="signOut()" style="background:var(--muted);">Sign Out</button>
@@ -2265,7 +2350,28 @@
       /* ═══════════════════════════════════════════════════
          AUTH
          ═══════════════════════════════════════════════════ */
+      /* Detect environments where popups won't work */
+      function shouldUseRedirect() {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+          || window.navigator.standalone === true;
+        const ua = navigator.userAgent || '';
+        const isInApp = /FBAN|FBAV|Instagram|Line\/|Twitter|MicroMessenger/i.test(ua);
+        return isStandalone || isInApp;
+      }
+
+      /* 5-second fallback: if Firebase auth doesn't resolve, show login screen */
+      let authResolved = false;
+      const authFallbackTimer = setTimeout(() => {
+        if (!authResolved) {
+          console.warn('[Auth] Timeout — showing login screen as fallback');
+          document.getElementById('authLoading').style.display = 'none';
+          document.getElementById('loginScreen').style.display = 'flex';
+        }
+      }, 5000);
+
       auth.onAuthStateChanged(async user => {
+        authResolved = true;
+        clearTimeout(authFallbackTimer);
         document.getElementById("authLoading").style.display = "none";
         if (user) {
           currentUser = user;
@@ -2312,10 +2418,33 @@
       });
 
       window.signInWithGoogle = function () {
-        const p = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(p).catch(e => {
-          if (e.code === "auth/popup-closed-by-browser") return;
-          toast("Sign-in failed: " + e.message, "error");
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const loginBtn = document.querySelector('.login-btn');
+        if (loginBtn) { loginBtn.disabled = true; loginBtn.style.opacity = '0.6'; }
+
+        if (shouldUseRedirect()) {
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('authLoading').style.display = 'flex';
+          auth.signInWithRedirect(provider);
+          return;
+        }
+
+        auth.signInWithPopup(provider).catch(e => {
+          const code = e.code || '';
+          if (code === 'auth/popup-closed-by-user' || code === 'auth/popup-closed-by-browser') {
+            if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = ''; }
+            return;
+          }
+          if (code === 'auth/popup-blocked' ||
+              code === 'auth/operation-not-supported-in-this-environment' ||
+              code === 'auth/internal-error') {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('authLoading').style.display = 'flex';
+            auth.signInWithRedirect(provider);
+            return;
+          }
+          if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = ''; }
+          toast('Sign-in failed: ' + e.message, 'error');
         });
       }
       window.signOut = function () { auth.signOut(); }
@@ -2855,7 +2984,7 @@
         c.querySelector(".modal-overlay")?.addEventListener("click", e => { if (e.target.classList.contains("modal-overlay")) closeProfileModal(); });
         refreshIcons();
       }
-      
+
       window.closeProfileModal = function () {
         document.getElementById("profileModalContainer").innerHTML = "";
       }
@@ -2872,7 +3001,7 @@
         p.trackSkincare = document.getElementById("profTrackSkin").checked;
         p.trackHaircare = document.getElementById("profTrackHair").checked;
         p.trackTrends = document.getElementById("profTrackTrends").checked;
-        p.mode = document.querySelector('input[name="profMode"]:checked')?.value || 'vanilla';
+        p.mode = document.getElementById('modeToggle')?.dataset.mode || 'vanilla';
         return p;
       }
 
@@ -2894,7 +3023,7 @@
             <div class="profile-section">
               <div class="profile-section-title">${licon('target')} Weight Goal</div>
               <label class="profile-option ${p.weightGoal === 'lose' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
-                <input type="radio" name="profWeightGoal" value="lose" ${p.weightGoal === 'lose' ? 'checked' : ''}> Lose weight
+                <input type="radio" name="profWeightGoal" value="lose" ${p.weightGoal === 'lose' ? 'checked' : ''}> Lose
                 <div style="margin-left:auto;display:flex;align-items:center;gap:.3rem">
                   <input type="number" id="profWeightRate" value="${p.weightGoalRate}" step="0.1" class="profile-inline-input" onclick="event.stopPropagation()"> <span style="font-size:.68rem;color:var(--muted)">kg / wk</span>
                 </div>
@@ -2903,7 +3032,7 @@
                 <input type="radio" name="profWeightGoal" value="maintain" ${p.weightGoal === 'maintain' ? 'checked' : ''}> Maintain
               </label>
               <label class="profile-option ${p.weightGoal === 'gain' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
-                <input type="radio" name="profWeightGoal" value="gain" ${p.weightGoal === 'gain' ? 'checked' : ''}> Gain mass
+                <input type="radio" name="profWeightGoal" value="gain" ${p.weightGoal === 'gain' ? 'checked' : ''}> Gain
               </label>
               <label class="profile-option ${p.weightGoal === 'recompose' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
                 <input type="radio" name="profWeightGoal" value="recompose" ${p.weightGoal === 'recompose' ? 'checked' : ''}> Recompose 
@@ -2925,22 +3054,30 @@
                 <label class="profile-chip ${p.trackExercise ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackEx" ${p.trackExercise ? 'checked' : ''} style="display:none"> ${licon('dumbbell')} Exercise</label>
                 <label class="profile-chip ${p.trackWellness ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackWell" ${p.trackWellness ? 'checked' : ''} style="display:none"> ${licon('heart-pulse')} Wellness</label>
                 <label class="profile-chip ${p.trackSkincare ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackSkin" ${p.trackSkincare ? 'checked' : ''} style="display:none"> ${licon('sparkles')} Skincare</label>
-                <label class="profile-chip ${p.trackHaircare ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackHair" ${p.trackHaircare ? 'checked' : ''} style="display:none"> ${licon('scissors')} Haircare</label>
+                <label class="profile-chip ${p.trackHaircare ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackHair" ${p.trackHaircare ? 'checked' : ''} style="display:none"> ${licon('wind')} Haircare</label>
                 <label class="profile-chip ${p.trackTrends ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackTrends" ${p.trackTrends ? 'checked' : ''} style="display:none"> ${licon('trending-up')} Trends</label>
               </div>
             </div>
 
             <div class="profile-section">
               <div class="profile-section-title">${licon('gamepad-2')} App Mode</div>
-              <label class="profile-option ${p.mode === 'vanilla' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profMode]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
-                <input type="radio" name="profMode" value="vanilla" ${p.mode === 'vanilla' ? 'checked' : ''}> Vanilla Tracker
-              </label>
-              <label class="profile-option ${p.mode === 'gamified' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profMode]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected'); setTimeout(()=>toast('Gamified mode is under construction. You will get access shortly!', 'warn'), 100)">
-                <input type="radio" name="profMode" value="gamified" ${p.mode === 'gamified' ? 'checked' : ''}> <span class="gamified-badge">${licon('sword', 12)} Gamified</span>
-              </label>
+              <div class="mode-toggle-wrap">
+                <div class="mode-toggle" id="modeToggle" data-mode="${p.mode || 'vanilla'}" onclick="
+                  const t=this;const m=t.dataset.mode==='vanilla'?'gamified':'vanilla';
+                  t.dataset.mode=m;
+                  t.querySelector('.mode-knob').style.transform=m==='gamified'?'translateX(calc(100% + 2px))':'';
+                  t.querySelector('.mode-label-left').style.opacity=m==='vanilla'?'1':'0.45';
+                  t.querySelector('.mode-label-right').style.opacity=m==='gamified'?'1':'0.45';
+                  if(m==='gamified'){setTimeout(()=>toast('Gamified mode is being built — you\\'ll get access soon!','warn'),100);}
+                ">
+                  <span class="mode-label-left" style="opacity:${p.mode==='gamified'?'0.45':'1'}">${licon('layout-dashboard',13)} Vanilla</span>
+                  <div class="mode-knob" style="transform:${p.mode==='gamified'?'translateX(calc(100% + 2px))':''}"></div>
+                  <span class="mode-label-right" style="opacity:${p.mode==='gamified'?'1':'0.45'}">${licon('sword',13)} Gamified</span>
+                </div>
+              </div>
             </div>
 
-            <button class="btn-primary" style="width:100%;padding:.7rem;margin-top:.5rem" onclick="saveProfile()">Save Profile</button>
+            <button class="btn-primary" style="width:100%;padding:.7rem;margin-top:.5rem" onclick="saveProfile()">Save</button>
             
             <div class="danger-zone" style="margin-top:2rem">
               <button class="btn-secondary" style="width:100%;margin-bottom:.5rem" onclick="signOut()">Sign Out</button>
@@ -3047,7 +3184,7 @@
           ${foodList}
         </div>
         <div class="card">
-          <div class="card-title">${licon('droplets')} Water</div>
+          <div class="card-title">${licon('droplet')} Water</div>
           <div class="water-head"><span>${(waterMl / 1000).toFixed(1)} / ${(TARGETS.water / 1000).toFixed(1)} L</span><span class="water-amt">${Math.round(waterPct)}%</span></div>
           <div class="water-bar"><div class="water-fill" style="width:${Math.min(100, waterPct)}%"></div></div>
           <div style="display:flex;gap:.4rem;margin-top:.5rem;align-items:stretch">
@@ -3173,6 +3310,8 @@
 
       /* ─── BODY TAB ─── */
       window.renderBody = function () {
+        const so = (k) => localStorage.getItem('HT_move_' + k) === '1';
+        const sToggle = "localStorage.setItem('HT_move_'+ this.dataset.key, this.open?'1':'0')";
         const b = dayData.body || {};
         const bmi = b.weight ? calcBMI(b.weight) : null;
         const ratio = (b.shoulders && b.waist) ? (b.shoulders / b.waist).toFixed(2) : null;
@@ -3248,7 +3387,7 @@
         }).join("")}
         </div>
         <div class="card">
-          <div class="card-title">${licon('scissors')} Haircare <span class="card-title-status" style="color:var(--success)">${hcDone ? licon('check-circle', 14) : ""}</span></div>
+          <div class="card-title">${licon('wind')} Haircare <span class="card-title-status" style="color:var(--success)">${hcDone ? licon('check-circle', 14) : ""}</span></div>
           ${hcTasks.length ? hcTasks.map(t => {
           const on = lwwGet(dayData.haircareChecks, t.id);
           return `<label class="check-item"><input type="checkbox" ${on ? "checked" : ""} onchange="toggleCheck('haircareChecks','${t.id}')"><span>${esc(t.label)}</span></label>`;
@@ -3524,7 +3663,7 @@
             <button class="filter-btn ${statsPeriod === 90 ? 'active' : ''}" onclick="setStatsPeriod(90)">Last 90 days</button>
           </div>
           <div class="card"><details class="move-section" data-key="tProtein" ${so('tProtein') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>${licon('beef')} Protein Intake</summary><div class="section-body">${lineChart(trendData, 'protein', 'var(--success)', 'g', 130)}</div></details></div>
+            <summary>${licon('egg')} Protein Intake</summary><div class="section-body">${lineChart(trendData, 'protein', 'var(--success)', 'g', 130)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tCal" ${so('tCal') ? 'open' : ''} ontoggle="${sToggle}">
             <summary>${licon('flame')} Calorie Intake</summary><div class="section-body">${lineChart(trendData, 'cal', 'var(--accent)', 'kcal', 2050)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tNet" ${so('tNet') ? 'open' : ''} ontoggle="${sToggle}">
@@ -3710,6 +3849,10 @@ Do NOT output JSON. Output regular conversational text.`;
         setTimeout(() => el.classList.remove("show"), 2500);
       }
     }); // End of DOMContentLoaded block
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
   </script>
 </body>
 
