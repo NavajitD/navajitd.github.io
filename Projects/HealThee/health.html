@@ -100,7 +100,7 @@
       -webkit-tap-highlight-color: transparent;
       max-width: 44rem;
       margin: 0 auto;
-      padding: 1rem 1rem calc(5.5rem + env(safe-area-inset-bottom, 0px));
+      padding: 1rem 1rem 5.5rem;
       transition: background-color .3s;
       min-height: 100vh
     }
@@ -119,15 +119,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: .6rem 1rem .75rem;
-      padding-top: calc(.6rem + env(safe-area-inset-top, 0px));
-      margin-bottom: 0;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 45;
-      background: var(--bg);
-      transition: background-color .3s
+      padding-bottom: .75rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border)
     }
 
     .hdr-left {
