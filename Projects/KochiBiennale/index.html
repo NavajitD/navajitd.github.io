@@ -356,6 +356,43 @@
       .event-inner { padding: 14px 16px; }
       .event-title { font-size: 0.96rem; }
     }
+
+    /* ── BOOKING REMINDERS ── */
+    #booking-reminders { padding: 12px 16px 0; }
+    .booking-card {
+      border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px;
+      box-shadow: var(--shadow);
+    }
+    .booking-card.urgent { background: #FFF7ED; border: 1.5px solid #FB923C; }
+    .booking-card.info   { background: #EFF6FF; border: 1px solid #BFDBFE; }
+    .booking-card.done   { background: #F0FDF4; border: 1px solid #86EFAC; opacity: 0.7; }
+    .bc-header { display: flex; align-items: flex-start; gap: 10px; }
+    .bc-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .bc-body { flex: 1; min-width: 0; }
+    .bc-title { font-weight: 700; font-size: 0.9rem; line-height: 1.3; }
+    .bc-title.urgent-text { color: #C2410C; }
+    .bc-title.info-text   { color: #1D4ED8; }
+    .bc-title.done-text   { color: #15803D; }
+    .bc-sub { font-size: 0.75rem; color: var(--text2); margin-top: 3px; line-height: 1.5; }
+    .bc-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .bc-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px; border-radius: 20px;
+      font-family: var(--font); font-size: 0.78rem; font-weight: 600;
+      text-decoration: none; border: none; cursor: pointer; transition: all 0.15s ease;
+    }
+    .bc-btn-primary { background: var(--rust); color: white; }
+    .bc-btn-primary:hover { background: #B05526; }
+    .bc-btn-secondary { background: var(--card); color: var(--teal); border: 1.5px solid var(--teal); }
+    .bc-btn-secondary:hover { background: #F0F9FF; }
+    .bc-btn-done { background: var(--green); color: white; }
+    .bc-check { flex-shrink: 0; margin-top: 2px; }
+    .bc-check input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--green); }
+    .bc-price-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #DBEAFE; color: #1E40AF;
+      font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -402,6 +439,9 @@
   <div class="qi-chip clickable" onclick="window.open('tel:9633068884')">📞 Green Bird: 9633068884</div>
   <div class="qi-chip clickable" onclick="window.open('https://kochimuzirisbiennale.org/events/', '_blank')">🔗 KMB Events</div>
 </div>
+
+<!-- BOOKING REMINDERS (rendered by JS) -->
+<div id="booking-reminders"></div>
 
 <!-- DAY TABS -->
 <div id="day-tabs">
@@ -647,7 +687,7 @@ const DAYS = {
     events: [
       { id: 'd1e1', time: '06:00', endTime: '08:30', title: 'Arrive Ernakulam → The Reach Hotel', type: 'transit', desc: 'Bus drops at Ernakulam (After Signal) ~5:45 AM. Auto/cab to The Reach Hotel (~6.7 miles). Shower, breakfast, leave bag.', priority: false },
       { id: 'd1e2', time: '09:15', endTime: '10:00', title: 'Leave for Fort Kochi', type: 'transit', desc: 'Head from The Reach to Fort Kochi — ~11 km. Auto, cab, or ferry.', priority: false },
-      { id: 'd1e3', time: '10:00', endTime: '12:45', title: 'Aspinwall House', type: 'venue', desc: 'Primary venue & ticketing counter. Key works:\n• Adrián Villar Rojas — Rinascimento\n• Marina Abramović — At the Waterfall\n• Shiraz Bayjoo — Sa Sime Lamer\n• Dhiraj Rabha — The Quiet Weight of Shadows\n\nStart here before venue fatigue sets in.', priority: true },
+      { id: 'd1e3', time: '10:00', endTime: '12:45', title: 'Aspinwall House', type: 'venue', desc: 'Primary venue & ticketing counter. Key works:\n• Adrián Villar Rojas — Rinascimento\n• Marina Abramović — At the Waterfall\n• Shiraz Bayjoo — Sa Sime Lamer\n• Dhiraj Rabha — The Quiet Weight of Shadows\n\nStart here before venue fatigue sets in.\n\n🎫 Buy your Biennale pass here at the gate (₹200 general / ₹100 students) — or pre-purchase online at events.finlo.in/kochibiennale to skip queues.', priority: true, ticket: { type: 'pass', label: '🎫 Biennale Pass required', note: '₹200 / ₹100 students · buy at gate or online' } },
       { id: 'd1e4', time: '11:00', endTime: '12:00', title: 'Currents and Circulations — Köken Ergun', type: 'performance', desc: 'Live programme at Bastion/Pavilion. Optional — fit in if at Aspinwall area.', priority: false },
       { id: 'd1e5', time: '13:00', endTime: '15:30', title: 'Pepper House + David Hall', type: 'venue', desc: 'Walk the loop (Pepper House 0.8 km from Aspinwall, David Hall 0.4 km further).\n\nPepper House: Otobong Nkanga\'s living garden + Barakah\nDavid Hall: Peterson Kamwathi\'s Scree', priority: true },
       { id: 'd1e6', time: '15:45', endTime: '17:00', title: 'Bastion Bungalow', type: 'venue', desc: 'Main performance & workshop hub (~0.6 km from David Hall). 4 PM: screening/open mic/discussion.', priority: false },
@@ -665,7 +705,7 @@ const DAYS = {
       { id: 'd2e2', time: '11:45', endTime: '12:30', title: 'The Hosteller — drop bag + lunch', type: 'rest', desc: 'From Ernakulam Junction, transfer to The Hosteller Fort Kochi, Ocean Edge (~21 mins). Drop bag, have a quick lunch.', priority: false },
       { id: 'd2e3', time: '12:45', endTime: '15:30', title: '★ Mattancherry Block — Anand Warehouse', type: 'venue', desc: 'One of five essential venues (Onmanorama). Key works:\n• Ibrahim Mahama — Parliament of Ghosts\n• Jayashree Chakravarty — Roots (expanded)\n• Nari Ward — Divine Smiles\n\nThen: Armaan / Garden / Forplay Society nearby.', priority: true },
       { id: 'd2e4', time: '16:00', endTime: '18:00', title: '★ (Un)poor Images of a Revolution', type: 'performance', desc: 'Lecture-performance by Rahul Juneja and Anurag Singraur.\n\nAt Aspinwall Coir Godown, 4–6 PM.', priority: true },
-      { id: 'd2e5', time: '19:00', endTime: '21:00', title: '★ Bharatanatyam — Narthaki Nataraj', type: 'performance', desc: 'Padma Shri Narthaki Nataraj and team.\n\nAt Pavilion, Bastion Bungalow — 7 PM.\n\nAnchor event for the evening.', priority: true },
+      { id: 'd2e5', time: '19:00', endTime: '21:00', title: '★ Bharatanatyam — Narthaki Nataraj', type: 'performance', desc: 'Padma Shri Narthaki Nataraj and team.\n\nAt Pavilion, Bastion Bungalow — 7 PM.\n\nAnchor event for the evening.\n\n✅ Included with Biennale pass. Limited seating at Pavilion — arrive by 6:30 PM to secure a good spot.', priority: true, ticket: { type: 'included', label: '✅ Included with pass', note: 'Limited Pavilion seats — arrive early' } },
       { id: 'd2e6', time: '21:00', endTime: '23:00', title: 'Dinner + Fort Kochi promenade', type: 'rest', desc: 'Quiet evening walk along the waterfront. You\'re staying at The Hosteller — enjoy the beach proximity.', priority: false }
     ]
   },
@@ -675,13 +715,13 @@ const DAYS = {
     base: '🏨 The Hosteller Fort Kochi, Ocean Edge',
     events: [
       { id: 'd3e1', time: '08:00', endTime: '09:00', title: 'Slow start + breakfast', type: 'rest', desc: 'Enjoy the Fort Kochi morning — last chance before heading home.', priority: false },
-      { id: 'd3e2', time: '10:00', endTime: '12:30', title: '★ Workshop (choose one)', type: 'venue', desc: 'Choose ONE track:\n• Bastion Bungalow — Botanical Impressions\n• Bastion Bungalow — The Living Blue (indigo dyeing)\n• Water Metro Station — Comics for Resistance', priority: true },
+      { id: 'd3e2', time: '10:00', endTime: '12:30', title: '★ Workshop (choose one)', type: 'venue', desc: 'Choose ONE track:\n• Bastion Bungalow — Botanical Impressions\n• Bastion Bungalow — The Living Blue (indigo dyeing)\n• Water Metro Station — Comics for Resistance\n\n⚠️ ADVANCE REGISTRATION REQUIRED — limited seats. Register now at events.finlo.in/kochibiennale before seats fill up.', priority: true, ticket: { type: 'registration', label: '⚠️ Advance registration required', note: 'Register at events.finlo.in/kochibiennale — limited seats', urgent: true } },
       { id: 'd3e3', time: '11:00', endTime: '12:00', title: 'Book launch — Armaan Collective & Cafe', type: 'performance', desc: '11 AM — optional if not doing workshop.', priority: false },
       { id: 'd3e4', time: '13:00', endTime: '14:30', title: 'Lunch + short reset', type: 'rest', desc: 'Recharge. Last full meal in Fort Kochi.', priority: false },
       { id: 'd3e5', time: '14:30', endTime: '16:30', title: 'Final venue catch-up', type: 'venue', desc: 'Any missed venue:\n• Anand Warehouse\n• Pepper House\n• David Hall\n• Jail of Freedom Struggle\n• Forplay Society\n• BMS Warehouse', priority: false },
       { id: 'd3e6', time: '17:00', endTime: '18:00', title: 'STILL — Anja Ibsch', type: 'performance', desc: 'At Pavilion, 5 PM. Note: also listed at Aspinwall House — recheck KMB calendar on the day.', priority: false },
       { id: 'd3e7', time: '18:00', endTime: '19:00', title: 'Screening: A Very Normal Day of Wonders', type: 'performance', desc: 'Water Metro Station, 6 PM.', priority: false },
-      { id: 'd3e8', time: '19:00', endTime: '21:00', title: '★ Blues, Ballads & Music World of Nagas', type: 'performance', desc: 'Padma Shri Rewben Mashangva at Pavilion.\n\nRecommended final evening — different texture from days 1 & 2.', priority: true },
+      { id: 'd3e8', time: '19:00', endTime: '21:00', title: '★ Blues, Ballads & Music World of Nagas', type: 'performance', desc: 'Padma Shri Rewben Mashangva at Pavilion.\n\nRecommended final evening — different texture from days 1 & 2.\n\n✅ Included with Biennale pass. Limited Pavilion seating — arrive by 6:30 PM.', priority: true, ticket: { type: 'included', label: '✅ Included with pass', note: 'Limited Pavilion seats — arrive early' } },
       { id: 'd3e9', time: '20:45', endTime: '21:00', title: '⚠️ Leave for Madavana NOW', type: 'transit', desc: 'Cab from Fort Kochi to Madavana Bus Stop. Buffer for traffic — do NOT cut this close!\n\nBus departs 22:15 from Madavana.', priority: true, alert: 'Bus at 22:15 — Be at Madavana by 22:00 minimum!' },
       { id: 'd3e10', time: '22:15', endTime: '22:30', title: 'Bus departs Madavana → Bangalore', type: 'transit', desc: 'Seat U6 (Upper Sleeper). Drop: Silk Board, Bangalore.\nGreen Bird Tours & Travels — 9633068884\nTicket: NU211921163588146', priority: true }
     ]
@@ -870,6 +910,9 @@ function renderTimeline(dateKey, events) {
                   ${ev.priority ? '<span class="badge badge-priority">★ Pick</span>' : ''}
                   ${isCurrent ? '<span class="badge" style="background:#DCFCE7;color:#166534;">● Now</span>' : ''}
                   ${ev.alert ? '<span class="badge badge-warning">⚠️ Alert</span>' : ''}
+                  ${ev.ticket && ev.ticket.type === 'registration' ? '<span class="badge" style="background:#FEF3C7;color:#92400E;">📋 Register</span>' : ''}
+                  ${ev.ticket && ev.ticket.type === 'pass' ? '<span class="badge" style="background:#DBEAFE;color:#1E40AF;">🎫 Pass</span>' : ''}
+                  ${ev.ticket && ev.ticket.type === 'included' ? '<span class="badge" style="background:#DCFCE7;color:#15803D;">✅ Included</span>' : ''}
                 </div>
               </div>
               <button class="event-check-btn" onclick="event.stopPropagation();toggleComplete('${ev.id}','${dateKey}')" aria-label="Mark complete">
@@ -877,6 +920,7 @@ function renderTimeline(dateKey, events) {
               </button>
             </div>
             ${ev.alert ? `<div class="event-alert">⚠️ ${ev.alert}</div>` : ''}
+            ${ev.ticket ? `<div style="font-size:0.73rem;margin-top:5px;padding:5px 8px;border-radius:6px;background:${ev.ticket.type==='registration'?'#FEF3C7':ev.ticket.type==='pass'?'#EFF6FF':'#F0FDF4'};color:${ev.ticket.type==='registration'?'#92400E':ev.ticket.type==='pass'?'#1E40AF':'#15803D'};font-weight:500;">${ev.ticket.label} — ${ev.ticket.note}</div>` : ''}
             <div class="event-desc">${ev.desc}</div>
           </div>
         </div>
@@ -1283,6 +1327,114 @@ async function saveExpenseEntry() {
 // ═══════════════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+//  BOOKING REMINDERS
+// ═══════════════════════════════════════════════════════════════════
+
+const BOOKING_ITEMS = [
+  {
+    id: 'workshop_reg',
+    urgentBefore: '2026-03-22T10:00:00+05:30',  // deadline = day of workshop
+    hideBefore: null,
+    hideAfter: '2026-03-22T12:30:00+05:30',
+    icon: '📋',
+    title: 'Register for Mar 22 Workshop — URGENT',
+    sub: 'Botanical Impressions, The Living Blue (indigo dyeing), or Comics for Resistance. Limited seats — advance registration is compulsory. Register NOW before the bus departs tonight.',
+    actions: [
+      { label: 'Register now →', url: 'https://events.finlo.in/kochibiennale', primary: true },
+      { label: 'KMB programme', url: 'https://kochimuzirisbiennale.org/programs', primary: false }
+    ],
+    checkLabel: 'Registered ✓'
+  },
+  {
+    id: 'biennale_pass',
+    urgentBefore: '2026-03-19T10:00:00+05:30',
+    hideBefore: null,
+    hideAfter: '2026-03-22T18:00:00+05:30',
+    icon: '🎫',
+    title: 'Buy Biennale Entry Pass',
+    sub: '₹200/day (general) · ₹100 (students/seniors, valid ID required) · Free under 10. Valid for all venues. Buy online to skip gate queues, or buy at Aspinwall House on arrival.',
+    actions: [
+      { label: 'Buy online →', url: 'https://events.finlo.in/kochibiennale', primary: true },
+      { label: 'Weekly pass ₹1000', url: 'https://events.finlo.in/kochibiennale', primary: false }
+    ],
+    checkLabel: 'Pass sorted ✓',
+    priceTag: '₹200 / ₹100 students'
+  },
+  {
+    id: 'pavilion_seats',
+    urgentBefore: null,
+    hideBefore: null,
+    hideAfter: '2026-03-22T21:00:00+05:30',
+    icon: '🎭',
+    title: 'Pavilion Performances — arrive early',
+    sub: 'Bharatanatyam (Mar 21, 7 PM) and Blues/Ballads (Mar 22, 7 PM) are included with your Biennale pass but the Pavilion has limited seating. Aim to arrive by 6:30 PM on both evenings.',
+    actions: [],
+    checkLabel: null,
+    infoOnly: true
+  }
+];
+
+function renderBookingReminders() {
+  const container = document.getElementById('booking-reminders');
+  if (!container) return;
+
+  const now = Date.now();
+  const saved = JSON.parse(localStorage.getItem('kmb_booking') || '{}');
+  let html = '';
+
+  for (const item of BOOKING_ITEMS) {
+    // Time-based visibility
+    if (item.hideBefore && now < new Date(item.hideBefore).getTime()) continue;
+    if (item.hideAfter && now > new Date(item.hideAfter).getTime()) continue;
+
+    const isDone = !!saved[item.id];
+    const isUrgent = item.urgentBefore && now < new Date(item.urgentBefore).getTime() && !isDone;
+    const isInfo = !!item.infoOnly;
+
+    let cardClass = isDone ? 'done' : (isUrgent ? 'urgent' : 'info');
+    let titleClass = isDone ? 'done-text' : (isUrgent ? 'urgent-text' : 'info-text');
+
+    const actionsHtml = item.actions.map(a =>
+      `<a href="${a.url}" target="_blank" class="bc-btn ${a.primary && !isDone ? 'bc-btn-primary' : 'bc-btn-secondary'}">${a.label}</a>`
+    ).join('');
+
+    const checkboxHtml = item.checkLabel ? `
+      <div class="bc-check">
+        <input type="checkbox" id="bc-${item.id}" ${isDone ? 'checked' : ''}
+          onchange="toggleBookingDone('${item.id}', this.checked)" title="${item.checkLabel}">
+      </div>` : '';
+
+    const priceTagHtml = item.priceTag && !isDone
+      ? `<span class="bc-price-tag">🏷️ ${item.priceTag}</span>` : '';
+
+    html += `
+      <div class="booking-card ${cardClass}" id="bc-card-${item.id}">
+        <div class="bc-header">
+          <span class="bc-icon">${isDone ? '✅' : item.icon}</span>
+          <div class="bc-body">
+            <div class="bc-title ${titleClass}">${isDone ? (item.checkLabel || item.title) : item.title}</div>
+            ${!isDone ? `<div class="bc-sub">${item.sub}${priceTagHtml ? '<br>' + priceTagHtml : ''}</div>` : ''}
+            ${!isDone && actionsHtml ? `<div class="bc-actions">${actionsHtml}</div>` : ''}
+          </div>
+          ${checkboxHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html
+    ? `<div style="padding:12px 16px 0"><div style="font-size:0.7rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Tickets & Booking</div>${html}</div>`
+    : '';
+}
+
+function toggleBookingDone(id, checked) {
+  const saved = JSON.parse(localStorage.getItem('kmb_booking') || '{}');
+  if (checked) saved[id] = true; else delete saved[id];
+  localStorage.setItem('kmb_booking', JSON.stringify(saved));
+  renderBookingReminders();
+}
+
 function init() {
   updateClock();
   setInterval(updateClock, 1000);
@@ -1291,6 +1443,7 @@ function init() {
 
   renderAllDays();
   renderTransportCards();
+  renderBookingReminders();
 
   const activeDay = getActiveDay();
   switchDay(activeDay);
