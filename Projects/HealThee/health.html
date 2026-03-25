@@ -2397,20 +2397,6 @@
         return isStandalone || isInApp;
       }
 
-      /* ── Instant render for returning users (before Firebase resolves) ── */
-      (function () {
-        const c = _htReadCache();
-        if (!c || c.date !== todayStr()) return; // no cache or stale day — wait for Firebase
-        selectedDate = c.date;
-        if (c.profile) { userProfile = c.profile; HEIGHT_CM_DYNAMIC = c.profile.height || HEIGHT_CM; }
-        if (c.day)     { dayData = { ...emptyDay(), ...c.day }; }
-        recompute(); render();
-        document.getElementById('authLoading').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('bottomNav').style.display = 'block';
-        document.getElementById('mainApp').dataset.cacheRender = c.uid;
-      })();
-
       /* 5-second fallback: if Firebase auth doesn't resolve, show login screen */
       let authResolved = false;
       const authFallbackTimer = setTimeout(() => {
@@ -2426,25 +2412,6 @@
         clearTimeout(authFallbackTimer);
         document.getElementById("authLoading").style.display = "none";
         if (user) {
-          const mainEl = document.getElementById('mainApp');
-          // Fast path: app already rendered from cache for this same user
-          if (mainEl.dataset.cacheRender === user.uid) {
-            delete mainEl.dataset.cacheRender;
-            currentUser = user;
-            document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("userMenu").style.display = "flex";
-            document.getElementById("userAvatar").src = user.photoURL || "";
-            // Silent background refresh — only re-renders if something changed
-            loadProfile(true).then(() => loadDay(true));
-            return;
-          }
-          // Cache was for a different user — hide the pre-rendered app and fall through
-          if (mainEl.dataset.cacheRender) {
-            _htClearCache();
-            mainEl.style.display = 'none';
-            document.getElementById("bottomNav").style.display = 'none';
-            delete mainEl.dataset.cacheRender;
-          }
           currentUser = user;
           document.getElementById("loginScreen").style.display = "none";
           document.getElementById("userMenu").style.display = "flex";
@@ -2503,20 +2470,31 @@
 
         auth.signInWithPopup(provider).catch(e => {
           const code = e.code || '';
-          if (code === 'auth/popup-closed-by-user' || code === 'auth/popup-closed-by-browser') {
-            if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = ''; }
-            return;
-          }
+
+          // Popup blocked or unsupported → fall back to redirect
           if (code === 'auth/popup-blocked' ||
               code === 'auth/operation-not-supported-in-this-environment' ||
               code === 'auth/internal-error') {
+            console.log('[Auth] Popup failed (' + code + '), falling back to redirect');
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('authLoading').style.display = 'flex';
             auth.signInWithRedirect(provider);
             return;
           }
-          if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = ''; }
-          toast('Sign-in failed: ' + e.message, 'error');
+
+          // User closed popup — just re-enable button
+          if (code === 'auth/popup-closed-by-user' || code === 'auth/popup-closed-by-browser' ||
+              code === 'auth/cancelled-popup-request') {
+            if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
+            return;
+          }
+
+          if (code === 'auth/network-request-failed') {
+            toast('Network error — check your connection', 'error');
+          } else {
+            toast('Sign-in failed: ' + e.message, 'error');
+          }
+          if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
         });
       }
       window.signOut = function () { _htClearCache(); auth.signOut(); }
