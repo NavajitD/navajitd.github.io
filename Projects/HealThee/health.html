@@ -2397,6 +2397,20 @@
         return isStandalone || isInApp;
       }
 
+      /* ── Instant render for returning users (before Firebase resolves) ── */
+      (function () {
+        const c = _htReadCache();
+        if (!c || c.date !== todayStr()) return; // no cache or stale day — wait for Firebase
+        selectedDate = c.date;
+        if (c.profile) { userProfile = c.profile; HEIGHT_CM_DYNAMIC = c.profile.height || HEIGHT_CM; }
+        if (c.day)     { dayData = { ...emptyDay(), ...c.day }; }
+        recompute(); render();
+        document.getElementById('authLoading').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('bottomNav').style.display = 'block';
+        document.getElementById('mainApp').dataset.cacheRender = c.uid;
+      })();
+
       /* 5-second fallback: if Firebase auth doesn't resolve, show login screen */
       let authResolved = false;
       const authFallbackTimer = setTimeout(() => {
@@ -2412,6 +2426,25 @@
         clearTimeout(authFallbackTimer);
         document.getElementById("authLoading").style.display = "none";
         if (user) {
+          const mainEl = document.getElementById('mainApp');
+          // Fast path: app already rendered from cache for this same user
+          if (mainEl.dataset.cacheRender === user.uid) {
+            delete mainEl.dataset.cacheRender;
+            currentUser = user;
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("userMenu").style.display = "flex";
+            document.getElementById("userAvatar").src = user.photoURL || "";
+            // Silent background refresh — only re-renders if something changed
+            loadProfile(true).then(() => loadDay(true));
+            return;
+          }
+          // Cache was for a different user — hide the pre-rendered app and fall through
+          if (mainEl.dataset.cacheRender) {
+            _htClearCache();
+            mainEl.style.display = 'none';
+            document.getElementById("bottomNav").style.display = 'none';
+            delete mainEl.dataset.cacheRender;
+          }
           currentUser = user;
           document.getElementById("loginScreen").style.display = "none";
           document.getElementById("userMenu").style.display = "flex";
@@ -2448,6 +2481,7 @@
           return;
         }
         currentUser = null;
+        _htClearCache();
         document.getElementById("loginScreen").style.display = "flex";
         document.getElementById("mainApp").style.display = "none";
         document.getElementById("bottomNav").style.display = "none";
@@ -2485,25 +2519,53 @@
           toast('Sign-in failed: ' + e.message, 'error');
         });
       }
-      window.signOut = function () { auth.signOut(); }
+      window.signOut = function () { _htClearCache(); auth.signOut(); }
       // Document click listener moved or removed since dropdown is gone
+
+      /* ── localStorage instant-render cache ───────────────────────────── */
+      const HT_C = 'HT_C_';
+      window._htWriteCache = function (uid, date, day, profile) {
+        try {
+          localStorage.setItem(HT_C + 'uid', uid);
+          localStorage.setItem(HT_C + 'date', date);
+          if (day)     localStorage.setItem(HT_C + 'day',     JSON.stringify(day));
+          if (profile) localStorage.setItem(HT_C + 'profile', JSON.stringify(profile));
+        } catch (_) {}
+      };
+      window._htReadCache = function () {
+        try {
+          const uid  = localStorage.getItem(HT_C + 'uid');
+          const date = localStorage.getItem(HT_C + 'date');
+          const day  = JSON.parse(localStorage.getItem(HT_C + 'day')  || 'null');
+          const prof = JSON.parse(localStorage.getItem(HT_C + 'profile') || 'null');
+          return uid && date ? { uid, date, day, profile: prof } : null;
+        } catch (_) { return null; }
+      };
+      window._htClearCache = function () {
+        try { [HT_C+'uid', HT_C+'date', HT_C+'day', HT_C+'profile'].forEach(k => localStorage.removeItem(k)); } catch (_) {}
+      };
 
       /* ═══════════════════════════════════════════════════
          FIRESTORE CRUD
          ═══════════════════════════════════════════════════ */
       window.dayRef = function (dateKey) { return db.collection("users").doc(currentUser.uid).collection("days").doc(dateKey); }
 
-      window.loadDay = async function () {
+      window.loadDay = async function (silent = false) {
         try {
           const doc = await dayRef(selectedDate).get();
-          dayData = doc.exists ? { ...emptyDay(), ...doc.data() } : emptyDay();
-          recompute(); render();
-        } catch (e) { console.error(e); dayData = emptyDay(); render(); }
+          const fresh = doc.exists ? { ...emptyDay(), ...doc.data() } : emptyDay();
+          const changed = silent ? JSON.stringify(fresh) !== JSON.stringify(dayData) : true;
+          dayData = fresh;
+          if (currentUser) _htWriteCache(currentUser.uid, selectedDate, dayData, null);
+          if (!silent || changed) { recompute(); render(); }
+        } catch (e) { console.error(e); if (!silent) { dayData = emptyDay(); render(); } }
       }
 
       let saveTimer = null;
       window.saveDay = function () {
         touch(); recompute();
+        // Optimistic cache write — immediately available on next app open
+        if (currentUser) _htWriteCache(currentUser.uid, selectedDate, dayData, null);
         if (saveTimer) clearTimeout(saveTimer);
         saveTimer = setTimeout(async () => {
           try { await dayRef(selectedDate).set(dayData, { merge: true }); }
@@ -2522,11 +2584,14 @@
       }
 
       // ── Profile helpers ──
-      window.loadProfile = async function () {
+      window.loadProfile = async function (silent = false) {
         try {
           const doc = await db.collection("users").doc(currentUser.uid).get();
-          userProfile = doc.exists && doc.data().profile ? doc.data().profile : getDefaultProfile();
-        } catch (e) { console.error("Profile load failed:", e); userProfile = getDefaultProfile(); }
+          const fresh = doc.exists && doc.data().profile ? doc.data().profile : getDefaultProfile();
+          userProfile = fresh;
+          HEIGHT_CM_DYNAMIC = userProfile.height || HEIGHT_CM;
+          _htWriteCache(currentUser.uid, selectedDate, null, userProfile);
+        } catch (e) { if (!silent) { console.error("Profile load failed:", e); userProfile = getDefaultProfile(); } }
       }
 
       window.getDefaultProfile = function () {
@@ -2550,6 +2615,7 @@
           const p = collectProfileForm();
           userProfile = p;
           await db.collection("users").doc(currentUser.uid).set({ profile: p }, { merge: true });
+          _htWriteCache(currentUser.uid, selectedDate, null, userProfile);
           HEIGHT_CM_DYNAMIC = p.height || 162;
           toast("Profile saved", "success");
           closeProfileModal();
