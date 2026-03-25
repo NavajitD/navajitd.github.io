@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
-    
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
+
     <title>Projects - Navajit D</title>
     <style>
         :root {
@@ -22,7 +25,7 @@
             --success-color: #10b981;
             --warning-color: #f59e0b;
         }
-        
+
         [data-theme="colorful"] {
             --text-color: #0f2e00;
             --bg-color: #fefffe;
@@ -34,10 +37,17 @@
             --success-color: #059669;
             --warning-color: #d97706;
         }
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { font-size: 16px; }
-        
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
         body {
             font-family: var(--font-sans);
             color: var(--text-color);
@@ -48,74 +58,228 @@
             padding: 3rem 1.5rem;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        
-        a { color: var(--accent-color); text-decoration: none; transition: color 0.3s ease; }
-        a:hover { text-decoration: underline; }
-        p { margin-bottom: 1.5rem; }
-        
+
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+        }
+
         /* Theme Toggle */
         .theme-toggle {
-            width: 2.5rem; height: 2rem; border-radius: 6px;
-            border: 1px solid var(--border-color); background: var(--bg-color);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            width: 2.5rem;
+            height: 2rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.3s ease;
         }
-        .theme-toggle:hover { border-color: var(--accent-color); background: rgba(37, 99, 235, 0.05); }
-        [data-theme="colorful"] .theme-toggle:hover { background: rgba(22, 163, 74, 0.05); }
-        .theme-toggle svg { width: 16px; height: 16px; stroke: var(--text-color); fill: none; stroke-width: 1.5; transition: all 0.3s ease; }
-        .theme-toggle:hover svg { stroke: var(--accent-color); }
-        .icon-colorful { opacity: 0; position: absolute; }
-        .icon-original { opacity: 1; }
-        [data-theme="colorful"] .icon-colorful { opacity: 1; }
-        [data-theme="colorful"] .icon-original { opacity: 0; }
-        
-        /* Header */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
-        .header-left { display: flex; align-items: center; gap: 1rem; }
-        .logo { font-weight: 600; font-size: 1rem; color: var(--text-color); }
-        .logo a { color: var(--text-color); }
-        .logo a:hover { color: var(--accent-color); text-decoration: none; }
-        nav ul { display: flex; gap: 1.5rem; list-style: none; }
-        nav a { color: var(--text-color); font-size: 1rem; }
-        nav a:hover { color: var(--accent-color); text-decoration: none; }
-        nav a.current { color: var(--accent-color); font-weight: 600; }
-        
-        /* Page Header */
-        .page-header { margin-bottom: 3rem; }
-        .page-title { font-size: 2.3rem; line-height: 1.3; font-weight: 700; margin-bottom: 1rem; }
-        .page-description { color: var(--muted-color); }
-        
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-color);
+            background: rgba(37, 99, 235, 0.05);
         }
-        
+
+        [data-theme="colorful"] .theme-toggle:hover {
+            background: rgba(22, 163, 74, 0.05);
+        }
+
+        .theme-toggle svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--text-color);
+            fill: none;
+            stroke-width: 1.5;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover svg {
+            stroke: var(--accent-color);
+        }
+
+        .icon-colorful {
+            opacity: 0;
+            position: absolute;
+        }
+
+        .icon-original {
+            opacity: 1;
+        }
+
+        [data-theme="colorful"] .icon-colorful {
+            opacity: 1;
+        }
+
+        [data-theme="colorful"] .icon-original {
+            opacity: 0;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        .logo a {
+            color: var(--text-color);
+        }
+
+        .logo a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        nav a:hover {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        nav a.current {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 2.3rem;
+            line-height: 1.3;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .page-description {
+            color: var(--muted-color);
+        }
+
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
         [data-theme="colorful"] .page-description {
             background: linear-gradient(90deg, #16a34a, #059669, #eab308, #ea580c, #dc2626, #ea580c, #eab308, #059669, #16a34a);
             background-size: 200% auto;
-            background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             animation: gradient-shift 6s ease infinite;
         }
-        
+
         /* Projects */
-        #projects { margin-bottom: 4rem; }
-        .section-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 2rem; }
-        
-        .project-item { margin-bottom: 2.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--border-color); }
-        [data-theme="colorful"] .project-item {
-            background: linear-gradient(135deg, rgba(22,163,74,0.03), rgba(234,88,12,0.03) 50%, rgba(234,179,8,0.03));
-            padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-bottom: none;
+        #projects {
+            margin-bottom: 4rem;
         }
-        .project-item:last-child { border-bottom: none; }
-        .project-title { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
-        [data-theme="colorful"] .project-title { color: var(--accent-color); }
-        .project-meta { font-size: 0.86rem; color: var(--muted-color); margin-bottom: 0.75rem; }
-        [data-theme="colorful"] .project-meta { color: var(--secondary-color); }
-        .project-description { margin-bottom: 0.75rem; font-size: 0.875rem;}
-        .project-links { display: flex; gap: 1.5rem; align-items: center; }
-        .project-links a { font-size: 0.9rem; text-decoration: underline;}
-        
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .project-item {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        [data-theme="colorful"] .project-item {
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.03), rgba(234, 88, 12, 0.03) 50%, rgba(234, 179, 8, 0.03));
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-bottom: none;
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        [data-theme="colorful"] .project-title {
+            color: var(--accent-color);
+        }
+
+        .project-meta {
+            font-size: 0.86rem;
+            color: var(--muted-color);
+            margin-bottom: 0.75rem;
+        }
+
+        [data-theme="colorful"] .project-meta {
+            color: var(--secondary-color);
+        }
+
+        .project-description {
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .project-links a {
+            font-size: 0.9rem;
+            text-decoration: underline;
+        }
+
         /* Blog CTA link */
         .blog-cta {
             font-size: 0.875rem;
@@ -123,58 +287,131 @@
             border-bottom: 1px dashed var(--muted-color);
             transition: all 0.2s ease;
         }
+
         .blog-cta:hover {
             color: var(--accent-color);
             border-bottom-color: var(--accent-color);
             text-decoration: none;
         }
-        
+
         /* Status badges */
         .project-status {
-            display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem;
-            font-weight: 600; border-radius: 4px; margin-left: 0.5rem; text-transform: uppercase;
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
         }
-        .status-wip { background-color: rgba(239, 68, 68, 0.1); color: #dc2626; }
-        [data-theme="colorful"] .status-wip { background-color: rgba(234, 88, 12, 0.1); color: var(--secondary-color); }
-        .status-active { background-color: rgba(16, 185, 129, 0.1); color: #059669; }
-        [data-theme="colorful"] .status-active { background-color: rgba(22, 163, 74, 0.1); color: var(--accent-color); }
-        .status-experiment { background-color: rgba(139, 92, 246, 0.1); color: #7c3aed; }
-        [data-theme="colorful"] .status-experiment { background-color: rgba(234, 179, 8, 0.1); color: var(--highlight-color); }
-        
+
+        .status-wip {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        [data-theme="colorful"] .status-wip {
+            background-color: rgba(234, 88, 12, 0.1);
+            color: var(--secondary-color);
+        }
+
+        .status-active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        [data-theme="colorful"] .status-active {
+            background-color: rgba(22, 163, 74, 0.1);
+            color: var(--accent-color);
+        }
+
+        .status-experiment {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+        }
+
+        [data-theme="colorful"] .status-experiment {
+            background-color: rgba(234, 179, 8, 0.1);
+            color: var(--highlight-color);
+        }
+
         /* Footer */
         footer {
-            margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color);
-            font-size: 0.875rem; color: var(--muted-color);
-            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            color: var(--muted-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .footer-links { display: flex; gap: 1.5rem; }
-        
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
         @media (max-width: 640px) {
-            body { padding: 2rem 1rem; }
-            .theme-toggle { width: 2rem; height: 1.75rem; }
-            .theme-toggle svg { width: 14px; height: 14px; }
-            header { flex-direction: column; gap: 1rem; }
-            nav ul { gap: 1rem; }
-            .page-title { font-size: 1.75rem; }
-            [data-theme="colorful"] .project-item { padding: 1rem; }
-            footer { flex-direction: column; gap: 1rem; text-align: center; }
+            body {
+                padding: 2rem 1rem;
+            }
+
+            .theme-toggle {
+                width: 2rem;
+                height: 1.75rem;
+            }
+
+            .theme-toggle svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            [data-theme="colorful"] .project-item {
+                padding: 1rem;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
         }
-        
-        .theme-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .theme-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
+
 <body class="theme-transition" data-theme="colorful">
     <header>
         <div class="header-left">
             <div class="logo"><a href="/">Navajit D</a></div>
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
                 <svg class="icon icon-colorful" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><circle cx="12" cy="12" r="2"/>
-                    <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                    <circle cx="12" cy="12" r="2" />
+                    <path
+                        d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
                 </svg>
                 <svg class="icon icon-original" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="5"/>
-                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    <circle cx="12" cy="12" r="5" />
+                    <path
+                        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
                 </svg>
             </button>
         </div>
@@ -186,25 +423,13 @@
             </ul>
         </nav>
     </header>
-    
+
     <div class="page-header">
         <h1 class="page-title">Projects</h1>
         <p class="page-description">Tools and applications I've built to make life easier or more fun.</p>
     </div>
-    
-    <section id="projects">
 
-        <div class="project-item">
-            <h3 class="project-title">
-                KMB Companion
-                <span class="project-status status-active">Active</span>
-            </h3>
-            <div class="project-meta">Vanilla JS · 2026</div>
-            <p class="project-description">A mobile-first travel companion for the 6th Kochi-Muziris Biennale "For The Time Being." Live IST clock, transport countdowns with waitlist warnings, day-by-day itinerary with check-offs, and a live-fetch panel to scan the official KMB calendar for programme changes.</p>
-            <div class="project-links">
-                <a href="/Projects/KochiBiennale/index.html">Launch</a>
-            </div>
-        </div>
+    <section id="projects">
 
         <div class="project-item" id="health-tracker">
             <h3 class="project-title">
@@ -212,7 +437,10 @@
                 <span class="project-status status-active">Active</span>
             </h3>
             <div class="project-meta">Firebase, Firestore, Groq, Cerebras · 2026</div>
-            <p class="project-description">A better HealthifyMe Plus - optimised for me, and forever free. A full-stack personal health dashboard with daily calorie, macro, and micronutrient tracking, with AI insights. Includes adaptive meal plan, water intake and weight logging, exercise tracking and sleep monitoring. With trend analysis, weekly/monthly dashboards, and access controlled by Google Auth.</p>
+            <p class="project-description">A better HealthifyMe Plus - optimised for me, and forever free. A full-stack
+                personal health dashboard with daily calorie, macro, and micronutrient tracking, with AI insights.
+                Includes adaptive meal plan, water intake and weight logging, exercise tracking and sleep monitoring.
+                With trend analysis, weekly/monthly dashboards, and access controlled by Google Auth.</p>
             <div class="project-links">
                 <a href="/Projects/HealThee/health.html">Launch</a>
                 <!--<a href="/blog.html#latest" id="healthBlogCta" data-target-title="Death of SaaS and Other Clickbaits"> Read more </a>-->
@@ -225,7 +453,9 @@
                 <span class="project-status status-active">Active</span>
             </h3>
             <div class="project-meta">Firebase, Firestore, Cerebras · 2025-26</div>
-            <p class="project-description">Smart expense management with AI-powered insights and budget tracking. Features automated categorization, spending pattern visualization, and financial habit optimization. Includes a beautiful dark mode interface and secure Google authentication.</p>
+            <p class="project-description">Smart expense management with AI-powered insights and budget tracking.
+                Features automated categorization, spending pattern visualization, and financial habit optimization.
+                Includes a beautiful dark mode interface and secure Google authentication.</p>
             <div class="project-links">
                 <a href="/Projects/MyExpenses/expenses.html">Launch</a>
             </div>
@@ -237,7 +467,8 @@
                 <span class="project-status status-active">Ongoing</span>
             </h3>
             <div class="project-meta">Firebase, Firestore, Cerebras · 2026</div>
-            <p class="project-description">A Guide to your life queries with the profound insights of numerology. Built in collaboration with <a href="https://mysticsmentor.com/">Mystics Mentor</a>. </p>
+            <p class="project-description">A Guide to your life queries with the profound insights of numerology. Built
+                in collaboration with <a href="https://mysticsmentor.com/">Mystics Mentor</a>. </p>
             <div class="project-links">
                 <a href="/Projects/Numo/index.html">Launch</a>
             </div>
@@ -249,40 +480,46 @@
                 <span class="project-status status-active">Active</span>
             </h3>
             <div class="project-meta">p5.js · 2025</div>
-            <p class="project-description">An interactive visual game where you hunt for letters hidden in street photography from Bengaluru. Click on letters to progress through images and discover what fruit you'll find at the end. A playful experiment combining code and urban exploration.</p>
+            <p class="project-description">An interactive visual game where you hunt for letters hidden in street
+                photography from Bengaluru. Click on letters to progress through images and discover what fruit you'll
+                find at the end. A playful experiment combining code and urban exploration.</p>
             <div class="project-links">
                 <a href="/Projects/Sketches/letter-hunt.html">Launch</a>
             </div>
         </div>
 
-        
-        
+
+
         <div class="project-item">
             <h3 class="project-title">
                 WhatsApp Scheduler
                 <span class="project-status status-wip">Inactive</span>
             </h3>
             <div class="project-meta">Node.js, WhatsApp Web API, Railway · 2025</div>
-            <p class="project-description">Schedule WhatsApp messages like emails. Set up messages to be sent at the perfect time with support for recurring schedules. Connect your WhatsApp via QR code and manage all scheduled messages from a clean dashboard.</p>
+            <p class="project-description">Schedule WhatsApp messages like emails. Set up messages to be sent at the
+                perfect time with support for recurring schedules. Connect your WhatsApp via QR code and manage all
+                scheduled messages from a clean dashboard.</p>
             <div class="project-links">
                 <a href="/Projects/whatsapp-scheduler.html">Launch</a>
             </div>
         </div>
-        
+
         <div class="project-item">
             <h3 class="project-title">
                 Quiz Score Counter
                 <span class="project-status status-active">Ongoing</span>
             </h3>
             <div class="project-meta">2025-26</div>
-            <p class="project-description">A comprehensive quiz management system for running live quiz competitions. Features support for Infinite Bounce and Pounce formats, real-time leaderboards, score tracking, and CSV export. All data is stored locally in your browser for offline use.</p>
+            <p class="project-description">A comprehensive quiz management system for running live quiz competitions.
+                Features support for Infinite Bounce and Pounce formats, real-time leaderboards, score tracking, and CSV
+                export. All data is stored locally in your browser for offline use.</p>
             <div class="project-links">
                 <a href="/Projects/quiz-scoring.html">Launch</a>
             </div>
         </div>
-        
+
     </section>
-    
+
     <footer>
         <div class="footer-links">
             <a href="https://github.com/navajitd">GitHub</a>
@@ -299,19 +536,19 @@
         const body = document.body;
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'original') body.removeAttribute('data-theme');
-        
-        themeToggle.addEventListener('click', function() {
+
+        themeToggle.addEventListener('click', function () {
             const current = body.getAttribute('data-theme');
             if (current === 'colorful') { body.removeAttribute('data-theme'); localStorage.setItem('theme', 'original'); }
             else { body.setAttribute('data-theme', 'colorful'); localStorage.setItem('theme', 'colorful'); }
             themeToggle.style.opacity = '0.7';
             setTimeout(() => { themeToggle.style.opacity = '1'; }, 150);
         });
-        
-        themeToggle.addEventListener('keydown', function(e) {
+
+        themeToggle.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeToggle.click(); }
         });
-        
+
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
         prefersDark.addEventListener('change', (e) => {
             if (!localStorage.getItem('theme')) {
@@ -330,13 +567,13 @@
                 return new Promise((resolve, reject) => {
                     const cb = '__pc_' + Math.random().toString(36).slice(2);
                     const u = new URL(url);
-                    Object.entries(params).forEach(([k,v]) => u.searchParams.set(k,v));
+                    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
                     u.searchParams.set('prefix', cb);
                     let done = false;
-                    window[cb] = (d) => { if(done) return; done=true; cleanup(); resolve(d); };
+                    window[cb] = (d) => { if (done) return; done = true; cleanup(); resolve(d); };
                     const s = document.createElement('script'); s.src = u.toString(); s.async = true;
-                    s.onerror = () => { if(done) return; done=true; cleanup(); reject(); };
-                    function cleanup() { try{delete window[cb]}catch(e){} s.remove(); }
+                    s.onerror = () => { if (done) return; done = true; cleanup(); reject(); };
+                    function cleanup() { try { delete window[cb] } catch (e) { } s.remove(); }
                     document.head.appendChild(s);
                 });
             }
@@ -346,12 +583,12 @@
                 if (res?.ok && res.posts?.length > 0) {
                     // Selects the Health Tracker CTA, plus any future CTA you add the data attribute to
                     const ctas = document.querySelectorAll('#healthBlogCta, [data-target-title]');
-                    
+
                     ctas.forEach(cta => {
                         const targetTitle = cta.getAttribute('data-target-title');
-                        
+
                         // Find the post by title (case-insensitive), or fallback to the latest post if not found
-                        const targetPost = targetTitle 
+                        const targetPost = targetTitle
                             ? (res.posts.find(p => p.title.toLowerCase() === targetTitle.toLowerCase()) || res.posts[0])
                             : res.posts[0];
 
@@ -361,8 +598,9 @@
                         }
                     });
                 }
-            } catch(e) { /* fallback link is fine */ }
+            } catch (e) { /* fallback link is fine */ }
         })();
     </script>
 </body>
+
 </html>

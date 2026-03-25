@@ -1648,7 +1648,8 @@
         <div class="modal-box">
             <h3>Delete Account</h3>
             <p>This will permanently erase all your expenses and settings. This cannot be undone. Type
-                <strong>DELETE</strong> to confirm.</p>
+                <strong>DELETE</strong> to confirm.
+            </p>
             <input class="chat-input" id="deleteConfirmInput" placeholder="Type DELETE" style="margin-bottom:1rem;">
             <div class="modal-actions">
                 <button class="modal-cancel" onclick="closeDeleteModal()">Cancel</button>
@@ -2933,7 +2934,7 @@
             let topCat = 'N/A', topAmt = 0, cn = '';
             if (sorted.length > 0) {
                 if (sorted[0][0] === 'Rent/Maintenance' && sorted.length > 1) {
-                    topCat = sorted[1][0]; topAmt = sorted[1][1]; cn = '(excl. Rent)';
+                    topCat = sorted[1][0]; topAmt = sorted[1][1];
                 } else {
                     topCat = sorted[0][0]; topAmt = sorted[0][1];
                 }

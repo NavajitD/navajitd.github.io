@@ -9,8 +9,12 @@
     content="HealThee is an all-in-one tracker for nutrition, workouts, body composition, and daily habits.">
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♥</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Preconnect to critical origins (LCP savings: googleapis ~380ms, apis.google ~350ms) -->
+  <link rel="preconnect" href="https://www.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://apis.google.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap" media="print"
     onload="this.media='all'">
@@ -18,7 +22,8 @@
     <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap">
   </noscript>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <!-- Pinned version for reliable CDN caching (avoids @latest cache-busting) -->
+  <script src="https://unpkg.com/lucide@0.475.0/dist/umd/lucide.js" defer></script>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0a0f0a" media="(prefers-color-scheme: dark)">
@@ -1226,10 +1231,35 @@
       min-height: 11px
     }
 
+    /* Pixel heart animation (login screen) */
+    @keyframes pixel-beat {
+      0%, 100% { transform: scale(1); }
+      14% { transform: scale(1.18); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.12); }
+      56% { transform: scale(1); }
+    }
+    .pixel-heart {
+      display: inline-block;
+      animation: pixel-beat 1.2s ease-in-out infinite;
+      image-rendering: pixelated;
+      line-height: 1;
+    }
     /* Trend lines */
     .trend {
       width: 100%
     }
+
+    /* Chart tooltips (SVG hover/tap) */
+    .chart-pt .chart-tip { opacity: 0; transition: opacity .15s; pointer-events: none; }
+    .chart-pt:hover .chart-tip,
+    .chart-pt:focus .chart-tip,
+    .chart-pt.active .chart-tip { opacity: 1; }
+    .chart-pt { cursor: pointer; outline: none; }
+    .chart-bar-wrap:hover .chart-tip-bar,
+    .chart-bar-wrap:focus .chart-tip-bar,
+    .chart-bar-wrap.active .chart-tip-bar { opacity: 1; }
+    .chart-tip-bar { opacity: 0; transition: opacity .15s; pointer-events: none; }
 
     .trend svg {
       width: 100%;
@@ -1859,7 +1889,7 @@
 
   <header>
     <div class="hdr-left"><span class="icon" style="display:inline-flex"><svg width="20" height="20" viewBox="0 0 24 24"
-          fill="var(--accent)" stroke="var(--accent)" stroke-width="2">
+          fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path
             d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg></span>
@@ -1884,7 +1914,7 @@
   </header>
 
   <div id="authLoading" class="auth-loading" style="display:flex;">
-    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2">
+    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path
           d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg></div>
@@ -1893,10 +1923,18 @@
   </div>
 
   <div id="loginScreen" class="login-screen" style="display:none;">
-    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2">
-        <path
-          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg></div>
+    <div class="pixel-heart"><svg width="48" height="48" viewBox="0 0 11 10" style="display:block" xmlns="http://www.w3.org/2000/svg">
+      <!-- pixel art heart grid (11×10) -->
+      <rect x="1" y="0" width="3" height="1" fill="var(--accent)"/>
+      <rect x="7" y="0" width="3" height="1" fill="var(--accent)"/>
+      <rect x="0" y="1" width="5" height="2" fill="var(--accent)"/>
+      <rect x="6" y="1" width="5" height="2" fill="var(--accent)"/>
+      <rect x="0" y="3" width="11" height="2" fill="var(--accent)"/>
+      <rect x="1" y="5" width="9" height="2" fill="var(--accent)"/>
+      <rect x="2" y="7" width="7" height="1" fill="var(--accent)"/>
+      <rect x="3" y="8" width="5" height="1" fill="var(--accent)"/>
+      <rect x="4" y="9" width="3" height="1" fill="var(--accent)"/>
+    </svg></div>
     <h2>HealThee</h2>
     <p style="font-size:0.94rem;">Track nutrition, workouts, habits and more.<br>All in one place.</p>
     <button class="login-btn" onclick="signInWithGoogle()">
@@ -2781,7 +2819,7 @@
           
           <div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem;line-height:1.4">Leave macros blank to let AI estimate everything from name/portion.</div>
           
-          <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+          <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
             <button class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.6rem" onclick="document.getElementById('cfPhotoUpload').removeAttribute('capture'); document.getElementById('cfPhotoUpload').click()">
               ${licon('image')} Gallery
             </button>
@@ -2789,6 +2827,14 @@
               ${licon('camera')} Camera
             </button>
             <input type="file" id="cfPhotoUpload" accept="image/*" style="display:none" onchange="handleFoodPhoto(this)">
+          </div>
+          <div id="cfPhotoModeRow" style="display:none;gap:.4rem;margin-bottom:.5rem">
+            <button id="cfModeMeal" class="filter-btn active" onclick="setPhotoMode('meal')" style="flex:1;font-size:.72rem;padding:.3rem .5rem">🍽 Meal</button>
+            <button id="cfModeLabel" class="filter-btn" onclick="setPhotoMode('label')" style="flex:1;font-size:.72rem;padding:.3rem .5rem">🏷 Label</button>
+          </div>
+          <div id="cfPortionRow" style="display:none;margin-bottom:.5rem">
+            <input id="cfPortion" placeholder="Portion (e.g. 250ml, 40g, 2 scoops)" style="width:100%;font-family:var(--font);font-size:.8rem;padding:.45rem .6rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text)">
+            <div style="font-size:.65rem;color:var(--muted);margin-top:.25rem">For labels: enter your actual portion to scale the extracted values.</div>
           </div>
           <div id="cfPhotoPreview" style="display:none;margin-bottom:.5rem;border-radius:8px;overflow:hidden;border:1px solid var(--border);position:relative">
             <img id="cfPhotoImg" style="width:100%;display:block;max-height:150px;object-fit:cover;">
@@ -2804,12 +2850,34 @@
         const desc = document.getElementById('cfDesc');
         const macros = document.getElementById('cfMacroInputs');
         if (el.checked) {
-          desc.placeholder = "e.g. 200g tilapia fillets\n1 tbsp olive oil\n100g white rice";
+          desc.placeholder = "e.g.\n200g chicken breast\n1 tbsp olive oil\n100g white rice\n1 tsp ghee";
+          desc.style.resize = 'none';
+          desc.style.overflow = 'hidden';
+          desc.style.minHeight = '80px';
           macros.style.display = 'none';
+          // enable auto-expand
+          desc.oninput = function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 280) + 'px';
+          };
         } else {
           desc.placeholder = "Description / portion";
+          desc.style.resize = 'vertical';
+          desc.style.overflow = '';
+          desc.style.height = '';
+          desc.style.minHeight = '';
+          desc.oninput = null;
           macros.style.display = 'flex';
         }
+      }
+
+      let currentPhotoMode = 'meal'; // 'meal' or 'label'
+
+      window.setPhotoMode = function (mode) {
+        currentPhotoMode = mode;
+        document.getElementById('cfModeMeal').classList.toggle('active', mode === 'meal');
+        document.getElementById('cfModeLabel').classList.toggle('active', mode === 'label');
+        document.getElementById('cfPortionRow').style.display = mode === 'label' ? 'block' : 'none';
       }
 
       window.handleFoodPhoto = function (el) {
@@ -2819,14 +2887,22 @@
           currentFoodPhotoBase64 = e.target.result;
           document.getElementById('cfPhotoImg').src = currentFoodPhotoBase64;
           document.getElementById('cfPhotoPreview').style.display = 'block';
+          document.getElementById('cfPhotoModeRow').style.display = 'flex';
+          currentPhotoMode = 'meal';
+          document.getElementById('cfModeMeal').classList.add('active');
+          document.getElementById('cfModeLabel').classList.remove('active');
+          document.getElementById('cfPortionRow').style.display = 'none';
         };
         reader.readAsDataURL(el.files[0]);
       }
 
       window.clearFoodPhoto = function () {
         currentFoodPhotoBase64 = null;
+        currentPhotoMode = 'meal';
         document.getElementById('cfPhotoUpload').value = '';
         document.getElementById('cfPhotoPreview').style.display = 'none';
+        document.getElementById('cfPhotoModeRow').style.display = 'none';
+        document.getElementById('cfPortionRow').style.display = 'none';
       }
 
       window.addCustomFood = async function () {
@@ -2860,45 +2936,121 @@
 
         try {
           if (currentFoodPhotoBase64) {
-            // Groq Vision pipeline with text fallback
+            const userPortion = (document.getElementById('cfPortion')?.value || '').trim();
             let visionOk = false;
-            try {
-              const pmt = `Identify the food in this image and estimate the nutritional macros and micronutrients for the entire portion shown. If it's a nutritional label, extract the values exactly. Reply ONLY with this JSON structure: ${sysFull}`;
-              const est = await fetchVisionLLM(pmt, 'You are an expert nutrition analyst.', currentFoodPhotoBase64, 'groq', 'llama-3.2-11b-vision-preview');
-              finalData = { ...finalData, ...est, meal: meal, estimated: true };
-              if (n) finalData.name = n;
-              if (desc) finalData.desc = desc;
-              toast("Added from Image", "success");
-              visionOk = true;
-            } catch (visionErr) {
-              console.warn("Vision LLM failed, falling back to text:", visionErr.message);
+
+            if (currentPhotoMode === 'label') {
+              // ── Pipeline 1: Label OCR + Portion Scaling ──────────────────
+              try {
+                btn.textContent = "Reading label...";
+                const labelSys = `You are a nutrition label OCR expert. Extract the exact macro values from the nutrition label in this image. Also extract the serving size shown on the label. Reply ONLY with this JSON: {"name":string,"servingSize":string,"servingSizeG":number,"cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number,"micros":{"vitamin_a_ug":number,"vitamin_d_ug":number,"vitamin_k":number,"vitamin_b6":number,"vitamin_b12":number,"vitamin_c_mg":number,"calcium_mg":number,"iron_mg":number,"magnesium_mg":number,"sodium_mg":number,"potassium_mg":number,"zinc_mg":number}}`;
+                const labelPmt = `Extract ALL nutrition values exactly as shown on this label. Include the serving size. Do not estimate — read the exact printed values.`;
+                const raw = await fetchVisionLLM(labelPmt, labelSys, currentFoodPhotoBase64, 'groq', 'llama-3.2-90b-vision-preview');
+                // Portion scaling
+                let scaleFactor = 1;
+                if (userPortion && raw.servingSizeG > 0) {
+                  const portionG = parsePortionToG(userPortion, raw.servingSizeG);
+                  if (portionG > 0) scaleFactor = portionG / raw.servingSizeG;
+                }
+                const scaled = {
+                  name: n || raw.name || 'Label food',
+                  cal: Math.round((raw.cal || 0) * scaleFactor),
+                  protein: Math.round((raw.protein || 0) * scaleFactor * 10) / 10,
+                  carbs: Math.round((raw.carbs || 0) * scaleFactor * 10) / 10,
+                  fat: Math.round((raw.fat || 0) * scaleFactor * 10) / 10,
+                  fiber: Math.round((raw.fiber || 0) * scaleFactor * 10) / 10,
+                  micros: Object.fromEntries(Object.entries(raw.micros || {}).map(([k, v]) => [k, Math.round((v || 0) * scaleFactor * 10) / 10])),
+                };
+                finalData = { ...finalData, ...scaled, meal, desc: desc || `Label (${raw.servingSize || ''}${userPortion ? ' → ' + userPortion : ''})`, estimated: false };
+                toast(scaleFactor !== 1 ? `Label scanned · scaled to ${userPortion}` : "Label scanned", "success");
+                visionOk = true;
+              } catch (labelErr) {
+                console.warn("Label OCR failed:", labelErr.message);
+              }
+
+            } else {
+              // ── Pipeline 2: Meal Photo — 90B + two-call approach ─────────
+              try {
+                btn.textContent = "Identifying foods...";
+                // Call 1: identify items + weights
+                const itemsSys = `You are a food recognition expert. Identify every distinct food item visible in this image and estimate its weight in grams. Reply ONLY with JSON: {"items":[{"name":string,"weightG":number}]}`;
+                const itemsPmt = `List every food item you can see in this image with an estimated weight in grams.`;
+                const itemsRes = await fetchVisionLLM(itemsPmt, itemsSys, currentFoodPhotoBase64, 'groq', 'llama-3.2-90b-vision-preview');
+                const items = itemsRes?.items || [];
+
+                let totalMacros = { cal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, micros: {} };
+                if (items.length > 0) {
+                  btn.textContent = "Estimating macros...";
+                  // Call 2: macros per 100g for each item
+                  const macroSys = `You are a nutrition database. For each food item in the list, provide macros per 100g. Reply ONLY with JSON: {"items":[{"name":string,"cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}]}`;
+                  const macroPmt = `Provide macros per 100g for each of these foods: ${items.map(it => it.name).join(', ')}`;
+                  const macroRes = await fetchLLM(macroPmt, macroSys, 'cerebras', 'llama3.1-8b');
+                  const macroItems = macroRes?.items || [];
+                  // Sum up totals: macros × (weight / 100)
+                  items.forEach(it => {
+                    const m = macroItems.find(x => x.name?.toLowerCase() === it.name?.toLowerCase()) || macroItems[0];
+                    if (!m) return;
+                    const f = (it.weightG || 100) / 100;
+                    totalMacros.cal += Math.round((m.cal || 0) * f);
+                    totalMacros.protein += (m.protein || 0) * f;
+                    totalMacros.carbs += (m.carbs || 0) * f;
+                    totalMacros.fat += (m.fat || 0) * f;
+                    totalMacros.fiber += (m.fiber || 0) * f;
+                  });
+                  totalMacros.protein = Math.round(totalMacros.protein * 10) / 10;
+                  totalMacros.carbs = Math.round(totalMacros.carbs * 10) / 10;
+                  totalMacros.fat = Math.round(totalMacros.fat * 10) / 10;
+                  totalMacros.fiber = Math.round(totalMacros.fiber * 10) / 10;
+                  // Micros via a single extra LLM call
+                  try {
+                    const microRes = await fetchLLM(`Meal: ${n || items.map(it => `${it.name} ${it.weightG}g`).join(', ')}. Macros: ${totalMacros.cal}kcal P:${totalMacros.protein}g`, `Estimate micronutrients for this meal. Reply ONLY with JSON: {"micros":{"vitamin_a_ug":number,"vitamin_d_ug":number,"vitamin_k":number,"vitamin_b6":number,"vitamin_b12":number,"vitamin_c_mg":number,"calcium_mg":number,"iron_mg":number,"magnesium_mg":number,"sodium_mg":number,"potassium_mg":number,"zinc_mg":number}}`, 'cerebras', 'llama3.1-8b');
+                    totalMacros.micros = microRes?.micros || {};
+                  } catch (_) {}
+                }
+
+                if (totalMacros.cal > 0) {
+                  finalData = { ...finalData, ...totalMacros, name: n || items.map(i => i.name).join(' + ') || 'Meal', meal, desc: desc || items.map(it => `${it.name} ~${it.weightG}g`).join(', '), estimated: true };
+                  toast("Meal analysed", "success");
+                  visionOk = true;
+                }
+              } catch (mealErr) {
+                console.warn("Meal vision failed:", mealErr.message);
+              }
             }
+
             if (!visionOk) {
               if (!n && !desc) throw new Error("Image analysis unavailable. Please add a food name.");
               btn.textContent = "Estimating (text)...";
               const fbPrompt = `Food: ${n || 'Food from photo'} ${desc}. Assume 1 standard Indian serving.`;
               const est = await fetchLLM(fbPrompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros and micros. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
-              finalData = { ...finalData, ...est, name: n || 'Food from photo', desc: desc || 'From photo', meal: meal, estimated: true };
+              finalData = { ...finalData, ...est, name: n || 'Food from photo', desc: desc || 'From photo', meal, estimated: true };
               toast("Added (text estimate – image analysis unavailable)", "warn");
             }
           } else if (isRecipe) {
-            // Recipe/Ingredients processing via LLM
+            // Recipe/Ingredients processing via DB + LLM
             if (!desc) { toast("Enter ingredients", "warn"); btn.textContent = "Add Food"; btn.disabled = false; return; }
-            const sysMix = `You are a recipe/food nutrition analyzer for Indian foods. Given ingredients or a dish description, estimate the TOTAL macros and micronutrients for the entire prepared dish (1 standard Indian serving). All values must be realistic and non-zero where applicable. For shakes/smoothies include all liquid + powder macros. Reply ONLY with JSON: ${sysFull}`;
-            const prompt = `Recipe/Ingredients:\n${desc}${n ? '\nDish name: ' + n : ''}`;
-            let est = await fetchLLM(prompt, sysMix, 'cerebras', 'llama3.1-8b');
-            console.log('Recipe LLM response:', JSON.stringify(est));
-            // If all macros are zero, retry with a general estimation prompt
-            if (isAllZero(est)) {
-              console.warn('Recipe estimation returned all zeros, retrying with general prompt...');
-              const retryPrompt = `Estimate nutrition for: ${n || 'Recipe'} (${desc}). Assume 1 standard Indian serving.`;
-              est = await fetchLLM(retryPrompt, `You are a nutrition estimator for Indian foods. You MUST provide realistic non-zero values for cal, protein, carbs, and fat. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
-              console.log('Recipe LLM retry response:', JSON.stringify(est));
+            const lines = desc.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            btn.textContent = "Looking up ingredients...";
+            let est;
+            if (lines.length > 0 && /\d/.test(desc)) {
+              // Structured ingredient list — use DB + LLM
+              est = await estimateFromIngredients(lines, n);
+              const src = est._dbHits > 0 ? `${est._dbHits} from DB${est._llmItems > 0 ? ` + ${est._llmItems} via AI` : ''}` : 'AI estimated';
+              if (n) est.name = n;
+              toast(`Added Recipe (${src})`, "success");
+            } else {
+              // Free-form description — fall back to LLM as before
+              const sysMix = `You are a recipe/food nutrition analyzer for Indian foods. Given ingredients or a dish description, estimate the TOTAL macros and micronutrients for the entire prepared dish (1 standard Indian serving). All values must be realistic and non-zero where applicable. Reply ONLY with JSON: ${sysFull}`;
+              est = await fetchLLM(`Recipe/Ingredients:\n${desc}${n ? '\nDish name: ' + n : ''}`, sysMix, 'cerebras', 'llama3.1-8b');
+              if (isAllZero(est)) {
+                est = await fetchLLM(`Estimate nutrition for: ${n || 'Recipe'} (${desc}).`, `You are a nutrition estimator for Indian foods. You MUST provide realistic non-zero values. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+              }
+              if (n) est.name = n;
+              toast("Added Recipe", "success");
             }
-            finalData = { ...finalData, ...est, meal: meal, estimated: true };
+            finalData = { ...finalData, ...est, meal, estimated: true };
             if (n) finalData.name = n;
             finalData.desc = desc;
-            toast("Added Recipe", "success");
 
           } else if (hasMacros) {
             finalData.cal = c > 0 ? c : Math.round(p * 4 + cb * 4 + f * 9);
@@ -2919,17 +3071,27 @@
             toast("Added with estimated micros", "success");
 
           } else {
+            // ── Pipeline 3: Two-stage LLM validation ─────────────────────
             const prompt = `Food: ${n} ${desc}. Assume 1 standard Indian serving size. Include all macros (protein, carbs, fat) — carbs should account for any sauce, gravy, onions, spices, or starchy components.`;
             let est = await fetchLLM(prompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros (cal, protein, carbs, fat), fiber, and micronutrients for a standard serving. Carbs must include starchy components, sauces, and gravies. All values must be realistic and non-zero where applicable. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
-            console.log('Food LLM response:', JSON.stringify(est));
-            // If all macros are zero, retry
-            if (isAllZero(est)) {
+            console.log('Food LLM Stage 1:', JSON.stringify(est));
+            // Stage 2: validation pass
+            if (!isAllZero(est)) {
+              try {
+                btn.textContent = "Validating...";
+                const valPrompt = `I estimated nutrition for "${n || desc}": ${est.cal}kcal, protein:${est.protein}g, carbs:${est.carbs}g, fat:${est.fat}g, fiber:${est.fiber}g. Does this look accurate for a typical Indian serving? If any value is clearly wrong (e.g. zero carbs for a rice dish, unrealistically high protein), correct it. Otherwise return the same values unchanged.`;
+                const validated = await fetchLLM(valPrompt, `You are a nutrition fact-checker for Indian foods. Validate or correct the given estimate. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+                console.log('Food LLM Stage 2 (validated):', JSON.stringify(validated));
+                if (!isAllZero(validated)) est = validated;
+              } catch (valErr) {
+                console.warn('Validation pass failed, using stage-1 estimate:', valErr.message);
+              }
+            } else {
               console.warn('Food estimation returned all zeros, retrying...');
               est = await fetchLLM(`Estimate detailed nutrition for 1 serving of ${n}. Must include realistic cal, protein, carbs, and fat values.`, `You are a nutrition database. Provide realistic non-zero nutrition values. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
-              console.log('Food LLM retry response:', JSON.stringify(est));
             }
             finalData = { ...finalData, ...est, name: n, desc: desc, meal: meal, estimated: true };
-            toast("Added (AI fully estimated)", "success");
+            toast("Added (AI estimated + validated)", "success");
           }
 
           addFood(finalData);
@@ -3416,6 +3578,212 @@
         </div>`;
       }
 
+      // ── Portion parsing helper ────────────────────────────────────────
+      window.parsePortionToG = function (portionStr, fallbackG) {
+        const s = portionStr.toLowerCase().trim();
+        const unitMap = { g: 1, gram: 1, grams: 1, kg: 1000, ml: 1, milliliter: 1, millilitre: 1, l: 1000, liter: 1, litre: 1, tsp: 5, teaspoon: 5, tbsp: 15, tablespoon: 15, cup: 240, cups: 240, oz: 28.3, lb: 453.6, scoop: 30, scoops: 30 };
+        const m = s.match(/^([\d.\/]+)\s*([a-z]+)?/);
+        if (!m) return fallbackG || 0;
+        const num = m[1].includes('/') ? parseFloat(m[1].split('/')[0]) / parseFloat(m[1].split('/')[1]) : parseFloat(m[1]);
+        const unit = (m[2] || 'g').toLowerCase();
+        return num * (unitMap[unit] || 1);
+      }
+
+      // ── Embedded ingredient nutrition database (per 100g unless noted) ─
+      const INGREDIENT_DB = {
+        // Proteins
+        'chicken breast': { cal: 165, protein: 31, carbs: 0, fat: 3.6, fiber: 0 },
+        'chicken thigh': { cal: 209, protein: 26, carbs: 0, fat: 11, fiber: 0 },
+        'chicken': { cal: 165, protein: 31, carbs: 0, fat: 3.6, fiber: 0 },
+        'egg': { cal: 155, protein: 13, carbs: 1.1, fat: 11, fiber: 0, serveG: 50 },
+        'paneer': { cal: 265, protein: 18, carbs: 3.4, fat: 20, fiber: 0 },
+        'tofu': { cal: 76, protein: 8, carbs: 1.9, fat: 4.8, fiber: 0.3 },
+        'dal': { cal: 116, protein: 9, carbs: 20, fat: 0.4, fiber: 8 },
+        'lentils': { cal: 116, protein: 9, carbs: 20, fat: 0.4, fiber: 8 },
+        'moong dal': { cal: 105, protein: 7.6, carbs: 19.2, fat: 0.4, fiber: 1.6 },
+        'chana dal': { cal: 164, protein: 8.4, carbs: 27.2, fat: 2.7, fiber: 8 },
+        'toor dal': { cal: 112, protein: 7.2, carbs: 19.5, fat: 0.4, fiber: 2.3 },
+        'rajma': { cal: 127, protein: 8.7, carbs: 22.8, fat: 0.5, fiber: 6.4 },
+        'chole': { cal: 164, protein: 8.9, carbs: 27.4, fat: 2.6, fiber: 7.6 },
+        'chickpeas': { cal: 164, protein: 8.9, carbs: 27.4, fat: 2.6, fiber: 7.6 },
+        'kidney beans': { cal: 127, protein: 8.7, carbs: 22.8, fat: 0.5, fiber: 6.4 },
+        'tuna': { cal: 116, protein: 25.5, carbs: 0, fat: 0.5, fiber: 0 },
+        'salmon': { cal: 208, protein: 20, carbs: 0, fat: 13, fiber: 0 },
+        'mutton': { cal: 294, protein: 25, carbs: 0, fat: 21, fiber: 0 },
+        'fish': { cal: 105, protein: 22, carbs: 0, fat: 1.5, fiber: 0 },
+        'shrimp': { cal: 99, protein: 24, carbs: 0.2, fat: 0.3, fiber: 0 },
+        'soya chunks': { cal: 345, protein: 52, carbs: 33, fat: 0.5, fiber: 13 },
+        'tempeh': { cal: 193, protein: 19, carbs: 9.4, fat: 11, fiber: 0 },
+        // Grains / carbs
+        'white rice': { cal: 130, protein: 2.7, carbs: 28, fat: 0.3, fiber: 0.4 },
+        'brown rice': { cal: 123, protein: 2.6, carbs: 25.6, fat: 1, fiber: 1.6 },
+        'rice': { cal: 130, protein: 2.7, carbs: 28, fat: 0.3, fiber: 0.4 },
+        'roti': { cal: 297, protein: 9, carbs: 56, fat: 3.9, fiber: 2.7, serveG: 35 },
+        'chapati': { cal: 297, protein: 9, carbs: 56, fat: 3.9, fiber: 2.7, serveG: 35 },
+        'wheat flour': { cal: 340, protein: 10, carbs: 71, fat: 1.7, fiber: 2.7 },
+        'atta': { cal: 340, protein: 10, carbs: 71, fat: 1.7, fiber: 2.7 },
+        'maida': { cal: 348, protein: 9, carbs: 74, fat: 1, fiber: 0.4 },
+        'bread': { cal: 265, protein: 9, carbs: 49, fat: 3.2, fiber: 2.7 },
+        'oats': { cal: 389, protein: 17, carbs: 66, fat: 7, fiber: 11 },
+        'quinoa': { cal: 120, protein: 4.4, carbs: 21.3, fat: 1.9, fiber: 2.8 },
+        'pasta': { cal: 131, protein: 5, carbs: 25, fat: 1.1, fiber: 1.8 },
+        'poha': { cal: 333, protein: 7, carbs: 76, fat: 0.7, fiber: 1.5 },
+        'semolina': { cal: 360, protein: 12.7, carbs: 72, fat: 1.1, fiber: 3.9 },
+        'suji': { cal: 360, protein: 12.7, carbs: 72, fat: 1.1, fiber: 3.9 },
+        'besan': { cal: 387, protein: 22.5, carbs: 58, fat: 6.7, fiber: 10.8 },
+        // Dairy
+        'milk': { cal: 42, protein: 3.4, carbs: 4.8, fat: 1, fiber: 0 },
+        'whole milk': { cal: 61, protein: 3.2, carbs: 4.8, fat: 3.3, fiber: 0 },
+        'curd': { cal: 61, protein: 3.5, carbs: 4.7, fat: 3.4, fiber: 0 },
+        'yogurt': { cal: 61, protein: 3.5, carbs: 4.7, fat: 3.4, fiber: 0 },
+        'greek yogurt': { cal: 59, protein: 10, carbs: 3.6, fat: 0.4, fiber: 0 },
+        'cheese': { cal: 402, protein: 25, carbs: 1.3, fat: 33, fiber: 0 },
+        'butter': { cal: 717, protein: 0.9, carbs: 0.1, fat: 81, fiber: 0 },
+        'ghee': { cal: 900, protein: 0, carbs: 0, fat: 99.7, fiber: 0 },
+        'cream': { cal: 340, protein: 2.8, carbs: 2.8, fat: 36, fiber: 0 },
+        'whey protein': { cal: 400, protein: 80, carbs: 8, fat: 5, fiber: 0 },
+        'casein protein': { cal: 380, protein: 78, carbs: 7, fat: 4, fiber: 0 },
+        'protein powder': { cal: 400, protein: 80, carbs: 8, fat: 5, fiber: 0 },
+        // Fats / oils
+        'olive oil': { cal: 884, protein: 0, carbs: 0, fat: 100, fiber: 0 },
+        'coconut oil': { cal: 862, protein: 0, carbs: 0, fat: 100, fiber: 0 },
+        'vegetable oil': { cal: 884, protein: 0, carbs: 0, fat: 100, fiber: 0 },
+        'mustard oil': { cal: 884, protein: 0, carbs: 0, fat: 100, fiber: 0 },
+        'oil': { cal: 884, protein: 0, carbs: 0, fat: 100, fiber: 0 },
+        // Vegetables
+        'onion': { cal: 40, protein: 1.1, carbs: 9.3, fat: 0.1, fiber: 1.7 },
+        'tomato': { cal: 18, protein: 0.9, carbs: 3.9, fat: 0.2, fiber: 1.2 },
+        'spinach': { cal: 23, protein: 2.9, carbs: 3.6, fat: 0.4, fiber: 2.2 },
+        'potato': { cal: 77, protein: 2, carbs: 17, fat: 0.1, fiber: 2.2 },
+        'sweet potato': { cal: 86, protein: 1.6, carbs: 20, fat: 0.1, fiber: 3 },
+        'carrot': { cal: 41, protein: 0.9, carbs: 9.6, fat: 0.2, fiber: 2.8 },
+        'broccoli': { cal: 34, protein: 2.8, carbs: 6.6, fat: 0.4, fiber: 2.6 },
+        'cauliflower': { cal: 25, protein: 1.9, carbs: 5, fat: 0.3, fiber: 2 },
+        'capsicum': { cal: 31, protein: 1, carbs: 6, fat: 0.3, fiber: 2.1 },
+        'bell pepper': { cal: 31, protein: 1, carbs: 6, fat: 0.3, fiber: 2.1 },
+        'cucumber': { cal: 15, protein: 0.7, carbs: 3.6, fat: 0.1, fiber: 0.5 },
+        'eggplant': { cal: 25, protein: 1, carbs: 5.9, fat: 0.2, fiber: 3 },
+        'brinjal': { cal: 25, protein: 1, carbs: 5.9, fat: 0.2, fiber: 3 },
+        'pumpkin': { cal: 26, protein: 1, carbs: 6.5, fat: 0.1, fiber: 0.5 },
+        'bitter gourd': { cal: 17, protein: 1, carbs: 3.7, fat: 0.2, fiber: 2.8 },
+        'bottle gourd': { cal: 14, protein: 0.6, carbs: 3.4, fat: 0.1, fiber: 0.5 },
+        'cabbage': { cal: 25, protein: 1.3, carbs: 5.8, fat: 0.1, fiber: 2.5 },
+        'green beans': { cal: 31, protein: 1.8, carbs: 7, fat: 0.1, fiber: 3.4 },
+        'peas': { cal: 81, protein: 5.4, carbs: 14.5, fat: 0.4, fiber: 5.7 },
+        'corn': { cal: 86, protein: 3.3, carbs: 19, fat: 1.4, fiber: 2.7 },
+        'mushroom': { cal: 22, protein: 3.1, carbs: 3.3, fat: 0.3, fiber: 1 },
+        'garlic': { cal: 149, protein: 6.4, carbs: 33, fat: 0.5, fiber: 2.1 },
+        'ginger': { cal: 80, protein: 1.8, carbs: 18, fat: 0.8, fiber: 2 },
+        'green chilli': { cal: 40, protein: 2, carbs: 9, fat: 0.4, fiber: 1.5 },
+        // Nuts / seeds
+        'almonds': { cal: 579, protein: 21, carbs: 22, fat: 50, fiber: 12.5 },
+        'cashews': { cal: 553, protein: 18, carbs: 30, fat: 44, fiber: 3.3 },
+        'walnuts': { cal: 654, protein: 15, carbs: 14, fat: 65, fiber: 6.7 },
+        'peanuts': { cal: 567, protein: 26, carbs: 16, fat: 49, fiber: 8.5 },
+        'peanut butter': { cal: 588, protein: 25, carbs: 20, fat: 50, fiber: 6 },
+        'chia seeds': { cal: 486, protein: 17, carbs: 42, fat: 31, fiber: 34 },
+        'flax seeds': { cal: 534, protein: 18, carbs: 29, fat: 42, fiber: 27 },
+        'sesame seeds': { cal: 573, protein: 18, carbs: 23, fat: 50, fiber: 12 },
+        // Fruits
+        'banana': { cal: 89, protein: 1.1, carbs: 23, fat: 0.3, fiber: 2.6 },
+        'apple': { cal: 52, protein: 0.3, carbs: 14, fat: 0.2, fiber: 2.4 },
+        'mango': { cal: 60, protein: 0.8, carbs: 15, fat: 0.4, fiber: 1.6 },
+        'orange': { cal: 47, protein: 0.9, carbs: 12, fat: 0.1, fiber: 2.4 },
+        'strawberry': { cal: 32, protein: 0.7, carbs: 7.7, fat: 0.3, fiber: 2 },
+        'blueberry': { cal: 57, protein: 0.7, carbs: 14, fat: 0.3, fiber: 2.4 },
+        // Sauces / condiments
+        'soy sauce': { cal: 53, protein: 8.1, carbs: 4.9, fat: 0.6, fiber: 0.8 },
+        'tomato sauce': { cal: 82, protein: 1.5, carbs: 18.8, fat: 0.4, fiber: 1.5 },
+        'coconut milk': { cal: 230, protein: 2.3, carbs: 5.5, fat: 23.8, fiber: 2.2 },
+        'honey': { cal: 304, protein: 0.3, carbs: 82, fat: 0, fiber: 0.2 },
+        'sugar': { cal: 387, protein: 0, carbs: 100, fat: 0, fiber: 0 },
+        'jaggery': { cal: 375, protein: 0.4, carbs: 98, fat: 0.1, fiber: 0 },
+      };
+
+      // Fuzzy ingredient DB lookup
+      window.lookupIngredientDB = function (name) {
+        const n = name.toLowerCase().trim();
+        if (INGREDIENT_DB[n]) return INGREDIENT_DB[n];
+        // Partial match: find a key that is contained in the name or vice versa
+        const keys = Object.keys(INGREDIENT_DB);
+        for (const k of keys) { if (n.includes(k) || k.includes(n)) return INGREDIENT_DB[k]; }
+        return null;
+      }
+
+      // Parse a single ingredient line: "200g chicken breast" → {name, amountG}
+      window.parseIngredientLine = function (line) {
+        const unitMap = { g: 1, gram: 1, grams: 1, kg: 1000, ml: 1, milliliter: 1, millilitre: 1, l: 1000, liter: 1, litre: 1, tsp: 5, teaspoon: 5, tbsp: 15, tablespoon: 15, cup: 240, cups: 240, oz: 28.3, lb: 453.6, scoop: 30, scoops: 30 };
+        const m = line.trim().match(/^([\d.\/]+)\s*([a-zA-Z]+)?\s+(.+)/);
+        if (!m) return { name: line.trim().toLowerCase(), amountG: 100 };
+        const num = m[1].includes('/') ? parseFloat(m[1].split('/')[0]) / parseFloat(m[1].split('/')[1]) : parseFloat(m[1]);
+        const unit = (m[2] || 'g').toLowerCase();
+        const name = m[3].trim().toLowerCase();
+        const toG = unitMap[unit];
+        if (toG === undefined) {
+          // Piece/unit — use serveG from DB or default 100
+          const db = lookupIngredientDB(name);
+          return { name, amountG: num * (db?.serveG || 100) };
+        }
+        return { name, amountG: num * toG };
+      }
+
+      // Estimate nutrition for ingredient list using DB + LLM fallback
+      window.estimateFromIngredients = async function (lines, dishName) {
+        const sysBase = `{"fiber": number, "micros": { "vitamin_a_ug": number, "vitamin_d_ug": number, "vitamin_k": number, "vitamin_b6": number, "vitamin_b12": number, "vitamin_c_mg": number, "calcium_mg": number, "iron_mg": number, "magnesium_mg": number, "sodium_mg": number, "potassium_mg": number, "zinc_mg": number }}`;
+        const sysFull = `{"name": string, "cal": number, "protein": number, "carbs": number, "fat": number, ` + sysBase.slice(1);
+        const parsed = lines.map(parseIngredientLine);
+        const found = [], unknown = [];
+        parsed.forEach(p => {
+          const db = lookupIngredientDB(p.name);
+          if (db) found.push({ ...p, db });
+          else unknown.push(p);
+        });
+
+        // Totals from DB
+        let tot = { cal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+        found.forEach(({ db, amountG }) => {
+          const f = amountG / 100;
+          tot.cal += (db.cal || 0) * f;
+          tot.protein += (db.protein || 0) * f;
+          tot.carbs += (db.carbs || 0) * f;
+          tot.fat += (db.fat || 0) * f;
+          tot.fiber += (db.fiber || 0) * f;
+        });
+
+        // LLM for unknowns (batch call)
+        let llmMacros = { cal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+        if (unknown.length > 0) {
+          const unknownList = unknown.map(u => `${u.amountG}g ${u.name}`).join(', ');
+          try {
+            const llmRes = await fetchLLM(
+              `Estimate the combined total nutrition for these ingredients: ${unknownList}`,
+              `You are a nutrition estimator. Reply ONLY with JSON: {"cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}`,
+              'cerebras', 'llama3.1-8b'
+            );
+            llmMacros = llmRes || llmMacros;
+          } catch (_) {}
+        }
+
+        tot.cal = Math.round(tot.cal + (llmMacros.cal || 0));
+        tot.protein = Math.round((tot.protein + (llmMacros.protein || 0)) * 10) / 10;
+        tot.carbs = Math.round((tot.carbs + (llmMacros.carbs || 0)) * 10) / 10;
+        tot.fat = Math.round((tot.fat + (llmMacros.fat || 0)) * 10) / 10;
+        tot.fiber = Math.round((tot.fiber + (llmMacros.fiber || 0)) * 10) / 10;
+
+        // Micros via LLM
+        let micros = {};
+        try {
+          const mRes = await fetchLLM(
+            `Dish: ${dishName || 'Recipe'}, ingredients: ${lines.join(', ')}. Total: ${tot.cal}kcal P:${tot.protein}g`,
+            `Estimate micronutrients. Reply ONLY with JSON: ${sysBase}`,
+            'cerebras', 'llama3.1-8b'
+          );
+          micros = mRes?.micros || {};
+        } catch (_) {}
+
+        return { ...tot, micros, _dbHits: found.length, _llmItems: unknown.length };
+      }
+
       // LLM Fetch Utility using Numo Cloud Function Proxy
       window.fetchLLM = async function (prompt, system, provider = 'cerebras', model = 'llama3.1-8b', isJson = true, retry = true) {
         const url = 'https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM';
@@ -3707,7 +4075,13 @@
         const showLabels = data.length <= 14;
         return `<div style="position:relative"><div class="chart-bars">${data.map((d, i) => {
           const v = num0(d[key]); const h = maxVal > 0 ? (v / maxVal) * 75 : 0;
-          return `<div class="chart-bar-wrap"><div class="chart-bar-val">${showLabels ? (v || '') : ''}</div><div class="chart-bar" style="height:${Math.max(2, h)}px;background:${color}"></div>${showLabels ? `<div class="chart-bar-label">${d.day || d.date?.slice(5) || ''}</div>` : ''}</div>`;
+          const tipLabel = `${d.day || d.date?.slice(5) || ''}: ${v}`;
+          return `<div class="chart-bar-wrap" tabindex="0" role="button" onclick="this.classList.toggle('active')" onblur="this.classList.remove('active')" style="position:relative">
+            <div class="chart-bar-val">${showLabels ? (v || '') : ''}</div>
+            <div class="chart-bar" style="height:${Math.max(2, h)}px;background:${color}"></div>
+            ${showLabels ? `<div class="chart-bar-label">${d.day || d.date?.slice(5) || ''}</div>` : ''}
+            <div class="chart-tip-bar" style="position:absolute;bottom:calc(${Math.max(2, h)}px + 22px);left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-size:.6rem;white-space:nowrap;z-index:10">${tipLabel}</div>
+          </div>`;
         }).join("")}</div>${refPct !== null ? `<div style="position:absolute;left:0;right:0;top:calc(${refPct}% + 11px);border-top:1.5px dashed var(--muted);opacity:.5"><span style="position:absolute;right:0;top:-13px;font-size:.55rem;color:var(--muted)">${refVal}</span></div>` : ''}</div>`;
       }
 
@@ -3728,7 +4102,17 @@
         // X-axis labels: first, middle, last
         const xLabels = [{ i: 0, p: data[0], align: 'start' }, { i: Math.floor(data.length / 2), p: data[Math.floor(data.length / 2)], align: 'middle' }, { i: data.length - 1, p: data[data.length - 1], align: 'end' }];
         const refLine = refVal !== undefined ? `<line x1="${L}" y1="${yFor(refVal).toFixed(1)}" x2="${W - R}" y2="${yFor(refVal).toFixed(1)}" stroke="var(--muted)" stroke-width=".5" stroke-dasharray="3,2" opacity=".6"/><text x="${W - R - 2}" y="${yFor(refVal) - 3}" fill="var(--muted)" font-size="5.5" text-anchor="end" opacity=".8">${refVal}${unit ? ' ' + unit : ''}</text>` : '';
-        return `<div class="trend"><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+        // Tooltip: clamp tip box inside SVG bounds
+        const tipW = 38, tipH = 13;
+        const tipPoints = pts.map((p, idx) => {
+          const cx = xFor(p.i), cy = yFor(p.v);
+          let tx = cx - tipW / 2; let ty = cy - tipH - 4;
+          if (tx < L) tx = L; if (tx + tipW > W - R) tx = W - R - tipW;
+          if (ty < T) ty = cy + 6;
+          const label = `${p.label || p.date?.slice(5) || ''}  ${p.v}${unit ? unit : ''}`;
+          return { cx, cy, tx, ty, label, idx };
+        });
+        return `<div class="trend"><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" ontouchstart="">
         <!-- grid lines -->
         ${yTicks.map(t => `<line x1="${L}" y1="${t.y.toFixed(1)}" x2="${W - R}" y2="${t.y.toFixed(1)}" stroke="var(--border)" stroke-width=".3"/>`).join('')}
         <!-- y-axis labels -->
@@ -3737,7 +4121,15 @@
         ${refLine}
         <!-- data line -->
         <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-        ${pts.map(p => `<circle cx="${xFor(p.i).toFixed(1)}" cy="${yFor(p.v).toFixed(1)}" r="2.5" fill="${color}" stroke="var(--bg)" stroke-width=".8"/>`).join("")}
+        <!-- data points with tooltips -->
+        ${tipPoints.map(p => `<g class="chart-pt" tabindex="0" role="button" onclick="this.classList.toggle('active')" onblur="this.classList.remove('active')">
+          <circle cx="${p.cx.toFixed(1)}" cy="${p.cy.toFixed(1)}" r="5" fill="transparent"/>
+          <circle cx="${p.cx.toFixed(1)}" cy="${p.cy.toFixed(1)}" r="2.5" fill="${color}" stroke="var(--bg)" stroke-width=".8"/>
+          <g class="chart-tip">
+            <rect x="${p.tx.toFixed(1)}" y="${p.ty.toFixed(1)}" width="${tipW}" height="${tipH}" rx="3" fill="var(--card)" stroke="var(--border)" stroke-width=".6"/>
+            <text x="${(p.tx + tipW / 2).toFixed(1)}" y="${(p.ty + 8.5).toFixed(1)}" fill="var(--text)" font-size="5.5" text-anchor="middle">${p.label}</text>
+          </g>
+        </g>`).join('')}
         <!-- x-axis labels -->
         ${xLabels.map(x => `<text x="${xFor(x.i).toFixed(1)}" y="${H - 3}" fill="var(--muted)" font-size="5.5" text-anchor="${x.align}">${x.p.label || x.p.date?.slice(5) || ''}</text>`).join('')}
         <!-- axis lines -->
