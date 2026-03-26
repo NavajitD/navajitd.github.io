@@ -2500,115 +2500,6 @@
       window.signOut = function () { _htClearCache(); auth.signOut(); }
       // Document click listener moved or removed since dropdown is gone
 
-      /* ── Auth loading pixel runner animation (dino-style) ─────────────── */
-      (function () {
-        const cvs = document.getElementById('authCanvas');
-        if (!cvs) return;
-        const ctx = cvs.getContext('2d');
-        const W = 220, H = 52;
-        cvs.width = W; cvs.height = H;
-        cvs.style.width = W + 'px'; cvs.style.height = H + 'px';
-
-        const S = 3; // canvas px per game-pixel
-        const GY = 45; // ground y in canvas px
-
-        // Pixel sprite strings (row-major, '1' = filled)
-        // Character: 5 wide × 6 tall
-        const CW = 5, CH = 6;
-        const FRAMES = [
-          '011100111000100111110101010001', // frame 0: right foot fwd
-          '011100111000100111110101001001'  // frame 1: left foot fwd
-        ];
-        // Cactus obstacle: 3 wide × 5 tall
-        const OW = 3, OH = 5;
-        const OBS = '010010111010010';
-
-        const cs = getComputedStyle(document.documentElement);
-        const C_CHAR = cs.getPropertyValue('--accent').trim() || '#5a9a5a';
-        const C_GND  = cs.getPropertyValue('--muted').trim()  || '#888';
-        const C_OBS  = cs.getPropertyValue('--muted').trim()  || '#888';
-
-        function drawSprite(pixels, pw, ox, oy, color) {
-          ctx.fillStyle = color;
-          for (let i = 0; i < pixels.length; i++) {
-            if (pixels[i] === '1') {
-              ctx.fillRect(ox + (i % pw) * S, oy + Math.floor(i / pw) * S, S, S);
-            }
-          }
-        }
-
-        const CHAR_X = 22;
-        let charY = GY - CH * S;       // top of character when on ground
-        const FLOOR_Y = GY - CH * S;
-        let jumpVy = 0, jumping = false;
-        let frame = 0, ftimer = 0;
-        let obsX = W + 50;
-        const SPEED = 2;
-
-        // Scrolling ground dashes (dino-style speed lines)
-        let dashes = Array.from({ length: 7 }, (_, i) => 35 + i * 28);
-
-        let raf;
-
-        function tick() {
-          ctx.clearRect(0, 0, W, H);
-
-          // Ground line
-          ctx.fillStyle = C_GND;
-          ctx.fillRect(0, GY, W, 1);
-
-          // Scrolling ground dashes
-          ctx.fillStyle = C_GND;
-          dashes = dashes.map(x => {
-            const rx = ((x - SPEED) % (W + 20) + W + 20) % (W + 20);
-            ctx.fillRect(rx, GY + 3, 8, 1);
-            return rx;
-          });
-
-          // Auto-jump: trigger when obstacle is ~45px ahead of char right edge
-          const charRight = CHAR_X + CW * S;
-          if (!jumping && obsX > CHAR_X && obsX < charRight + 45) {
-            jumping = true;
-            jumpVy = -9;
-          }
-
-          // Jump physics
-          if (jumping) {
-            charY += jumpVy;
-            jumpVy += 0.62;
-            if (charY >= FLOOR_Y) { charY = FLOOR_Y; jumping = false; jumpVy = 0; }
-          }
-
-          // Cycle run frames (freeze on frame 0 while airborne)
-          if (!jumping) {
-            if (++ftimer >= 7) { ftimer = 0; frame ^= 1; }
-          }
-
-          // Draw character
-          drawSprite(FRAMES[frame], CW, CHAR_X, charY, C_CHAR);
-
-          // Move + wrap obstacle
-          obsX -= SPEED;
-          if (obsX < -(OW * S)) obsX = W + 20 + Math.random() * 60;
-
-          // Draw obstacle
-          drawSprite(OBS, OW, obsX, GY - OH * S, C_OBS);
-
-          raf = requestAnimationFrame(tick);
-        }
-
-        tick();
-
-        // Stop when authLoading is hidden
-        const observer = new MutationObserver(() => {
-          if (document.getElementById('authLoading').style.display === 'none') {
-            cancelAnimationFrame(raf);
-            observer.disconnect();
-          }
-        });
-        observer.observe(document.getElementById('authLoading'), { attributes: true, attributeFilter: ['style'] });
-      })();
-
       /* ── localStorage instant-render cache ───────────────────────────── */
       const HT_C = 'HT_C_';
       window._htWriteCache = function (uid, date, day, profile) {
@@ -4388,6 +4279,125 @@ Do NOT output JSON. Output regular conversational text.`;
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
+
+    /* ── Auth loading pixel runner animation (dino-style) ─────────────────
+       Placed last so any error here never blocks the rest of the app.      */
+    try {
+      (function () {
+        const cvs = document.getElementById('authCanvas');
+        if (!cvs) return;
+        const ctx = cvs.getContext('2d');
+        if (!ctx) return; // canvas unsupported in this env — degrade silently
+        const W = 220, H = 52;
+        cvs.width = W; cvs.height = H;
+        cvs.style.width = W + 'px'; cvs.style.height = H + 'px';
+
+        const S = 3;   // canvas px per game-pixel
+        const GY = 45; // ground y in canvas px
+
+        // Pixel sprite strings (row-major, '1' = filled)
+        // Character: 5 wide × 6 tall
+        const CW = 5, CH = 6;
+        const FRAMES = [
+          '011100111000100111110101010001', // frame 0: right foot fwd
+          '011100111000100111110101001001'  // frame 1: left foot fwd
+        ];
+        // Cactus obstacle: 3 wide × 5 tall
+        const OW = 3, OH = 5;
+        const OBS = '010010111010010';
+
+        const cs = getComputedStyle(document.documentElement);
+        const C_CHAR = cs.getPropertyValue('--accent').trim() || '#5a9a5a';
+        const C_GND  = cs.getPropertyValue('--muted').trim()  || '#888';
+
+        function drawSprite(pixels, pw, ox, oy, color) {
+          ctx.fillStyle = color;
+          for (let i = 0; i < pixels.length; i++) {
+            if (pixels[i] === '1') {
+              ctx.fillRect(ox + (i % pw) * S, oy + Math.floor(i / pw) * S, S, S);
+            }
+          }
+        }
+
+        const CHAR_X = 22;
+        const FLOOR_Y = GY - CH * S;
+        let charY = FLOOR_Y;
+        let jumpVy = 0, jumping = false;
+        let frame = 0, ftimer = 0;
+        let obsX = W + 50;
+        const SPEED = 2;
+
+        // Scrolling ground dashes (dino-style speed lines)
+        let dashes = Array.from({ length: 7 }, (_, i) => 35 + i * 28);
+
+        let raf;
+        let stopped = false;
+
+        function tick() {
+          if (stopped) return;
+          try {
+            ctx.clearRect(0, 0, W, H);
+
+            // Ground line
+            ctx.fillStyle = C_GND;
+            ctx.fillRect(0, GY, W, 1);
+
+            // Scrolling ground dashes
+            ctx.fillStyle = C_GND;
+            dashes = dashes.map(x => {
+              const rx = ((x - SPEED) % (W + 20) + W + 20) % (W + 20);
+              ctx.fillRect(rx, GY + 3, 8, 1);
+              return rx;
+            });
+
+            // Auto-jump when obstacle ~45px ahead of char right edge
+            const charRight = CHAR_X + CW * S;
+            if (!jumping && obsX > CHAR_X && obsX < charRight + 45) {
+              jumping = true;
+              jumpVy = -9;
+            }
+
+            // Jump physics
+            if (jumping) {
+              charY += jumpVy;
+              jumpVy += 0.62;
+              if (charY >= FLOOR_Y) { charY = FLOOR_Y; jumping = false; jumpVy = 0; }
+            }
+
+            // Cycle run frames (freeze while airborne)
+            if (!jumping) {
+              if (++ftimer >= 7) { ftimer = 0; frame ^= 1; }
+            }
+
+            // Draw character
+            drawSprite(FRAMES[frame], CW, CHAR_X, charY, C_CHAR);
+
+            // Move + wrap obstacle
+            obsX -= SPEED;
+            if (obsX < -(OW * S)) obsX = W + 20 + Math.random() * 60;
+
+            // Draw obstacle
+            drawSprite(OBS, OW, obsX, GY - OH * S, C_GND);
+          } catch (_) {}
+
+          raf = requestAnimationFrame(tick);
+        }
+
+        tick();
+
+        // Stop when authLoading is hidden
+        const authEl = document.getElementById('authLoading');
+        if (authEl) {
+          new MutationObserver(function (_, obs) {
+            if (authEl.style.display === 'none') {
+              stopped = true;
+              cancelAnimationFrame(raf);
+              obs.disconnect();
+            }
+          }).observe(authEl, { attributes: true, attributeFilter: ['style'] });
+        }
+      })();
+    } catch (_) {}
   </script>
 </body>
 
