@@ -120,8 +120,13 @@
     }
 
     /* Header heart: solid in light mode, outlined in dark mode */
-    header .hdr-left .icon svg { fill: var(--accent); }
-    [data-theme="dark"] header .hdr-left .icon svg { fill: none; }
+    header .hdr-left .icon svg {
+      fill: var(--accent);
+    }
+
+    [data-theme="dark"] header .hdr-left .icon svg {
+      fill: none;
+    }
 
     /* Header */
     header {
@@ -1237,33 +1242,70 @@
 
     /* Pixel heart animation (login screen) */
     @keyframes pixel-beat {
-      0%, 100% { transform: scale(1); }
-      14% { transform: scale(1.18); }
-      28% { transform: scale(1); }
-      42% { transform: scale(1.12); }
-      56% { transform: scale(1); }
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      14% {
+        transform: scale(1.18);
+      }
+
+      28% {
+        transform: scale(1);
+      }
+
+      42% {
+        transform: scale(1.12);
+      }
+
+      56% {
+        transform: scale(1);
+      }
     }
+
     .pixel-heart {
       display: inline-block;
       animation: pixel-beat 1.2s ease-in-out infinite;
       image-rendering: pixelated;
       line-height: 1;
     }
+
     /* Trend lines */
     .trend {
       width: 100%
     }
 
     /* Chart tooltips (SVG hover/tap) */
-    .chart-pt .chart-tip { opacity: 0; transition: opacity .15s; pointer-events: none; }
+    .chart-pt .chart-tip {
+      opacity: 0;
+      transition: opacity .15s;
+      pointer-events: none;
+    }
+
     .chart-pt:hover .chart-tip,
     .chart-pt:focus .chart-tip,
-    .chart-pt.active .chart-tip { opacity: 1; }
-    .chart-pt { cursor: pointer; outline: none; }
+    .chart-pt.active .chart-tip {
+      opacity: 1;
+    }
+
+    .chart-pt {
+      cursor: pointer;
+      outline: none;
+    }
+
     .chart-bar-wrap:hover .chart-tip-bar,
     .chart-bar-wrap:focus .chart-tip-bar,
-    .chart-bar-wrap.active .chart-tip-bar { opacity: 1; }
-    .chart-tip-bar { opacity: 0; transition: opacity .15s; pointer-events: none; }
+    .chart-bar-wrap.active .chart-tip-bar {
+      opacity: 1;
+    }
+
+    .chart-tip-bar {
+      opacity: 0;
+      transition: opacity .15s;
+      pointer-events: none;
+    }
 
     .trend svg {
       width: 100%;
@@ -1741,6 +1783,7 @@
       justify-content: center;
       padding: .3rem 0
     }
+
     .mode-toggle {
       display: inline-flex;
       align-items: center;
@@ -1753,6 +1796,7 @@
       user-select: none;
       position: relative
     }
+
     .mode-toggle .mode-label-left,
     .mode-toggle .mode-label-right {
       display: flex;
@@ -1766,6 +1810,7 @@
       z-index: 1;
       pointer-events: none
     }
+
     .mode-toggle .mode-knob {
       position: absolute;
       top: 3px;
@@ -1774,7 +1819,7 @@
       bottom: 3px;
       background: var(--accent);
       border-radius: 999px;
-      transition: transform .25s cubic-bezier(.4,0,.2,1);
+      transition: transform .25s cubic-bezier(.4, 0, .2, 1);
       z-index: 0
     }
 
@@ -1923,18 +1968,19 @@
   </div>
 
   <div id="loginScreen" class="login-screen" style="display:none;">
-    <div class="pixel-heart"><svg width="48" height="48" viewBox="0 0 11 10" style="display:block" xmlns="http://www.w3.org/2000/svg">
-      <!-- pixel art heart grid (11×10) -->
-      <rect x="1" y="0" width="3" height="1" fill="var(--accent)"/>
-      <rect x="7" y="0" width="3" height="1" fill="var(--accent)"/>
-      <rect x="0" y="1" width="5" height="2" fill="var(--accent)"/>
-      <rect x="6" y="1" width="5" height="2" fill="var(--accent)"/>
-      <rect x="0" y="3" width="11" height="2" fill="var(--accent)"/>
-      <rect x="1" y="5" width="9" height="2" fill="var(--accent)"/>
-      <rect x="2" y="7" width="7" height="1" fill="var(--accent)"/>
-      <rect x="3" y="8" width="5" height="1" fill="var(--accent)"/>
-      <rect x="4" y="9" width="3" height="1" fill="var(--accent)"/>
-    </svg></div>
+    <div class="pixel-heart"><svg width="48" height="48" viewBox="0 0 11 10" style="display:block"
+        xmlns="http://www.w3.org/2000/svg">
+        <!-- pixel art heart grid (11×10) -->
+        <rect x="1" y="0" width="3" height="1" fill="var(--accent)" />
+        <rect x="7" y="0" width="3" height="1" fill="var(--accent)" />
+        <rect x="0" y="1" width="5" height="2" fill="var(--accent)" />
+        <rect x="6" y="1" width="5" height="2" fill="var(--accent)" />
+        <rect x="0" y="3" width="11" height="2" fill="var(--accent)" />
+        <rect x="1" y="5" width="9" height="2" fill="var(--accent)" />
+        <rect x="2" y="7" width="7" height="1" fill="var(--accent)" />
+        <rect x="3" y="8" width="5" height="1" fill="var(--accent)" />
+        <rect x="4" y="9" width="3" height="1" fill="var(--accent)" />
+      </svg></div>
     <h2>HealThee</h2>
     <p style="font-size:0.94rem;">Track nutrition, workouts, habits and more.<br>All in one place.</p>
     <button class="login-btn" onclick="signInWithGoogle()">
@@ -2473,8 +2519,8 @@
 
           // Popup blocked or unsupported → fall back to redirect
           if (code === 'auth/popup-blocked' ||
-              code === 'auth/operation-not-supported-in-this-environment' ||
-              code === 'auth/internal-error') {
+            code === 'auth/operation-not-supported-in-this-environment' ||
+            code === 'auth/internal-error') {
             console.log('[Auth] Popup failed (' + code + '), falling back to redirect');
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('authLoading').style.display = 'flex';
@@ -2484,7 +2530,7 @@
 
           // User closed popup — just re-enable button
           if (code === 'auth/popup-closed-by-user' || code === 'auth/popup-closed-by-browser' ||
-              code === 'auth/cancelled-popup-request') {
+            code === 'auth/cancelled-popup-request') {
             if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
             return;
           }
@@ -2506,21 +2552,21 @@
         try {
           localStorage.setItem(HT_C + 'uid', uid);
           localStorage.setItem(HT_C + 'date', date);
-          if (day)     localStorage.setItem(HT_C + 'day',     JSON.stringify(day));
+          if (day) localStorage.setItem(HT_C + 'day', JSON.stringify(day));
           if (profile) localStorage.setItem(HT_C + 'profile', JSON.stringify(profile));
-        } catch (_) {}
+        } catch (_) { }
       };
       window._htReadCache = function () {
         try {
-          const uid  = localStorage.getItem(HT_C + 'uid');
+          const uid = localStorage.getItem(HT_C + 'uid');
           const date = localStorage.getItem(HT_C + 'date');
-          const day  = JSON.parse(localStorage.getItem(HT_C + 'day')  || 'null');
+          const day = JSON.parse(localStorage.getItem(HT_C + 'day') || 'null');
           const prof = JSON.parse(localStorage.getItem(HT_C + 'profile') || 'null');
           return uid && date ? { uid, date, day, profile: prof } : null;
         } catch (_) { return null; }
       };
       window._htClearCache = function () {
-        try { [HT_C+'uid', HT_C+'date', HT_C+'day', HT_C+'profile'].forEach(k => localStorage.removeItem(k)); } catch (_) {}
+        try { [HT_C + 'uid', HT_C + 'date', HT_C + 'day', HT_C + 'profile'].forEach(k => localStorage.removeItem(k)); } catch (_) { }
       };
 
       /* ═══════════════════════════════════════════════════
@@ -3039,7 +3085,7 @@
                   try {
                     const microRes = await fetchLLM(`Meal: ${n || items.map(it => `${it.name} ${it.weightG}g`).join(', ')}. Macros: ${totalMacros.cal}kcal P:${totalMacros.protein}g`, `Estimate micronutrients for this meal. Reply ONLY with JSON: {"micros":{"vitamin_a_ug":number,"vitamin_d_ug":number,"vitamin_k":number,"vitamin_b6":number,"vitamin_b12":number,"vitamin_c_mg":number,"calcium_mg":number,"iron_mg":number,"magnesium_mg":number,"sodium_mg":number,"potassium_mg":number,"zinc_mg":number}}`, 'cerebras', 'llama3.1-8b');
                     totalMacros.micros = microRes?.micros || {};
-                  } catch (_) {}
+                  } catch (_) { }
                 }
 
                 if (totalMacros.cal > 0) {
@@ -3266,9 +3312,9 @@
                   t.querySelector('.mode-label-right').style.opacity=m==='gamified'?'1':'0.45';
                   if(m==='gamified'){setTimeout(()=>toast('Gamified mode is being built — you\\'ll get access soon!','warn'),100);}
                 ">
-                  <span class="mode-label-left" style="opacity:${p.mode==='gamified'?'0.45':'1'}">${licon('layout-dashboard',13)} Vanilla</span>
-                  <div class="mode-knob" style="transform:${p.mode==='gamified'?'translateX(calc(100% + 2px))':''}"></div>
-                  <span class="mode-label-right" style="opacity:${p.mode==='gamified'?'1':'0.45'}">${licon('sword',13)} Gamified</span>
+                  <span class="mode-label-left" style="opacity:${p.mode === 'gamified' ? '0.45' : '1'}">${licon('layout-dashboard', 13)} Vanilla</span>
+                  <div class="mode-knob" style="transform:${p.mode === 'gamified' ? 'translateX(calc(100% + 2px))' : ''}"></div>
+                  <span class="mode-label-right" style="opacity:${p.mode === 'gamified' ? '1' : '0.45'}">${licon('sword', 13)} Gamified</span>
                 </div>
               </div>
             </div>
@@ -3510,26 +3556,47 @@
         const sToggle = "localStorage.setItem('HT_move_'+ this.dataset.key, this.open?'1':'0')";
         const b = dayData.body || {};
         const bmi = b.weight ? calcBMI(b.weight) : null;
-        const ratio = (b.shoulders && b.waist) ? (b.shoulders / b.waist).toFixed(2) : null;
+        const ratio = (b.shoulders && b.waist) ? (b.shoulders / b.waist) : null;
         const h = dayData.sleep?.hours || 0;
         const sleepPct = h ? (h / TARGETS.sleep) * 100 : 0;
 
+        // BMI label + colour
+        const bmiCat = !bmi ? '' : bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal weight' : bmi < 30 ? 'Overweight' : 'Obese';
+        const bmiCol = !bmi ? '' : bmi < 18.5 ? 'var(--blue)' : bmi < 25 ? 'var(--success)' : bmi < 30 ? 'var(--warn)' : 'var(--danger)';
+
+        // S:W ratio label + colour
+        const swCat = !ratio ? '' : ratio >= 1.5 ? 'Excellent' : ratio >= 1.4 ? 'Good' : ratio >= 1.3 ? 'Average' : 'Develop shoulders';
+        const swCol = !ratio ? '' : ratio >= 1.4 ? 'var(--success)' : ratio >= 1.3 ? 'var(--warn)' : 'var(--danger)';
+
         return `
         <div class="card">
-          <details class="move-section" data-key="aes" ${so('aes') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>${licon('ruler')} Aesthetic Metrics</summary>
+          <div class="card-title">${licon('scale')} Weight</div>
+          <div class="form-field" style="margin-bottom:.1rem"><label>Weight (kg)</label><input type="number" id="bWeight" step="0.1" value="${b.weight || ""}"></div>
+          ${bmi ? `
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:.4rem .75rem;margin-top:.4rem">
+            <span style="font-size:.72rem;color:var(--muted)">BMI</span>
+            <span style="font-size:1rem;font-weight:700;color:${bmiCol}">${bmi.toFixed(1)}</span>
+            <span style="font-size:.72rem;font-weight:600;color:${bmiCol}">${bmiCat}</span>
+          </div>` : ''}
+          <details class="move-section" data-key="aes" ${so('aes') ? 'open' : ''} ontoggle="${sToggle}" style="margin-top:.7rem">
+            <summary>${licon('ruler')} More Metrics</summary>
             <div class="section-body">
               <div class="custom-grid">
-                <div class="form-field"><label>Weight (kg)</label><input type="number" id="bWeight" step="0.1" value="${b.weight || ""}"></div>
                 <div class="form-field"><label>Body Fat %</label><input type="number" id="bBodyFat" step="0.1" value="${b.bodyFat || ""}"></div>
                 <div class="form-field"><label>Waist (cm)</label><input type="number" id="bWaist" step="0.1" value="${b.waist || ""}"></div>
                 <div class="form-field"><label>Shoulders (cm)</label><input type="number" id="bShoulders" step="0.1" value="${b.shoulders || ""}"></div>
                 <div class="form-field"><label>Skeletal Muscle (kg)</label><input type="number" id="bSMM" step="0.1" value="${b.skeletalMuscle || ""}"></div>
                 <div class="form-field"><label>Visceral Fat Level</label><input type="number" id="bVisceral" step="0.1" value="${b.visceralFat || ""}"></div>
               </div>
-              <button class="btn-primary" style="width:100%;margin-top:.4rem" onclick="saveBody()">Save Metrics</button>
+              ${ratio ? `
+              <div style="display:flex;align-items:center;justify-content:space-between;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:.4rem .75rem;margin-top:.5rem">
+                <span style="font-size:.72rem;color:var(--muted)">Shoulder : Waist</span>
+                <span style="font-size:1rem;font-weight:700;color:${swCol}">${ratio.toFixed(2)}</span>
+                <span style="font-size:.72rem;font-weight:600;color:${swCol}">${swCat}</span>
+              </div>` : ''}
             </div>
           </details>
+          <button class="btn-primary" style="width:100%;margin-top:.75rem" onclick="saveBody()">Save Metrics</button>
         </div>
         <div class="card">
           <div class="card-title">${licon('moon')} Sleep</div>
@@ -3795,7 +3862,7 @@
               'cerebras', 'llama3.1-8b'
             );
             llmMacros = llmRes || llmMacros;
-          } catch (_) {}
+          } catch (_) { }
         }
 
         tot.cal = Math.round(tot.cal + (llmMacros.cal || 0));
@@ -3813,7 +3880,7 @@
             'cerebras', 'llama3.1-8b'
           );
           micros = mRes?.micros || {};
-        } catch (_) {}
+        } catch (_) { }
 
         return { ...tot, micros, _dbHits: found.length, _llmItems: unknown.length };
       }
@@ -4277,7 +4344,7 @@ Do NOT output JSON. Output regular conversational text.`;
     }); // End of DOMContentLoaded block
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      navigator.serviceWorker.register('./sw.js').catch(() => { });
     }
 
     /* ── Auth loading pixel runner animation (dino-style) ─────────────────
@@ -4297,7 +4364,7 @@ Do NOT output JSON. Output regular conversational text.`;
 
         const cs = getComputedStyle(document.documentElement);
         const CA = cs.getPropertyValue('--accent').trim() || '#5a9a5a';
-        const CM = cs.getPropertyValue('--muted').trim()  || '#888';
+        const CM = cs.getPropertyValue('--muted').trim() || '#888';
 
         // ── Pixel sprites (row-major strings, '1' = filled) ──────────────
         //
@@ -4323,14 +4390,20 @@ Do NOT output JSON. Output regular conversational text.`;
         //   #....  foot A   /  ....#  foot B
 
         const STAGES = [
-          { cw:4, ch:4, spd:0.7,  vy:-6,  g:0.45, fr:15, trig:22,
-            A:'0110111110101000', B:'0110111101010001' },
-          { cw:5, ch:6, spd:1.6,  vy:-9,  g:0.45, fr:9,  trig:45,
-            A:'011100111000100111110101010001',
-            B:'011100111000100111110101001001' },
-          { cw:5, ch:8, spd:3.0,  vy:-13, g:0.50, fr:5,  trig:90,
-            A:'0111001110011101111111111001001010010000',
-            B:'0111001110011101111111111001000010100001' }
+          {
+            cw: 4, ch: 4, spd: 0.7, vy: -6, g: 0.45, fr: 15, trig: 22,
+            A: '0110111110101000', B: '0110111101010001'
+          },
+          {
+            cw: 5, ch: 6, spd: 1.6, vy: -9, g: 0.45, fr: 9, trig: 45,
+            A: '011100111000100111110101010001',
+            B: '011100111000100111110101001001'
+          },
+          {
+            cw: 5, ch: 8, spd: 3.0, vy: -13, g: 0.50, fr: 5, trig: 90,
+            A: '0111001110011101111111111001001010010000',
+            B: '0111001110011101111111111001000010100001'
+          }
         ];
 
         // Transition at frame counts (stage 0 → 1 at 65, stage 1 → 2 at 130)
@@ -4435,7 +4508,7 @@ Do NOT output JSON. Output regular conversational text.`;
             if (obsX < -(OBW * S)) obsX = W + 20 + Math.random() * 60;
             spr(OBS, OBW, obsX, GY - OBH * S, CM);
 
-          } catch (_) {}
+          } catch (_) { }
           raf = requestAnimationFrame(loop);
         }
 
@@ -4450,7 +4523,7 @@ Do NOT output JSON. Output regular conversational text.`;
           }).observe(authEl, { attributes: true, attributeFilter: ['style'] });
         }
       })();
-    } catch (_) {}
+    } catch (_) { }
   </script>
 </body>
 
