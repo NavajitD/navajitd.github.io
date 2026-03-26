@@ -4287,112 +4287,165 @@ Do NOT output JSON. Output regular conversational text.`;
         const cvs = document.getElementById('authCanvas');
         if (!cvs) return;
         const ctx = cvs.getContext('2d');
-        if (!ctx) return; // canvas unsupported in this env — degrade silently
-        const W = 220, H = 52;
+        if (!ctx) return;
+
+        const W = 220, H = 60;
         cvs.width = W; cvs.height = H;
         cvs.style.width = W + 'px'; cvs.style.height = H + 'px';
 
-        const S = 3;   // canvas px per game-pixel
-        const GY = 45; // ground y in canvas px
-
-        // Pixel sprite strings (row-major, '1' = filled)
-        // Character: 5 wide × 6 tall
-        const CW = 5, CH = 6;
-        const FRAMES = [
-          '011100111000100111110101010001', // frame 0: right foot fwd
-          '011100111000100111110101001001'  // frame 1: left foot fwd
-        ];
-        // Cactus obstacle: 3 wide × 5 tall
-        const OW = 3, OH = 5;
-        const OBS = '010010111010010';
+        const S = 3, GY = 50; // S = canvas px per game-pixel, GY = ground y
 
         const cs = getComputedStyle(document.documentElement);
-        const C_CHAR = cs.getPropertyValue('--accent').trim() || '#5a9a5a';
-        const C_GND  = cs.getPropertyValue('--muted').trim()  || '#888';
+        const CA = cs.getPropertyValue('--accent').trim() || '#5a9a5a';
+        const CM = cs.getPropertyValue('--muted').trim()  || '#888';
 
-        function drawSprite(pixels, pw, ox, oy, color) {
-          ctx.fillStyle = color;
-          for (let i = 0; i < pixels.length; i++) {
-            if (pixels[i] === '1') {
-              ctx.fillRect(ox + (i % pw) * S, oy + Math.floor(i / pw) * S, S, S);
-            }
+        // ── Pixel sprites (row-major strings, '1' = filled) ──────────────
+        //
+        // Stage 0 — Confused Noob (4w × 4h, hunched round blob)
+        //   .##.   head
+        //   ####   hunched body
+        //   #.#.   legs A  /  .#.#  legs B
+        //   #...   foot A  /  ...#  foot B
+        //
+        // Stage 1 — Trying Hard (5w × 6h, upright runner)
+        //   .###.  head ×2 rows
+        //   ..#..  neck
+        //   #####  arms/body
+        //   .#.#.  thighs
+        //   #...#  feet A  /  .#..#  feet B
+        //
+        // Stage 2 — Greek God (5w × 8h, V-taper titan)
+        //   .###.  head ×2 rows
+        //   .###.  broad neck
+        //   #####  wide chest ×2 rows
+        //   ..#..  narrow waist
+        //   #.#..  stride A  /  ..#.#  stride B
+        //   #....  foot A   /  ....#  foot B
+
+        const STAGES = [
+          { cw:4, ch:4, spd:0.7,  vy:-6,  g:0.45, fr:15, trig:22,
+            A:'0110111110101000', B:'0110111101010001' },
+          { cw:5, ch:6, spd:1.6,  vy:-9,  g:0.45, fr:9,  trig:45,
+            A:'011100111000100111110101010001',
+            B:'011100111000100111110101001001' },
+          { cw:5, ch:8, spd:3.0,  vy:-13, g:0.50, fr:5,  trig:90,
+            A:'0111001110011101111111111001001010010000',
+            B:'0111001110011101111111111001000010100001' }
+        ];
+
+        // Transition at frame counts (stage 0 → 1 at 65, stage 1 → 2 at 130)
+        const TRANS = [65, 130];
+
+        // "?" mark above noob: 3w × 5h
+        //   ##.  top of ?
+        //   ..#  right curve
+        //   .#.  bump
+        //   ...  gap
+        //   .#.  dot
+        const QM = '110001010000010', QW = 3, QH = 5;
+
+        // Crown on god: 5w × 2h
+        //   #.#.#  points
+        //   #####  base
+        const CROWN = '1010111111', CRW = 5, CRH = 2;
+
+        // Cactus obstacle: 3w × 5h
+        const OBS = '010010111010010', OBW = 3, OBH = 5;
+
+        function spr(px, pw, x, y, col) {
+          ctx.fillStyle = col;
+          for (let i = 0; i < px.length; i++) {
+            if (px[i] === '1') ctx.fillRect(x + (i % pw) * S, y + Math.floor(i / pw) * S, S, S);
           }
         }
 
         const CHAR_X = 22;
-        const FLOOR_Y = GY - CH * S;
-        let charY = FLOOR_Y;
-        let jumpVy = 0, jumping = false;
-        let frame = 0, ftimer = 0;
+        let tick = 0, si = 0;
+        let floorY, charY, jumpVy = 0, jumping = false;
+        let fr = 0, frm = 0;
         let obsX = W + 50;
-        const SPEED = 2;
+        let flashCt = 0;
+        let dashes = Array.from({ length: 8 }, (_, i) => 30 + i * 24);
+        let raf, stopped = false;
 
-        // Scrolling ground dashes (dino-style speed lines)
-        let dashes = Array.from({ length: 7 }, (_, i) => 35 + i * 28);
+        function resetStage() {
+          const st = STAGES[si];
+          floorY = GY - st.ch * S;
+          charY = floorY; jumpVy = 0; jumping = false; fr = 0; frm = 0;
+        }
+        resetStage();
 
-        let raf;
-        let stopped = false;
-
-        function tick() {
+        function loop() {
           if (stopped) return;
           try {
+            tick++;
+
+            // Stage transitions
+            if (si < TRANS.length && tick === TRANS[si]) {
+              si++; flashCt = 10; resetStage();
+            }
+
+            const st = STAGES[si];
             ctx.clearRect(0, 0, W, H);
 
-            // Ground line
-            ctx.fillStyle = C_GND;
+            // Ground line + scrolling speed dashes
+            ctx.fillStyle = CM;
             ctx.fillRect(0, GY, W, 1);
-
-            // Scrolling ground dashes
-            ctx.fillStyle = C_GND;
             dashes = dashes.map(x => {
-              const rx = ((x - SPEED) % (W + 20) + W + 20) % (W + 20);
-              ctx.fillRect(rx, GY + 3, 8, 1);
-              return rx;
+              const nx = ((x - st.spd) % (W + 10) + W + 10) % (W + 10);
+              ctx.fillRect(nx, GY + 3, 9, 1);
+              return nx;
             });
 
-            // Auto-jump when obstacle ~45px ahead of char right edge
-            const charRight = CHAR_X + CW * S;
-            if (!jumping && obsX > CHAR_X && obsX < charRight + 45) {
-              jumping = true;
-              jumpVy = -9;
+            // Jump trigger
+            if (!jumping && obsX > CHAR_X && obsX < CHAR_X + st.cw * S + st.trig) {
+              jumping = true; jumpVy = st.vy;
             }
 
-            // Jump physics
+            // Physics
             if (jumping) {
-              charY += jumpVy;
-              jumpVy += 0.62;
-              if (charY >= FLOOR_Y) { charY = FLOOR_Y; jumping = false; jumpVy = 0; }
+              charY += jumpVy; jumpVy += st.g;
+              if (charY >= floorY) { charY = floorY; jumping = false; jumpVy = 0; }
             }
 
-            // Cycle run frames (freeze while airborne)
-            if (!jumping) {
-              if (++ftimer >= 7) { ftimer = 0; frame ^= 1; }
+            // Run cycle (freeze airborne)
+            if (!jumping && ++fr >= st.fr) { fr = 0; frm ^= 1; }
+
+            // "?" bouncing above confused noob
+            if (si === 0) {
+              const bob = Math.round(Math.sin(tick * 0.25) * 2);
+              const qx = CHAR_X + Math.floor((st.cw * S - QW * S) / 2);
+              spr(QM, QW, qx, charY - QH * S - S + bob, CM);
             }
 
-            // Draw character
-            drawSprite(FRAMES[frame], CW, CHAR_X, charY, C_CHAR);
+            // Crown on the Greek God
+            if (si === 2 && flashCt === 0) {
+              const crx = CHAR_X + Math.floor((st.cw * S - CRW * S) / 2);
+              spr(CROWN, CRW, crx, charY - CRH * S - 1, CA);
+            }
 
-            // Move + wrap obstacle
-            obsX -= SPEED;
-            if (obsX < -(OW * S)) obsX = W + 20 + Math.random() * 60;
+            // Flash accent↔muted on stage-up (reads as a "power-up" pop)
+            const col = (flashCt > 0 && flashCt % 2 === 0) ? CM : CA;
+            if (flashCt > 0) flashCt--;
 
-            // Draw obstacle
-            drawSprite(OBS, OW, obsX, GY - OH * S, C_GND);
+            spr(frm === 0 ? st.A : st.B, st.cw, CHAR_X, charY, col);
+
+            // Obstacle
+            obsX -= st.spd;
+            if (obsX < -(OBW * S)) obsX = W + 20 + Math.random() * 60;
+            spr(OBS, OBW, obsX, GY - OBH * S, CM);
+
           } catch (_) {}
-
-          raf = requestAnimationFrame(tick);
+          raf = requestAnimationFrame(loop);
         }
 
-        tick();
+        loop();
 
-        // Stop when authLoading is hidden
         const authEl = document.getElementById('authLoading');
         if (authEl) {
           new MutationObserver(function (_, obs) {
             if (authEl.style.display === 'none') {
-              stopped = true;
-              cancelAnimationFrame(raf);
-              obs.disconnect();
+              stopped = true; cancelAnimationFrame(raf); obs.disconnect();
             }
           }).observe(authEl, { attributes: true, attributeFilter: ['style'] });
         }
