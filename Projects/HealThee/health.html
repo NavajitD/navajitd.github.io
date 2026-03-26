@@ -1044,7 +1044,7 @@
       align-items: center;
       justify-content: center;
       min-height: 60vh;
-      gap: 1rem;
+      gap: .6rem;
       text-align: center
     }
 
@@ -1918,11 +1918,7 @@
   </header>
 
   <div id="authLoading" class="auth-loading" style="display:flex;">
-    <div><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path
-          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg></div>
-    <div class="dot-pulse"><span></span><span></span><span></span></div>
+    <canvas id="authCanvas" style="image-rendering:pixelated;image-rendering:crisp-edges"></canvas>
     <p style="color:var(--muted);font-size:0.85rem;">Signing you in...</p>
   </div>
 
@@ -2504,6 +2500,115 @@
       window.signOut = function () { _htClearCache(); auth.signOut(); }
       // Document click listener moved or removed since dropdown is gone
 
+      /* ── Auth loading pixel runner animation (dino-style) ─────────────── */
+      (function () {
+        const cvs = document.getElementById('authCanvas');
+        if (!cvs) return;
+        const ctx = cvs.getContext('2d');
+        const W = 220, H = 52;
+        cvs.width = W; cvs.height = H;
+        cvs.style.width = W + 'px'; cvs.style.height = H + 'px';
+
+        const S = 3; // canvas px per game-pixel
+        const GY = 45; // ground y in canvas px
+
+        // Pixel sprite strings (row-major, '1' = filled)
+        // Character: 5 wide × 6 tall
+        const CW = 5, CH = 6;
+        const FRAMES = [
+          '011100111000100111110101010001', // frame 0: right foot fwd
+          '011100111000100111110101001001'  // frame 1: left foot fwd
+        ];
+        // Cactus obstacle: 3 wide × 5 tall
+        const OW = 3, OH = 5;
+        const OBS = '010010111010010';
+
+        const cs = getComputedStyle(document.documentElement);
+        const C_CHAR = cs.getPropertyValue('--accent').trim() || '#5a9a5a';
+        const C_GND  = cs.getPropertyValue('--muted').trim()  || '#888';
+        const C_OBS  = cs.getPropertyValue('--muted').trim()  || '#888';
+
+        function drawSprite(pixels, pw, ox, oy, color) {
+          ctx.fillStyle = color;
+          for (let i = 0; i < pixels.length; i++) {
+            if (pixels[i] === '1') {
+              ctx.fillRect(ox + (i % pw) * S, oy + Math.floor(i / pw) * S, S, S);
+            }
+          }
+        }
+
+        const CHAR_X = 22;
+        let charY = GY - CH * S;       // top of character when on ground
+        const FLOOR_Y = GY - CH * S;
+        let jumpVy = 0, jumping = false;
+        let frame = 0, ftimer = 0;
+        let obsX = W + 50;
+        const SPEED = 2;
+
+        // Scrolling ground dashes (dino-style speed lines)
+        let dashes = Array.from({ length: 7 }, (_, i) => 35 + i * 28);
+
+        let raf;
+
+        function tick() {
+          ctx.clearRect(0, 0, W, H);
+
+          // Ground line
+          ctx.fillStyle = C_GND;
+          ctx.fillRect(0, GY, W, 1);
+
+          // Scrolling ground dashes
+          ctx.fillStyle = C_GND;
+          dashes = dashes.map(x => {
+            const rx = ((x - SPEED) % (W + 20) + W + 20) % (W + 20);
+            ctx.fillRect(rx, GY + 3, 8, 1);
+            return rx;
+          });
+
+          // Auto-jump: trigger when obstacle is ~45px ahead of char right edge
+          const charRight = CHAR_X + CW * S;
+          if (!jumping && obsX > CHAR_X && obsX < charRight + 45) {
+            jumping = true;
+            jumpVy = -9;
+          }
+
+          // Jump physics
+          if (jumping) {
+            charY += jumpVy;
+            jumpVy += 0.62;
+            if (charY >= FLOOR_Y) { charY = FLOOR_Y; jumping = false; jumpVy = 0; }
+          }
+
+          // Cycle run frames (freeze on frame 0 while airborne)
+          if (!jumping) {
+            if (++ftimer >= 7) { ftimer = 0; frame ^= 1; }
+          }
+
+          // Draw character
+          drawSprite(FRAMES[frame], CW, CHAR_X, charY, C_CHAR);
+
+          // Move + wrap obstacle
+          obsX -= SPEED;
+          if (obsX < -(OW * S)) obsX = W + 20 + Math.random() * 60;
+
+          // Draw obstacle
+          drawSprite(OBS, OW, obsX, GY - OH * S, C_OBS);
+
+          raf = requestAnimationFrame(tick);
+        }
+
+        tick();
+
+        // Stop when authLoading is hidden
+        const observer = new MutationObserver(() => {
+          if (document.getElementById('authLoading').style.display === 'none') {
+            cancelAnimationFrame(raf);
+            observer.disconnect();
+          }
+        });
+        observer.observe(document.getElementById('authLoading'), { attributes: true, attributeFilter: ['style'] });
+      })();
+
       /* ── localStorage instant-render cache ───────────────────────────── */
       const HT_C = 'HT_C_';
       window._htWriteCache = function (uid, date, day, profile) {
@@ -2868,17 +2973,9 @@
           <div style="font-size:.68rem;color:var(--muted);margin-bottom:.6rem;line-height:1.4">Leave macros blank to let AI estimate everything from name/portion.</div>
           
           <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
-            <button class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.6rem" onclick="document.getElementById('cfPhotoUpload').removeAttribute('capture'); document.getElementById('cfPhotoUpload').click()">
-              ${licon('image')} Gallery
-            </button>
-            <button class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.6rem" onclick="document.getElementById('cfPhotoUpload').setAttribute('capture', 'environment'); document.getElementById('cfPhotoUpload').click()">
-              ${licon('camera')} Camera
-            </button>
+            <button id="cfModeMeal" class="filter-btn active" onclick="triggerFoodPhoto('meal')" style="flex:1;font-size:.78rem;padding:.5rem .6rem">🍽 Meal</button>
+            <button id="cfModeLabel" class="filter-btn" onclick="triggerFoodPhoto('label')" style="flex:1;font-size:.78rem;padding:.5rem .6rem">🏷 Label</button>
             <input type="file" id="cfPhotoUpload" accept="image/*" style="display:none" onchange="handleFoodPhoto(this)">
-          </div>
-          <div id="cfPhotoModeRow" style="display:none;gap:.4rem;margin-bottom:.5rem">
-            <button id="cfModeMeal" class="filter-btn active" onclick="setPhotoMode('meal')" style="flex:1;font-size:.72rem;padding:.3rem .5rem">🍽 Meal</button>
-            <button id="cfModeLabel" class="filter-btn" onclick="setPhotoMode('label')" style="flex:1;font-size:.72rem;padding:.3rem .5rem">🏷 Label</button>
           </div>
           <div id="cfPortionRow" style="display:none;margin-bottom:.5rem">
             <input id="cfPortion" placeholder="Portion (e.g. 250ml, 40g, 2 scoops)" style="width:100%;font-family:var(--font);font-size:.8rem;padding:.45rem .6rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text)">
@@ -2928,6 +3025,11 @@
         document.getElementById('cfPortionRow').style.display = mode === 'label' ? 'block' : 'none';
       }
 
+      window.triggerFoodPhoto = function (mode) {
+        setPhotoMode(mode);
+        document.getElementById('cfPhotoUpload').click();
+      }
+
       window.handleFoodPhoto = function (el) {
         if (!el.files || !el.files[0]) return;
         const reader = new FileReader();
@@ -2935,22 +3037,15 @@
           currentFoodPhotoBase64 = e.target.result;
           document.getElementById('cfPhotoImg').src = currentFoodPhotoBase64;
           document.getElementById('cfPhotoPreview').style.display = 'block';
-          document.getElementById('cfPhotoModeRow').style.display = 'flex';
-          currentPhotoMode = 'meal';
-          document.getElementById('cfModeMeal').classList.add('active');
-          document.getElementById('cfModeLabel').classList.remove('active');
-          document.getElementById('cfPortionRow').style.display = 'none';
         };
         reader.readAsDataURL(el.files[0]);
       }
 
       window.clearFoodPhoto = function () {
         currentFoodPhotoBase64 = null;
-        currentPhotoMode = 'meal';
         document.getElementById('cfPhotoUpload').value = '';
         document.getElementById('cfPhotoPreview').style.display = 'none';
-        document.getElementById('cfPhotoModeRow').style.display = 'none';
-        document.getElementById('cfPortionRow').style.display = 'none';
+        setPhotoMode('meal');
       }
 
       window.addCustomFood = async function () {
