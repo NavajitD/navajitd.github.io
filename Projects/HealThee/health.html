@@ -3571,7 +3571,7 @@
         return `
         <div class="card">
           <div class="card-title">${licon('scale')} Weight</div>
-          <div class="form-field" style="margin-bottom:.1rem"><label>Weight (kg)</label><input type="number" id="bWeight" step="0.1" value="${b.weight || ""}"></div>
+          <div class="form-field" style="margin-bottom:.1rem"><input type="number" id="bWeight" step="0.1" value="${b.weight || ""}"></div>
           ${bmi ? `
           <div style="display:flex;align-items:center;justify-content:space-between;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:.4rem .75rem;margin-top:.4rem">
             <span style="font-size:.72rem;color:var(--muted)">BMI</span>
@@ -3596,7 +3596,7 @@
               </div>` : ''}
             </div>
           </details>
-          <button class="btn-primary" style="width:100%;margin-top:.75rem" onclick="saveBody()">Save Metrics</button>
+          <button class="btn-primary" style="width:100%;margin-top:.75rem" onclick="saveBody()">Save</button>
         </div>
         <div class="card">
           <div class="card-title">${licon('moon')} Sleep</div>
