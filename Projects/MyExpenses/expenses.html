@@ -1896,6 +1896,11 @@
         let editingExpenseId = null;
         let authRedirectPending = false;
 
+        const LEARN_THRESHOLD = 2;
+        let effectiveCategoryKeywords = {};
+        let lastAutoSuggestedCategory = null;
+        let saveLearnedKeywordsTimer = null;
+
         const DEFAULT_PAYMENTS = ['Cred UPI', 'Credit card', 'GPay UPI', 'Pine Perks', 'Cash', 'Debit card', 'Net Banking'];
         const DEFAULT_CATEGORIES = [
             'Miscellaneous', 'Bike', 'Auto/Cab', 'Public transport', 'Groceries', 'Eating out',
@@ -1967,10 +1972,61 @@
 
         function autoCategory(name) {
             const lower = name.toLowerCase();
-            for (const [cat, kws] of Object.entries(CATEGORY_KEYWORDS)) {
+            for (const [cat, kws] of Object.entries(effectiveCategoryKeywords)) {
                 if (kws.some(kw => lower.includes(kw))) return cat;
             }
             return null;
+        }
+
+        function rebuildEffectiveKeywords() {
+            effectiveCategoryKeywords = {};
+            for (const [cat, kws] of Object.entries(CATEGORY_KEYWORDS)) {
+                effectiveCategoryKeywords[cat] = [...kws];
+            }
+            if (!userProfile?.learnedKeywords) return;
+            for (const [word, catCounts] of Object.entries(userProfile.learnedKeywords)) {
+                for (const [cat, count] of Object.entries(catCounts)) {
+                    if (count >= LEARN_THRESHOLD) {
+                        if (!effectiveCategoryKeywords[cat]) effectiveCategoryKeywords[cat] = [];
+                        if (!effectiveCategoryKeywords[cat].includes(word))
+                            effectiveCategoryKeywords[cat].push(word);
+                    }
+                }
+            }
+        }
+
+        function extractKeywords(name) {
+            const STOP_WORDS = new Set(['at','for','the','a','an','in','on','of','to','and','or','from','with','by','my','is','was','it']);
+            return name.toLowerCase().split(/\s+/)
+                .filter(w => w.length >= 3 && !STOP_WORDS.has(w) && !/^\d+$/.test(w));
+        }
+
+        function logManualCategory(expenseName, chosenCategory) {
+            if (!userProfile || !chosenCategory) return;
+            if (!userProfile.learnedKeywords) userProfile.learnedKeywords = {};
+            const learned = userProfile.learnedKeywords;
+            const words = extractKeywords(expenseName);
+            if (words.length === 0) return;
+            for (const word of words) {
+                if (!learned[word]) learned[word] = {};
+                learned[word][chosenCategory] = (learned[word][chosenCategory] || 0) + 1;
+            }
+            rebuildEffectiveKeywords();
+            saveLearnedKeywords();
+        }
+
+        function saveLearnedKeywords() {
+            clearTimeout(saveLearnedKeywordsTimer);
+            saveLearnedKeywordsTimer = setTimeout(async () => {
+                if (!currentUser || !userProfile) return;
+                try {
+                    await db.collection('users').doc(currentUser.uid).update({
+                        learnedKeywords: userProfile.learnedKeywords || {}
+                    });
+                } catch (err) {
+                    console.warn('[LearnedKeywords] Firestore save failed:', err.message);
+                }
+            }, 500);
         }
 
         /* ═══════════════════════════════════════════════════
@@ -2024,6 +2080,8 @@
                     const profileDoc = await db.collection('users').doc(user.uid).get();
                     if (profileDoc.exists) {
                         userProfile = profileDoc.data();
+                        if (!userProfile.learnedKeywords) userProfile.learnedKeywords = {};
+                        rebuildEffectiveKeywords();
                         applyUserProfile();
                         document.getElementById('mainApp').style.display = 'block';
                         initApp();
@@ -2243,6 +2301,8 @@
                     tx.set(statsRef, { userCount: userCount + 1 }, { merge: true });
                 });
                 userProfile = profile;
+                if (!userProfile.learnedKeywords) userProfile.learnedKeywords = {};
+                rebuildEffectiveKeywords();
                 applyUserProfile();
                 document.getElementById('onboardingScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
@@ -2336,6 +2396,7 @@
                 clearTimeout(autoTimer);
                 autoTimer = setTimeout(() => {
                     const m = autoCategory(this.value);
+                    lastAutoSuggestedCategory = m;
                     if (m) document.getElementById('expCategory').value = m;
                 }, 150);
             });
@@ -2423,6 +2484,12 @@
             if (!amount || amount <= 0) { toast('Enter a valid amount', 'error'); return; }
             if (!dateStr) { toast('Select a date', 'error'); return; }
 
+            const suggestedAtSubmit = autoCategory(name);
+            if (category !== suggestedAtSubmit) {
+                logManualCategory(name, category);
+            }
+            lastAutoSuggestedCategory = null;
+
             const dateObj = new Date(dateStr + 'T00:00:00');
             let finalAmount = amount, originalAmount = amount;
             if (shared) {
@@ -2470,6 +2537,7 @@
            ═══════════════════════════════════════════════════ */
         function resetForm() {
             document.getElementById('expName').value = '';
+            lastAutoSuggestedCategory = null;
             document.getElementById('expAmount').value = '';
             document.getElementById('expCategory').selectedIndex = 0;
             document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
@@ -2606,6 +2674,12 @@
             if (!name) { toast('Enter an expense name', 'error'); return; }
             if (!amount || amount <= 0) { toast('Enter a valid amount', 'error'); return; }
             if (!dateStr) { toast('Select a date', 'error'); return; }
+
+            const originalExpense = allExpenses.find(e => e.id === editingExpenseId);
+            const originalCategory = originalExpense ? originalExpense.category : null;
+            if (originalCategory && category !== originalCategory) {
+                logManualCategory(name, category);
+            }
 
             const dateObj = new Date(dateStr + 'T00:00:00');
             let finalAmount = amount, originalAmount = amount;
