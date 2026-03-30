@@ -1587,6 +1587,65 @@
       cursor: not-allowed
     }
 
+    /* ── Floating HealThee Mate CTA ─────────────────────────────────────── */
+    @keyframes floatDrift {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      20%      { transform: translate(-5px,-8px) rotate(-1.5deg); }
+      40%      { transform: translate(4px,-12px) rotate(1deg); }
+      60%      { transform: translate(7px,-3px) rotate(2deg); }
+      80%      { transform: translate(-3px,5px) rotate(-1deg); }
+    }
+    .float-cta {
+      position: fixed; bottom: 5.5rem; right: 1rem;
+      width: 50px; height: 50px; border-radius: 50%;
+      background: var(--accent); border: none; cursor: pointer;
+      z-index: 45; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.22);
+      animation: floatDrift 5s ease-in-out infinite;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .float-cta:hover { animation-play-state: paused; box-shadow: 0 6px 22px rgba(0,0,0,.30); }
+    body.tab-care .float-cta { display: none; }
+
+    /* ── Chat Popup ─────────────────────────────────────────────────────── */
+    .chat-popup-overlay {
+      position: fixed; inset: 0; z-index: 60;
+      background: rgba(0,0,0,.42);
+      display: flex; align-items: flex-end; justify-content: center;
+      animation: fadeIn .2s;
+    }
+    .chat-popup-overlay.hidden { display: none; }
+    .chat-popup {
+      background: var(--card); width: 100%; max-width: 44rem;
+      border-radius: 14px 14px 0 0; border: 1px solid var(--border); border-bottom: none;
+      display: flex; flex-direction: column; animation: slideUp .25s ease; max-height: 80vh;
+    }
+    .chat-popup-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .75rem 1rem; border-bottom: 1px solid var(--border);
+      background: var(--card); border-radius: 14px 14px 0 0; flex-shrink: 0;
+    }
+    .chat-popup-title { font-weight: 700; font-size: .85rem; display: flex; align-items: center; gap: .4rem; }
+    .chat-popup-close { padding: .2rem .4rem; border-radius: 4px; color: var(--muted); cursor: pointer; border: none; background: none; font-family: var(--font); font-size: .9rem; }
+    .chat-popup-close:hover { color: var(--danger); }
+    .chat-popup-body { flex: 1; overflow: hidden; padding: .75rem 1rem; display: flex; flex-direction: column; gap: .5rem; }
+    #popupChatMessages {
+      display: flex; flex-direction: column; gap: .4rem;
+      overflow-y: auto; flex: 1;
+      min-height: 120px; max-height: calc(80vh - 10rem);
+    }
+    .chat-popup-input-row { display: flex; gap: .4rem; align-items: center; padding-bottom: env(safe-area-inset-bottom, .2rem); flex-shrink: 0; }
+
+    /* ── Mic button ─────────────────────────────────────────────────────── */
+    .mic-btn {
+      background: none; border: 1px solid var(--input-border); border-radius: 5px;
+      padding: .42rem .5rem; cursor: pointer; display: flex; align-items: center;
+      color: var(--muted); flex-shrink: 0; transition: color .2s, border-color .2s;
+    }
+    .mic-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .mic-btn.recording { color: var(--danger); border-color: var(--danger); animation: micPulse .8s ease-in-out infinite; }
+    @keyframes micPulse { 0%,100%{ opacity:1 } 50%{ opacity:.45 } }
+
     /* Water log items */
     .log-item {
       display: flex;
@@ -2467,6 +2526,7 @@
             if (doc.exists) {
               document.getElementById("mainApp").style.display = "block";
               document.getElementById("bottomNav").style.display = "block";
+              document.getElementById("floatCta").style.display = "";
               initApp();
             } else {
               const statsDoc = await db.collection("metadata").doc("stats").get();
@@ -2484,6 +2544,7 @@
               });
               document.getElementById("mainApp").style.display = "block";
               document.getElementById("bottomNav").style.display = "block";
+              document.getElementById("floatCta").style.display = "";
               toast("Welcome! Setup complete.", "success");
               initApp();
             }
@@ -2701,6 +2762,8 @@
       window.switchTab = function (tab) {
         currentTab = tab;
         document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.tab === tab));
+        document.body.className = document.body.className.replace(/\btab-\w+\b/g, '').trim();
+        document.body.classList.add('tab-' + tab);
         render();
       }
 
@@ -3659,9 +3722,9 @@
         <div class="card">
           <div class="card-title">${licon('message-circle')} Healthee Mate</div>
           <div style="display:flex;gap:.3rem;margin-bottom:.5rem;flex-wrap:wrap">
-            <button class="food-btn" onclick="askAdvisor('Am I hitting my protein target today?')">Protein check</button>
-            <button class="food-btn" onclick="askAdvisor('What micronutrients am I low on today?')">Micro gaps</button>
-            <button class="food-btn" onclick="askAdvisor('Rate my nutrition and activity today out of 10')">Rate today</button>
+            <button class="food-btn" onclick="askAdvisor('Am I hitting my protein target today?','care')">Protein check</button>
+            <button class="food-btn" onclick="askAdvisor('What micronutrients am I low on today?','care')">Micro gaps</button>
+            <button class="food-btn" onclick="askAdvisor('Rate my nutrition and activity today out of 10','care')">Rate today</button>
           </div>
           <div class="chat-messages" id="chatMessages">
             ${(dayData.chatHistory || []).map(msg => { const stripped = (msg.text || '').replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1').replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, ''); return `<div class="chat-msg ${msg.role}">${esc(stripped)}</div>`; }).join("")}
@@ -3669,8 +3732,16 @@
           <div class="chat-input-row" style="position:relative;display:flex;align-items:center;gap:.3rem">
             <button class="icon-btn" style="position:absolute;left:8px;background:none;border:none;padding:0;font-size:1.1rem;color:var(--muted)" onclick="document.getElementById('chatPhotoInput').click()">${licon('camera')}</button>
             <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleChatPhoto(this)">
-            <input class="chat-input" id="chatInput" placeholder="Ask about your health..." style="padding-left:2.5rem" onkeydown="if(event.key==='Enter')askAdvisor()">
-            <button class="chat-send" id="chatSendBtn" onclick="askAdvisor()">Send</button>
+            <input class="chat-input" id="chatInput" placeholder="Ask about your health..." style="padding-left:2.5rem" onkeydown="if(event.key==='Enter')askAdvisor(null,'care')">
+            <button class="mic-btn" id="careMicBtn" onclick="toggleVoice('care')" aria-label="Voice input">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="2" width="6" height="11" rx="3"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="8" y1="22" x2="16" y2="22"/>
+              </svg>
+            </button>
+            <button class="chat-send" id="chatSendBtn" onclick="askAdvisor(null,'care')">Send</button>
           </div>
           <div id="chatPhotoPreviewContainer" style="display:none;margin-top:.5rem;position:relative;width:max-content">
             <img id="chatPhotoPreview" style="max-height:80px;border-radius:8px;border:1px solid var(--border)">
@@ -4264,20 +4335,23 @@
         document.getElementById("chatPhotoInput").value = "";
       }
 
-      window.askAdvisor = async function (quick) {
-        const input = document.getElementById("chatInput");
+      window.askAdvisor = async function (quick, context) {
+        const ctx = context || 'care';
+        const inputId   = ctx === 'popup' ? 'popupChatInput'   : 'chatInput';
+        const sendBtnId = ctx === 'popup' ? 'popupChatSendBtn' : 'chatSendBtn';
+        const input = document.getElementById(inputId);
         const query = quick || input?.value?.trim();
-        const hasImage = !!chatImageBase64;
+        const hasImage = ctx === 'care' && !!chatImageBase64;
         if (!query && !hasImage) return;
 
         let userMsg = query || (hasImage ? "Analyze this image." : "");
         appendChat("user", userMsg);
 
         if (input) input.value = "";
-        const imageToSend = chatImageBase64;
-        clearChatPhoto();
+        const imageToSend = ctx === 'care' ? chatImageBase64 : null;
+        if (ctx === 'care') clearChatPhoto();
 
-        const btn = document.getElementById("chatSendBtn"); if (btn) { btn.disabled = true; btn.textContent = "..."; }
+        const btn = document.getElementById(sendBtnId); if (btn) { btn.disabled = true; btn.textContent = "..."; }
 
         const t = computeTotals(dayData); const calTarget = getCalTarget();
         const microStr = MICROS.map(m => `${m.label}: ${(t.micros[m.key] || 0).toFixed(1)}/${m.target}${m.unit}`).join(', ');
@@ -4286,17 +4360,18 @@
 IMPORTANT: When asked about micro gaps, macros, water, fiber, or exercise, you MUST base your answer strictly on the numerical totals provided below. DO NOT guess or calculate nutrients from the "Foods" array.
 If the user asks for a recipe or cooking advice, check their macro constraints and suggest something that fits perfectly.
 If the user uploaded a menu photo, identify the healthiest, highest-protein option that fits their goals.
+If the user mentions eating something, briefly acknowledge it and confirm it has been logged to their food diary.
 Do NOT output JSON. Output regular conversational text.`;
 
         const prompt = `My current stats:\n${summary}\n\nQuestion: ${userMsg}`;
 
         try {
-          let reply;
-          if (hasImage) {
-            reply = await fetchVisionLLM(prompt, sys, imageToSend, 'groq', 'llama-3.2-11b-vision-preview', false);
-          } else {
-            reply = await fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b', false);
-          }
+          const [reply] = await Promise.all([
+            hasImage
+              ? fetchVisionLLM(prompt, sys, imageToSend, 'groq', 'llama-3.2-11b-vision-preview', false)
+              : fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b', false),
+            checkAndLogFoodIntent(userMsg)
+          ]);
           let cleanReply = reply.trim()
             .replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1')
             .replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, '');
@@ -4313,9 +4388,14 @@ Do NOT output JSON. Output regular conversational text.`;
         dayData.chatHistory = dayData.chatHistory || [];
         dayData.chatHistory.push({ role, text });
         touch(); saveDay();
-        const c = document.getElementById("chatMessages"); if (!c) return;
-        const msg = document.createElement("div"); msg.className = `chat-msg ${role}`; msg.textContent = text;
-        c.appendChild(msg); c.scrollTop = c.scrollHeight;
+        function makeMsg() {
+          const el = document.createElement("div");
+          el.className = `chat-msg ${role}`; el.textContent = text; return el;
+        }
+        const c = document.getElementById("chatMessages");
+        if (c) { c.appendChild(makeMsg()); c.scrollTop = c.scrollHeight; }
+        const p = document.getElementById("popupChatMessages");
+        if (p) { p.appendChild(makeMsg()); p.scrollTop = p.scrollHeight; }
       }
 
       /* ═══════════════════════════════════════════════════
@@ -4341,6 +4421,97 @@ Do NOT output JSON. Output regular conversational text.`;
         requestAnimationFrame(() => el.classList.add("show"));
         setTimeout(() => el.classList.remove("show"), 2500);
       }
+      /* ═══════════════════════════════════════════════════
+         CHAT POPUP
+         ═══════════════════════════════════════════════════ */
+      window.openChatPopup = function () {
+        const overlay = document.getElementById('chatPopupOverlay');
+        const container = document.getElementById('popupChatMessages');
+        container.innerHTML = (dayData.chatHistory || []).map(msg => {
+          const stripped = (msg.text || '').replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1')
+            .replace(/_(.*?)_/gs, '$1').replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, '');
+          return `<div class="chat-msg ${msg.role}">${esc(stripped)}</div>`;
+        }).join('');
+        overlay.classList.remove('hidden');
+        container.scrollTop = container.scrollHeight;
+        setTimeout(() => document.getElementById('popupChatInput')?.focus(), 150);
+      }
+      window.closeChatPopup = function () {
+        document.getElementById('chatPopupOverlay').classList.add('hidden');
+        stopVoice();
+      }
+      window.handlePopupOverlayClick = function (e) {
+        if (e.target === document.getElementById('chatPopupOverlay')) closeChatPopup();
+      }
+
+      /* ═══════════════════════════════════════════════════
+         VOICE RECOGNITION
+         ═══════════════════════════════════════════════════ */
+      let _voiceRecog = null, _voiceActive = false;
+
+      window.toggleVoice = function (ctx) { _voiceActive ? stopVoice() : startVoice(ctx); }
+
+      window.startVoice = function (ctx) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { toast("Voice input not supported on this browser"); return; }
+        _voiceRecog = new SR();
+        _voiceRecog.lang = 'en-IN';
+        _voiceRecog.continuous = false;
+        _voiceRecog.interimResults = false;
+        _voiceRecog.onstart = () => {
+          _voiceActive = true;
+          const id = ctx === 'popup' ? 'popupMicBtn' : 'careMicBtn';
+          document.getElementById(id)?.classList.add('recording');
+          toast("Listening...");
+        };
+        _voiceRecog.onresult = e => {
+          const transcript = e.results[0][0].transcript;
+          const id = ctx === 'popup' ? 'popupChatInput' : 'chatInput';
+          const input = document.getElementById(id);
+          if (input) { input.value = transcript; input.focus(); }
+        };
+        _voiceRecog.onerror = e => { toast("Voice error: " + e.error); stopVoice(); };
+        _voiceRecog.onend = () => stopVoice();
+        _voiceRecog.start();
+      }
+      window.stopVoice = function () {
+        if (_voiceRecog) { try { _voiceRecog.stop(); } catch (_) {} _voiceRecog = null; }
+        _voiceActive = false;
+        document.getElementById('popupMicBtn')?.classList.remove('recording');
+        document.getElementById('careMicBtn')?.classList.remove('recording');
+      }
+
+      /* ═══════════════════════════════════════════════════
+         FOOD INTENT DETECTION
+         ═══════════════════════════════════════════════════ */
+      window.checkAndLogFoodIntent = async function (userMsg) {
+        if (!/\b(ate|had|eaten|consumed|drank|drinking|having|just ate|just had)\b/i.test(userMsg)) return;
+        const mealGuess = inferMealFromTime();
+        const extractSys = `You are a food intake extractor. The user said they ate something. Extract the food and estimate macros for a standard Indian serving size. Reply ONLY with valid JSON: {"food":{"name":string,"meal":"${mealGuess}","cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}} or {"food":null} if no specific food is mentioned.`;
+        try {
+          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'cerebras', 'llama3.1-8b', true);
+          if (!raw?.food?.name) return;
+          const f = raw.food;
+          addFood({
+            name: f.name, meal: f.meal || mealGuess,
+            cal: Math.round(f.cal || 0),
+            protein: Math.round((f.protein || 0) * 10) / 10,
+            carbs: Math.round((f.carbs || 0) * 10) / 10,
+            fat: Math.round((f.fat || 0) * 10) / 10,
+            fiber: Math.round((f.fiber || 0) * 10) / 10,
+            micros: {}, desc: 'Added via chat', estimated: true
+          });
+        } catch (e) { console.warn('Food intent extraction failed:', e.message); }
+      }
+
+      window.inferMealFromTime = function () {
+        const h = new Date().getHours();
+        if (h < 10) return 'Breakfast';
+        if (h < 14) return 'Lunch';
+        if (h < 17) return 'Snack';
+        return 'Dinner';
+      }
+
     }); // End of DOMContentLoaded block
 
     if ('serviceWorker' in navigator) {
@@ -4525,6 +4696,44 @@ Do NOT output JSON. Output regular conversational text.`;
       })();
     } catch (_) { }
   </script>
+
+  <!-- Floating HealThee Mate CTA -->
+  <button class="float-cta" id="floatCta" onclick="openChatPopup()" aria-label="Open HealThee Mate" style="display:none">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  </button>
+
+  <!-- Chat Popup Overlay -->
+  <div class="chat-popup-overlay hidden" id="chatPopupOverlay" onclick="handlePopupOverlayClick(event)">
+    <div class="chat-popup">
+      <div class="chat-popup-head">
+        <div class="chat-popup-title">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          HealThee Mate
+        </div>
+        <button class="chat-popup-close" onclick="closeChatPopup()">✕</button>
+      </div>
+      <div class="chat-popup-body">
+        <div id="popupChatMessages"></div>
+        <div class="chat-popup-input-row">
+          <button class="mic-btn" id="popupMicBtn" onclick="toggleVoice('popup')" aria-label="Voice input">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="2" width="6" height="11" rx="3"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="22"/>
+              <line x1="8" y1="22" x2="16" y2="22"/>
+            </svg>
+          </button>
+          <input class="chat-input" id="popupChatInput" placeholder="Ask about your health..."
+                 onkeydown="if(event.key==='Enter')askAdvisor(null,'popup')">
+          <button class="chat-send" id="popupChatSendBtn" onclick="askAdvisor(null,'popup')">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
