@@ -2174,6 +2174,7 @@
       let dayData = null;
       let chatHistory = [];
       let userProfile = null; // Profile settings from Firestore
+      let eventsData = []; // Persisted across sessions in Firestore
 
       /* ═══════════════════════════════════════════════════
          CONSTANTS: Plan, workouts, supplements, targets
@@ -2665,6 +2666,7 @@
         selectedDate = todayStr();
         await loadProfile();
         loadDay();
+        loadEvents();
         setupPullToRefresh();
       }
 
@@ -3722,16 +3724,16 @@
         <div class="card">
           <div class="card-title">${licon('message-circle')} Healthee Mate</div>
           <div style="display:flex;gap:.3rem;margin-bottom:.5rem;flex-wrap:wrap">
-            <button class="food-btn" onclick="askAdvisor('Am I hitting my protein target today?','care')">Protein check</button>
-            <button class="food-btn" onclick="askAdvisor('What micronutrients am I low on today?','care')">Micro gaps</button>
-            <button class="food-btn" onclick="askAdvisor('Rate my nutrition and activity today out of 10','care')">Rate today</button>
+            <button class="food-btn" onclick="askAdvisor('Am I hitting my protein target today?','care')">Protein</button>
+            <button class="food-btn" onclick="askAdvisor('What micronutrients am I low on today?','care')">Micros</button>
+            <button class="food-btn" onclick="openEventsModal()">Events</button>
           </div>
           <div class="chat-messages" id="chatMessages">
             ${(dayData.chatHistory || []).map(msg => { const stripped = (msg.text || '').replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1').replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, ''); return `<div class="chat-msg ${msg.role}">${esc(stripped)}</div>`; }).join("")}
           </div>
           <div class="chat-input-row" style="position:relative;display:flex;align-items:center;gap:.3rem">
             <button class="icon-btn" style="position:absolute;left:8px;background:none;border:none;padding:0;font-size:1.1rem;color:var(--muted)" onclick="document.getElementById('chatPhotoInput').click()">${licon('camera')}</button>
-            <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleChatPhoto(this)">
+            <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleChatPhoto(this,'care')">
             <input class="chat-input" id="chatInput" placeholder="Ask about your health..." style="padding-left:2.5rem" onkeydown="if(event.key==='Enter')askAdvisor(null,'care')">
             <button class="mic-btn" id="careMicBtn" onclick="toggleVoice('care')" aria-label="Voice input">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -4318,21 +4320,27 @@
          AI ADVISOR
          ═══════════════════════════════════════════════════ */
       let chatImageBase64 = null;
-      window.handleChatPhoto = function (el) {
+      window.handleChatPhoto = function (el, ctx) {
         if (!el.files[0]) return;
         const reader = new FileReader();
         reader.onload = e => {
           chatImageBase64 = e.target.result;
-          const img = document.getElementById("chatPhotoPreview");
+          const suffix = ctx === 'popup' ? 'Popup' : '';
+          const img = document.getElementById('chatPhotoPreview' + suffix);
           if (img) img.src = chatImageBase64;
-          document.getElementById("chatPhotoPreviewContainer").style.display = "block";
+          const ctr = document.getElementById('chatPhotoPreviewContainer' + suffix);
+          if (ctr) ctr.style.display = 'block';
         };
         reader.readAsDataURL(el.files[0]);
       }
       window.clearChatPhoto = function () {
         chatImageBase64 = null;
-        document.getElementById("chatPhotoPreviewContainer").style.display = "none";
-        document.getElementById("chatPhotoInput").value = "";
+        ['chatPhotoPreviewContainer', 'chatPhotoPreviewContainerPopup'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.style.display = 'none';
+        });
+        ['chatPhotoInput', 'popupChatPhotoInput'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
       }
 
       window.askAdvisor = async function (quick, context) {
@@ -4341,27 +4349,30 @@
         const sendBtnId = ctx === 'popup' ? 'popupChatSendBtn' : 'chatSendBtn';
         const input = document.getElementById(inputId);
         const query = quick || input?.value?.trim();
-        const hasImage = ctx === 'care' && !!chatImageBase64;
+        const hasImage = !!chatImageBase64;
         if (!query && !hasImage) return;
 
         let userMsg = query || (hasImage ? "Analyze this image." : "");
         appendChat("user", userMsg);
 
         if (input) input.value = "";
-        const imageToSend = ctx === 'care' ? chatImageBase64 : null;
-        if (ctx === 'care') clearChatPhoto();
+        const imageToSend = chatImageBase64;
+        clearChatPhoto();
 
         const btn = document.getElementById(sendBtnId); if (btn) { btn.disabled = true; btn.textContent = "..."; }
 
         const t = computeTotals(dayData); const calTarget = getCalTarget();
         const microStr = MICROS.map(m => `${m.label}: ${(t.micros[m.key] || 0).toFixed(1)}/${m.target}${m.unit}`).join(', ');
-        const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal\nMicros logged so far: ${microStr}\nFoods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}`;
+        const eventsStr = eventsData.length > 0
+          ? '\nSaved events: ' + eventsData.map(e => `${e.name} on ${e.date || '?'} ${e.time || ''} at ${e.location || '?'}${e.bookingRequired ? ' (booking required)' : ''}`).join('; ')
+          : '';
+        const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal\nMicros logged so far: ${microStr}\nFoods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}${eventsStr}`;
         const sys = `You are "HealThee Mate", a concise, warm, and highly capable health advisor for an Indian user doing a recomposition (cutting body fat, building muscle). Currency INR. Goals: ~2050 kcal training days, ~1850 rest days, 130-145g protein. Keep responses under 120 words. Use plain text only — do not use markdown, asterisks, bold, bullet points, or any special formatting.
-IMPORTANT: When asked about micro gaps, macros, water, fiber, or exercise, you MUST base your answer strictly on the numerical totals provided below. DO NOT guess or calculate nutrients from the "Foods" array.
-If the user asks for a recipe or cooking advice, check their macro constraints and suggest something that fits perfectly.
+CRITICAL: You are READ-ONLY. You CANNOT log, save, or record any data — not food, not water, not steps, not anything. Never say "I've logged", "I've saved", "I've recorded", or "that's been added". The app handles logging automatically. Do NOT make claims about what was or wasn't logged.
+When asked about micro gaps, macros, water, fiber, or exercise, base your answer strictly on the numerical totals provided below. DO NOT guess or calculate nutrients from the "Foods" array.
+If the user asks for a recipe or cooking advice, check their macro constraints and suggest something that fits.
 If the user uploaded a menu photo, identify the healthiest, highest-protein option that fits their goals.
-If the user mentions eating something, briefly acknowledge it and confirm it has been logged to their food diary.
-Do NOT output JSON. Output regular conversational text.`;
+Do NOT output JSON. Output regular conversational text only.`;
 
         const prompt = `My current stats:\n${summary}\n\nQuestion: ${userMsg}`;
 
@@ -4510,6 +4521,169 @@ Do NOT output JSON. Output regular conversational text.`;
         if (h < 14) return 'Lunch';
         if (h < 17) return 'Snack';
         return 'Dinner';
+      }
+
+      /* ═══════════════════════════════════════════════════
+         DRAGGABLE FLOAT BUTTON
+         ═══════════════════════════════════════════════════ */
+      (function () {
+        const btn = document.getElementById('floatCta');
+        const POS_KEY = 'hm_float_pos';
+        let dragging = false, didMove = false;
+        let startX = 0, startY = 0, startRight = 0, startBottom = 0;
+
+        // Restore saved position
+        try {
+          const s = JSON.parse(localStorage.getItem(POS_KEY));
+          if (s) { btn.style.bottom = s.b + 'px'; btn.style.right = s.r + 'px'; }
+        } catch (_) {}
+
+        function pDown(x, y) {
+          dragging = true; didMove = false;
+          startX = x; startY = y;
+          const rect = btn.getBoundingClientRect();
+          startRight  = window.innerWidth  - rect.right;
+          startBottom = window.innerHeight - rect.bottom;
+          btn.style.animationPlayState = 'paused';
+        }
+        function pMove(x, y) {
+          if (!dragging) return;
+          const dx = x - startX, dy = y - startY;
+          if (Math.abs(dx) > 4 || Math.abs(dy) > 4) didMove = true;
+          btn.style.right  = Math.max(4, Math.min(window.innerWidth  - 54, startRight  - dx)) + 'px';
+          btn.style.bottom = Math.max(4, Math.min(window.innerHeight - 54, startBottom + dy)) + 'px';
+        }
+        function pUp() {
+          if (!dragging) return;
+          dragging = false;
+          btn.style.animationPlayState = '';
+          try { localStorage.setItem(POS_KEY, JSON.stringify({ r: parseFloat(btn.style.right), b: parseFloat(btn.style.bottom) })); } catch (_) {}
+        }
+
+        btn.addEventListener('mousedown',  e => { e.preventDefault(); pDown(e.clientX, e.clientY); });
+        document.addEventListener('mousemove',  e => pMove(e.clientX, e.clientY));
+        document.addEventListener('mouseup',    () => pUp());
+        btn.addEventListener('touchstart', e => { const t = e.touches[0]; pDown(t.clientX, t.clientY); }, { passive: true });
+        document.addEventListener('touchmove',  e => { if (dragging) { const t = e.touches[0]; pMove(t.clientX, t.clientY); } }, { passive: true });
+        document.addEventListener('touchend',   () => pUp());
+        btn.addEventListener('click', () => { if (!didMove) openChatPopup(); });
+      })();
+
+      /* ═══════════════════════════════════════════════════
+         EVENTS
+         ═══════════════════════════════════════════════════ */
+      let eventImages = []; // base64 strings staged for analysis
+
+      window.loadEvents = async function () {
+        try {
+          const doc = await db.collection("users").doc(currentUser.uid).get();
+          eventsData = doc.exists && Array.isArray(doc.data().events) ? doc.data().events : [];
+          if (scrubExpiredEvents()) await saveEvents(); // persist scrubbed list immediately
+        } catch (e) { eventsData = []; }
+      }
+      window.saveEvents = async function () {
+        try { await db.collection("users").doc(currentUser.uid).set({ events: eventsData }, { merge: true }); }
+        catch (e) { console.error('Events save failed', e); }
+      }
+      // Remove events whose end date (or start date for single-day events) is before today.
+      // Returns true if any events were removed.
+      window.scrubExpiredEvents = function () {
+        const today = todayStr(); // YYYY-MM-DD
+        const before = eventsData.length;
+        eventsData = eventsData.filter(e => {
+          const check = e.endDate || e.startDate;
+          if (!check) return true; // no parseable date → keep to avoid accidental deletion
+          return check >= today;
+        });
+        return eventsData.length < before;
+      }
+
+      window.openEventsModal = function () {
+        eventImages = [];
+        document.getElementById('modalContainer').innerHTML = `
+          <div class="modal-overlay" id="eventsModal" onclick="if(event.target===this)closeEventsModal()">
+            <div class="modal" style="max-width:380px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+                <div class="section-title" style="margin:0">Add Event Photos</div>
+                <button onclick="closeEventsModal()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem">✕</button>
+              </div>
+              <p style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem">Add posters or messages for events you're interested in. I'll extract details and suggest a weekend plan.</p>
+              <div id="eventPhotoPreviews" style="display:flex;flex-wrap:wrap;gap:.4rem;min-height:48px;margin-bottom:.8rem"></div>
+              <button class="btn" style="width:100%;margin-bottom:.6rem" onclick="document.getElementById('eventPhotoInput').click()">+ Add Photos</button>
+              <input type="file" id="eventPhotoInput" accept="image/*" multiple style="display:none" onchange="addEventPhotos(this)">
+              ${eventsData.length > 0 ? `<p style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem">${eventsData.length} event(s) already saved — new photos add to existing list.</p>` : ''}
+              <div style="display:flex;gap:.5rem">
+                <button class="btn" style="flex:1;background:var(--surface)" onclick="closeEventsModal()">Cancel</button>
+                <button class="btn" id="analyseEventsBtn" style="flex:2;background:var(--accent);color:#fff" onclick="analyseEvents()">Analyse</button>
+              </div>
+            </div>
+          </div>`;
+      }
+      window.closeEventsModal = function () {
+        document.getElementById('modalContainer').innerHTML = '';
+      }
+      window.addEventPhotos = function (el) {
+        Array.from(el.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = e => {
+            eventImages.push(e.target.result);
+            const prev = document.getElementById('eventPhotoPreviews');
+            if (prev) {
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--border)';
+              prev.appendChild(img);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+        el.value = '';
+      }
+      window.analyseEvents = async function () {
+        if (eventImages.length === 0) { toast("Add at least one photo first"); return; }
+        const btn = document.getElementById('analyseEventsBtn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Analysing...'; }
+        const newEvents = [];
+        for (const imgB64 of eventImages) {
+          try {
+            const raw = await fetchVisionLLM(
+              'Extract all event details visible in this image.',
+              `Today is ${todayStr()}. You extract event info from posters or messages. Reply ONLY with valid JSON:
+{"name":string,"location":string,"date":string,"time":string,"duration":string,"description":string,"bookingRequired":boolean,"bookingInfo":string,"links":string,"startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD"}
+Rules:
+- startDate: first day of the event in YYYY-MM-DD format (use today's year if not shown)
+- endDate: last day of the event. For a single-day event set endDate = startDate. For a multi-day or ongoing event (exhibition, festival, etc.) set endDate to the last day.
+- Set bookingRequired:true if you see: register, book, RSVP, ticket, limited seats, pay, fee, or a QR code.
+- Set links to any URL or @handle visible, else "".
+- If no event found return {"name":null}.`,
+              imgB64, 'groq', 'llama-3.2-11b-vision-preview', true
+            );
+            if (raw?.name) newEvents.push({ ...raw, id: genId('evt'), addedAt: new Date().toISOString() });
+          } catch (e) { console.warn('Event extraction failed:', e); }
+        }
+        eventsData = [...eventsData, ...newEvents];
+        await saveEvents();
+        closeEventsModal();
+        if (newEvents.length === 0) {
+          appendChat('assistant', 'Could not extract event details from the photos. Try clearer images.');
+          if (currentTab !== 'care') openChatPopup();
+          return;
+        }
+        // Post event table + weekend plan to chat
+        const rows = newEvents.map((e, i) => {
+          const bk = e.bookingRequired ? ' ⚠ Booking required' + (e.bookingInfo ? ': ' + e.bookingInfo : '') : '';
+          return `${i + 1}. ${e.name} | ${e.date || '?'} ${e.time || ''} | ${e.location || '?'} | ${e.duration || '?'}${bk}`;
+        }).join('\n');
+        appendChat('assistant', 'Events found:\n' + rows);
+        // Weekend plan
+        const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+        const planPrompt = `Today is ${today}. These events are available: ${JSON.stringify(newEvents.map(e => ({ name: e.name, date: e.date, time: e.time, location: e.location, bookingRequired: e.bookingRequired, bookingInfo: e.bookingInfo })))}. Suggest a brief weekend plan. Note any events needing advance booking.`;
+        const planSys = `You are HealThee Mate. Plain text only, no markdown, no asterisks, no bullet points. Max 150 words.`;
+        try {
+          const reply = await fetchLLM(planPrompt, planSys, 'cerebras', 'llama3.1-8b', false);
+          appendChat('assistant', reply.trim().replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1').replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, ''));
+        } catch (e) { console.warn('Weekend plan failed:', e); }
+        if (currentTab !== 'care') openChatPopup();
       }
 
     }); // End of DOMContentLoaded block
@@ -4698,7 +4872,7 @@ Do NOT output JSON. Output regular conversational text.`;
   </script>
 
   <!-- Floating HealThee Mate CTA -->
-  <button class="float-cta" id="floatCta" onclick="openChatPopup()" aria-label="Open HealThee Mate" style="display:none">
+  <button class="float-cta" id="floatCta" aria-label="Open HealThee Mate" style="display:none">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
     </svg>
@@ -4718,7 +4892,13 @@ Do NOT output JSON. Output regular conversational text.`;
       </div>
       <div class="chat-popup-body">
         <div id="popupChatMessages"></div>
-        <div class="chat-popup-input-row">
+        <div style="position:relative;display:flex;align-items:center;gap:.3rem" class="chat-popup-input-row">
+          <button class="icon-btn" style="position:absolute;left:8px;background:none;border:none;padding:0;font-size:1.1rem;color:var(--muted);cursor:pointer;z-index:1" onclick="document.getElementById('popupChatPhotoInput').click()">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </button>
+          <input type="file" id="popupChatPhotoInput" accept="image/*" style="display:none" onchange="handleChatPhoto(this,'popup')">
+          <input class="chat-input" id="popupChatInput" placeholder="Ask about your health..." style="padding-left:2.5rem"
+                 onkeydown="if(event.key==='Enter')askAdvisor(null,'popup')">
           <button class="mic-btn" id="popupMicBtn" onclick="toggleVoice('popup')" aria-label="Voice input">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="2" width="6" height="11" rx="3"/>
@@ -4727,9 +4907,11 @@ Do NOT output JSON. Output regular conversational text.`;
               <line x1="8" y1="22" x2="16" y2="22"/>
             </svg>
           </button>
-          <input class="chat-input" id="popupChatInput" placeholder="Ask about your health..."
-                 onkeydown="if(event.key==='Enter')askAdvisor(null,'popup')">
           <button class="chat-send" id="popupChatSendBtn" onclick="askAdvisor(null,'popup')">Send</button>
+        </div>
+        <div id="chatPhotoPreviewContainerPopup" style="display:none;margin-top:.4rem;position:relative;width:max-content">
+          <img id="chatPhotoPreviewPopup" style="max-height:72px;border-radius:8px;border:1px solid var(--border)">
+          <button onclick="clearChatPhoto()" style="position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:.55rem;cursor:pointer">✕</button>
         </div>
       </div>
     </div>
