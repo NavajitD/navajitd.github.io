@@ -1527,6 +1527,138 @@
                 padding: 1.2rem;
             }
         }
+
+        /* ─── Smart Capture ─── */
+        .smart-capture {
+            margin-bottom: 1.25rem;
+        }
+
+        .smart-capture-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        .capture-btn {
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--muted-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            transition: all 0.2s ease;
+            flex: 1;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .capture-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .capture-btn.active {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        [data-theme="colorful"] .capture-btn.active {
+            background: rgba(74, 222, 128, 0.08);
+        }
+
+        .capture-btn.recording {
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+            animation: recordPulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.55; }
+        }
+
+        .capture-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.6;
+            flex-shrink: 0;
+        }
+
+        .paste-panel {
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.6rem;
+        }
+
+        .paste-panel.open {
+            display: flex;
+        }
+
+        .paste-panel textarea {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 5px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-color);
+            outline: none;
+            resize: vertical;
+            min-height: 72px;
+            transition: border-color 0.2s ease;
+            line-height: 1.5;
+        }
+
+        .paste-panel textarea:focus {
+            border-color: var(--accent-color);
+        }
+
+        .paste-panel textarea::placeholder {
+            color: var(--muted-color);
+            opacity: 0.6;
+        }
+
+        .capture-parse-btn {
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0.42rem 1rem;
+            border-radius: 5px;
+            border: none;
+            background: var(--accent-color);
+            color: #fff;
+            cursor: pointer;
+            align-self: flex-end;
+            transition: opacity 0.2s ease;
+        }
+
+        .capture-parse-btn:hover { opacity: 0.88; }
+        .capture-parse-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        .capture-status {
+            font-size: 0.8rem;
+            color: var(--muted-color);
+            padding: 0.35rem 0.6rem;
+            background: var(--card-bg);
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .capture-status.show { display: block; }
+        .capture-status.error { color: var(--danger-color); }
+        .capture-status.success { color: var(--success-color); }
     </style>
 </head>
 
@@ -1737,6 +1869,31 @@
 
         <!-- ─── ADD EXPENSE TAB ─── -->
         <div id="tab-add" class="tab-content active">
+
+            <!-- ─── SMART CAPTURE ─── -->
+            <div class="smart-capture">
+                <div class="smart-capture-row">
+                    <button class="capture-btn" id="pasteBtn" onclick="togglePastePanel()">
+                        <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M6 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M9 12h6M9 16h4"/></svg>
+                        Paste text
+                    </button>
+                    <label class="capture-btn" for="imageCapture" id="imageBtn">
+                        <svg viewBox="0 0 24 24"><path d="M14.5 4H9.5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        Add image
+                    </label>
+                    <input type="file" id="imageCapture" accept="image/*" style="display:none" onchange="handleImageCapture(event)">
+                    <button class="capture-btn" id="voiceBtn" onclick="toggleVoiceCapture()">
+                        <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6"/></svg>
+                        Voice
+                    </button>
+                </div>
+                <div class="paste-panel" id="pastePanel">
+                    <textarea id="pasteInput" placeholder="Paste an SMS, bank message, or describe an expense — e.g. &quot;Paid ₹450 at Swiggy via GPay on 28 Mar&quot;..." rows="3"></textarea>
+                    <button class="capture-parse-btn" id="parsePasteBtn" onclick="parsePastedText()">Parse →</button>
+                </div>
+                <div class="capture-status" id="captureStatus"></div>
+            </div>
+
             <div class="quick-add">
                 <div class="form-grid">
                     <div class="form-group full-width">
@@ -2605,6 +2762,201 @@
                 el.style.display = 'none';
                 cp.style.display = 'none';
             }
+        }
+
+        /* ═══════════════════════════════════════════════════
+           SMART CAPTURE — text / image / voice → form fill
+           ═══════════════════════════════════════════════════ */
+
+        let voiceRecognition = null;
+        let voiceActive = false;
+
+        function togglePastePanel() {
+            const panel = document.getElementById('pastePanel');
+            const btn = document.getElementById('pasteBtn');
+            const isOpen = panel.classList.toggle('open');
+            btn.classList.toggle('active', isOpen);
+            if (isOpen) document.getElementById('pasteInput').focus();
+        }
+
+        async function parsePastedText() {
+            const text = document.getElementById('pasteInput').value.trim();
+            if (!text) { setCaptureStatus('Paste some text first', 'error'); return; }
+            const btn = document.getElementById('parsePasteBtn');
+            btn.disabled = true; btn.textContent = 'Parsing…';
+            setCaptureStatus('Parsing…');
+            try {
+                const parsed = await callGeminiParseText(text);
+                populateFormFromParsed(parsed);
+                document.getElementById('pastePanel').classList.remove('open');
+                document.getElementById('pasteBtn').classList.remove('active');
+                document.getElementById('pasteInput').value = '';
+                setCaptureStatus('Form filled — review and submit', 'success');
+            } catch (e) {
+                setCaptureStatus('Could not parse — try rephrasing', 'error');
+            } finally {
+                btn.disabled = false; btn.textContent = 'Parse →';
+            }
+        }
+
+        async function handleImageCapture(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const imageBtn = document.getElementById('imageBtn');
+            imageBtn.classList.add('active');
+            setCaptureStatus('Reading image…');
+            try {
+                const base64 = await fileToBase64(file);
+                const parsed = await callGeminiParseImage(base64, file.type);
+                populateFormFromParsed(parsed);
+                setCaptureStatus('Form filled from image — review and submit', 'success');
+            } catch (e) {
+                setCaptureStatus('Could not read image — try a clearer photo', 'error');
+            } finally {
+                imageBtn.classList.remove('active');
+                event.target.value = '';
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function toggleVoiceCapture() {
+            if (voiceActive) { stopVoice(); return; }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                setCaptureStatus('Voice input not supported in this browser', 'error'); return;
+            }
+            voiceRecognition = new SpeechRecognition();
+            voiceRecognition.lang = 'en-IN';
+            voiceRecognition.interimResults = false;
+            voiceRecognition.maxAlternatives = 1;
+            voiceRecognition.onstart = () => {
+                voiceActive = true;
+                document.getElementById('voiceBtn').classList.add('recording');
+                document.getElementById('voiceBtn').querySelector('svg').nextSibling.textContent = ' Listening…';
+                setCaptureStatus('Listening — speak your expense…');
+            };
+            voiceRecognition.onresult = async (e) => {
+                const transcript = e.results[0][0].transcript;
+                stopVoice();
+                setCaptureStatus(`Heard: "${transcript}" — parsing…`);
+                try {
+                    const parsed = await callGeminiParseText(transcript);
+                    populateFormFromParsed(parsed);
+                    setCaptureStatus('Form filled — review and submit', 'success');
+                } catch (err) {
+                    setCaptureStatus('Could not parse speech — try again', 'error');
+                }
+            };
+            voiceRecognition.onerror = (e) => {
+                stopVoice();
+                setCaptureStatus(e.error === 'not-allowed' ? 'Microphone access denied' : 'Voice error — try again', 'error');
+            };
+            voiceRecognition.onend = () => stopVoice();
+            voiceRecognition.start();
+        }
+
+        function stopVoice() {
+            voiceActive = false;
+            const btn = document.getElementById('voiceBtn');
+            btn.classList.remove('recording');
+            btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6"/></svg> Voice`;
+            if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e){} voiceRecognition = null; }
+        }
+
+        async function callGeminiParseText(text) {
+            const categories = (userProfile?.categories || DEFAULT_CATEGORIES).join(', ');
+            const payments = (userProfile?.payments || DEFAULT_PAYMENTS).join(', ');
+            const today = new Date().toISOString().split('T')[0];
+            const prompt = `Extract expense details from this input and return ONLY a valid JSON object — no markdown, no extra text.
+
+JSON fields:
+- "name": string, short expense description (max 40 chars)
+- "amount": number, in INR (digits only, no symbol)
+- "category": string, must be one of: ${categories}
+- "date": string, ISO format YYYY-MM-DD (use ${today} if not mentioned)
+- "paymentMethod": string, must be one of: ${payments} (use best match or first option if unclear)
+
+Input: ${text}`;
+            const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+            const data = await fetchGeminiProxy({ contents });
+            return extractJsonFromGeminiReply(data);
+        }
+
+        async function callGeminiParseImage(base64Data, mimeType) {
+            const categories = (userProfile?.categories || DEFAULT_CATEGORIES).join(', ');
+            const payments = (userProfile?.payments || DEFAULT_PAYMENTS).join(', ');
+            const today = new Date().toISOString().split('T')[0];
+            const prompt = `Look at this image (receipt, screenshot, payment notification, or bill) and extract expense details. Return ONLY a valid JSON object — no markdown, no extra text.
+
+JSON fields:
+- "name": string, short merchant/expense description (max 40 chars)
+- "amount": number, total amount paid in INR (digits only)
+- "category": string, must be one of: ${categories}
+- "date": string, ISO format YYYY-MM-DD (use ${today} if not visible)
+- "paymentMethod": string, must be one of: ${payments} (use best match or first option if unclear)`;
+            const contents = [{
+                role: 'user',
+                parts: [
+                    { inline_data: { mime_type: mimeType || 'image/jpeg', data: base64Data } },
+                    { text: prompt }
+                ]
+            }];
+            const data = await fetchGeminiProxy({ contents });
+            return extractJsonFromGeminiReply(data);
+        }
+
+        async function fetchGeminiProxy(body) {
+            const res = await fetch(GEMINI_PROXY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) throw new Error('Proxy error ' + res.status);
+            return res.json();
+        }
+
+        function extractJsonFromGeminiReply(data) {
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            // Strip markdown code fences if present
+            const clean = text.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+            const match = clean.match(/\{[\s\S]*\}/);
+            if (!match) throw new Error('No JSON in reply');
+            return JSON.parse(match[0]);
+        }
+
+        function populateFormFromParsed(parsed) {
+            if (!parsed) return;
+            if (parsed.name) document.getElementById('expName').value = parsed.name;
+            if (parsed.amount && parsed.amount > 0) document.getElementById('expAmount').value = parsed.amount;
+            if (parsed.date) document.getElementById('expDate').value = parsed.date;
+            // Category
+            if (parsed.category) {
+                const sel = document.getElementById('expCategory');
+                const opt = Array.from(sel.options).find(o => o.value.toLowerCase() === parsed.category.toLowerCase());
+                if (opt) sel.value = opt.value;
+            }
+            // Payment method
+            if (parsed.paymentMethod) {
+                const sel = document.getElementById('expPayment');
+                const opt = Array.from(sel.options).find(o => o.value.toLowerCase() === parsed.paymentMethod.toLowerCase());
+                if (opt) { sel.value = opt.value; updateBillingInfo(); }
+            }
+            // Scroll form into view
+            document.getElementById('expName').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function setCaptureStatus(msg, type) {
+            const el = document.getElementById('captureStatus');
+            el.textContent = msg;
+            el.className = 'capture-status show' + (type ? ' ' + type : '');
         }
 
         /* ═══════════════════════════════════════════════════

@@ -1603,6 +1603,8 @@
       box-shadow: 0 4px 16px rgba(0,0,0,.22);
       animation: floatDrift 5s ease-in-out infinite;
       -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+      user-select: none;
     }
     .float-cta:hover { animation-play-state: paused; box-shadow: 0 6px 22px rgba(0,0,0,.30); }
     body.tab-care .float-cta { display: none; }
@@ -2666,8 +2668,8 @@
         selectedDate = todayStr();
         await loadProfile();
         loadDay();
+        ensureEventsLoaded(); // pre-warm in background so modal opens instantly
         setupPullToRefresh();
-        // Events are loaded lazily on first modal open — not a startup blocker
       }
 
       // ── Profile helpers ──
@@ -4440,6 +4442,7 @@ Do NOT output JSON. Output regular conversational text only.`;
          CHAT POPUP
          ═══════════════════════════════════════════════════ */
       window.openChatPopup = function () {
+        if (!dayData) return;
         const overlay = document.getElementById('chatPopupOverlay');
         const container = document.getElementById('popupChatMessages');
         container.innerHTML = (dayData.chatHistory || []).map(msg => {
@@ -4559,7 +4562,7 @@ Do NOT output JSON. Output regular conversational text only.`;
           if (Math.abs(dx) > 5 || Math.abs(dy) > 5) didMove = true;
           if (!didMove) return; // don't reposition on tiny touch tremor
           btn.style.right  = Math.max(4, Math.min(window.innerWidth  - 54, startRight  - dx)) + 'px';
-          btn.style.bottom = Math.max(4, Math.min(window.innerHeight - 54, startBottom + dy)) + 'px';
+          btn.style.bottom = Math.max(4, Math.min(window.innerHeight - 54, startBottom - dy)) + 'px';
         }
         function pUp() {
           if (!dragging) return;
