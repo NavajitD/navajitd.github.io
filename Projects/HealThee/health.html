@@ -2666,8 +2666,8 @@
         selectedDate = todayStr();
         await loadProfile();
         loadDay();
-        loadEvents();
         setupPullToRefresh();
+        // Events are loaded lazily on first modal open — not a startup blocker
       }
 
       // ── Profile helpers ──
@@ -4361,29 +4361,33 @@
 
         const btn = document.getElementById(sendBtnId); if (btn) { btn.disabled = true; btn.textContent = "..."; }
 
+        await ensureEventsLoaded(); // no-op after first call
+
         const t = computeTotals(dayData); const calTarget = getCalTarget();
         const microStr = MICROS.map(m => `${m.label}: ${(t.micros[m.key] || 0).toFixed(1)}/${m.target}${m.unit}`).join(', ');
         const eventsStr = eventsData.length > 0
           ? '\nSaved events: ' + eventsData.map(e => `${e.name} on ${e.date || '?'} ${e.time || ''} at ${e.location || '?'}${e.bookingRequired ? ' (booking required)' : ''}`).join('; ')
           : '';
         const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal\nMicros logged so far: ${microStr}\nFoods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}${eventsStr}`;
+        // Run food detection BEFORE LLM so we can tell the bot what was actually logged
+        const loggedFood = await checkAndLogFoodIntent(userMsg);
+        const foodNote = loggedFood ? ` [App auto-logged: ${loggedFood}]` : '';
+
         const sys = `You are "HealThee Mate", a concise, warm, and highly capable health advisor for an Indian user doing a recomposition (cutting body fat, building muscle). Currency INR. Goals: ~2050 kcal training days, ~1850 rest days, 130-145g protein. Keep responses under 120 words. Use plain text only — do not use markdown, asterisks, bold, bullet points, or any special formatting.
-CRITICAL: You are READ-ONLY. You CANNOT log, save, or record any data — not food, not water, not steps, not anything. Never say "I've logged", "I've saved", "I've recorded", or "that's been added". The app handles logging automatically. Do NOT make claims about what was or wasn't logged.
 When asked about micro gaps, macros, water, fiber, or exercise, base your answer strictly on the numerical totals provided below. DO NOT guess or calculate nutrients from the "Foods" array.
+If the message includes "[App auto-logged: X]", briefly acknowledge that X was logged to the food diary, then give your normal advice.
+IMPORTANT: Only say food was logged if "[App auto-logged: ...]" appears in the message. Never claim to log water, steps, or any other data.
 If the user asks for a recipe or cooking advice, check their macro constraints and suggest something that fits.
 If the user uploaded a menu photo, identify the healthiest, highest-protein option that fits their goals.
 Do NOT output JSON. Output regular conversational text only.`;
 
-        const prompt = `My current stats:\n${summary}\n\nQuestion: ${userMsg}`;
+        const prompt = `My current stats:\n${summary}\n\nMessage: ${userMsg}${foodNote}`;
 
         try {
-          const [reply] = await Promise.all([
-            hasImage
-              ? fetchVisionLLM(prompt, sys, imageToSend, 'groq', 'llama-3.2-11b-vision-preview', false)
-              : fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b', false),
-            checkAndLogFoodIntent(userMsg)
-          ]);
-          let cleanReply = reply.trim()
+          const reply = await (hasImage
+            ? fetchVisionLLM(prompt, sys, imageToSend, 'groq', 'llama-3.2-11b-vision-preview', false)
+            : fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b', false));
+          const cleanReply = reply.trim()
             .replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1')
             .replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, '');
           appendChat("assistant", cleanReply);
@@ -4495,13 +4499,14 @@ Do NOT output JSON. Output regular conversational text only.`;
       /* ═══════════════════════════════════════════════════
          FOOD INTENT DETECTION
          ═══════════════════════════════════════════════════ */
+      // Returns the logged food name if food was added, otherwise null.
       window.checkAndLogFoodIntent = async function (userMsg) {
-        if (!/\b(ate|had|eaten|consumed|drank|drinking|having|just ate|just had)\b/i.test(userMsg)) return;
+        if (!/\b(ate|had|eaten|consumed|drank|drinking|having|just ate|just had)\b/i.test(userMsg)) return null;
         const mealGuess = inferMealFromTime();
         const extractSys = `You are a food intake extractor. The user said they ate something. Extract the food and estimate macros for a standard Indian serving size. Reply ONLY with valid JSON: {"food":{"name":string,"meal":"${mealGuess}","cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}} or {"food":null} if no specific food is mentioned.`;
         try {
           const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'cerebras', 'llama3.1-8b', true);
-          if (!raw?.food?.name) return;
+          if (!raw?.food?.name) return null;
           const f = raw.food;
           addFood({
             name: f.name, meal: f.meal || mealGuess,
@@ -4512,7 +4517,8 @@ Do NOT output JSON. Output regular conversational text only.`;
             fiber: Math.round((f.fiber || 0) * 10) / 10,
             micros: {}, desc: 'Added via chat', estimated: true
           });
-        } catch (e) { console.warn('Food intent extraction failed:', e.message); }
+          return f.name; // tell the advisor what was logged
+        } catch (e) { console.warn('Food intent extraction failed:', e.message); return null; }
       }
 
       window.inferMealFromTime = function () {
@@ -4538,18 +4544,20 @@ Do NOT output JSON. Output regular conversational text only.`;
           if (s) { btn.style.bottom = s.b + 'px'; btn.style.right = s.r + 'px'; }
         } catch (_) {}
 
-        function pDown(x, y) {
+        function pDown(e) {
           dragging = true; didMove = false;
-          startX = x; startY = y;
+          startX = e.clientX; startY = e.clientY;
           const rect = btn.getBoundingClientRect();
           startRight  = window.innerWidth  - rect.right;
           startBottom = window.innerHeight - rect.bottom;
           btn.style.animationPlayState = 'paused';
+          btn.setPointerCapture(e.pointerId);
         }
-        function pMove(x, y) {
+        function pMove(e) {
           if (!dragging) return;
-          const dx = x - startX, dy = y - startY;
-          if (Math.abs(dx) > 4 || Math.abs(dy) > 4) didMove = true;
+          const dx = e.clientX - startX, dy = e.clientY - startY;
+          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) didMove = true;
+          if (!didMove) return; // don't reposition on tiny touch tremor
           btn.style.right  = Math.max(4, Math.min(window.innerWidth  - 54, startRight  - dx)) + 'px';
           btn.style.bottom = Math.max(4, Math.min(window.innerHeight - 54, startBottom + dy)) + 'px';
         }
@@ -4557,16 +4565,17 @@ Do NOT output JSON. Output regular conversational text only.`;
           if (!dragging) return;
           dragging = false;
           btn.style.animationPlayState = '';
-          try { localStorage.setItem(POS_KEY, JSON.stringify({ r: parseFloat(btn.style.right), b: parseFloat(btn.style.bottom) })); } catch (_) {}
+          if (didMove) {
+            try { localStorage.setItem(POS_KEY, JSON.stringify({ r: parseFloat(btn.style.right), b: parseFloat(btn.style.bottom) })); } catch (_) {}
+          } else {
+            openChatPopup(); // clean tap with no drag → open popup
+          }
         }
 
-        btn.addEventListener('mousedown',  e => { e.preventDefault(); pDown(e.clientX, e.clientY); });
-        document.addEventListener('mousemove',  e => pMove(e.clientX, e.clientY));
-        document.addEventListener('mouseup',    () => pUp());
-        btn.addEventListener('touchstart', e => { const t = e.touches[0]; pDown(t.clientX, t.clientY); }, { passive: true });
-        document.addEventListener('touchmove',  e => { if (dragging) { const t = e.touches[0]; pMove(t.clientX, t.clientY); } }, { passive: true });
-        document.addEventListener('touchend',   () => pUp());
-        btn.addEventListener('click', () => { if (!didMove) openChatPopup(); });
+        btn.addEventListener('pointerdown',  pDown);
+        btn.addEventListener('pointermove',  pMove);
+        btn.addEventListener('pointerup',    pUp);
+        btn.addEventListener('pointercancel', () => { dragging = false; btn.style.animationPlayState = ''; });
       })();
 
       /* ═══════════════════════════════════════════════════
@@ -4598,23 +4607,35 @@ Do NOT output JSON. Output regular conversational text only.`;
         return eventsData.length < before;
       }
 
-      window.openEventsModal = function () {
+      let eventsLoaded = false;
+      window.ensureEventsLoaded = async function () {
+        if (!eventsLoaded) {
+          try { await loadEvents(); eventsLoaded = true; } catch (_) {}
+        }
+      }
+      window.openEventsModal = async function () {
+        await ensureEventsLoaded();
         eventImages = [];
+        const savedNote = eventsData.length > 0
+          ? `<p style="font-size:.72rem;color:var(--muted);margin:.4rem 0 .6rem">${eventsData.length} event(s) already saved — new photos add to existing list.</p>`
+          : '';
         document.getElementById('modalContainer').innerHTML = `
           <div class="modal-overlay" id="eventsModal" onclick="if(event.target===this)closeEventsModal()">
-            <div class="modal" style="max-width:380px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
-                <div class="section-title" style="margin:0">Add Event Photos</div>
-                <button onclick="closeEventsModal()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem">✕</button>
+            <div class="modal">
+              <div class="modal-head">
+                <div class="modal-title">Add Event Photos</div>
+                <button class="modal-close" onclick="closeEventsModal()">✕</button>
               </div>
-              <p style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem">Add posters or messages for events you're interested in. I'll extract details and suggest a weekend plan.</p>
-              <div id="eventPhotoPreviews" style="display:flex;flex-wrap:wrap;gap:.4rem;min-height:48px;margin-bottom:.8rem"></div>
-              <button class="btn" style="width:100%;margin-bottom:.6rem" onclick="document.getElementById('eventPhotoInput').click()">+ Add Photos</button>
-              <input type="file" id="eventPhotoInput" accept="image/*" multiple style="display:none" onchange="addEventPhotos(this)">
-              ${eventsData.length > 0 ? `<p style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem">${eventsData.length} event(s) already saved — new photos add to existing list.</p>` : ''}
-              <div style="display:flex;gap:.5rem">
-                <button class="btn" style="flex:1;background:var(--surface)" onclick="closeEventsModal()">Cancel</button>
-                <button class="btn" id="analyseEventsBtn" style="flex:2;background:var(--accent);color:#fff" onclick="analyseEvents()">Analyse</button>
+              <div class="modal-body">
+                <p style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem">Add posters or messages for events you're interested in. I'll extract details and suggest a weekend plan.</p>
+                ${savedNote}
+                <div id="eventPhotoPreviews" style="display:flex;flex-wrap:wrap;gap:.4rem;min-height:48px;margin-bottom:.8rem"></div>
+                <button class="btn-secondary" style="width:100%;margin-bottom:.8rem" onclick="document.getElementById('eventPhotoInput').click()">+ Add Photos</button>
+                <input type="file" id="eventPhotoInput" accept="image/*" multiple style="display:none" onchange="addEventPhotos(this)">
+                <div style="display:flex;gap:.5rem">
+                  <button class="btn-secondary" style="flex:1" onclick="closeEventsModal()">Cancel</button>
+                  <button class="btn-primary" id="analyseEventsBtn" style="flex:2" onclick="analyseEvents()">Analyse</button>
+                </div>
               </div>
             </div>
           </div>`;
