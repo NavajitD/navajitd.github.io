@@ -1,4 +1,4 @@
-const CACHE_NAME = 'expense-tracker-v4';
+const CACHE_NAME = 'expense-tracker-v5';
 const STATIC_ASSETS = [
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap'
@@ -28,6 +28,33 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
+
+  // ── Share Target: intercept POST from OS share sheet ──
+  if (e.request.method === 'POST' && url.pathname.endsWith('expenses.html')) {
+    e.respondWith((async () => {
+      const formData = await e.request.formData();
+      const cache = await caches.open('share-incoming-v1');
+
+      const image = formData.get('share_image');
+      if (image && image.size > 0) {
+        await cache.put('shared-image', new Response(image, { headers: { 'Content-Type': image.type } }));
+        await cache.delete('shared-text');
+      } else {
+        const parts = [
+          formData.get('share_title'),
+          formData.get('share_text'),
+          formData.get('share_url')
+        ].filter(Boolean).join(' ').trim();
+        if (parts) {
+          await cache.put('shared-text', new Response(parts));
+        }
+        await cache.delete('shared-image');
+      }
+
+      return Response.redirect('./expenses.html?incoming-share=1', 303);
+    })());
+    return;
+  }
 
   // Don't intercept GAS calls — let browser handle POST + 302 redirect natively
   if (url.hostname.includes('script.google.com')) {

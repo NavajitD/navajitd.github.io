@@ -2560,6 +2560,7 @@
 
             renderSuggestionsBanner();
             loadExpenses();
+            checkIncomingShare();
         }
 
         /* ═══════════════════════════════════════════════════
@@ -2957,6 +2958,55 @@ JSON fields:
             const el = document.getElementById('captureStatus');
             el.textContent = msg;
             el.className = 'capture-status show' + (type ? ' ' + type : '');
+        }
+
+        async function checkIncomingShare() {
+            const params = new URLSearchParams(window.location.search);
+            if (!params.has('incoming-share')) return;
+            history.replaceState({}, '', window.location.pathname);
+
+            // Switch to Add tab so user sees the form
+            switchTab('add');
+
+            try {
+                const cache = await caches.open('share-incoming-v1');
+
+                const imgRes = await cache.match('shared-image');
+                if (imgRes) {
+                    await cache.delete('shared-image');
+                    const blob = await imgRes.blob();
+                    setCaptureStatus('Processing shared image…');
+                    const base64 = await blobToBase64(blob);
+                    const parsed = await callGeminiParseImage(base64, blob.type || 'image/jpeg');
+                    populateFormFromParsed(parsed);
+                    setCaptureStatus('Form filled from shared image — review and submit', 'success');
+                    return;
+                }
+
+                const txtRes = await cache.match('shared-text');
+                if (txtRes) {
+                    await cache.delete('shared-text');
+                    const text = await txtRes.text();
+                    if (text) {
+                        setCaptureStatus('Processing shared text…');
+                        const parsed = await callGeminiParseText(text);
+                        populateFormFromParsed(parsed);
+                        setCaptureStatus('Form filled — review and submit', 'success');
+                    }
+                }
+            } catch (err) {
+                setCaptureStatus('Could not process shared content — try the manual inputs above', 'error');
+                console.error('Share handling error:', err);
+            }
+        }
+
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
         }
 
         /* ═══════════════════════════════════════════════════
