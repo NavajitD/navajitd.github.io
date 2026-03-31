@@ -1581,8 +1581,15 @@
         }
 
         @keyframes recordPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.55; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.55;
+            }
         }
 
         .capture-btn svg {
@@ -1643,8 +1650,14 @@
             transition: opacity 0.2s ease;
         }
 
-        .capture-parse-btn:hover { opacity: 0.88; }
-        .capture-parse-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .capture-parse-btn:hover {
+            opacity: 0.88;
+        }
+
+        .capture-parse-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
 
         .capture-status {
             font-size: 0.8rem;
@@ -1656,9 +1669,17 @@
             display: none;
         }
 
-        .capture-status.show { display: block; }
-        .capture-status.error { color: var(--danger-color); }
-        .capture-status.success { color: var(--success-color); }
+        .capture-status.show {
+            display: block;
+        }
+
+        .capture-status.error {
+            color: var(--danger-color);
+        }
+
+        .capture-status.success {
+            color: var(--success-color);
+        }
     </style>
 </head>
 
@@ -1874,21 +1895,35 @@
             <div class="smart-capture">
                 <div class="smart-capture-row">
                     <button class="capture-btn" id="pasteBtn" onclick="togglePastePanel()">
-                        <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M6 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M9 12h6M9 16h4"/></svg>
-                        Paste text
+                        <svg viewBox="0 0 24 24">
+                            <rect x="9" y="2" width="6" height="4" rx="1" />
+                            <path d="M6 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" />
+                            <path d="M9 12h6M9 16h4" />
+                        </svg>
+                        Text
                     </button>
                     <label class="capture-btn" for="imageCapture" id="imageBtn">
-                        <svg viewBox="0 0 24 24"><path d="M14.5 4H9.5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                        Add image
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M14.5 4H9.5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z" />
+                            <circle cx="12" cy="13" r="3" />
+                        </svg>
+                        Image
                     </label>
-                    <input type="file" id="imageCapture" accept="image/*" style="display:none" onchange="handleImageCapture(event)">
+                    <input type="file" id="imageCapture" accept="image/*" style="display:none"
+                        onchange="handleImageCapture(event)">
                     <button class="capture-btn" id="voiceBtn" onclick="toggleVoiceCapture()">
-                        <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6" />
+                        </svg>
                         Voice
                     </button>
                 </div>
                 <div class="paste-panel" id="pastePanel">
-                    <textarea id="pasteInput" placeholder="Paste an SMS, bank message, or describe an expense — e.g. &quot;Paid ₹450 at Swiggy via GPay on 28 Mar&quot;..." rows="3"></textarea>
+                    <textarea id="pasteInput"
+                        placeholder="Paste an SMS, bank message, or describe an expense — e.g. &quot;Paid ₹450 at Swiggy via GPay on 28 Mar&quot;..."
+                        rows="3"></textarea>
                     <button class="capture-parse-btn" id="parsePasteBtn" onclick="parsePastedText()">Parse →</button>
                 </div>
                 <div class="capture-status" id="captureStatus"></div>
@@ -2033,7 +2068,7 @@
             appId: "1:417980148545:web:b8a7a0bdb59905a8098fc0"
         };
 
-        const GEMINI_PROXY_URL = "https://script.google.com/macros/s/AKfycbxrZVdkP3MjCBrOg0-iJH3722CiqsCC85rIFLXUHNz0sJWtUCFH2M6trWS8X6T7Rb8S/exec";
+        const EXPENSES_LLM_URL = "https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM";
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
@@ -2153,7 +2188,7 @@
         }
 
         function extractKeywords(name) {
-            const STOP_WORDS = new Set(['at','for','the','a','an','in','on','of','to','and','or','from','with','by','my','is','was','it']);
+            const STOP_WORDS = new Set(['at', 'for', 'the', 'a', 'an', 'in', 'on', 'of', 'to', 'and', 'or', 'from', 'with', 'by', 'my', 'is', 'was', 'it']);
             return name.toLowerCase().split(/\s+/)
                 .filter(w => w.length >= 3 && !STOP_WORDS.has(w) && !/^\d+$/.test(w));
         }
@@ -2486,6 +2521,12 @@
         function saveLastSelectedCard(cardName) {
             try { localStorage.setItem('lastSelectedCard', cardName); } catch { }
         }
+        function getLastUsedDate() {
+            try { return localStorage.getItem('lastUsedDate') || null; } catch { return null; }
+        }
+        function saveLastUsedDate(dateStr) {
+            try { localStorage.setItem('lastUsedDate', dateStr); } catch { }
+        }
 
         function applyUserProfile() {
             if (!userProfile) return;
@@ -2539,7 +2580,9 @@
            INIT
            ═══════════════════════════════════════════════════ */
         function initApp() {
-            document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            document.getElementById('expDate').value = getLastUsedDate() || todayStr;
 
             document.getElementById('expPayment').addEventListener('change', updateBillingInfo);
             document.getElementById('expDate').addEventListener('change', updateBillingInfo);
@@ -2642,6 +2685,8 @@
             if (!amount || amount <= 0) { toast('Enter a valid amount', 'error'); return; }
             if (!dateStr) { toast('Select a date', 'error'); return; }
 
+            saveLastUsedDate(dateStr);
+
             const suggestedAtSubmit = autoCategory(name);
             if (category !== suggestedAtSubmit) {
                 logManualCategory(name, category);
@@ -2698,7 +2743,9 @@
             lastAutoSuggestedCategory = null;
             document.getElementById('expAmount').value = '';
             document.getElementById('expCategory').selectedIndex = 0;
-            document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            document.getElementById('expDate').value = getLastUsedDate() || todayStr;
             document.getElementById('expShared').checked = false;
             const lastCard = getLastSelectedCard();
             if (lastCard) {
@@ -2794,7 +2841,8 @@
                 document.getElementById('pasteInput').value = '';
                 setCaptureStatus('Form filled — review and submit', 'success');
             } catch (e) {
-                setCaptureStatus('Could not parse — try rephrasing', 'error');
+                console.error('Parse error:', e);
+                setCaptureStatus('Could not parse: ' + (e.message || 'unknown error'), 'error');
             } finally {
                 btn.disabled = false; btn.textContent = 'Parse →';
             }
@@ -2869,68 +2917,66 @@
             const btn = document.getElementById('voiceBtn');
             btn.classList.remove('recording');
             btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6"/></svg> Voice`;
-            if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e){} voiceRecognition = null; }
+            if (voiceRecognition) { try { voiceRecognition.stop(); } catch (e) { } voiceRecognition = null; }
+        }
+
+        function buildParseSystemInstruction() {
+            const categories = (userProfile?.categories || DEFAULT_CATEGORIES).join(', ');
+            const payments = (userProfile?.payments || DEFAULT_PAYMENTS).join(', ');
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            return `You are an expense parser for an Indian expense tracker. Extract expense details and return ONLY a raw JSON object — no markdown fences, no explanation, no extra text.
+
+JSON schema (all fields required):
+{ "name": "<short description, max 40 chars>", "amount": <number in INR, no symbol>, "category": "<one of: ${categories}>", "date": "<YYYY-MM-DD, use ${todayStr} if not found>", "paymentMethod": "<one of: ${payments}, use closest match>" }`;
         }
 
         async function callGeminiParseText(text) {
-            const categories = (userProfile?.categories || DEFAULT_CATEGORIES).join(', ');
-            const payments = (userProfile?.payments || DEFAULT_PAYMENTS).join(', ');
-            const today = new Date().toISOString().split('T')[0];
-            const prompt = `Extract expense details from this input and return ONLY a valid JSON object — no markdown, no extra text.
-
-JSON fields:
-- "name": string, short expense description (max 40 chars)
-- "amount": number, in INR (digits only, no symbol)
-- "category": string, must be one of: ${categories}
-- "date": string, ISO format YYYY-MM-DD (use ${today} if not mentioned)
-- "paymentMethod": string, must be one of: ${payments} (use best match or first option if unclear)
-
-Input: ${text}`;
-            const contents = [{ role: 'user', parts: [{ text: prompt }] }];
-            const data = await fetchGeminiProxy({ contents });
-            return extractJsonFromGeminiReply(data);
+            const system = buildParseSystemInstruction();
+            return callExpenseLLM(text, system, true);
         }
 
         async function callGeminiParseImage(base64Data, mimeType) {
-            const categories = (userProfile?.categories || DEFAULT_CATEGORIES).join(', ');
-            const payments = (userProfile?.payments || DEFAULT_PAYMENTS).join(', ');
-            const today = new Date().toISOString().split('T')[0];
-            const prompt = `Look at this image (receipt, screenshot, payment notification, or bill) and extract expense details. Return ONLY a valid JSON object — no markdown, no extra text.
-
-JSON fields:
-- "name": string, short merchant/expense description (max 40 chars)
-- "amount": number, total amount paid in INR (digits only)
-- "category": string, must be one of: ${categories}
-- "date": string, ISO format YYYY-MM-DD (use ${today} if not visible)
-- "paymentMethod": string, must be one of: ${payments} (use best match or first option if unclear)`;
-            const contents = [{
-                role: 'user',
-                parts: [
-                    { inline_data: { mime_type: mimeType || 'image/jpeg', data: base64Data } },
-                    { text: prompt }
-                ]
-            }];
-            const data = await fetchGeminiProxy({ contents });
-            return extractJsonFromGeminiReply(data);
+            const system = buildParseSystemInstruction();
+            const dataUrl = `data:${mimeType || 'image/jpeg'};base64,${base64Data}`;
+            return callExpenseLLM('Extract expense details from this image.', system, true, dataUrl);
         }
 
-        async function fetchGeminiProxy(body) {
-            const res = await fetch(GEMINI_PROXY_URL, {
+        async function callExpenseLLM(prompt, system, isJson, base64Image, retry = true) {
+            const body = {
+                prompt, system, isJson,
+                provider: 'cerebras',
+                model: 'llama3.1-8b',
+                ...(base64Image && { base64Image, provider: 'groq', model: 'llama-3.2-11b-vision-preview' })
+            };
+            const res = await fetch(EXPENSES_LLM_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-            if (!res.ok) throw new Error('Proxy error ' + res.status);
-            return res.json();
-        }
-
-        function extractJsonFromGeminiReply(data) {
-            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            // Strip markdown code fences if present
-            const clean = text.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
-            const match = clean.match(/\{[\s\S]*\}/);
-            if (!match) throw new Error('No JSON in reply');
-            return JSON.parse(match[0]);
+            let data;
+            if (!res.ok) {
+                try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }
+                const msg = data.error || '';
+                // Cerebras unavailable → retry once with Groq
+                if (retry && !base64Image && (msg.includes('model_not_found') || msg.includes('does not exist') || msg.includes('503') || msg.includes('429') || msg.includes('overloaded'))) {
+                    return callExpenseLLM(prompt, system, isJson, null, false);
+                }
+                throw new Error(msg || `HTTP ${res.status}`);
+            } else {
+                data = await res.json();
+            }
+            const content = data.content;
+            if (!isJson) return content;
+            try {
+                return typeof content === 'object' ? content : JSON.parse(content);
+            } catch {
+                // Strip any accidental markdown fences and retry parse
+                const clean = content.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+                const match = clean.match(/\{[\s\S]*\}/);
+                if (match) return JSON.parse(match[0]);
+                throw new Error('Model did not return valid JSON: ' + clean.substring(0, 100));
+            }
         }
 
         function populateFormFromParsed(parsed) {
@@ -3019,9 +3065,8 @@ JSON fields:
 
             document.getElementById('editExpName').value = expense.expenseName || '';
             document.getElementById('editExpCategory').value = expense.category || '';
-            document.getElementById('editExpDate').value = expense.date instanceof Date
-                ? expense.date.toISOString().split('T')[0]
-                : new Date(expense.date).toISOString().split('T')[0];
+            const editDate = expense.date instanceof Date ? expense.date : new Date(expense.date);
+            document.getElementById('editExpDate').value = `${editDate.getFullYear()}-${String(editDate.getMonth() + 1).padStart(2, '0')}-${String(editDate.getDate()).padStart(2, '0')}`;
 
             const editPaySelect = document.getElementById('editExpPayment');
             const payVal = expense.paymentMethod || '';
@@ -3114,7 +3159,8 @@ JSON fields:
                 updateData.splitAmount = finalAmount;
             }
 
-            const idx = allExpenses.findIndex(e => e.id === editingExpenseId);
+            const idToSave = editingExpenseId;
+            const idx = allExpenses.findIndex(e => e.id === idToSave);
             if (idx !== -1) {
                 allExpenses[idx] = { ...allExpenses[idx], ...updateData };
             }
@@ -3125,8 +3171,8 @@ JSON fields:
             toast('Expense updated!', 'success');
 
             try {
-                if (!editingExpenseId.startsWith('pending-')) {
-                    await getCollection().doc(editingExpenseId).update(updateData);
+                if (!idToSave.startsWith('pending-')) {
+                    await getCollection().doc(idToSave).update(updateData);
                 }
             } catch (err) {
                 toast('Sync failed: ' + err.message, 'error');
@@ -3662,10 +3708,6 @@ JSON fields:
             const query = quickPrompt || input.value.trim();
             if (!query) return;
 
-            if (!GEMINI_PROXY_URL || GEMINI_PROXY_URL.includes('YOUR_DEPLOYMENT')) {
-                toast('Set your Gemini proxy URL first', 'error'); return;
-            }
-
             appendChat('user', query);
             input.value = '';
 
@@ -3685,41 +3727,14 @@ Rules:
 - If a follow-up question references a previous answer, use the conversation history to maintain context.
 - End responses that contain actionable suggestions with the exact line: [SUGGESTIONS] followed by each suggestion on its own line, prefixed with bullet "• ". These will be extractable by the app.`;
 
-            const contents = [{ role: 'user', parts: [{ text: `Here is my expense data:\n\n${summary}\n\nUser question: ${query}` }] }];
-
+            let prompt = `Here is my expense data:\n\n${summary}\n\nUser question: ${query}`;
             if (chatHistory.length > 0) {
                 const recent = chatHistory.slice(-8);
-                contents[0].parts[0].text = `Previous conversation:\n${recent.map(h => `${h.role}: ${h.text}`).join('\n')}\n\n${contents[0].parts[0].text}`;
+                prompt = `Previous conversation:\n${recent.map(h => `${h.role}: ${h.text}`).join('\n')}\n\n${prompt}`;
             }
 
             try {
-                const res = await fetch(GEMINI_PROXY_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({
-                        system_instruction: { parts: [{ text: systemPrompt }] },
-                        contents
-                    })
-                });
-
-                const data = await res.json();
-
-                // Extract reply with detailed error fallbacks
-                let reply = '';
-                if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    reply = data.candidates[0].content.parts[0].text;
-                } else if (data?.candidates?.[0]?.finishReason === 'SAFETY') {
-                    reply = 'The advisor couldn\'t respond due to content filters. Try rephrasing your question.';
-                } else if (data?.error) {
-                    reply = `Advisor error: ${data.error.message || data.error.status || 'Unknown error'}. Try again in a moment.`;
-                    console.error('Gemini API error:', data.error);
-                } else if (data?.candidates?.length === 0 || !data?.candidates) {
-                    reply = 'The advisor returned an empty response. Try rephrasing — e.g. "Show me all spending in the Incidentals theme" or be more specific about what you want to know.';
-                    console.warn('Empty candidates:', JSON.stringify(data).substring(0, 500));
-                } else {
-                    reply = 'Unexpected response format from advisor. Check console for details.';
-                    console.warn('Unexpected Gemini response:', JSON.stringify(data).substring(0, 500));
-                }
+                const reply = await callExpenseLLM(prompt, systemPrompt, false);
 
                 chatHistory.push({ role: 'user', text: query });
                 chatHistory.push({ role: 'assistant', text: reply });
@@ -3736,7 +3751,7 @@ Rules:
                 appendChat('assistant', displayText, suggestions);
 
             } catch (err) {
-                appendChat('assistant', 'Failed to reach advisor. Check your API key and try again.');
+                appendChat('assistant', 'Advisor error: ' + (err.message || 'Failed to reach advisor. Try again.'));
                 console.error(err);
             } finally {
                 btn.disabled = false; btn.textContent = 'Send';
