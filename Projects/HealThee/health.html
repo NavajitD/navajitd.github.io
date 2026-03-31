@@ -1603,8 +1603,6 @@
       box-shadow: 0 4px 16px rgba(0,0,0,.22);
       animation: floatDrift 5s ease-in-out infinite;
       -webkit-tap-highlight-color: transparent;
-      touch-action: none;
-      user-select: none;
     }
     .float-cta:hover { animation-play-state: paused; box-shadow: 0 6px 22px rgba(0,0,0,.30); }
     body.tab-care .float-cta { display: none; }
@@ -4533,53 +4531,11 @@ Do NOT output JSON. Output regular conversational text only.`;
       }
 
       /* ═══════════════════════════════════════════════════
-         DRAGGABLE FLOAT BUTTON
+         FLOAT BUTTON — opens chat popup on click
          ═══════════════════════════════════════════════════ */
-      (function () {
-        const btn = document.getElementById('floatCta');
-        const POS_KEY = 'hm_float_pos';
-        let dragging = false, didMove = false;
-        let startX = 0, startY = 0, startRight = 0, startBottom = 0;
-
-        // Restore saved position
-        try {
-          const s = JSON.parse(localStorage.getItem(POS_KEY));
-          if (s) { btn.style.bottom = s.b + 'px'; btn.style.right = s.r + 'px'; }
-        } catch (_) {}
-
-        function pDown(e) {
-          dragging = true; didMove = false;
-          startX = e.clientX; startY = e.clientY;
-          const rect = btn.getBoundingClientRect();
-          startRight  = window.innerWidth  - rect.right;
-          startBottom = window.innerHeight - rect.bottom;
-          btn.style.animationPlayState = 'paused';
-          btn.setPointerCapture(e.pointerId);
-        }
-        function pMove(e) {
-          if (!dragging) return;
-          const dx = e.clientX - startX, dy = e.clientY - startY;
-          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) didMove = true;
-          if (!didMove) return; // don't reposition on tiny touch tremor
-          btn.style.right  = Math.max(4, Math.min(window.innerWidth  - 54, startRight  - dx)) + 'px';
-          btn.style.bottom = Math.max(4, Math.min(window.innerHeight - 54, startBottom - dy)) + 'px';
-        }
-        function pUp() {
-          if (!dragging) return;
-          dragging = false;
-          btn.style.animationPlayState = '';
-          if (didMove) {
-            try { localStorage.setItem(POS_KEY, JSON.stringify({ r: parseFloat(btn.style.right), b: parseFloat(btn.style.bottom) })); } catch (_) {}
-          } else {
-            openChatPopup(); // clean tap with no drag → open popup
-          }
-        }
-
-        btn.addEventListener('pointerdown',  pDown);
-        btn.addEventListener('pointermove',  pMove);
-        btn.addEventListener('pointerup',    pUp);
-        btn.addEventListener('pointercancel', () => { dragging = false; btn.style.animationPlayState = ''; });
-      })();
+      document.getElementById('floatCta').addEventListener('click', function () {
+        openChatPopup();
+      });
 
       /* ═══════════════════════════════════════════════════
          EVENTS
@@ -4616,8 +4572,7 @@ Do NOT output JSON. Output regular conversational text only.`;
           try { await loadEvents(); eventsLoaded = true; } catch (_) {}
         }
       }
-      window.openEventsModal = async function () {
-        await ensureEventsLoaded();
+      window.openEventsModal = function () {
         eventImages = [];
         const savedNote = eventsData.length > 0
           ? `<p style="font-size:.72rem;color:var(--muted);margin:.4rem 0 .6rem">${eventsData.length} event(s) already saved — new photos add to existing list.</p>`
@@ -4626,18 +4581,22 @@ Do NOT output JSON. Output regular conversational text only.`;
           <div class="modal-overlay" id="eventsModal" onclick="if(event.target===this)closeEventsModal()">
             <div class="modal">
               <div class="modal-head">
-                <div class="modal-title">Add Event Photos</div>
+                <div class="modal-title">Plan My Weekend</div>
                 <button class="modal-close" onclick="closeEventsModal()">✕</button>
               </div>
               <div class="modal-body">
-                <p style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem">Add posters or messages for events you're interested in. I'll extract details and suggest a weekend plan.</p>
+                <p style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem">Add photos of event posters or invites. I'll extract the details and draft a weekend plan with booking reminders.</p>
                 ${savedNote}
                 <div id="eventPhotoPreviews" style="display:flex;flex-wrap:wrap;gap:.4rem;min-height:48px;margin-bottom:.8rem"></div>
-                <button class="btn-secondary" style="width:100%;margin-bottom:.8rem" onclick="document.getElementById('eventPhotoInput').click()">+ Add Photos</button>
+                <div style="display:flex;gap:.5rem;margin-bottom:.8rem">
+                  <button class="btn-secondary" style="flex:1" onclick="document.getElementById('eventPhotoInput').click()">+ Gallery</button>
+                  <button class="btn-secondary" style="flex:1" onclick="document.getElementById('eventCameraInput').click()">+ Camera</button>
+                </div>
                 <input type="file" id="eventPhotoInput" accept="image/*" multiple style="display:none" onchange="addEventPhotos(this)">
+                <input type="file" id="eventCameraInput" accept="image/*" capture="environment" style="display:none" onchange="addEventPhotos(this)">
                 <div style="display:flex;gap:.5rem">
                   <button class="btn-secondary" style="flex:1" onclick="closeEventsModal()">Cancel</button>
-                  <button class="btn-primary" id="analyseEventsBtn" style="flex:2" onclick="analyseEvents()">Analyse</button>
+                  <button class="btn-primary" id="analyseEventsBtn" style="flex:2" onclick="analyseEvents()">Plan Weekend</button>
                 </div>
               </div>
             </div>
