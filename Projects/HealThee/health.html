@@ -1589,62 +1589,183 @@
 
     /* ── Floating HealThee Mate CTA ─────────────────────────────────────── */
     @keyframes floatDrift {
-      0%,100% { transform: translate(0,0) rotate(0deg); }
-      20%      { transform: translate(-5px,-8px) rotate(-1.5deg); }
-      40%      { transform: translate(4px,-12px) rotate(1deg); }
-      60%      { transform: translate(7px,-3px) rotate(2deg); }
-      80%      { transform: translate(-3px,5px) rotate(-1deg); }
+
+      0%,
+      100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+
+      20% {
+        transform: translate(-5px, -8px) rotate(-1.5deg);
+      }
+
+      40% {
+        transform: translate(4px, -12px) rotate(1deg);
+      }
+
+      60% {
+        transform: translate(7px, -3px) rotate(2deg);
+      }
+
+      80% {
+        transform: translate(-3px, 5px) rotate(-1deg);
+      }
     }
+
     .float-cta {
-      position: fixed; bottom: 5.5rem; right: 1rem;
-      width: 50px; height: 50px; border-radius: 50%;
-      background: var(--accent); border: none; cursor: pointer;
-      z-index: 45; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,.22);
+      position: fixed;
+      bottom: 5.5rem;
+      right: 1rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      z-index: 45;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .22);
       animation: floatDrift 5s ease-in-out infinite;
       -webkit-tap-highlight-color: transparent;
     }
-    .float-cta:hover { animation-play-state: paused; box-shadow: 0 6px 22px rgba(0,0,0,.30); }
-    body.tab-care .float-cta { display: none; }
+
+    .float-cta:hover {
+      animation-play-state: paused;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, .30);
+    }
+
+    body.tab-care .float-cta {
+      display: none;
+    }
 
     /* ── Chat Popup ─────────────────────────────────────────────────────── */
     .chat-popup-overlay {
-      position: fixed; inset: 0; z-index: 60;
-      background: rgba(0,0,0,.42);
-      display: flex; align-items: flex-end; justify-content: center;
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(0, 0, 0, .42);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
       animation: fadeIn .2s;
     }
-    .chat-popup-overlay.hidden { display: none; }
+
+    .chat-popup-overlay.hidden {
+      display: none;
+    }
+
     .chat-popup {
-      background: var(--card); width: 100%; max-width: 44rem;
-      border-radius: 14px 14px 0 0; border: 1px solid var(--border); border-bottom: none;
-      display: flex; flex-direction: column; animation: slideUp .25s ease; max-height: 80vh;
+      background: var(--card);
+      width: 100%;
+      max-width: 44rem;
+      border-radius: 14px 14px 0 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp .25s ease;
+      max-height: 80vh;
     }
+
     .chat-popup-head {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: .75rem 1rem; border-bottom: 1px solid var(--border);
-      background: var(--card); border-radius: 14px 14px 0 0; flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 14px 14px 0 0;
+      flex-shrink: 0;
     }
-    .chat-popup-title { font-weight: 700; font-size: .85rem; display: flex; align-items: center; gap: .4rem; }
-    .chat-popup-close { padding: .2rem .4rem; border-radius: 4px; color: var(--muted); cursor: pointer; border: none; background: none; font-family: var(--font); font-size: .9rem; }
-    .chat-popup-close:hover { color: var(--danger); }
-    .chat-popup-body { flex: 1; overflow: hidden; padding: .75rem 1rem; display: flex; flex-direction: column; gap: .5rem; }
+
+    .chat-popup-title {
+      font-weight: 700;
+      font-size: .85rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .chat-popup-close {
+      padding: .2rem .4rem;
+      border-radius: 4px;
+      color: var(--muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: var(--font);
+      font-size: .9rem;
+    }
+
+    .chat-popup-close:hover {
+      color: var(--danger);
+    }
+
+    .chat-popup-body {
+      flex: 1;
+      overflow: hidden;
+      padding: .75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
     #popupChatMessages {
-      display: flex; flex-direction: column; gap: .4rem;
-      overflow-y: auto; flex: 1;
-      min-height: 120px; max-height: calc(80vh - 10rem);
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 120px;
+      max-height: calc(80vh - 10rem);
     }
-    .chat-popup-input-row { display: flex; gap: .4rem; align-items: center; padding-bottom: env(safe-area-inset-bottom, .2rem); flex-shrink: 0; }
+
+    .chat-popup-input-row {
+      display: flex;
+      gap: .4rem;
+      align-items: center;
+      padding-bottom: env(safe-area-inset-bottom, .2rem);
+      flex-shrink: 0;
+    }
 
     /* ── Mic button ─────────────────────────────────────────────────────── */
     .mic-btn {
-      background: none; border: 1px solid var(--input-border); border-radius: 5px;
-      padding: .42rem .5rem; cursor: pointer; display: flex; align-items: center;
-      color: var(--muted); flex-shrink: 0; transition: color .2s, border-color .2s;
+      background: none;
+      border: 1px solid var(--input-border);
+      border-radius: 5px;
+      padding: .42rem .5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      color: var(--muted);
+      flex-shrink: 0;
+      transition: color .2s, border-color .2s;
     }
-    .mic-btn:hover { color: var(--accent); border-color: var(--accent); }
-    .mic-btn.recording { color: var(--danger); border-color: var(--danger); animation: micPulse .8s ease-in-out infinite; }
-    @keyframes micPulse { 0%,100%{ opacity:1 } 50%{ opacity:.45 } }
+
+    .mic-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .mic-btn.recording {
+      color: var(--danger);
+      border-color: var(--danger);
+      animation: micPulse .8s ease-in-out infinite;
+    }
+
+    @keyframes micPulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .45
+      }
+    }
 
     /* Water log items */
     .log-item {
@@ -4027,11 +4148,15 @@
 
         if (isJson) {
           try {
-            const clean = content.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-            return JSON.parse(clean);
+            // Try to find a JSON object anywhere in the response
+            // (models often wrap output in ```json ... ``` or add prose)
+            const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/i);
+            const candidate = fenceMatch ? fenceMatch[1].trim() : content.trim();
+            const objMatch = candidate.match(/\{[\s\S]*\}/);
+            return JSON.parse(objMatch ? objMatch[0] : candidate);
           } catch (e) {
             console.error('Failed to parse Vision LLM JSON:', content);
-            throw new Error('LLM did not return valid JSON');
+            throw new Error('LLM did not return valid JSON: ' + content.slice(0, 120));
           }
         }
         return content;
@@ -4346,7 +4471,7 @@
 
       window.askAdvisor = async function (quick, context) {
         const ctx = context || 'care';
-        const inputId   = ctx === 'popup' ? 'popupChatInput'   : 'chatInput';
+        const inputId = ctx === 'popup' ? 'popupChatInput' : 'chatInput';
         const sendBtnId = ctx === 'popup' ? 'popupChatSendBtn' : 'chatSendBtn';
         const input = document.getElementById(inputId);
         const query = quick || input?.value?.trim();
@@ -4492,7 +4617,7 @@ Do NOT output JSON. Output regular conversational text only.`;
         _voiceRecog.start();
       }
       window.stopVoice = function () {
-        if (_voiceRecog) { try { _voiceRecog.stop(); } catch (_) {} _voiceRecog = null; }
+        if (_voiceRecog) { try { _voiceRecog.stop(); } catch (_) { } _voiceRecog = null; }
         _voiceActive = false;
         document.getElementById('popupMicBtn')?.classList.remove('recording');
         document.getElementById('careMicBtn')?.classList.remove('recording');
@@ -4570,7 +4695,7 @@ Do NOT output JSON. Output regular conversational text only.`;
       let eventsLoaded = false;
       window.ensureEventsLoaded = async function () {
         if (!eventsLoaded) {
-          try { await loadEvents(); eventsLoaded = true; } catch (_) {}
+          try { await loadEvents(); eventsLoaded = true; } catch (_) { }
         }
       }
       window.openEventsModal = function () {
@@ -4586,13 +4711,13 @@ Do NOT output JSON. Output regular conversational text only.`;
                 <button class="modal-close" onclick="closeEventsModal()">✕</button>
               </div>
               <div class="modal-body">
-                <p style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem">Add photos of event posters or invites. I'll extract the details and draft a weekend plan with booking reminders.</p>
+                <p style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem">Add photos of event posters and tickets/invites to get a weekend plan with booking reminders</p>
                 ${savedNote}
                 <div id="eventPhotoPreviews" style="display:flex;flex-wrap:wrap;gap:.4rem;min-height:48px;margin-bottom:.8rem"></div>
                 <input type="file" id="eventPhotoInput" accept="image/*" multiple style="display:none" onchange="addEventPhotos(this)">
                 <div style="display:flex;gap:.5rem">
-                  <button class="btn-secondary" style="flex:1" onclick="document.getElementById('eventPhotoInput').click()">Add image(s)</button>
-                  <button class="btn-primary" id="analyseEventsBtn" style="flex:2" onclick="analyseEvents()">Plan Weekend</button>
+                  <button class="btn-secondary" style="flex:1" onclick="document.getElementById('eventPhotoInput').click()">Add images</button>
+                  <button class="btn-primary" id="analyseEventsBtn" style="flex:2" onclick="analyseEvents()">Plan weekend</button>
                 </div>
               </div>
             </div>
@@ -4638,7 +4763,12 @@ Rules:
               imgB64, 'groq', 'llama-3.2-90b-vision-preview', true
             );
             if (raw?.name) newEvents.push({ ...raw, id: genId('evt'), addedAt: new Date().toISOString() });
-          } catch (e) { console.warn('Event extraction failed:', e); }
+          } catch (e) {
+            console.error('Event extraction failed:', e);
+            if (btn) { btn.disabled = false; btn.textContent = 'Plan Weekend'; }
+            toast('Error: ' + (e.message || 'extraction failed'));
+            return;
+          }
         }
         eventsData = [...eventsData, ...newEvents];
         await saveEvents();
@@ -4852,8 +4982,9 @@ Rules:
 
   <!-- Floating HealThee Mate CTA -->
   <button class="float-cta" id="floatCta" aria-label="Open HealThee Mate" style="display:none">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+      stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   </button>
 
@@ -4862,8 +4993,9 @@ Rules:
     <div class="chat-popup">
       <div class="chat-popup-head">
         <div class="chat-popup-title">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--accent)" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
           HealThee Mate
         </div>
@@ -4872,25 +5004,35 @@ Rules:
       <div class="chat-popup-body">
         <div id="popupChatMessages"></div>
         <div style="position:relative;display:flex;align-items:center;gap:.3rem" class="chat-popup-input-row">
-          <button class="icon-btn" style="position:absolute;left:8px;background:none;border:none;padding:0;font-size:1.1rem;color:var(--muted);cursor:pointer;z-index:1" onclick="document.getElementById('popupChatPhotoInput').click()">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <button class="icon-btn"
+            style="position:absolute;left:8px;background:none;border:none;padding:0;font-size:1.1rem;color:var(--muted);cursor:pointer;z-index:1"
+            onclick="document.getElementById('popupChatPhotoInput').click()">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
           </button>
-          <input type="file" id="popupChatPhotoInput" accept="image/*" style="display:none" onchange="handleChatPhoto(this,'popup')">
-          <input class="chat-input" id="popupChatInput" placeholder="Ask about your health..." style="padding-left:2.5rem"
-                 onkeydown="if(event.key==='Enter')askAdvisor(null,'popup')">
+          <input type="file" id="popupChatPhotoInput" accept="image/*" style="display:none"
+            onchange="handleChatPhoto(this,'popup')">
+          <input class="chat-input" id="popupChatInput" placeholder="Ask about your health..."
+            style="padding-left:2.5rem" onkeydown="if(event.key==='Enter')askAdvisor(null,'popup')">
           <button class="mic-btn" id="popupMicBtn" onclick="toggleVoice('popup')" aria-label="Voice input">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="2" width="6" height="11" rx="3"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="22"/>
-              <line x1="8" y1="22" x2="16" y2="22"/>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="2" width="6" height="11" rx="3" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="22" />
+              <line x1="8" y1="22" x2="16" y2="22" />
             </svg>
           </button>
           <button class="chat-send" id="popupChatSendBtn" onclick="askAdvisor(null,'popup')">Send</button>
         </div>
-        <div id="chatPhotoPreviewContainerPopup" style="display:none;margin-top:.4rem;position:relative;width:max-content">
+        <div id="chatPhotoPreviewContainerPopup"
+          style="display:none;margin-top:.4rem;position:relative;width:max-content">
           <img id="chatPhotoPreviewPopup" style="max-height:72px;border-radius:8px;border:1px solid var(--border)">
-          <button onclick="clearChatPhoto()" style="position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:.55rem;cursor:pointer">✕</button>
+          <button onclick="clearChatPhoto()"
+            style="position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:.55rem;cursor:pointer">✕</button>
         </div>
       </div>
     </div>
