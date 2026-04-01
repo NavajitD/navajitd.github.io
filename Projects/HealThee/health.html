@@ -4027,7 +4027,8 @@
 
         if (isJson) {
           try {
-            return JSON.parse(content);
+            const clean = content.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+            return JSON.parse(clean);
           } catch (e) {
             console.error('Failed to parse Vision LLM JSON:', content);
             throw new Error('LLM did not return valid JSON');
@@ -4588,14 +4589,9 @@ Do NOT output JSON. Output regular conversational text only.`;
                 <p style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem">Add photos of event posters or invites. I'll extract the details and draft a weekend plan with booking reminders.</p>
                 ${savedNote}
                 <div id="eventPhotoPreviews" style="display:flex;flex-wrap:wrap;gap:.4rem;min-height:48px;margin-bottom:.8rem"></div>
-                <div style="display:flex;gap:.5rem;margin-bottom:.8rem">
-                  <button class="btn-secondary" style="flex:1" onclick="document.getElementById('eventPhotoInput').click()">+ Gallery</button>
-                  <button class="btn-secondary" style="flex:1" onclick="document.getElementById('eventCameraInput').click()">+ Camera</button>
-                </div>
                 <input type="file" id="eventPhotoInput" accept="image/*" multiple style="display:none" onchange="addEventPhotos(this)">
-                <input type="file" id="eventCameraInput" accept="image/*" capture="environment" style="display:none" onchange="addEventPhotos(this)">
                 <div style="display:flex;gap:.5rem">
-                  <button class="btn-secondary" style="flex:1" onclick="closeEventsModal()">Cancel</button>
+                  <button class="btn-secondary" style="flex:1" onclick="document.getElementById('eventPhotoInput').click()">Add image(s)</button>
                   <button class="btn-primary" id="analyseEventsBtn" style="flex:2" onclick="analyseEvents()">Plan Weekend</button>
                 </div>
               </div>
@@ -4639,7 +4635,7 @@ Rules:
 - Set bookingRequired:true if you see: register, book, RSVP, ticket, limited seats, pay, fee, or a QR code.
 - Set links to any URL or @handle visible, else "".
 - If no event found return {"name":null}.`,
-              imgB64, 'groq', 'llama-3.2-11b-vision-preview', true
+              imgB64, 'groq', 'llama-3.2-90b-vision-preview', true
             );
             if (raw?.name) newEvents.push({ ...raw, id: genId('evt'), addedAt: new Date().toISOString() });
           } catch (e) { console.warn('Event extraction failed:', e); }
