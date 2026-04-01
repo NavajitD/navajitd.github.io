@@ -1568,11 +1568,13 @@
         /* ─── Smart Capture ─── */
         .capture-stage {
             position: relative;
-            height: 290px;
+            min-height: 260px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding-top: 1.6rem;
+            overflow: visible;
             margin-bottom: 0.5rem;
         }
 
@@ -1669,7 +1671,8 @@
         /* ─── Arc buttons ─── */
         .arc-btn {
             position: absolute;
-            top: 50%;
+            /* anchor at mic centre: stage padding-top (1.6rem) + mic radius (48px) */
+            top: calc(1.6rem + 48px);
             left: 50%;
             transform: translate(calc(-50% + var(--ax, 0px) + var(--fx, 0px)),
                     calc(-50% + var(--ay, 0px) + var(--fy, 0px)));
@@ -3105,14 +3108,15 @@
         }
 
         /* ── Photo CTA with permission check ── */
-        async function handlePhotoCTA() {
-            if (navigator.permissions) {
-                try {
-                    const result = await navigator.permissions.query({ name: 'camera' });
-                    if (result.state === 'denied') { showPermissionModal('camera'); return; }
-                } catch (e) { /* permissions API unsupported — fall through */ }
-            }
+        function handlePhotoCTA() {
+            // Click must be synchronous — async/await breaks the iOS user-gesture chain
             document.getElementById('imageCapture').click();
+            // Background check: show modal if camera is already denied
+            if (navigator.permissions) {
+                navigator.permissions.query({ name: 'camera' })
+                    .then(r => { if (r.state === 'denied') showPermissionModal('camera'); })
+                    .catch(() => {});
+            }
         }
 
         /* ── Float animation ── */
@@ -3212,10 +3216,9 @@
                 voiceRecognition = null;
                 if (e.error === 'not-allowed') {
                     showPermissionModal('mic');
-                } else {
-                    const msg = e.error === 'no-speech' ? 'Nothing heard — try again'
-                        : 'Voice error: ' + e.error;
-                    if (e.error !== 'no-speech') setCaptureStatus(msg, 'error');
+                } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
+                    // 'aborted' fires when stop() is called manually — not a real error
+                    setCaptureStatus('Voice error: ' + e.error, 'error');
                 }
                 setMicStatus('Tap to speak');
             };
