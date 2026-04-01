@@ -1529,22 +1529,34 @@
         }
 
         /* ─── Smart Capture ─── */
-        /* ─── Capture Hero ─── */
-        .capture-hero {
+        #tab-add.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .capture-stage {
+            position: relative;
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 2.5rem 0 1rem;
-            gap: 2rem;
-            min-height: 260px;
             justify-content: center;
+            min-height: calc(100svh - 9rem);
         }
 
-        .mic-wrap {
+        .capture-stage.compact {
+            min-height: 220px;
+            flex: none;
+        }
+
+        #micFloat {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0.85rem;
+            transform: translate(var(--fx, 0px), var(--fy, 0px));
+            position: relative;
+            z-index: 1;
         }
 
         .mic-btn {
@@ -1609,14 +1621,15 @@
             transition: color 0.2s ease;
         }
 
-        /* ─── Arc row ─── */
-        .arc-row {
-            display: flex;
-            align-items: flex-end;
-            gap: 1.25rem;
-        }
-
+        /* ─── Arc buttons ─── */
         .arc-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(
+                calc(-50% + var(--ax, 0px) + var(--fx, 0px)),
+                calc(-50% + var(--ay, 0px) + var(--fy, 0px))
+            );
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1630,10 +1643,11 @@
             border: 1px solid var(--border-color);
             border-radius: 14px;
             padding: 0.7rem 1.1rem;
-            transition: all 0.2s ease;
-            min-width: 68px;
+            transition: border-color 0.2s ease, color 0.2s ease;
             text-align: center;
             text-decoration: none;
+            white-space: nowrap;
+            z-index: 1;
         }
 
         .arc-btn:hover {
@@ -1649,15 +1663,9 @@
             stroke-width: 1.5;
         }
 
-        /* Arc effect: outer buttons raised */
-        .arc-btn:first-child,
-        .arc-btn:last-child {
-            transform: translateY(-14px);
-        }
-
         /* ─── Paste zone ─── */
         .paste-zone {
-            margin-top: 0.5rem;
+            margin-top: 1rem;
             display: none;
             flex-direction: column;
             gap: 0.5rem;
@@ -1666,17 +1674,23 @@
 
         .paste-zone.open { display: flex; }
 
+        .paste-zone-inner {
+            position: relative;
+        }
+
         .paste-zone textarea {
             font-family: var(--font-sans);
             font-size: 0.9rem;
-            padding: 0.75rem;
+            padding: 0.75rem 0.75rem 3rem;
             border-radius: 10px;
             border: 1px solid var(--input-border);
             background: var(--input-bg);
             color: var(--text-color);
             outline: none;
             resize: none;
-            min-height: 100px;
+            min-height: 110px;
+            width: 100%;
+            box-sizing: border-box;
             transition: border-color 0.2s ease;
             line-height: 1.5;
         }
@@ -1688,29 +1702,84 @@
             opacity: 0.55;
         }
 
-        .paste-zone-hint {
-            font-size: 0.72rem;
-            color: var(--muted-color);
-            opacity: 0.65;
-            text-align: center;
-        }
-
         .paste-parse-btn {
+            position: absolute;
+            bottom: 0.65rem;
+            right: 0.65rem;
             font-family: var(--font-sans);
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 600;
-            padding: 0.55rem 1.25rem;
-            border-radius: 8px;
+            padding: 0.4rem 1rem;
+            border-radius: 7px;
             border: none;
             background: var(--accent-color);
             color: #fff;
             cursor: pointer;
-            align-self: flex-end;
             transition: opacity 0.2s ease;
         }
 
         .paste-parse-btn:hover { opacity: 0.88; }
         .paste-parse-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ─── Permission modal ─── */
+        .perm-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .perm-modal {
+            background: var(--bg-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            max-width: 320px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .perm-modal h4 {
+            margin: 0 0 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .perm-modal p {
+            margin: 0 0 1.25rem;
+            font-size: 0.85rem;
+            color: var(--muted-color);
+            line-height: 1.5;
+        }
+
+        .perm-modal-btns {
+            display: flex;
+            gap: 0.65rem;
+            justify-content: flex-end;
+        }
+
+        .perm-modal-btns button {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.5rem 1.1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .perm-btn-dismiss {
+            background: var(--card-bg);
+            color: var(--muted-color);
+        }
+
+        .perm-btn-settings {
+            background: var(--accent-color);
+            color: #fff;
+        }
 
         /* ─── Capture status ─── */
         .capture-status {
@@ -1993,6 +2062,18 @@
         </div>
     </div>
 
+    <!-- ─── PERMISSION MODAL ─── -->
+    <div class="perm-modal-overlay" id="permModal" style="display:none" onclick="closePermModal()">
+        <div class="perm-modal" onclick="event.stopPropagation()">
+            <h4 id="permModalTitle">Permission required</h4>
+            <p id="permModalBody"></p>
+            <div class="perm-modal-btns">
+                <button class="perm-btn-dismiss" onclick="closePermModal()">Dismiss</button>
+                <button class="perm-btn-settings" onclick="openDeviceSettings()">Open Settings</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ─── EXPENSE FORM SHEET ─── -->
     <div class="sheet-overlay" id="expenseSheet" onclick="handleSheetOverlayClick(event)">
         <div class="sheet-panel" id="expenseSheetPanel">
@@ -2064,34 +2145,33 @@
 
         <!-- ─── ADD EXPENSE TAB ─── -->
         <div id="tab-add" class="tab-content active">
-            <div class="capture-hero">
-                <div class="mic-wrap">
+            <div class="capture-stage" id="captureStage">
+                <div id="micFloat">
                     <button class="mic-btn" id="micBtn" aria-label="Voice input">
                         <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6"/></svg>
                     </button>
                     <p class="mic-status" id="micStatus">Tap to speak</p>
                 </div>
-                <div class="arc-row">
-                    <label class="arc-btn" for="imageCapture">
-                        <svg viewBox="0 0 24 24"><path d="M14.5 4H9.5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                        Photo
-                    </label>
-                    <input type="file" id="imageCapture" accept="image/*" style="display:none" onchange="handleImageCapture(event)">
-                    <button class="arc-btn" onclick="openPasteZone()">
-                        <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M6 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M9 12h6M9 16h4"/></svg>
-                        Paste
-                    </button>
-                    <button class="arc-btn" onclick="openFormSheet()">
-                        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-                        Form
-                    </button>
-                </div>
+                <button class="arc-btn" id="arcPhoto" style="--ax:-90px;--ay:105px" onclick="handlePhotoCTA()">
+                    <svg viewBox="0 0 24 24"><path d="M14.5 4H9.5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                    Photo
+                </button>
+                <input type="file" id="imageCapture" accept="image/*" style="display:none" onchange="handleImageCapture(event)">
+                <button class="arc-btn" id="arcPaste" style="--ax:0px;--ay:130px" onclick="openPasteZone()">
+                    <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M6 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M9 12h6M9 16h4"/></svg>
+                    Paste
+                </button>
+                <button class="arc-btn" id="arcForm" style="--ax:90px;--ay:105px" onclick="openFormSheet()">
+                    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+                    Form
+                </button>
             </div>
 
             <div class="paste-zone" id="pasteZone">
-                <textarea id="pasteInput" placeholder="Paste text (SMS, payment alert…) or paste a screenshot with Ctrl/Cmd+V" rows="4"></textarea>
-                <p class="paste-zone-hint">Supports pasted images too</p>
-                <button class="paste-parse-btn" id="parsePasteBtn" onclick="parsePastedText()">Parse →</button>
+                <div class="paste-zone-inner">
+                    <textarea id="pasteInput" placeholder="Paste text (SMS, payment alert…) or paste a screenshot with Ctrl/Cmd+V" rows="4"></textarea>
+                    <button class="paste-parse-btn" id="parsePasteBtn" onclick="parsePastedText()">Parse →</button>
+                </div>
             </div>
 
             <div class="capture-status" id="captureStatus"></div>
@@ -2718,6 +2798,7 @@
             checkIncomingShare();
             initMicBtn();
             initPasteZone();
+            startFloatAnimation();
         }
 
         /* ═══════════════════════════════════════════════════
@@ -2938,6 +3019,75 @@
 
         const HOLD_THRESHOLD = 400; // ms — longer press = hold-to-talk
 
+        /* ── Permission modal ── */
+        function showPermissionModal(type) {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+            const titles = { mic: 'Microphone access denied', camera: 'Camera access denied' };
+            let body = '';
+            if (type === 'mic') {
+                if (isIOS) body = 'Go to Settings → Privacy & Security → Microphone and enable access for this app.';
+                else if (isAndroid) body = 'Tap the lock icon in the address bar → Permissions → Microphone → Allow.';
+                else body = 'Please allow microphone access in your browser settings and reload.';
+            } else {
+                if (isIOS) body = 'Go to Settings → Privacy & Security → Camera and enable access for this app.';
+                else if (isAndroid) body = 'Tap the lock icon in the address bar → Permissions → Camera → Allow.';
+                else body = 'Please allow camera access in your browser settings and reload.';
+            }
+            document.getElementById('permModalTitle').textContent = titles[type] || 'Permission required';
+            document.getElementById('permModalBody').textContent = body;
+            document.getElementById('permModal').style.display = 'flex';
+        }
+
+        function closePermModal() {
+            document.getElementById('permModal').style.display = 'none';
+        }
+
+        function openDeviceSettings() {
+            closePermModal();
+            // On iOS Safari, there's no programmatic way to open Settings.
+            // On Android Chrome, trying to request the permission again will prompt the OS dialog.
+            // Best we can do is inform the user — the modal already does that.
+        }
+
+        /* ── Photo CTA with permission check ── */
+        async function handlePhotoCTA() {
+            if (navigator.permissions) {
+                try {
+                    const result = await navigator.permissions.query({ name: 'camera' });
+                    if (result.state === 'denied') { showPermissionModal('camera'); return; }
+                } catch (e) { /* permissions API unsupported — fall through */ }
+            }
+            document.getElementById('imageCapture').click();
+        }
+
+        /* ── Float animation ── */
+        function startFloatAnimation() {
+            const items = [
+                { id: 'micFloat',  phase: 0 },
+                { id: 'arcPhoto',  phase: Math.PI * 0.5 },
+                { id: 'arcPaste',  phase: Math.PI },
+                { id: 'arcForm',   phase: Math.PI * 1.5 },
+            ];
+            const baseFreq = 0.18; // Hz
+            const ampY = 9, ampX = 5;
+
+            function tick(t) {
+                const s = t / 1000;
+                items.forEach(({ id, phase }) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const fy = ampY * Math.sin(2 * Math.PI * baseFreq * s + phase)
+                             + ampY * 0.28 * Math.sin(2 * Math.PI * baseFreq * 2.3 * s + phase * 1.2);
+                    const fx = ampX * Math.sin(2 * Math.PI * baseFreq * 1.4 * s + phase + 0.9);
+                    el.style.setProperty('--fx', fx.toFixed(2) + 'px');
+                    el.style.setProperty('--fy', fy.toFixed(2) + 'px');
+                });
+                requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+        }
+
         function initMicBtn() {
             const btn = document.getElementById('micBtn');
 
@@ -3006,10 +3156,13 @@
                 voiceActive = false;
                 document.getElementById('micBtn').classList.remove('listening');
                 voiceRecognition = null;
-                const msg = e.error === 'not-allowed' ? 'Microphone access denied'
-                    : e.error === 'no-speech' ? 'Nothing heard — try again'
-                    : 'Voice error: ' + e.error;
-                if (e.error !== 'no-speech') setCaptureStatus(msg, 'error');
+                if (e.error === 'not-allowed') {
+                    showPermissionModal('mic');
+                } else {
+                    const msg = e.error === 'no-speech' ? 'Nothing heard — try again'
+                        : 'Voice error: ' + e.error;
+                    if (e.error !== 'no-speech') setCaptureStatus(msg, 'error');
+                }
                 setMicStatus('Tap to speak');
             };
 
@@ -3070,11 +3223,13 @@
 
         /* ── Paste zone ── */
         function openPasteZone() {
+            document.getElementById('captureStage').classList.add('compact');
             document.getElementById('pasteZone').classList.add('open');
             setTimeout(() => document.getElementById('pasteInput').focus(), 50);
         }
 
         function closePasteZone() {
+            document.getElementById('captureStage').classList.remove('compact');
             document.getElementById('pasteZone').classList.remove('open');
             document.getElementById('pasteInput').value = '';
         }
