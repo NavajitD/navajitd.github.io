@@ -2860,7 +2860,8 @@
                 populateFormFromParsed(parsed);
                 setCaptureStatus('Form filled from image — review and submit', 'success');
             } catch (e) {
-                setCaptureStatus('Could not read image — try a clearer photo', 'error');
+                console.error('Image parse error:', e);
+                setCaptureStatus('Image error: ' + (e.message || 'unknown'), 'error');
             } finally {
                 imageBtn.classList.remove('active');
                 event.target.value = '';
@@ -2939,7 +2940,8 @@ JSON schema (all fields required):
         async function callGeminiParseImage(base64Data, mimeType) {
             const system = buildParseSystemInstruction();
             const dataUrl = `data:${mimeType || 'image/jpeg'};base64,${base64Data}`;
-            return callExpenseLLM('Extract expense details from this image.', system, true, dataUrl);
+            // isJson must be false for vision models — Groq vision doesn't support response_format json_object
+            return callExpenseLLM('Extract expense details from this image.', system, false, dataUrl);
         }
 
         async function callExpenseLLM(prompt, system, isJson, base64Image, retry = true) {
@@ -3041,7 +3043,7 @@ JSON schema (all fields required):
                     }
                 }
             } catch (err) {
-                setCaptureStatus('Could not process shared content — try the manual inputs above', 'error');
+                setCaptureStatus('Share error: ' + (err.message || 'try the manual inputs above'), 'error');
                 console.error('Share handling error:', err);
             }
         }
