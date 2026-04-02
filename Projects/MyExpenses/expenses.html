@@ -94,8 +94,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -1573,7 +1573,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding-top: 1.6rem;
+            padding-top: 0;
             overflow: visible;
             margin-bottom: 0.5rem;
         }
@@ -1671,8 +1671,8 @@
         /* ─── Arc buttons ─── */
         .arc-btn {
             position: absolute;
-            /* anchor at mic centre: stage padding-top (1.6rem) + mic radius (48px) */
-            top: calc(1.6rem + 48px);
+            /* anchor at mic centre: mic radius (48px) from stage top */
+            top: 48px;
             left: 50%;
             transform: translate(calc(-50% + var(--ax, 0px) + var(--fx, 0px)),
                     calc(-50% + var(--ay, 0px) + var(--fy, 0px)));
