@@ -4495,19 +4495,22 @@
           ? '\nSaved events: ' + eventsData.map(e => `${e.name} on ${e.date || '?'} ${e.time || ''} at ${e.location || '?'}${e.bookingRequired ? ' (booking required)' : ''}`).join('; ')
           : '';
         const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal\nMicros logged so far: ${microStr}\nFoods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}${eventsStr}`;
-        // Run food detection BEFORE LLM so we can tell the bot what was actually logged
+        // Run food & water detection BEFORE LLM so we can tell the bot what was actually logged
         const loggedFood = await checkAndLogFoodIntent(userMsg);
-        const foodNote = loggedFood ? ` [App auto-logged: ${loggedFood}]` : '';
+        const loggedWater = await checkAndLogWaterIntent(userMsg);
+        const foodNote = loggedFood ? ` [App auto-logged food: ${loggedFood}]` : '';
+        const waterNote = loggedWater ? ` [App auto-logged water: ${loggedWater}ml]` : '';
 
         const sys = `You are "HealThee Mate", a concise, warm, and highly capable health advisor for an Indian user doing a recomposition (cutting body fat, building muscle). Currency INR. Goals: ~2050 kcal training days, ~1850 rest days, 130-145g protein. Keep responses under 120 words. Use plain text only — do not use markdown, asterisks, bold, bullet points, or any special formatting.
 When asked about micro gaps, macros, water, fiber, or exercise, base your answer strictly on the numerical totals provided below. DO NOT guess or calculate nutrients from the "Foods" array.
-If the message includes "[App auto-logged: X]", briefly acknowledge that X was logged to the food diary, then give your normal advice.
-IMPORTANT: Only say food was logged if "[App auto-logged: ...]" appears in the message. Never claim to log water, steps, or any other data.
+If the message includes "[App auto-logged food: X]", briefly acknowledge that X was logged to the food diary, then give your normal advice.
+If the message includes "[App auto-logged water: Xml]", briefly acknowledge that X ml water was logged, then give your normal advice.
+IMPORTANT: Only say something was logged if the matching auto-logged tag appears in the message.
 If the user asks for a recipe or cooking advice, check their macro constraints and suggest something that fits.
 If the user uploaded a menu photo, identify the healthiest, highest-protein option that fits their goals.
 Do NOT output JSON. Output regular conversational text only.`;
 
-        const prompt = `My current stats:\n${summary}\n\nMessage: ${userMsg}${foodNote}`;
+        const prompt = `My current stats:\n${summary}\n\nMessage: ${userMsg}${foodNote}${waterNote}`;
 
         try {
           const reply = await (hasImage
@@ -4517,6 +4520,15 @@ Do NOT output JSON. Output regular conversational text only.`;
             .replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1')
             .replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, '');
           appendChat("assistant", cleanReply);
+          // After confirming a log, briefly switch to the Fuel tab so the user can see it
+          if (loggedFood || loggedWater) {
+            const popupWasOpen = !document.getElementById('chatPopupOverlay').classList.contains('hidden');
+            setTimeout(() => {
+              if (popupWasOpen) closeChatPopup();
+              switchTab('fuel');
+              setTimeout(() => { if (popupWasOpen) openChatPopup(); }, 2200);
+            }, 900);
+          }
         } catch (e) {
           appendChat("assistant", `Error: ${e.message}`);
           console.error(e);
@@ -4608,9 +4620,8 @@ Do NOT output JSON. Output regular conversational text only.`;
         };
         _voiceRecog.onresult = e => {
           const transcript = e.results[0][0].transcript;
-          const id = ctx === 'popup' ? 'popupChatInput' : 'chatInput';
-          const input = document.getElementById(id);
-          if (input) { input.value = transcript; input.focus(); }
+          stopVoice();
+          askAdvisor(transcript, ctx);
         };
         _voiceRecog.onerror = e => { toast("Voice error: " + e.error); stopVoice(); };
         _voiceRecog.onend = () => stopVoice();
@@ -4646,6 +4657,17 @@ Do NOT output JSON. Output regular conversational text only.`;
           });
           return f.name; // tell the advisor what was logged
         } catch (e) { console.warn('Food intent extraction failed:', e.message); return null; }
+      }
+
+      window.checkAndLogWaterIntent = async function (userMsg) {
+        if (!/\b(water|drink|drank|drunk|hydrat|glass(?:es)?|bottle|litre|liter|ml)\b/i.test(userMsg)) return null;
+        const extractSys = `You are a water intake extractor. The user may have mentioned drinking water. Extract the amount in ml. Reply ONLY with valid JSON: {"ml":number} or {"ml":null} if no water amount is mentioned. Conversions: 1 glass = 250ml, 1 bottle = 750ml, 1 litre/liter = 1000ml, 1 cup = 200ml.`;
+        try {
+          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'cerebras', 'llama3.1-8b', true);
+          if (!raw?.ml) return null;
+          addWater(Math.round(raw.ml));
+          return Math.round(raw.ml);
+        } catch (e) { console.warn('Water intent extraction failed:', e.message); return null; }
       }
 
       window.inferMealFromTime = function () {
@@ -4746,52 +4768,102 @@ Do NOT output JSON. Output regular conversational text only.`;
       window.analyseEvents = async function () {
         if (eventImages.length === 0) { toast("Add at least one photo first"); return; }
         const btn = document.getElementById('analyseEventsBtn');
-        if (btn) { btn.disabled = true; btn.textContent = 'Analysing...'; }
-        const newEvents = [];
-        for (const imgB64 of eventImages) {
+        const setStatus = t => { if (btn) btn.textContent = t; };
+        if (btn) btn.disabled = true;
+        const strip = s => (s || '').replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1').replace(/^[-*]\s+/gm, '').trim();
+
+        // Step 1: Extract basic event info from each photo
+        const found = []; // [{event, img}]
+        for (let i = 0; i < eventImages.length; i++) {
+          setStatus(`Reading photo ${i + 1} of ${eventImages.length}...`);
           try {
-            const raw = await fetchVisionLLM(
-              'Extract all event details visible in this image.',
-              `Today is ${todayStr()}. You extract event info from posters or messages. Reply ONLY with valid JSON:
-{"name":string,"location":string,"date":string,"time":string,"duration":string,"description":string,"bookingRequired":boolean,"bookingInfo":string,"links":string,"startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD"}
-Rules:
-- startDate: first day of the event in YYYY-MM-DD format (use today's year if not shown)
-- endDate: last day of the event. For a single-day event set endDate = startDate. For a multi-day or ongoing event (exhibition, festival, etc.) set endDate to the last day.
-- Set bookingRequired:true if you see: register, book, RSVP, ticket, limited seats, pay, fee, or a QR code.
-- Set links to any URL or @handle visible, else "".
-- If no event found return {"name":null}.`,
-              imgB64, 'groq', 'llama-3.2-90b-vision-preview', true
+            const basic = await fetchVisionLLM(
+              'What event is shown in this image? Extract the basic details.',
+              `Today is ${todayStr()}. Extract event info from a poster or invite. Reply ONLY with valid JSON:
+{"name":string,"date":string,"time":string,"location":string,"duration":string,"description":string,"startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD"}
+- startDate/endDate in YYYY-MM-DD (use current year if not shown; single-day event: endDate=startDate)
+- If no event found, return {"name":null}`,
+              eventImages[i], 'groq', 'llama-3.2-90b-vision-preview', true
             );
-            if (raw?.name) newEvents.push({ ...raw, id: genId('evt'), addedAt: new Date().toISOString() });
+            if (basic?.name) {
+              found.push({ event: { ...basic, bookingRequired: false, bookingInfo: '', links: '', id: genId('evt'), addedAt: new Date().toISOString() }, img: eventImages[i] });
+            }
           } catch (e) {
-            console.error('Event extraction failed:', e);
+            console.error('Step 1 failed for photo', i + 1, e);
             if (btn) { btn.disabled = false; btn.textContent = 'Plan Weekend'; }
-            toast('Error: ' + (e.message || 'extraction failed'));
+            toast('Error reading photo ' + (i + 1) + ': ' + (e.message || 'unknown'));
             return;
           }
         }
-        eventsData = [...eventsData, ...newEvents];
-        await saveEvents();
-        closeEventsModal();
-        if (newEvents.length === 0) {
-          appendChat('assistant', 'Could not extract event details from the photos. Try clearer images.');
+
+        if (found.length === 0) {
+          if (btn) { btn.disabled = false; btn.textContent = 'Plan Weekend'; }
+          appendChat('assistant', 'No events found in the photos. Try clearer images of event posters or invites.');
+          closeEventsModal();
           if (currentTab !== 'care') openChatPopup();
           return;
         }
-        // Post event table + weekend plan to chat
+
+        // Step 2: Check booking requirements for each event photo
+        for (let i = 0; i < found.length; i++) {
+          setStatus(`Checking booking info ${i + 1} of ${found.length}...`);
+          try {
+            const booking = await fetchVisionLLM(
+              'Look specifically for booking, registration, or ticketing information in this image.',
+              `Scan this image for: registration links, booking URLs, QR codes, RSVP instructions, ticket info, entry fees, "limited seats", "register now", "book now". Reply ONLY with valid JSON:
+{"bookingRequired":boolean,"bookingInfo":string,"links":string}
+- bookingRequired: true if ANY booking/registration step is needed
+- bookingInfo: specific instructions or fee amount (empty string if none)
+- links: any URL, QR reference, or @handle visible (empty string if none)`,
+              found[i].img, 'groq', 'llama-3.2-90b-vision-preview', true
+            );
+            if (booking) {
+              found[i].event.bookingRequired = booking.bookingRequired || false;
+              found[i].event.bookingInfo = booking.bookingInfo || '';
+              found[i].event.links = booking.links || '';
+            }
+          } catch (e) { console.warn('Booking check failed for event', i + 1, e); }
+        }
+
+        // Save to Firestore
+        setStatus('Saving events...');
+        const newEvents = found.map(f => f.event);
+        eventsData = [...eventsData, ...newEvents];
+        await saveEvents();
+        closeEventsModal();
+
+        // Show event table in chat
         const rows = newEvents.map((e, i) => {
-          const bk = e.bookingRequired ? ' ⚠ Booking required' + (e.bookingInfo ? ': ' + e.bookingInfo : '') : '';
-          return `${i + 1}. ${e.name} | ${e.date || '?'} ${e.time || ''} | ${e.location || '?'} | ${e.duration || '?'}${bk}`;
+          const bk = e.bookingRequired ? ` (book in advance${e.bookingInfo ? ': ' + e.bookingInfo : ''})` : '';
+          return `${i + 1}. ${e.name} | ${e.date || '?'} ${e.time || ''} | ${e.location || '?'}${bk}`;
         }).join('\n');
-        appendChat('assistant', 'Events found:\n' + rows);
-        // Weekend plan
-        const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
-        const planPrompt = `Today is ${today}. These events are available: ${JSON.stringify(newEvents.map(e => ({ name: e.name, date: e.date, time: e.time, location: e.location, bookingRequired: e.bookingRequired, bookingInfo: e.bookingInfo })))}. Suggest a brief weekend plan. Note any events needing advance booking.`;
-        const planSys = `You are HealThee Mate. Plain text only, no markdown, no asterisks, no bullet points. Max 150 words.`;
+        appendChat('assistant', `Found ${newEvents.length} event(s):\n${rows}`);
+
+        // Step 3: Weekend plan
+        setStatus('Planning weekend...');
         try {
-          const reply = await fetchLLM(planPrompt, planSys, 'cerebras', 'llama3.1-8b', false);
-          appendChat('assistant', reply.trim().replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1').replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, ''));
+          const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+          const planReply = await fetchLLM(
+            `Today is ${today}. Events: ${JSON.stringify(newEvents.map(e => ({ name: e.name, date: e.date, time: e.time, location: e.location })))}. Suggest a brief weekend plan in 2-3 sentences.`,
+            'You are HealThee Mate. Plain text only, no markdown, no bullet points. Max 100 words.', 'cerebras', 'llama3.1-8b', false
+          );
+          appendChat('assistant', strip(planReply));
         } catch (e) { console.warn('Weekend plan failed:', e); }
+
+        // Step 4: Booking reminders (only if needed)
+        const bookingEvents = newEvents.filter(e => e.bookingRequired);
+        if (bookingEvents.length > 0) {
+          setStatus('Writing booking reminders...');
+          try {
+            const remReply = await fetchLLM(
+              `These events need advance booking: ${JSON.stringify(bookingEvents.map(e => ({ name: e.name, date: e.date, bookingInfo: e.bookingInfo, links: e.links })))}. Write a short, urgent reminder for each. Plain text only, max 80 words total.`,
+              'You are HealThee Mate. Plain text only, no markdown. Be direct and actionable.', 'cerebras', 'llama3.1-8b', false
+            );
+            appendChat('assistant', 'Booking reminders: ' + strip(remReply));
+          } catch (e) { console.warn('Booking reminders failed:', e); }
+        }
+
+        if (btn) { btn.disabled = false; btn.textContent = 'Plan Weekend'; }
         if (currentTab !== 'care') openChatPopup();
       }
 
