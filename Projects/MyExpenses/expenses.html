@@ -2769,10 +2769,16 @@
             try { localStorage.setItem('lastSelectedCard', cardName); } catch { }
         }
         function getLastUsedDate() {
-            try { return localStorage.getItem('lastUsedDate') || null; } catch { return null; }
+            try {
+                const raw = localStorage.getItem('lastUsedDate');
+                if (!raw) return null;
+                const { date, ts } = JSON.parse(raw);
+                if (Date.now() - ts > 5 * 60 * 1000) return null; // stale — fall back to today
+                return date;
+            } catch { return null; }
         }
         function saveLastUsedDate(dateStr) {
-            try { localStorage.setItem('lastUsedDate', dateStr); } catch { }
+            try { localStorage.setItem('lastUsedDate', JSON.stringify({ date: dateStr, ts: Date.now() })); } catch { }
         }
 
         function applyUserProfile() {
@@ -3194,9 +3200,9 @@
             _lastTranscript = '';
             voiceRecognition = new SR();
             voiceRecognition.lang = 'en-IN';
-            voiceRecognition.interimResults = false;
+            voiceRecognition.interimResults = true;
             voiceRecognition.maxAlternatives = 1;
-            voiceRecognition.continuous = false;
+            voiceRecognition.continuous = true; // prevent premature auto-stop on iOS
 
             voiceRecognition.onstart = () => {
                 voiceActive = true;
@@ -3205,7 +3211,13 @@
             };
 
             voiceRecognition.onresult = e => {
-                _lastTranscript = Array.from(e.results).map(r => r[0].transcript).join(' ').trim();
+                const finalParts = Array.from(e.results).filter(r => r.isFinal).map(r => r[0].transcript);
+                const interimParts = Array.from(e.results).filter(r => !r.isFinal).map(r => r[0].transcript);
+                _lastTranscript = [...finalParts, ...interimParts].join(' ').trim();
+                if (_lastTranscript) {
+                    const short = _lastTranscript.length > 50 ? _lastTranscript.substring(0, 50) + '…' : _lastTranscript;
+                    setMicStatus('"' + short + '"');
+                }
             };
 
             voiceRecognition.onerror = e => {
@@ -3224,8 +3236,10 @@
             };
 
             voiceRecognition.onend = () => {
-                // Natural end (speech paused) — only process if still in active toggle mode
-                if (voiceActive && !holdMode) {
+                // With continuous=true this only fires after stop() is called or on error;
+                // transcript is already handled by stopVoiceAndProcess(). Guard against
+                // edge cases where onend fires while still supposedly active.
+                if (voiceActive) {
                     voiceActive = false;
                     document.getElementById('micBtn').classList.remove('listening');
                     voiceRecognition = null;
