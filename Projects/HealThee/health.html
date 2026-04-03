@@ -4126,33 +4126,15 @@
         }
       }
 
-      // LLM Vision Fetch Utility — OpenRouter direct or cloud function fallback
-      const _OR_KEY = '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';
+      // LLM Vision Fetch Utility — all providers routed through cloud function (keys stored as secrets)
       window.fetchVisionLLM = async function (prompt, system, base64Image, provider = 'openrouter', model = 'qwen/qwen2.5-vl-72b-instruct:free', isJson = true) {
-        let content;
-
-        if (provider === 'openrouter') {
-          const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _OR_KEY, 'HTTP-Referer': 'https://navajitd.github.io' },
-            body: JSON.stringify({
-              model,
-              messages: [{ role: 'user', content: [{ type: 'text', text: system + '\n\n' + prompt }, { type: 'image_url', image_url: { url: base64Image } }] }]
-            })
-          });
-          if (!res.ok) { const err = await res.text(); throw new Error(`OpenRouter ${res.status}: ${err}`); }
-          const data = await res.json();
-          content = data.choices?.[0]?.message?.content;
-          if (!content) throw new Error('OpenRouter returned empty response');
-        } else {
-          const res = await fetch('https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt, system, base64Image, provider, model, isJson })
-          });
-          if (!res.ok) { const err = await res.text(); throw new Error(`API Error: ${res.status} - ${err}`); }
-          content = (await res.json()).content;
-        }
+        const res = await fetch('https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, system, base64Image, provider, model, isJson })
+        });
+        if (!res.ok) { const err = await res.text(); throw new Error(`API Error: ${res.status} - ${err}`); }
+        const content = (await res.json()).content;
 
         if (isJson) {
           try {

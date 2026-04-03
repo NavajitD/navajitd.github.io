@@ -168,7 +168,7 @@ exports.healtheeLLM = onRequest(
     region: "us-central1",
     memory: "256MiB",
     timeoutSeconds: 120,
-    secrets: ["CEREBRAS_API_KEY", "GROQ_API_KEY"],
+    secrets: ["CEREBRAS_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY"],
   },
   (req, res) => {
     corsHandler(req, res, async () => {
@@ -230,6 +230,16 @@ exports.healtheeLLM = onRequest(
             apiKey: process.env.GROQ_API_KEY || "",
           });
           completion = await groqClient.chat.completions.create(bodyOptions);
+        } else if (provider === 'openrouter') {
+          const orClient = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_API_KEY || "",
+            defaultHeaders: { "HTTP-Referer": "https://navajitd.github.io" },
+          });
+          // OpenRouter free models don't support response_format — strip it
+          const orOptions = { ...bodyOptions };
+          delete orOptions.response_format;
+          completion = await orClient.chat.completions.create(orOptions);
         } else {
           res.status(400).json({ error: "Invalid provider" });
           return;
