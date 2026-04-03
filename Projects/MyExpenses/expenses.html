@@ -229,7 +229,7 @@
             display: flex;
             gap: 0;
             border-bottom: 1px solid var(--border-color);
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
         }
 
         .section-btn {
@@ -1568,12 +1568,12 @@
         /* ─── Smart Capture ─── */
         .capture-stage {
             position: relative;
-            min-height: 260px;
+            min-height: 300px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding-top: 0;
+            padding-top: 0.75rem;
             overflow: visible;
             margin-bottom: 0.5rem;
         }
@@ -1671,8 +1671,8 @@
         /* ─── Arc buttons ─── */
         .arc-btn {
             position: absolute;
-            /* anchor at mic centre: mic radius (48px) from stage top */
-            top: 48px;
+            /* anchor at mic centre: stage padding-top + mic radius */
+            top: calc(0.75rem + 48px);
             left: 50%;
             transform: translate(calc(-50% + var(--ax, 0px) + var(--fx, 0px)),
                     calc(-50% + var(--ay, 0px) + var(--fy, 0px)));
@@ -2212,16 +2212,16 @@
                 </button>
                 <p class="mic-status" id="micStatus">Tap to speak</p>
             </div>
-            <button class="arc-btn" id="arcPhoto" style="--ax:-90px;--ay:105px" onclick="handlePhotoCTA()">
+            <button class="arc-btn" id="arcPhoto" style="--ax:-90px;--ay:130px" onclick="handlePhotoCTA()">
                 <svg viewBox="0 0 24 24"><path d="M14.5 4H9.5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
                 Photo
             </button>
             <input type="file" id="imageCapture" accept="image/*" style="display:none" onchange="handleImageCapture(event)">
-            <button class="arc-btn" id="arcPaste" style="--ax:0px;--ay:130px" onclick="openPasteZone()">
+            <button class="arc-btn" id="arcPaste" style="--ax:0px;--ay:155px" onclick="openPasteZone()">
                 <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M6 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M9 12h6M9 16h4"/></svg>
                 Paste
             </button>
-            <button class="arc-btn" id="arcForm" style="--ax:90px;--ay:105px" onclick="openFormSheet()">
+            <button class="arc-btn" id="arcForm" style="--ax:90px;--ay:130px" onclick="openFormSheet()">
                 <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
                 Form
             </button>
@@ -3262,10 +3262,12 @@
             setCaptureStatus('Parsing…');
             try {
                 const parsed = await callGeminiParseText(transcript);
-                populateFormFromParsed(parsed);
-                openFormSheet();
+                const direct = await handleParsedExpenses(parsed);
+                if (!direct) {
+                    openFormSheet();
+                    setCaptureStatus('Form filled — review and submit', 'success');
+                }
                 setMicStatus('Tap to speak');
-                setCaptureStatus('Form filled — review and submit', 'success');
             } catch (err) {
                 console.error(err);
                 setCaptureStatus('Could not parse: ' + (err.message || 'try again'), 'error');
@@ -3327,10 +3329,12 @@
             btn.disabled = true; btn.textContent = 'Parsing…';
             try {
                 const parsed = await callGeminiParseText(text);
-                populateFormFromParsed(parsed);
+                const direct = await handleParsedExpenses(parsed);
                 closePasteZone();
-                openFormSheet();
-                setCaptureStatus('Form filled — review and submit', 'success');
+                if (!direct) {
+                    openFormSheet();
+                    setCaptureStatus('Form filled — review and submit', 'success');
+                }
             } catch (e) {
                 console.error('Parse error:', e);
                 setCaptureStatus('Could not parse: ' + (e.message || 'unknown error'), 'error');
@@ -3372,10 +3376,18 @@
             const payments = (userProfile?.payments || DEFAULT_PAYMENTS).join(', ');
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-            return `You are an expense parser for an Indian expense tracker. Extract expense details and return ONLY a raw JSON object — no markdown fences, no explanation, no extra text.
+            return `You are an expense parser for an Indian expense tracker. Extract expense details and return ONLY raw JSON — no markdown fences, no explanation, no extra text.
 
-JSON schema (all fields required):
-{ "name": "<short description, max 40 chars>", "amount": <number in INR, no symbol>, "category": "<one of: ${categories}>", "date": "<YYYY-MM-DD, use ${todayStr} if not found>", "paymentMethod": "<one of: ${payments}, use closest match>" }`;
+Return a single object for one expense, or a JSON array for multiple expenses (splits, multiple items, etc.).
+
+Object schema (all fields required):
+{ "name": "<short description, max 40 chars>", "amount": <number in INR, no symbol>, "category": "<one of: ${categories}>", "date": "<YYYY-MM-DD, use ${todayStr} if not found>", "paymentMethod": "<one of: ${payments}, use closest match>" }
+
+Rules:
+- If the input says "log half as X and half as Y", split the amount and create two entries.
+- If the input mentions fractions, percentages, or multiple categories, create one entry per portion.
+- Resolve arithmetic (e.g. "half of 250" = 125) before filling the amount field.
+- Always use the closest matching category and payment method from the allowed lists.`;
         }
 
         async function callGeminiParseText(text) {
@@ -3394,7 +3406,7 @@ JSON schema (all fields required):
             // provider selection: image → Groq vision; text retry → Groq text; default → Cerebras
             let provider, model;
             if (base64Image) {
-                provider = 'groq'; model = 'llama-3.2-11b-vision-preview';
+                provider = 'groq'; model = 'meta-llama/llama-4-scout-17b-16e-instruct';
             } else if (!retry) {
                 provider = 'groq'; model = 'llama-3.3-70b-versatile';
             } else {
@@ -3426,10 +3438,11 @@ JSON schema (all fields required):
             try {
                 return typeof content === 'object' ? content : JSON.parse(content);
             } catch {
-                // Strip any accidental markdown fences and retry parse
+                // Strip accidental markdown fences and retry parse
                 const clean = content.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
-                const match = clean.match(/\{[\s\S]*\}/);
-                if (match) return JSON.parse(match[0]);
+                // Try array first, then object
+                const match = clean.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
+                if (match) return JSON.parse(match[1]);
                 throw new Error('Model did not return valid JSON: ' + clean.substring(0, 100));
             }
         }
@@ -3452,6 +3465,46 @@ JSON schema (all fields required):
                 if (opt) { sel.value = opt.value; updateBillingInfo(); }
             }
             updateBillingInfo();
+        }
+
+        /* ── Direct-add (multi-expense from parsed array) ── */
+        function addExpenseDirect(item) {
+            const dateStr = item.date || (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            const docData = {
+                expenseName: item.name || 'Expense',
+                category: item.category || (userProfile?.categories?.[0] || 'Other'),
+                amount: item.amount || 0,
+                originalAmount: item.amount || 0,
+                date: dateObj,
+                month: dateObj.toLocaleString('en', { month: 'long' }),
+                year: dateObj.getFullYear(),
+                paymentMethod: item.paymentMethod || (userProfile?.payments?.[0] || 'UPI'),
+                shared: 'No',
+                billingCycle: '',
+                timestamp: new Date()
+            };
+            allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
+            getCollection().add({
+                ...docData,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(err => console.error('Sync failed:', err));
+        }
+
+        // Returns true if it handled the result directly (no form sheet needed)
+        async function handleParsedExpenses(parsed) {
+            const items = Array.isArray(parsed) ? parsed : [parsed];
+            if (items.length === 1) {
+                populateFormFromParsed(items[0]);
+                return false; // caller should open form sheet
+            }
+            items.forEach(addExpenseDirect);
+            sortExpenses();
+            renderRecent();
+            const names = items.map(i => i.name || 'Expense').join(', ');
+            setCaptureStatus(`Added ${items.length} expenses: ${names}`, 'success');
+            toast(`${items.length} expenses added ✓`);
+            return true;
         }
 
         /* ── Form sheet ── */
