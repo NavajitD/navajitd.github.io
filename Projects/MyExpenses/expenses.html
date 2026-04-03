@@ -3414,7 +3414,8 @@ Rules:
             if (!res.ok) {
                 let data; try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }
                 const msg = data.error || '';
-                if (retry && !base64Image && (msg.includes('model_not_found') || msg.includes('does not exist') || msg.includes('503') || msg.includes('429') || msg.includes('overloaded'))) {
+                // Any Cerebras failure → fall back to Groq once
+                if (retry && !base64Image) {
                     return callExpenseLLM(prompt, system, isJson, null, false);
                 }
                 throw new Error(msg || `HTTP ${res.status}`);
