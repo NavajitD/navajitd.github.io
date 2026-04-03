@@ -307,6 +307,75 @@
             text-decoration: none;
         }
 
+        /* Download CTA */
+        .download-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--accent-color);
+            color: #fff !important;
+            padding: 4px 13px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none !important;
+            transition: opacity 0.15s;
+        }
+        .download-cta:hover { opacity: 0.82; text-decoration: none !important; }
+
+        /* Collapsible project instructions */
+        .project-instructions { margin-top: 12px; }
+        .project-instructions summary {
+            cursor: pointer;
+            font-size: 0.83rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            user-select: none;
+            list-style: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .project-instructions summary::-webkit-details-marker { display: none; }
+        .project-instructions summary::before {
+            content: '▶';
+            font-size: 0.6rem;
+            transition: transform 0.18s;
+            display: inline-block;
+        }
+        .project-instructions[open] summary::before { transform: rotate(90deg); }
+        .instructions-body {
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 0.82rem;
+            color: var(--muted-color);
+            line-height: 1.7;
+        }
+        [data-theme="colorful"] .instructions-body {
+            background: rgba(22,163,74,0.04);
+            border-color: var(--border-color);
+        }
+        .instructions-body strong {
+            display: block;
+            color: var(--text-color);
+            margin-top: 10px;
+            margin-bottom: 3px;
+            font-size: 0.83rem;
+        }
+        .instructions-body strong:first-child { margin-top: 0; }
+        .instructions-body ol { padding-left: 18px; margin-bottom: 0; }
+        .instructions-body li { margin-bottom: 2px; }
+        .instructions-body code {
+            background: var(--border-color);
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 0.79rem;
+        }
+        .instructions-body p { margin-bottom: 0; margin-top: 4px; font-size: 0.82rem; }
+
         /* Status badges */
         .project-status {
             display: inline-block;
@@ -444,6 +513,46 @@
 
     <section id="projects">
 
+        <div class="project-item" id="vidur">
+            <h3 class="project-title">
+                <a href="https://github.com/NavajitD/Vidur" target="_blank" rel="noopener">Vidur</a>
+                <span class="project-status status-active">Ongoing</span>
+            </h3>
+            <div class="project-meta">Browser Extension · Manifest V3 · 2026</div>
+            <p class="project-description">Visual redesign of any website with AI — without touching content. Describe the look you want or point to a reference site, and Vidur rewrites the CSS on the fly. Designs persist across visits. Works with Anthropic, OpenAI, Gemini, OpenRouter, Groq, Together AI, and Cloudflare Workers AI on a bring-your-own-key model. Keys never leave your device.</p>
+            <div class="project-links">
+                <a href="https://github.com/NavajitD/Vidur/releases/latest/download/vidur.zip" class="download-cta" download>↓ Download</a>
+                <a href="https://github.com/NavajitD/Vidur" target="_blank" rel="noopener">GitHub</a>
+            </div>
+            <details class="project-instructions">
+                <summary>Installation &amp; Usage</summary>
+                <div class="instructions-body">
+                    <strong>Install on Chrome, Edge, or Brave</strong>
+                    <ol>
+                        <li>Download and unzip <code>vidur.zip</code></li>
+                        <li>Open <code>chrome://extensions</code> and enable <strong>Developer mode</strong></li>
+                        <li>Click <strong>Load unpacked</strong> and select the <code>vidur</code> folder</li>
+                    </ol>
+                    <strong>Install on Firefox</strong>
+                    <ol>
+                        <li>Open <code>about:debugging#/runtime/this-firefox</code></li>
+                        <li>Click <strong>Load Temporary Add-on</strong> → select <code>manifest.json</code> from the unzipped folder</li>
+                    </ol>
+                    <strong>How to use</strong>
+                    <ol>
+                        <li>Navigate to any website and click the Vidur icon in your toolbar</li>
+                        <li>First time: click <strong>Open Settings</strong>, add an API key for any supported provider</li>
+                        <li>Type a redesign prompt — e.g. <em>"dark terminal with green monospace text"</em></li>
+                        <li>Optionally paste a reference site URL to match its visual style</li>
+                        <li>Click <strong>Redesign</strong> — changes apply instantly and persist across visits</li>
+                        <li>Toggle the switch at any time to enable or disable the design for that site</li>
+                    </ol>
+                    <strong>Supported browsers</strong>
+                    <p>Chrome 91+ · Edge 91+ · Brave · Firefox 101+ · Safari not yet supported</p>
+                </div>
+            </details>
+        </div>
+
         <div class="project-item" id="health-tracker">
             <h3 class="project-title">
                 <a href="/Projects/HealThee/health.html">HealThee</a>
@@ -484,22 +593,6 @@
                 in collaboration with <a href="https://mysticsmentor.com/">Mystics Mentor</a>. </p>
             <div class="project-links">
                 <a href="/Projects/Numo/index.html">Launch</a>
-            </div>
-        </div>
-
-        <div class="project-item" id="vidur">
-            <h3 class="project-title">
-                <a href="https://github.com/NavajitD/Vidur" target="_blank" rel="noopener">Vidur</a>
-                <span class="project-status status-active">Ongoing</span>
-            </h3>
-            <div class="project-meta">Manifest V3 · 2026</div>
-            <p class="project-description">Redesign any website visually using AI — without touching content. Describe
-                the look you want or point it to a reference site, and Vidur rewrites the CSS on the fly. Designs
-                persist across visits. Works with Anthropic, OpenAI, Gemini, OpenRouter, Groq, Together AI, Cloudflare
-                Workers AI, Ollama, and LM Studio on a bring-your-own-key model. Keys never leave your device.</p>
-            <div class="project-links">
-                <a href="https://github.com/NavajitD/Vidur/releases/latest" target="_blank" rel="noopener">Download</a>
-                <a href="https://github.com/NavajitD/Vidur" target="_blank" rel="noopener">GitHub</a>
             </div>
         </div>
 
