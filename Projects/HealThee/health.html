@@ -2971,7 +2971,7 @@
             toast("Estimating kcal...");
             const sys = `You estimate calories burned for exercises. The user weighs ${dayData.body?.weight || 70}kg. Provide a realistic, conservative estimate without exaggerating (e.g. walking is only ~3-4 kcal/min). Reply ONLY with a JSON object containing a single key "kcal". Example: {"kcal": 150}`;
             const prompt = `Exercise: ${t}`;
-            const est = await fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b');
+            const est = await fetchLLM(prompt, sys, 'cerebras', 'qwen3-32b');
             k = est.kcal || 0;
             toast("Estimated " + k + " kcal", "success");
           } catch (e) {
@@ -3049,7 +3049,7 @@
           const sys = `You are a nutrition estimator. Estimate fiber (g) and micronutrients for the given food and macros. Currency INR. Reply ONLY with a valid JSON object matching this structure EXACTLY:
 {"fiber": number, "micros": { "vitamin_a_ug": number, "vitamin_d_ug": number, "vitamin_k": number, "vitamin_b6": number, "vitamin_b12": number, "vitamin_c_mg": number, "calcium_mg": number, "iron_mg": number, "magnesium_mg": number, "sodium_mg": number, "potassium_mg": number, "zinc_mg": number }}`;
           const prompt = `Food: ${data.name} ${data.desc}. Macros: ${data.cal}kcal, ${data.protein}g protein, ${data.carbs}g carbs, ${data.fat}g fat.`;
-          const est = await fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b');
+          const est = await fetchLLM(prompt, sys, 'cerebras', 'qwen3-32b');
           finalData.fiber = est.fiber || 0;
           finalData.micros = est.micros || {};
           toast("Added with estimated micros", "success");
@@ -3211,7 +3211,7 @@
                 btn.textContent = "Reading label...";
                 const labelSys = `You are a nutrition label OCR expert. Extract the exact macro values from the nutrition label in this image. Also extract the serving size shown on the label. Reply ONLY with this JSON: {"name":string,"servingSize":string,"servingSizeG":number,"cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number,"micros":{"vitamin_a_ug":number,"vitamin_d_ug":number,"vitamin_k":number,"vitamin_b6":number,"vitamin_b12":number,"vitamin_c_mg":number,"calcium_mg":number,"iron_mg":number,"magnesium_mg":number,"sodium_mg":number,"potassium_mg":number,"zinc_mg":number}}`;
                 const labelPmt = `Extract ALL nutrition values exactly as shown on this label. Include the serving size. Do not estimate — read the exact printed values.`;
-                const raw = await fetchVisionLLM(labelPmt, labelSys, currentFoodPhotoBase64, 'groq', 'llama-3.2-90b-vision-preview');
+                const raw = await fetchVisionLLM(labelPmt, labelSys, currentFoodPhotoBase64, 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free');
                 // Portion scaling
                 let scaleFactor = 1;
                 if (userPortion && raw.servingSizeG > 0) {
@@ -3241,7 +3241,7 @@
                 // Call 1: identify items + weights
                 const itemsSys = `You are a food recognition expert. Identify every distinct food item visible in this image and estimate its weight in grams. Reply ONLY with JSON: {"items":[{"name":string,"weightG":number}]}`;
                 const itemsPmt = `List every food item you can see in this image with an estimated weight in grams.`;
-                const itemsRes = await fetchVisionLLM(itemsPmt, itemsSys, currentFoodPhotoBase64, 'groq', 'llama-3.2-90b-vision-preview');
+                const itemsRes = await fetchVisionLLM(itemsPmt, itemsSys, currentFoodPhotoBase64, 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free');
                 const items = itemsRes?.items || [];
 
                 let totalMacros = { cal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, micros: {} };
@@ -3250,7 +3250,7 @@
                   // Call 2: macros per 100g for each item
                   const macroSys = `You are a nutrition database. For each food item in the list, provide macros per 100g. Reply ONLY with JSON: {"items":[{"name":string,"cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}]}`;
                   const macroPmt = `Provide macros per 100g for each of these foods: ${items.map(it => it.name).join(', ')}`;
-                  const macroRes = await fetchLLM(macroPmt, macroSys, 'cerebras', 'llama3.1-8b');
+                  const macroRes = await fetchLLM(macroPmt, macroSys, 'cerebras', 'qwen3-32b');
                   const macroItems = macroRes?.items || [];
                   // Sum up totals: macros × (weight / 100)
                   items.forEach(it => {
@@ -3269,7 +3269,7 @@
                   totalMacros.fiber = Math.round(totalMacros.fiber * 10) / 10;
                   // Micros via a single extra LLM call
                   try {
-                    const microRes = await fetchLLM(`Meal: ${n || items.map(it => `${it.name} ${it.weightG}g`).join(', ')}. Macros: ${totalMacros.cal}kcal P:${totalMacros.protein}g`, `Estimate micronutrients for this meal. Reply ONLY with JSON: {"micros":{"vitamin_a_ug":number,"vitamin_d_ug":number,"vitamin_k":number,"vitamin_b6":number,"vitamin_b12":number,"vitamin_c_mg":number,"calcium_mg":number,"iron_mg":number,"magnesium_mg":number,"sodium_mg":number,"potassium_mg":number,"zinc_mg":number}}`, 'cerebras', 'llama3.1-8b');
+                    const microRes = await fetchLLM(`Meal: ${n || items.map(it => `${it.name} ${it.weightG}g`).join(', ')}. Macros: ${totalMacros.cal}kcal P:${totalMacros.protein}g`, `Estimate micronutrients for this meal. Reply ONLY with JSON: {"micros":{"vitamin_a_ug":number,"vitamin_d_ug":number,"vitamin_k":number,"vitamin_b6":number,"vitamin_b12":number,"vitamin_c_mg":number,"calcium_mg":number,"iron_mg":number,"magnesium_mg":number,"sodium_mg":number,"potassium_mg":number,"zinc_mg":number}}`, 'cerebras', 'qwen3-32b');
                     totalMacros.micros = microRes?.micros || {};
                   } catch (_) { }
                 }
@@ -3288,7 +3288,7 @@
               if (!n && !desc) throw new Error("Image analysis unavailable. Please add a food name.");
               btn.textContent = "Estimating (text)...";
               const fbPrompt = `Food: ${n || 'Food from photo'} ${desc}. Assume 1 standard Indian serving.`;
-              const est = await fetchLLM(fbPrompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros and micros. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+              const est = await fetchLLM(fbPrompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros and micros. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen3-32b');
               finalData = { ...finalData, ...est, name: n || 'Food from photo', desc: desc || 'From photo', meal, estimated: true };
               toast("Added (text estimate – image analysis unavailable)", "warn");
             }
@@ -3307,9 +3307,9 @@
             } else {
               // Free-form description — fall back to LLM as before
               const sysMix = `You are a recipe/food nutrition analyzer for Indian foods. Given ingredients or a dish description, estimate the TOTAL macros and micronutrients for the entire prepared dish (1 standard Indian serving). All values must be realistic and non-zero where applicable. Reply ONLY with JSON: ${sysFull}`;
-              est = await fetchLLM(`Recipe/Ingredients:\n${desc}${n ? '\nDish name: ' + n : ''}`, sysMix, 'cerebras', 'llama3.1-8b');
+              est = await fetchLLM(`Recipe/Ingredients:\n${desc}${n ? '\nDish name: ' + n : ''}`, sysMix, 'cerebras', 'qwen3-32b');
               if (isAllZero(est)) {
-                est = await fetchLLM(`Estimate nutrition for: ${n || 'Recipe'} (${desc}).`, `You are a nutrition estimator for Indian foods. You MUST provide realistic non-zero values. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+                est = await fetchLLM(`Estimate nutrition for: ${n || 'Recipe'} (${desc}).`, `You are a nutrition estimator for Indian foods. You MUST provide realistic non-zero values. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen3-32b');
               }
               if (n) est.name = n;
               toast("Added Recipe", "success");
@@ -3323,12 +3323,12 @@
             finalData.protein = p; finalData.carbs = cb; finalData.fat = f; finalData.fiber = fb;
             const prompt = `Food: ${n} ${desc}. Macros: ${finalData.cal}kcal, P:${p}g, C:${cb}g, F:${f}g, Fib:${fb}g.`;
             const sysMicros = `You are a nutrition estimator for Indian foods. You MUST estimate realistic non-zero micronutrients based on the food name and macros. Reply ONLY with JSON: ${sysBase}`;
-            let est = await fetchLLM(prompt, sysMicros, 'cerebras', 'llama3.1-8b');
+            let est = await fetchLLM(prompt, sysMicros, 'cerebras', 'qwen3-32b');
 
             const isMicrosZero = Object.values(est?.micros || {}).every(v => num0(v) === 0);
             if (isMicrosZero) {
               console.warn('Micros estimation returned all zeros, retrying...');
-              est = await fetchLLM(`Estimate ONLY detailed micronutrients for: ${n} (${desc}). You MUST provide realistic non-zero values.`, sysMicros, 'cerebras', 'llama3.1-8b');
+              est = await fetchLLM(`Estimate ONLY detailed micronutrients for: ${n} (${desc}). You MUST provide realistic non-zero values.`, sysMicros, 'cerebras', 'qwen3-32b');
               console.log('Micros retry:', JSON.stringify(est));
             }
 
@@ -3339,14 +3339,14 @@
           } else {
             // ── Pipeline 3: Two-stage LLM validation ─────────────────────
             const prompt = `Food: ${n} ${desc}. Assume 1 standard Indian serving size. Include all macros (protein, carbs, fat) — carbs should account for any sauce, gravy, onions, spices, or starchy components.`;
-            let est = await fetchLLM(prompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros (cal, protein, carbs, fat), fiber, and micronutrients for a standard serving. Carbs must include starchy components, sauces, and gravies. All values must be realistic and non-zero where applicable. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+            let est = await fetchLLM(prompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros (cal, protein, carbs, fat), fiber, and micronutrients for a standard serving. Carbs must include starchy components, sauces, and gravies. All values must be realistic and non-zero where applicable. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen3-32b');
             console.log('Food LLM Stage 1:', JSON.stringify(est));
             // Stage 2: validation pass
             if (!isAllZero(est)) {
               try {
                 btn.textContent = "Validating...";
                 const valPrompt = `I estimated nutrition for "${n || desc}": ${est.cal}kcal, protein:${est.protein}g, carbs:${est.carbs}g, fat:${est.fat}g, fiber:${est.fiber}g. Does this look accurate for a typical Indian serving? If any value is clearly wrong (e.g. zero carbs for a rice dish, unrealistically high protein), correct it. Otherwise return the same values unchanged.`;
-                const validated = await fetchLLM(valPrompt, `You are a nutrition fact-checker for Indian foods. Validate or correct the given estimate. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+                const validated = await fetchLLM(valPrompt, `You are a nutrition fact-checker for Indian foods. Validate or correct the given estimate. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen3-32b');
                 console.log('Food LLM Stage 2 (validated):', JSON.stringify(validated));
                 if (!isAllZero(validated)) est = validated;
               } catch (valErr) {
@@ -3354,7 +3354,7 @@
               }
             } else {
               console.warn('Food estimation returned all zeros, retrying...');
-              est = await fetchLLM(`Estimate detailed nutrition for 1 serving of ${n}. Must include realistic cal, protein, carbs, and fat values.`, `You are a nutrition database. Provide realistic non-zero nutrition values. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'llama3.1-8b');
+              est = await fetchLLM(`Estimate detailed nutrition for 1 serving of ${n}. Must include realistic cal, protein, carbs, and fat values.`, `You are a nutrition database. Provide realistic non-zero nutrition values. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen3-32b');
             }
             finalData = { ...finalData, ...est, name: n, desc: desc, meal: meal, estimated: true };
             toast("Added (AI estimated + validated)", "success");
@@ -4053,7 +4053,7 @@
             const llmRes = await fetchLLM(
               `Estimate the combined total nutrition for these ingredients: ${unknownList}`,
               `You are a nutrition estimator. Reply ONLY with JSON: {"cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}`,
-              'cerebras', 'llama3.1-8b'
+              'cerebras', 'qwen3-32b'
             );
             llmMacros = llmRes || llmMacros;
           } catch (_) { }
@@ -4071,7 +4071,7 @@
           const mRes = await fetchLLM(
             `Dish: ${dishName || 'Recipe'}, ingredients: ${lines.join(', ')}. Total: ${tot.cal}kcal P:${tot.protein}g`,
             `Estimate micronutrients. Reply ONLY with JSON: ${sysBase}`,
-            'cerebras', 'llama3.1-8b'
+            'cerebras', 'qwen3-32b'
           );
           micros = mRes?.micros || {};
         } catch (_) { }
@@ -4080,7 +4080,7 @@
       }
 
       // LLM Fetch Utility using Numo Cloud Function Proxy
-      window.fetchLLM = async function (prompt, system, provider = 'cerebras', model = 'llama3.1-8b', isJson = true, retry = true) {
+      window.fetchLLM = async function (prompt, system, provider = 'cerebras', model = 'qwen3-32b', isJson = true, retry = true) {
         const url = 'https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM';
 
         const body = { prompt, system, provider, model, isJson };
@@ -4126,30 +4126,36 @@
         }
       }
 
-      // LLM Vision Fetch Utility using Numo Cloud Function Proxy
-      window.fetchVisionLLM = async function (prompt, system, base64Image, provider = 'groq', model = 'llama-3.2-11b-vision-preview', isJson = true) {
-        const url = 'https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM';
+      // LLM Vision Fetch Utility — OpenRouter direct or cloud function fallback
+      const _OR_KEY = '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';
+      window.fetchVisionLLM = async function (prompt, system, base64Image, provider = 'openrouter', model = 'qwen/qwen2.5-vl-72b-instruct:free', isJson = true) {
+        let content;
 
-        const body = { prompt, system, base64Image, provider, model, isJson };
-
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error(`API Error: ${res.status} - ${err}`);
+        if (provider === 'openrouter') {
+          const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _OR_KEY, 'HTTP-Referer': 'https://navajitd.github.io' },
+            body: JSON.stringify({
+              model,
+              messages: [{ role: 'user', content: [{ type: 'text', text: system + '\n\n' + prompt }, { type: 'image_url', image_url: { url: base64Image } }] }]
+            })
+          });
+          if (!res.ok) { const err = await res.text(); throw new Error(`OpenRouter ${res.status}: ${err}`); }
+          const data = await res.json();
+          content = data.choices?.[0]?.message?.content;
+          if (!content) throw new Error('OpenRouter returned empty response');
+        } else {
+          const res = await fetch('https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, system, base64Image, provider, model, isJson })
+          });
+          if (!res.ok) { const err = await res.text(); throw new Error(`API Error: ${res.status} - ${err}`); }
+          content = (await res.json()).content;
         }
-
-        const data = await res.json();
-        const content = data.content;
 
         if (isJson) {
           try {
-            // Try to find a JSON object anywhere in the response
-            // (models often wrap output in ```json ... ``` or add prose)
             const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/i);
             const candidate = fenceMatch ? fenceMatch[1].trim() : content.trim();
             const objMatch = candidate.match(/\{[\s\S]*\}/);
@@ -4514,8 +4520,8 @@ Do NOT output JSON. Output regular conversational text only.`;
 
         try {
           const reply = await (hasImage
-            ? fetchVisionLLM(prompt, sys, imageToSend, 'groq', 'llama-3.2-11b-vision-preview', false)
-            : fetchLLM(prompt, sys, 'cerebras', 'llama3.1-8b', false));
+            ? fetchVisionLLM(prompt, sys, imageToSend, 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free', false)
+            : fetchLLM(prompt, sys, 'cerebras', 'qwen3-32b', false));
           const cleanReply = reply.trim()
             .replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1')
             .replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, '');
@@ -4643,7 +4649,7 @@ Do NOT output JSON. Output regular conversational text only.`;
         const mealGuess = inferMealFromTime();
         const extractSys = `You are a food intake extractor. The user said they ate something. Extract the food and estimate macros for a standard Indian serving size. Reply ONLY with valid JSON: {"food":{"name":string,"meal":"${mealGuess}","cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}} or {"food":null} if no specific food is mentioned.`;
         try {
-          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'cerebras', 'llama3.1-8b', true);
+          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'cerebras', 'qwen3-32b', true);
           if (!raw?.food?.name) return null;
           const f = raw.food;
           addFood({
@@ -4663,7 +4669,7 @@ Do NOT output JSON. Output regular conversational text only.`;
         if (!/\b(water|drink|drank|drunk|hydrat|glass(?:es)?|bottle|litre|liter|ml)\b/i.test(userMsg)) return null;
         const extractSys = `You are a water intake extractor. The user may have mentioned drinking water. Extract the amount in ml. Reply ONLY with valid JSON: {"ml":number} or {"ml":null} if no water amount is mentioned. Conversions: 1 glass = 250ml, 1 bottle = 750ml, 1 litre/liter = 1000ml, 1 cup = 200ml.`;
         try {
-          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'cerebras', 'llama3.1-8b', true);
+          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'cerebras', 'qwen3-32b', true);
           if (!raw?.ml) return null;
           addWater(Math.round(raw.ml));
           return Math.round(raw.ml);
@@ -4783,7 +4789,7 @@ Do NOT output JSON. Output regular conversational text only.`;
 {"name":string,"date":string,"time":string,"location":string,"duration":string,"description":string,"startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD"}
 - startDate/endDate in YYYY-MM-DD (use current year if not shown; single-day event: endDate=startDate)
 - If no event found, return {"name":null}`,
-              eventImages[i], 'groq', 'llama-3.2-90b-vision-preview', true
+              eventImages[i], 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free', true
             );
             if (basic?.name) {
               found.push({ event: { ...basic, bookingRequired: false, bookingInfo: '', links: '', id: genId('evt'), addedAt: new Date().toISOString() }, img: eventImages[i] });
@@ -4815,7 +4821,7 @@ Do NOT output JSON. Output regular conversational text only.`;
 - bookingRequired: true if ANY booking/registration step is needed
 - bookingInfo: specific instructions or fee amount (empty string if none)
 - links: any URL, QR reference, or @handle visible (empty string if none)`,
-              found[i].img, 'groq', 'llama-3.2-90b-vision-preview', true
+              found[i].img, 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free', true
             );
             if (booking) {
               found[i].event.bookingRequired = booking.bookingRequired || false;
@@ -4845,7 +4851,7 @@ Do NOT output JSON. Output regular conversational text only.`;
           const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
           const planReply = await fetchLLM(
             `Today is ${today}. Events: ${JSON.stringify(newEvents.map(e => ({ name: e.name, date: e.date, time: e.time, location: e.location })))}. Suggest a brief weekend plan in 2-3 sentences.`,
-            'You are HealThee Mate. Plain text only, no markdown, no bullet points. Max 100 words.', 'cerebras', 'llama3.1-8b', false
+            'You are HealThee Mate. Plain text only, no markdown, no bullet points. Max 100 words.', 'cerebras', 'qwen3-32b', false
           );
           appendChat('assistant', strip(planReply));
         } catch (e) { console.warn('Weekend plan failed:', e); }
@@ -4857,7 +4863,7 @@ Do NOT output JSON. Output regular conversational text only.`;
           try {
             const remReply = await fetchLLM(
               `These events need advance booking: ${JSON.stringify(bookingEvents.map(e => ({ name: e.name, date: e.date, bookingInfo: e.bookingInfo, links: e.links })))}. Write a short, urgent reminder for each. Plain text only, max 80 words total.`,
-              'You are HealThee Mate. Plain text only, no markdown. Be direct and actionable.', 'cerebras', 'llama3.1-8b', false
+              'You are HealThee Mate. Plain text only, no markdown. Be direct and actionable.', 'cerebras', 'qwen3-32b', false
             );
             appendChat('assistant', 'Booking reminders: ' + strip(remReply));
           } catch (e) { console.warn('Booking reminders failed:', e); }
