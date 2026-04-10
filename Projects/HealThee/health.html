@@ -2103,6 +2103,184 @@
       height: 18px;
       stroke-width: 1.5
     }
+
+    /* ── Onboarding Wizard ── */
+    .onboard-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: 1.5rem;
+      box-sizing: border-box;
+    }
+    .onboard-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.8rem 1.5rem;
+      animation: obFadeIn .35s ease;
+    }
+    @keyframes obFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .onboard-step-dots {
+      display: flex;
+      justify-content: center;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+    }
+    .onboard-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .25s, transform .25s;
+    }
+    .onboard-dot.active { background: var(--accent); transform: scale(1.3); }
+    .onboard-dot.done { background: var(--accent); opacity: .5; }
+    .onboard-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: .25rem;
+      text-align: center;
+    }
+    .onboard-subtitle {
+      font-size: .78rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 1.2rem;
+      line-height: 1.45;
+    }
+    .onboard-section { margin-bottom: 1rem; }
+    .onboard-section-title {
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      margin-bottom: .4rem;
+    }
+    .ob-gender-wrap {
+      display: flex;
+      gap: .4rem;
+      flex-wrap: wrap;
+    }
+    .ob-gender-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: .55rem .5rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: .78rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color .2s, background .2s;
+    }
+    .ob-gender-btn:hover { border-color: var(--accent); }
+    .ob-gender-btn.selected {
+      border-color: var(--accent);
+      background: var(--hover);
+      font-weight: 600;
+    }
+    .ob-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      font-family: var(--font);
+      font-size: .82rem;
+      padding: .6rem .75rem;
+      border-radius: 8px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      resize: vertical;
+      min-height: 70px;
+      outline: none;
+      transition: border .2s;
+    }
+    .ob-textarea:focus { border-color: var(--accent); }
+    .ob-ai-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      width: 100%;
+      padding: .6rem;
+      margin-top: .5rem;
+      border-radius: 8px;
+      border: 1px dashed var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-family: var(--font);
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .ob-ai-btn:hover { background: var(--hover); }
+    .ob-ai-btn:disabled { opacity: .5; cursor: wait; }
+    .ob-goal-result {
+      display: none;
+      animation: obFadeIn .3s ease;
+    }
+    .ob-goal-result.visible { display: block; }
+    .ob-nav {
+      display: flex;
+      gap: .5rem;
+      margin-top: 1.2rem;
+    }
+    .ob-nav .btn-primary { flex: 1; padding: .65rem; }
+    .ob-nav .btn-secondary { padding: .65rem .9rem; }
+    .ob-reassure {
+      font-size: .7rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: .6rem;
+      font-style: italic;
+    }
+    /* FTUE overlay */
+    .ftue-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: obFadeIn .3s ease;
+    }
+    .ftue-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 1.5rem;
+      max-width: 380px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .ftue-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      padding: .5rem 0;
+    }
+    .ftue-item-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--hover);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ftue-item-icon i { width: 16px; height: 16px; stroke: var(--accent); }
+    .ftue-item-text { font-size: .78rem; line-height: 1.4; }
+    .ftue-item-text strong { font-weight: 600; }
   </style>
 </head>
 
@@ -2181,6 +2359,9 @@
       Sign in with Google
     </button>
   </div>
+
+  <!-- Onboarding Wizard (new users only) -->
+  <div id="onboardScreen" class="onboard-screen" style="display:none;"></div>
 
   <div id="capScreen" class="cap-screen" style="display:none;">
     <div><svg width="32" height="32" viewBox="0 0 24 24" fill="var(--muted)" stroke="var(--muted)" stroke-width="2">
@@ -2475,6 +2656,71 @@
         0: [{ id: "cd0_1", label: "Hamstring stretch 60s/side", kcal: 5 }, { id: "cd0_2", label: "Hip flexor stretch 60s/side", kcal: 5 }, { id: "cd0_3", label: "Calf stretch 45s/side", kcal: 3 }, { id: "cd0_4", label: "Thoracic spine mobility 3 min", kcal: 8 }, { id: "cd0_5", label: "Slow breathing 2 min", kcal: 3 }]
       };
 
+      // Female-focused plans: more lower-body/glute emphasis, balanced upper body
+      const WORKOUT_PLAN_F = {
+        1: { name: "Lower Body (Glute & Hamstring Focus)", exercises: ["Hip Thrust 4×8-12", "Romanian Deadlift 3×8-12", "Bulgarian Split Squat 3×10-12/side", "Cable Kickbacks 3×12-15/side", "Lying Leg Curl 3×10-15", "Standing Calf Raises 3×12-15"] },
+        2: { name: "Upper Body (Push + Pull)", exercises: ["Incline DB Press 3×8-12", "Seated Cable Row 3×10-12", "Shoulder Press 3×8-12", "Lat Pulldown 3×10-12", "Lateral Raise 3×12-15", "Tricep Rope Pressdown 2×12-15", "Bicep Curls 2×10-15"] },
+        3: { name: "Active Recovery (Mobility + Walk)", exercises: ["30-45 min easy walk", "Couch stretch 60s/side", "Deep squat hold 60s", "Pigeon pose 60s/side", "Cat-cow × 10", "Thoracic openers 6/side"] },
+        4: { name: "Lower Body (Quad & Glute Focus)", exercises: ["Back Squat/Goblet Squat 4×6-10", "Leg Press 3×10-15", "Walking Lunges 3×12/side", "Leg Extension 3×12-15", "Hip Abduction 3×15-20", "Seated Calf Raise 3×12-15"] },
+        5: { name: "Upper Body + Core", exercises: ["Push-ups 3×8-15", "Single-Arm DB Row 3×10-12/side", "Arnold Press 3×10-12", "Face Pulls 3×12-20", "Cable Woodchop 3×10/side", "Plank Hold 3×30-45s", "Dead Bug 3×10/side"] },
+        6: { name: "Glute Pump + Cardio (Optional)", exercises: ["Banded Hip Thrust 3×15-20", "Sumo Deadlift 3×10-12", "Step-ups 3×12/side", "Cable Pull-through 3×12-15", "20 min moderate cardio (elliptical/cycling)"] },
+        0: { name: "Social 5K + Long Mobility", exercises: ["5 min walk warm-up", "5K run (conversational pace)", "5 min walk cool-down", "Hamstring stretch 60s/side", "Hip flexor stretch 60s/side", "Pigeon pose 60s/side", "Full body foam roll 5 min"] }
+      };
+
+      const WARMUP_PLAN_F = {
+        1: [{ id: "wuf1_1", label: "Glute bridges × 15", kcal: 10 }, { id: "wuf1_2", label: "Leg swings (front/side) 10/side", kcal: 8 }, { id: "wuf1_3", label: "Hip circles × 10/side", kcal: 5 }, { id: "wuf1_4", label: "Bodyweight squats × 10", kcal: 8 }, { id: "wuf1_5", label: "Ankle circles × 10/side", kcal: 3 }],
+        2: [{ id: "wuf2_1", label: "Arm circles 30s each direction", kcal: 5 }, { id: "wuf2_2", label: "Band pull-aparts × 15", kcal: 8 }, { id: "wuf2_3", label: "Wall slides × 10", kcal: 5 }, { id: "wuf2_4", label: "Push-up walkouts × 5", kcal: 10 }, { id: "wuf2_5", label: "Cat-cow × 8", kcal: 5 }],
+        3: [{ id: "wuf3_1", label: "Cat-cow × 10", kcal: 5 }, { id: "wuf3_2", label: "Arm swings 30s", kcal: 5 }, { id: "wuf3_3", label: "Hip circles × 10/side", kcal: 5 }, { id: "wuf3_4", label: "Ankle bounces × 20", kcal: 5 }, { id: "wuf3_5", label: "Neck rolls × 5/side", kcal: 3 }],
+        4: [{ id: "wuf4_1", label: "Leg swings (front/side) 10/side", kcal: 8 }, { id: "wuf4_2", label: "Bodyweight squats × 15", kcal: 12 }, { id: "wuf4_3", label: "Glute bridges × 15", kcal: 10 }, { id: "wuf4_4", label: "Hip circles × 10/side", kcal: 5 }, { id: "wuf4_5", label: "Ankle circles × 10/side", kcal: 3 }],
+        5: [{ id: "wuf5_1", label: "Arm circles 30s", kcal: 5 }, { id: "wuf5_2", label: "Band pull-aparts × 12", kcal: 6 }, { id: "wuf5_3", label: "Scapular push-ups × 10", kcal: 8 }, { id: "wuf5_4", label: "Dead hangs 15s × 2", kcal: 8 }, { id: "wuf5_5", label: "Cat-cow × 8", kcal: 5 }],
+        6: [{ id: "wuf6_1", label: "Jumping jacks × 20", kcal: 10 }, { id: "wuf6_2", label: "Glute bridges × 15", kcal: 10 }, { id: "wuf6_3", label: "Leg swings 10/side", kcal: 8 }, { id: "wuf6_4", label: "Bodyweight squats × 10", kcal: 8 }, { id: "wuf6_5", label: "Hip circles × 10/side", kcal: 5 }],
+        0: [{ id: "wuf0_1", label: "Walk warm-up 3 min", kcal: 12 }, { id: "wuf0_2", label: "Ankle circles × 10/side", kcal: 3 }, { id: "wuf0_3", label: "Leg swings 10/side", kcal: 8 }, { id: "wuf0_4", label: "High knees × 20", kcal: 10 }, { id: "wuf0_5", label: "Butt kicks × 20", kcal: 10 }]
+      };
+
+      const COOLDOWN_PLAN_F = {
+        1: [{ id: "cdf1_1", label: "Standing quad stretch 30s/side", kcal: 3 }, { id: "cdf1_2", label: "Pigeon pose 45s/side", kcal: 5 }, { id: "cdf1_3", label: "Seated hamstring fold 45s", kcal: 3 }, { id: "cdf1_4", label: "Figure-4 glute stretch 30s/side", kcal: 3 }, { id: "cdf1_5", label: "Child's pose 45s", kcal: 3 }],
+        2: [{ id: "cdf2_1", label: "Doorway pec stretch 30s/side", kcal: 3 }, { id: "cdf2_2", label: "Cross-body shoulder stretch 30s/side", kcal: 3 }, { id: "cdf2_3", label: "Overhead tricep stretch 30s/side", kcal: 3 }, { id: "cdf2_4", label: "Lat hang stretch 20s", kcal: 3 }, { id: "cdf2_5", label: "Thoracic twist 6/side", kcal: 5 }],
+        3: [{ id: "cdf3_1", label: "Child's pose 45s", kcal: 3 }, { id: "cdf3_2", label: "Supine spinal twist 30s/side", kcal: 3 }, { id: "cdf3_3", label: "Butterfly stretch 45s", kcal: 3 }, { id: "cdf3_4", label: "Cat-cow × 8", kcal: 5 }, { id: "cdf3_5", label: "2 min slow nasal breathing", kcal: 3 }],
+        4: [{ id: "cdf4_1", label: "Standing quad stretch 30s/side", kcal: 3 }, { id: "cdf4_2", label: "Kneeling hip flexor stretch 30s/side", kcal: 3 }, { id: "cdf4_3", label: "Wall calf stretch 30s/side", kcal: 3 }, { id: "cdf4_4", label: "Pigeon pose 30s/side", kcal: 5 }, { id: "cdf4_5", label: "Seated hamstring fold 45s", kcal: 3 }],
+        5: [{ id: "cdf5_1", label: "Lat doorway stretch 30s/side", kcal: 3 }, { id: "cdf5_2", label: "Bicep wall stretch 30s/side", kcal: 3 }, { id: "cdf5_3", label: "Rear delt stretch 30s/side", kcal: 3 }, { id: "cdf5_4", label: "Child's pose 45s", kcal: 3 }, { id: "cdf5_5", label: "Supine spinal twist 30s/side", kcal: 3 }],
+        6: [{ id: "cdf6_1", label: "Figure-4 glute stretch 30s/side", kcal: 3 }, { id: "cdf6_2", label: "Standing quad stretch 30s/side", kcal: 3 }, { id: "cdf6_3", label: "Hip flexor stretch 30s/side", kcal: 3 }, { id: "cdf6_4", label: "Full body hang 20s × 2", kcal: 5 }, { id: "cdf6_5", label: "2 min slow breathing", kcal: 3 }],
+        0: [{ id: "cdf0_1", label: "Hamstring stretch 60s/side", kcal: 5 }, { id: "cdf0_2", label: "Hip flexor stretch 60s/side", kcal: 5 }, { id: "cdf0_3", label: "Pigeon pose 60s/side", kcal: 5 }, { id: "cdf0_4", label: "Full body foam roll 3 min", kcal: 8 }, { id: "cdf0_5", label: "Slow breathing 2 min", kcal: 3 }]
+      };
+
+      // Non-binary / balanced plans: full-body approach
+      const WORKOUT_PLAN_NB = {
+        1: { name: "Full Body Push", exercises: ["Incline DB Press 3×8-12", "Shoulder Press 3×8-12", "Leg Press 3×10-15", "Cable Fly 2×12-15", "Lateral Raise 3×12-20", "Tricep Rope Pressdown 3×10-15", "Standing Calf Raises 3×12-15"] },
+        2: { name: "Lower Body + Core", exercises: ["Back Squat/Goblet Squat 4×6-10", "Romanian Deadlift 3×8-12", "Walking Lunges 3×12/side", "Leg Curl 3×10-15", "Hip Thrust 3×10-12", "Ab Wheel/Cable Crunch 3×10-15"] },
+        3: { name: "Active Recovery (Mobility + Walk)", exercises: ["30-45 min easy walk", "Couch stretch 60s/side", "Deep squat hold 60s", "Pigeon pose 60s/side", "Thoracic openers 6/side", "Shoulder wall slides 10 reps"] },
+        4: { name: "Full Body Pull", exercises: ["Pull-ups/Lat Pulldown 4×6-12", "Chest-Supported Row 3×8-12", "Face Pulls 3×12-20", "Barbell/DB Curls 3×8-12", "Rear Delt Fly 3×12-20", "Hammer Curls 2×10-15"] },
+        5: { name: "Lower Body + Accessories", exercises: ["Trap Bar Deadlift 3×4-8", "Bulgarian Split Squat 3×10-12/side", "Hip Thrust 3×10-12", "Leg Extension 2×12-15", "Seated Calf Raise 3×10-15", "Plank Hold 3×30-45s", "Farmer's Carries 3×30-45s"] },
+        6: { name: "Full Body Pump (Optional)", exercises: ["Push-ups 3×10-15", "Lateral Raise 4×12-20", "Cable Row 3×12-15", "Bodyweight Squats 3×15", "Incline Curls 3×10-15", "10 min easy incline walk"] },
+        0: { name: "Social 5K + Long Mobility", exercises: ["5 min walk warm-up", "5K run (conversational pace)", "5 min walk cool-down", "Hamstring stretch 60s/side", "Hip flexor stretch 60s/side", "Calf stretch 45s/side", "Thoracic spine mobility 5 min"] }
+      };
+      // NB plans reuse male warmup/cooldown since they're balanced already
+      const WARMUP_PLAN_NB = WARMUP_PLAN;
+      const COOLDOWN_PLAN_NB = COOLDOWN_PLAN;
+
+      // Helpers to pick the right plan based on gender
+      window.getWorkoutPlan = function () {
+        const g = (userProfile || {}).gender;
+        if (g === 'female') return WORKOUT_PLAN_F;
+        if (g === 'nonbinary') return WORKOUT_PLAN_NB;
+        return WORKOUT_PLAN;
+      };
+      window.getWarmupPlan = function () {
+        const g = (userProfile || {}).gender;
+        if (g === 'female') return WARMUP_PLAN_F;
+        if (g === 'nonbinary') return WARMUP_PLAN_NB;
+        return WARMUP_PLAN;
+      };
+      window.getCooldownPlan = function () {
+        const g = (userProfile || {}).gender;
+        if (g === 'female') return COOLDOWN_PLAN_F;
+        if (g === 'nonbinary') return COOLDOWN_PLAN_NB;
+        return COOLDOWN_PLAN;
+      };
+
       const EXERCISE_KCAL = {
         "Incline DB Press 4×6-10": 60, "Flat Press 3×8-12": 50, "Seated OHP 3×6-10": 45, "Cable/Pec-Deck Fly 2-3×12-15": 25, "Lateral Raise (cable) 4×12-20": 30, "Triceps Rope Pressdown 3×10-15": 20, "Push-ups 2×failure (optional)": 15,
         "Back Squat/Hack Squat 4×5-8": 80, "Romanian Deadlift 3×6-10": 60, "Leg Press 3×10-15": 55, "Lying Leg Curl 3×10-15": 30, "Standing Calf Raises 4×8-12": 25, "Hanging Knee Raises 3×10-15": 20,
@@ -2482,7 +2728,11 @@
         "Pull-ups/Lat Pulldown 4×6-12": 55, "Chest-Supported Row 3×8-12": 45, "Seated Cable Row 3×10-15": 40, "Rear Delt Fly 3×12-20": 25, "Face Pulls 2×12-20": 20, "Barbell/DB Curls 3×8-12": 30, "Hammer Curls 2-3×10-15": 20,
         "Trap Bar/RDL Heavy 3-4×4-8": 75, "Bulgarian Split Squat 3×8-12/side": 50, "Hip Thrust 3×8-12": 45, "Leg Extension 2×12-15": 25, "Seated Calf Raise 3×10-15": 20, "Ab Wheel/Cable Crunch 3×8-15": 25, "Farmer's Carries 3×30-45s (optional)": 20,
         "Lateral Raise 5×12-20": 30, "Cable Fly 3×12-15": 25, "Rope Pushdown 3×12-15": 20, "Incline Curls 3×10-15": 20, "Calves 4×10-15": 25, "10 min easy incline walk": 40,
-        "5 min walk warm-up": 20, "5K run (conversational pace)": 280, "5 min walk cool-down": 20, "Hamstring stretch 60s/side": 5, "Hip flexor stretch 60s/side": 5, "Calf stretch 45s/side": 3, "Thoracic spine mobility 5 min": 8
+        "5 min walk warm-up": 20, "5K run (conversational pace)": 280, "5 min walk cool-down": 20, "Hamstring stretch 60s/side": 5, "Hip flexor stretch 60s/side": 5, "Calf stretch 45s/side": 3, "Thoracic spine mobility 5 min": 8,
+        // Female plan exercises
+        "Hip Thrust 4×8-12": 55, "Bulgarian Split Squat 3×10-12/side": 50, "Cable Kickbacks 3×12-15/side": 25, "Incline DB Press 3×8-12": 45, "Seated Cable Row 3×10-12": 40, "Shoulder Press 3×8-12": 40, "Lat Pulldown 3×10-12": 40, "Lateral Raise 3×12-15": 25, "Tricep Rope Pressdown 2×12-15": 15, "Bicep Curls 2×10-15": 15, "Pigeon pose 60s/side": 5, "Cat-cow × 10": 5, "Back Squat/Goblet Squat 4×6-10": 75, "Walking Lunges 3×12/side": 45, "Leg Extension 3×12-15": 25, "Hip Abduction 3×15-20": 20, "Seated Calf Raise 3×12-15": 20, "Push-ups 3×8-15": 20, "Single-Arm DB Row 3×10-12/side": 40, "Arnold Press 3×10-12": 40, "Cable Woodchop 3×10/side": 25, "Plank Hold 3×30-45s": 15, "Dead Bug 3×10/side": 12, "Banded Hip Thrust 3×15-20": 35, "Sumo Deadlift 3×10-12": 50, "Step-ups 3×12/side": 35, "Cable Pull-through 3×12-15": 25, "20 min moderate cardio (elliptical/cycling)": 160, "Full body foam roll 5 min": 10,
+        // NB plan exercises
+        "Shoulder Press 3×8-12": 40, "Cable Fly 2×12-15": 20, "Back Squat/Goblet Squat 4×6-10": 75, "Walking Lunges 3×12/side": 45, "Hip Thrust 3×10-12": 45, "Ab Wheel/Cable Crunch 3×10-15": 25, "Cable Row 3×12-15": 25, "Bodyweight Squats 3×15": 15, "Push-ups 3×10-15": 20, "Trap Bar Deadlift 3×4-8": 70, "Bulgarian Split Squat 3×10-12/side": 50, "Hip Thrust 3×10-12": 45, "Leg Extension 2×12-15": 25, "Farmer's Carries 3×30-45s": 20, "Pigeon pose 60s/side": 5, "Full body foam roll 3 min": 6, "Shoulder wall slides 10 reps": 3, "Standing Calf Raises 3×12-15": 20
       };
 
       const MICROS = [
@@ -2548,7 +2798,7 @@
       window.lwwToggle = function (m, k) { return lwwSet(m, k, !lwwGet(m, k)); }
 
       window.getCalTarget = function () {
-        const w = WORKOUT_PLAN[dow(selectedDate)];
+        const w = getWorkoutPlan()[dow(selectedDate)];
         const isRest = !w || w.name.toLowerCase().includes("recovery") || w.name.toLowerCase().includes("mobility") || w.name.toLowerCase().includes("rest");
         return isRest ? TARGETS.calRest : TARGETS.calTraining;
       }
@@ -2584,10 +2834,10 @@
         // Exercise kcal from checked workout items
         let exKcal = 0;
         const d = dow(selectedDate);
-        const wo = WORKOUT_PLAN[d];
+        const wo = getWorkoutPlan()[d];
         if (wo) wo.exercises.forEach(ex => { if (lwwGet(dayData.exerciseChecks, ex)) exKcal += (EXERCISE_KCAL[ex] || 30); });
-        (WARMUP_PLAN[d] || []).forEach(ex => { if (lwwGet(dayData.warmupChecks, ex.id)) exKcal += num0(ex.kcal); });
-        (COOLDOWN_PLAN[d] || []).forEach(ex => { if (lwwGet(dayData.cooldownChecks, ex.id)) exKcal += num0(ex.kcal); });
+        (getWarmupPlan()[d] || []).forEach(ex => { if (lwwGet(dayData.warmupChecks, ex.id)) exKcal += num0(ex.kcal); });
+        (getCooldownPlan()[d] || []).forEach(ex => { if (lwwGet(dayData.cooldownChecks, ex.id)) exKcal += num0(ex.kcal); });
         PELVIC_EXERCISES.forEach(ex => { if (lwwGet(dayData.pelvicChecks, ex.id)) exKcal += num0(ex.kcal); });
         dayData.neatCal = Math.round(walk + customNeat);
         dayData.exerciseCal = Math.round(exKcal + customEx);
@@ -2611,6 +2861,344 @@
         <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
           stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset .6s ease"/></svg>`;
       }
+
+      /* ═══════════════════════════════════════════════════
+         ONBOARDING WIZARD
+         ═══════════════════════════════════════════════════ */
+      let obStep = 1;
+      let obData = { height: '', weight: '', gender: '', goalText: '', weightGoal: 'lose', weightGoalRate: 0.5, gainRate: 0.3, recomposeMusclePct: 30, exerciseGoal: 5, tracks: { trackNutrition: true, trackExercise: true, trackWellness: true, trackSkincare: true, trackHaircare: true, trackTrends: true }, aestheticTargets: {} };
+
+      window.startOnboarding = function () {
+        obStep = 1;
+        obData = { height: '', weight: '', gender: '', goalText: '', weightGoal: 'lose', weightGoalRate: 0.5, gainRate: 0.3, recomposeMusclePct: 30, exerciseGoal: 5, tracks: { trackNutrition: true, trackExercise: true, trackWellness: true, trackSkincare: true, trackHaircare: true, trackTrends: true }, aestheticTargets: {} };
+        document.getElementById('onboardScreen').style.display = 'flex';
+        renderOnboardStep();
+      };
+
+      window.renderOnboardStep = function () {
+        const el = document.getElementById('onboardScreen');
+        const dots = [1,2,3,4].map(i => `<div class="onboard-dot ${i === obStep ? 'active' : i < obStep ? 'done' : ''}"></div>`).join('');
+
+        if (obStep === 1) {
+          el.innerHTML = `<div class="onboard-card">
+            <div class="onboard-step-dots">${dots}</div>
+            <div class="onboard-title">About You</div>
+            <div class="onboard-subtitle">Let's set up your profile. Don't worry about being exact — you can always update these later.</div>
+            <div class="onboard-section">
+              <div class="onboard-section-title">Height (cm)</div>
+              <input type="number" id="obHeight" class="form-field" value="${obData.height}" placeholder="e.g. 170" style="width:100%;box-sizing:border-box;height:2.4rem;font-family:var(--font);font-size:.82rem;padding:.45rem .6rem;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none">
+            </div>
+            <div class="onboard-section">
+              <div class="onboard-section-title">Weight (kg)</div>
+              <input type="number" id="obWeight" class="form-field" value="${obData.weight}" placeholder="e.g. 65" style="width:100%;box-sizing:border-box;height:2.4rem;font-family:var(--font);font-size:.82rem;padding:.45rem .6rem;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none">
+            </div>
+            <div class="onboard-section">
+              <div class="onboard-section-title">Gender</div>
+              <div class="ob-gender-wrap">
+                <button class="ob-gender-btn ${obData.gender === 'male' ? 'selected' : ''}" onclick="obSelectGender('male')">Male</button>
+                <button class="ob-gender-btn ${obData.gender === 'female' ? 'selected' : ''}" onclick="obSelectGender('female')">Female</button>
+                <button class="ob-gender-btn ${obData.gender === 'nonbinary' ? 'selected' : ''}" onclick="obSelectGender('nonbinary')">Non-binary / Queer</button>
+              </div>
+            </div>
+            <div class="ob-nav">
+              <button class="btn-primary" onclick="obNext(1)">Next</button>
+            </div>
+          </div>`;
+        } else if (obStep === 2) {
+          const showGoalResult = obData._goalSet;
+          const wg = obData.weightGoal;
+          const rateField = wg === 'lose' ? `<div style="margin-top:.3rem;display:flex;align-items:center;gap:.3rem"><input type="number" id="obWeightRate" value="${obData.weightGoalRate}" step="0.1" style="width:70px;height:2rem;font-family:var(--font);font-size:.8rem;padding:.3rem .5rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none" onchange="obData.weightGoalRate=parseFloat(this.value)||0.5"><span style="font-size:.68rem;color:var(--muted)">kg / week</span></div>` :
+            wg === 'gain' ? `<div style="margin-top:.3rem;display:flex;align-items:center;gap:.3rem"><input type="number" id="obGainRate" value="${obData.gainRate}" step="0.1" style="width:70px;height:2rem;font-family:var(--font);font-size:.8rem;padding:.3rem .5rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none" onchange="obData.gainRate=parseFloat(this.value)||0.3"><span style="font-size:.68rem;color:var(--muted)">kg / week</span></div>` :
+            wg === 'recompose' ? `<div style="margin-top:.3rem;display:flex;align-items:center;gap:.3rem"><input type="number" id="obMusclePct" value="${obData.recomposeMusclePct}" step="1" style="width:70px;height:2rem;font-family:var(--font);font-size:.8rem;padding:.3rem .5rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none" onchange="obData.recomposeMusclePct=parseFloat(this.value)||30"><span style="font-size:.68rem;color:var(--muted)">% muscle mass target</span></div>` : '';
+
+          el.innerHTML = `<div class="onboard-card">
+            <div class="onboard-step-dots">${dots}</div>
+            <div class="onboard-title">Your Goals</div>
+            <div class="onboard-subtitle">Tell us what you'd like to achieve, and we'll set up personalised goals for you.</div>
+            <div class="onboard-section">
+              <div class="onboard-section-title">What are you looking to achieve?</div>
+              <textarea class="ob-textarea" id="obGoalText" placeholder="e.g. I want to lose some belly fat and build lean muscle, while staying active 4-5 days a week">${obData.goalText || ''}</textarea>
+              <button class="ob-ai-btn" id="obAiBtn" onclick="obAskAI()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.27A7 7 0 0 1 8 18H7a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a5 5 0 0 1 5-5V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+                Set goals with AI
+              </button>
+            </div>
+            <div id="obGoalLoading" style="display:none;text-align:center;padding:1rem;color:var(--muted);font-size:.78rem">Thinking...</div>
+            <div class="ob-goal-result ${showGoalResult ? 'visible' : ''}" id="obGoalResult">
+              <div class="onboard-section">
+                <div class="onboard-section-title">Weight Goal</div>
+                <label class="profile-option ${wg === 'lose' ? 'selected' : ''}" onclick="obSetWeightGoal('lose')">
+                  <input type="radio" name="obWG" value="lose" ${wg === 'lose' ? 'checked' : ''}> Lose weight
+                </label>
+                ${wg === 'lose' ? rateField : ''}
+                <label class="profile-option ${wg === 'gain' ? 'selected' : ''}" onclick="obSetWeightGoal('gain')">
+                  <input type="radio" name="obWG" value="gain" ${wg === 'gain' ? 'checked' : ''}> Gain weight
+                </label>
+                ${wg === 'gain' ? rateField : ''}
+                <label class="profile-option ${wg === 'maintain' ? 'selected' : ''}" onclick="obSetWeightGoal('maintain')">
+                  <input type="radio" name="obWG" value="maintain" ${wg === 'maintain' ? 'checked' : ''}> Maintain
+                </label>
+                <label class="profile-option ${wg === 'recompose' ? 'selected' : ''}" onclick="obSetWeightGoal('recompose')">
+                  <input type="radio" name="obWG" value="recompose" ${wg === 'recompose' ? 'checked' : ''}> Recompose
+                </label>
+                ${wg === 'recompose' ? rateField : ''}
+              </div>
+              <div class="onboard-section">
+                <div class="onboard-section-title">Exercise Goal</div>
+                <div style="display:flex;align-items:center;gap:.6rem;padding:.4rem 0">
+                  <input type="range" id="obExGoal" min="0" max="7" value="${obData.exerciseGoal}" style="flex:1;accent-color:var(--accent)" oninput="obData.exerciseGoal=parseInt(this.value);document.getElementById('obExVal').textContent=this.value">
+                  <span style="font-size:.78rem;font-weight:600"><span id="obExVal">${obData.exerciseGoal}</span> days/week</span>
+                </div>
+              </div>
+            </div>
+            <div class="ob-nav">
+              <button class="btn-secondary" onclick="obBack()">Back</button>
+              <button class="btn-primary" onclick="obNext(2)">Next</button>
+            </div>
+          </div>`;
+        } else if (obStep === 3) {
+          const t = obData.tracks;
+          const chipHtml = (key, icon, label) => `<label class="profile-chip ${t[key] ? 'active' : ''}" onclick="this.classList.toggle('active');obData.tracks.${key}=this.classList.contains('active');if('${key}'==='trackTrends')setTimeout(renderOnboardStep,10)"><input type="checkbox" ${t[key] ? 'checked' : ''} style="display:none"> ${licon(icon)} ${label}</label>`;
+
+          // Aesthetic targets sub-section (only if Trends is checked)
+          let aesHtml = '';
+          if (t.trackTrends) {
+            const g = obData.gender;
+            const defs = obGetDefaultAesthetic();
+            const at = obData.aestheticTargets;
+            if (g === 'male' || g === 'nonbinary') {
+              aesHtml += `<div class="onboard-section" style="margin-top:.6rem">
+                <div class="onboard-section-title">Target Shoulder-to-Waist Ratio</div>
+                <div style="display:flex;align-items:center;gap:.4rem">
+                  <input type="number" id="obAesSW" value="${at.swRatio || defs.swRatio}" step="0.05" style="width:80px;height:2rem;font-family:var(--font);font-size:.82rem;padding:.3rem .5rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none">
+                  <span style="font-size:.68rem;color:var(--muted)">(1.4 = good, 1.6 = excellent)</span>
+                </div>
+              </div>`;
+            }
+            if (g === 'female' || g === 'nonbinary') {
+              aesHtml += `<div class="onboard-section" style="margin-top:.6rem">
+                <div class="onboard-section-title">Target Waist-to-Hip Ratio</div>
+                <div style="display:flex;align-items:center;gap:.4rem">
+                  <input type="number" id="obAesWH" value="${at.whRatio || defs.whRatio}" step="0.01" style="width:80px;height:2rem;font-family:var(--font);font-size:.82rem;padding:.3rem .5rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none">
+                  <span style="font-size:.68rem;color:var(--muted)">(0.70 = ideal, < 0.80 = healthy)</span>
+                </div>
+              </div>`;
+            }
+          }
+
+          el.innerHTML = `<div class="onboard-card">
+            <div class="onboard-step-dots">${dots}</div>
+            <div class="onboard-title">What to Track</div>
+            <div class="onboard-subtitle">Choose which areas you'd like to keep tabs on. You can change this anytime.</div>
+            <div class="onboard-section">
+              <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+                ${chipHtml('trackNutrition', 'apple', 'Nutrition')}
+                ${chipHtml('trackExercise', 'dumbbell', 'Exercise')}
+                ${chipHtml('trackWellness', 'heart-pulse', 'Wellness')}
+                ${chipHtml('trackSkincare', 'sparkles', 'Skincare')}
+                ${chipHtml('trackHaircare', 'wind', 'Haircare')}
+                ${chipHtml('trackTrends', 'trending-up', 'Trends')}
+              </div>
+            </div>
+            ${aesHtml}
+            <div class="ob-nav">
+              <button class="btn-secondary" onclick="obBack()">Back</button>
+              <button class="btn-primary" onclick="obNext(3)">Finish Setup</button>
+            </div>
+          </div>`;
+          refreshIcons();
+        } else if (obStep === 4) {
+          // FTUE - show app with overlay
+          el.style.display = 'none';
+          document.getElementById('mainApp').style.display = 'block';
+          document.getElementById('bottomNav').style.display = 'block';
+          document.getElementById('floatCta').style.display = '';
+          initApp();
+          showFTUE();
+        }
+        if (obStep <= 3) refreshIcons();
+      };
+
+      window.obSelectGender = function (g) {
+        obData.gender = g;
+        document.querySelectorAll('.ob-gender-btn').forEach(b => b.classList.remove('selected'));
+        event.target.classList.add('selected');
+      };
+
+      window.obSetWeightGoal = function (goal) {
+        // Save current rate values before re-render
+        const rateEl = document.getElementById('obWeightRate');
+        const gainEl = document.getElementById('obGainRate');
+        const muscleEl = document.getElementById('obMusclePct');
+        if (rateEl) obData.weightGoalRate = parseFloat(rateEl.value) || 0.5;
+        if (gainEl) obData.gainRate = parseFloat(gainEl.value) || 0.3;
+        if (muscleEl) obData.recomposeMusclePct = parseFloat(muscleEl.value) || 30;
+        obData.weightGoal = goal;
+        renderOnboardStep();
+      };
+
+      window.obGetDefaultAesthetic = function () {
+        const g = obData.gender;
+        if (g === 'female') return { whRatio: 0.70, weight: 55, bodyFat: 20, waist: 68, skeletalMuscle: 22, visceralFat: 4 };
+        if (g === 'nonbinary') return { swRatio: 1.5, whRatio: 0.75, weight: 60, bodyFat: 16, waist: 72, skeletalMuscle: 25, visceralFat: 4 };
+        return { swRatio: 1.6, weight: 57, bodyFat: 12, waist: 72, skeletalMuscle: 28, visceralFat: 4 }; // male default
+      };
+
+      window.obAskAI = async function () {
+        const goalText = document.getElementById('obGoalText')?.value?.trim();
+        if (!goalText) { toast('Tell us what you want to achieve', 'warn'); return; }
+        obData.goalText = goalText;
+        const btn = document.getElementById('obAiBtn');
+        const loading = document.getElementById('obGoalLoading');
+        btn.disabled = true;
+        loading.style.display = 'block';
+
+        try {
+          const prompt = `The user is setting up a health tracking app. Their info: height ${obData.height || '?'}cm, weight ${obData.weight || '?'}kg, gender ${obData.gender || 'not specified'}.
+They said: "${goalText}"
+
+Based on this, recommend:
+1. weightGoal: one of "lose", "gain", "maintain", "recompose"
+2. weightGoalRate: kg per week to lose (0.25-1.0), only if goal is "lose"
+3. gainRate: kg per week to gain (0.1-0.5), only if goal is "gain"
+4. recomposeMusclePct: target skeletal muscle percentage (20-40), only if goal is "recompose"
+5. exerciseGoal: recommended workout days per week (1-7)
+
+Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,"recomposeMusclePct":30,"exerciseGoal":5}`;
+
+          const result = await fetchLLM(prompt, 'You are a concise health advisor. Return only the JSON object requested, no explanation.', 'cerebras', 'qwen-3-32b', true);
+          if (result.weightGoal) obData.weightGoal = result.weightGoal;
+          if (result.weightGoalRate) obData.weightGoalRate = Math.round(result.weightGoalRate * 10) / 10;
+          if (result.gainRate) obData.gainRate = Math.round(result.gainRate * 10) / 10;
+          if (result.recomposeMusclePct) obData.recomposeMusclePct = Math.round(result.recomposeMusclePct);
+          if (result.exerciseGoal) obData.exerciseGoal = Math.min(7, Math.max(0, Math.round(result.exerciseGoal)));
+          obData._goalSet = true;
+          renderOnboardStep();
+        } catch (e) {
+          console.error('Onboarding AI error:', e);
+          toast('AI suggestion failed — set goals manually below', 'warn');
+          obData._goalSet = true;
+          renderOnboardStep();
+        } finally {
+          btn.disabled = false;
+          loading.style.display = 'none';
+        }
+      };
+
+      window.obBack = function () {
+        // Save current step's editable values
+        obSaveCurrentStep();
+        obStep--;
+        renderOnboardStep();
+      };
+
+      window.obSaveCurrentStep = function () {
+        if (obStep === 1) {
+          obData.height = document.getElementById('obHeight')?.value || '';
+          obData.weight = document.getElementById('obWeight')?.value || '';
+        } else if (obStep === 2) {
+          obData.goalText = document.getElementById('obGoalText')?.value || '';
+          const rateEl = document.getElementById('obWeightRate');
+          const gainEl = document.getElementById('obGainRate');
+          const muscleEl = document.getElementById('obMusclePct');
+          if (rateEl) obData.weightGoalRate = parseFloat(rateEl.value) || 0.5;
+          if (gainEl) obData.gainRate = parseFloat(gainEl.value) || 0.3;
+          if (muscleEl) obData.recomposeMusclePct = parseFloat(muscleEl.value) || 30;
+          obData.exerciseGoal = parseInt(document.getElementById('obExGoal')?.value) || 5;
+        } else if (obStep === 3) {
+          const swEl = document.getElementById('obAesSW');
+          const whEl = document.getElementById('obAesWH');
+          if (swEl) obData.aestheticTargets.swRatio = parseFloat(swEl.value) || 1.6;
+          if (whEl) obData.aestheticTargets.whRatio = parseFloat(whEl.value) || 0.70;
+        }
+      };
+
+      window.obNext = async function (fromStep) {
+        obSaveCurrentStep();
+        if (fromStep === 1) {
+          if (!obData.height || !obData.weight) { toast('Please enter your height and weight', 'warn'); return; }
+          if (!obData.gender) { toast('Please select your gender', 'warn'); return; }
+          // Pre-populate aesthetic defaults based on gender
+          obData.aestheticTargets = obGetDefaultAesthetic();
+          obStep = 2;
+          renderOnboardStep();
+        } else if (fromStep === 2) {
+          if (!obData._goalSet) {
+            // If user didn't use AI, just show the goal options
+            obData._goalSet = true;
+            renderOnboardStep();
+            return;
+          }
+          obStep = 3;
+          renderOnboardStep();
+        } else if (fromStep === 3) {
+          // Save everything to profile and Firestore
+          await obFinish();
+        }
+      };
+
+      window.obFinish = async function () {
+        const p = getDefaultProfile();
+        p.height = parseFloat(obData.height) || 162;
+        p.weight = parseFloat(obData.weight) || 0;
+        p.gender = obData.gender || 'male';
+        p.weightGoal = obData.weightGoal;
+        p.weightGoalRate = obData.weightGoalRate;
+        p.gainRate = obData.gainRate;
+        p.recomposeMusclePct = obData.recomposeMusclePct;
+        p.exerciseGoal = obData.exerciseGoal;
+        Object.assign(p, obData.tracks);
+        p.aestheticTargets = obData.aestheticTargets;
+        p.onboardingComplete = true;
+
+        try {
+          userProfile = p;
+          await db.collection("users").doc(currentUser.uid).set({ profile: p }, { merge: true });
+          HEIGHT_CM_DYNAMIC = p.height || 162;
+          _htWriteCache(currentUser.uid, selectedDate || todayStr(), null, userProfile);
+
+          // Also save initial weight to today's body data
+          if (p.weight > 0) {
+            const dateKey = todayStr();
+            const dayRef = db.collection("users").doc(currentUser.uid).collection("days").doc(dateKey);
+            const daySnap = await dayRef.get();
+            const existing = daySnap.exists ? daySnap.data() : {};
+            const body = existing.body || {};
+            if (!body.weight) {
+              body.weight = p.weight;
+              await dayRef.set({ body }, { merge: true });
+              localStorage.setItem("HT_LAST_WEIGHT", p.weight);
+            }
+          }
+
+          obStep = 4;
+          renderOnboardStep();
+        } catch (e) {
+          toast('Setup failed: ' + e.message, 'error');
+        }
+      };
+
+      window.showFTUE = function () {
+        const overlay = document.createElement('div');
+        overlay.className = 'ftue-overlay';
+        overlay.innerHTML = `<div class="ftue-card">
+          <div style="text-align:center;margin-bottom:1rem">
+            <div style="font-size:1.15rem;font-weight:700">You're all set!</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">Here's a quick look at what HealThee can do</div>
+          </div>
+          <div class="ftue-item"><div class="ftue-item-icon">${licon('flame')}</div><div class="ftue-item-text"><strong>Fuel</strong> — Track meals, calories, macros, water, and supplements</div></div>
+          <div class="ftue-item"><div class="ftue-item-icon">${licon('dumbbell')}</div><div class="ftue-item-text"><strong>Move</strong> — Your personalised workout plan, steps, and custom exercises</div></div>
+          <div class="ftue-item"><div class="ftue-item-icon">${licon('heart-pulse')}</div><div class="ftue-item-text"><strong>Well</strong> — Log weight, body metrics, sleep, and daily delights</div></div>
+          <div class="ftue-item"><div class="ftue-item-icon">${licon('sparkles')}</div><div class="ftue-item-text"><strong>Care</strong> — Skincare & haircare routines, plus an AI health advisor</div></div>
+          <div class="ftue-item"><div class="ftue-item-icon">${licon('trending-up')}</div><div class="ftue-item-text"><strong>Stats</strong> — Weekly and monthly trends to track your progress</div></div>
+          <div style="background:var(--hover);border-radius:8px;padding:.6rem .75rem;margin-top:.8rem;font-size:.72rem;color:var(--muted);text-align:center">
+            Tap your profile photo anytime to update goals, tracking preferences, and more.
+          </div>
+          <button class="btn-primary" style="width:100%;margin-top:1rem;padding:.65rem" onclick="this.closest('.ftue-overlay').remove()">Let's go!</button>
+        </div>`;
+        document.body.appendChild(overlay);
+        refreshIcons();
+      };
 
       /* ═══════════════════════════════════════════════════
          AUTH
@@ -2646,10 +3234,17 @@
           try {
             const doc = await db.collection("users").doc(user.uid).get();
             if (doc.exists) {
-              document.getElementById("mainApp").style.display = "block";
-              document.getElementById("bottomNav").style.display = "block";
-              document.getElementById("floatCta").style.display = "";
-              initApp();
+              // Check if onboarding was completed
+              const profile = doc.data().profile;
+              if (profile && profile.onboardingComplete) {
+                document.getElementById("mainApp").style.display = "block";
+                document.getElementById("bottomNav").style.display = "block";
+                document.getElementById("floatCta").style.display = "";
+                initApp();
+              } else {
+                // Existing user but onboarding not done — resume it
+                startOnboarding();
+              }
             } else {
               const statsDoc = await db.collection("metadata").doc("stats").get();
               const cnt = statsDoc.exists ? (statsDoc.data().userCount || 0) : 0;
@@ -2664,11 +3259,8 @@
                 });
                 tx.set(db.collection("metadata").doc("stats"), { userCount: c + 1 }, { merge: true });
               });
-              document.getElementById("mainApp").style.display = "block";
-              document.getElementById("bottomNav").style.display = "block";
-              document.getElementById("floatCta").style.display = "";
-              toast("Welcome! Setup complete.", "success");
-              initApp();
+              // New user — start onboarding wizard
+              startOnboarding();
             }
           } catch (err) {
             if (err.message === "CAP") { document.getElementById("capScreen").style.display = "flex"; return; }
@@ -2682,6 +3274,7 @@
         document.getElementById("mainApp").style.display = "none";
         document.getElementById("bottomNav").style.display = "none";
         document.getElementById("capScreen").style.display = "none";
+        document.getElementById("onboardScreen").style.display = "none";
         document.getElementById("userMenu").style.display = "none";
       });
 
@@ -2805,8 +3398,12 @@
       window.getDefaultProfile = function () {
         return {
           height: 162,
+          weight: 0, // initial weight from onboarding
+          gender: '', // male, female, nonbinary
           weightGoal: 'lose', // gain, lose, maintain, recompose
-          weightGoalRate: 0.5, // kg per week
+          weightGoalRate: 0.5, // kg per week (lose/gain)
+          gainRate: 0.3, // kg per week (gain)
+          recomposeMusclePct: 30, // target skeletal muscle % (recompose)
           exerciseGoal: 5, // days per week
           trackNutrition: true,
           trackExercise: true,
@@ -2814,6 +3411,8 @@
           trackSkincare: true,
           trackHaircare: true,
           trackTrends: true,
+          aestheticTargets: {}, // { swRatio, whRatio, weight, bodyFat, waist, skeletalMuscle, visceralFat }
+          onboardingComplete: false,
           mode: 'vanilla' // vanilla or gamified
         };
       }
@@ -3418,10 +4017,15 @@
       }
 
       window.collectProfileForm = function () {
+        const prev = userProfile || getDefaultProfile();
         const p = getDefaultProfile();
         p.height = parseFloat(document.getElementById("profHeight").value) || 162;
+        p.weight = prev.weight || 0;
+        p.gender = document.querySelector('input[name="profGender"]:checked')?.value || prev.gender || 'male';
         p.weightGoal = document.querySelector('input[name="profWeightGoal"]:checked')?.value || 'lose';
         p.weightGoalRate = parseFloat(document.getElementById("profWeightRate")?.value) || 0.5;
+        p.gainRate = parseFloat(document.getElementById("profGainRate")?.value) || 0.3;
+        p.recomposeMusclePct = parseFloat(document.getElementById("profMusclePct")?.value) || 30;
         p.exerciseGoal = parseInt(document.getElementById("profExGoal")?.value) || 5;
         p.trackNutrition = document.getElementById("profTrackNut").checked;
         p.trackExercise = document.getElementById("profTrackEx").checked;
@@ -3429,6 +4033,14 @@
         p.trackSkincare = document.getElementById("profTrackSkin").checked;
         p.trackHaircare = document.getElementById("profTrackHair").checked;
         p.trackTrends = document.getElementById("profTrackTrends").checked;
+        // Collect aesthetic targets
+        const at = prev.aestheticTargets || {};
+        const swEl = document.getElementById("profAesSW");
+        const whEl = document.getElementById("profAesWH");
+        if (swEl) at.swRatio = parseFloat(swEl.value) || 1.6;
+        if (whEl) at.whRatio = parseFloat(whEl.value) || 0.70;
+        p.aestheticTargets = at;
+        p.onboardingComplete = prev.onboardingComplete || true;
         p.mode = document.getElementById('modeToggle')?.dataset.mode || 'vanilla';
         return p;
       }

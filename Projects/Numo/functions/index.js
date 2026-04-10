@@ -184,7 +184,7 @@ exports.healtheeLLM = onRequest(
       }
 
       try {
-        const { prompt, system, provider, model, isJson, base64Image } = req.body;
+        const { prompt, system, provider, model, isJson, base64Image, max_tokens } = req.body;
 
         if (!prompt) {
           res.status(400).json({ error: "prompt is required" });
@@ -210,6 +210,7 @@ exports.healtheeLLM = onRequest(
           model: model || (provider === 'cerebras' ? 'llama3.1-8b' : 'llama-3.3-70b-versatile'),
           messages: messages,
           temperature: 0.1,
+          ...(max_tokens && { max_tokens }),
         };
 
         if (isJson) {
