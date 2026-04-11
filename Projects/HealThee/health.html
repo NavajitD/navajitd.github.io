@@ -3234,15 +3234,22 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           try {
             const doc = await db.collection("users").doc(user.uid).get();
             if (doc.exists) {
-              // Check if onboarding was completed
+              // Check if onboarding was completed (or user predates onboarding — has profile data)
               const profile = doc.data().profile;
-              if (profile && profile.onboardingComplete) {
+              const hasLegacyProfile = profile && (profile.height || profile.weightGoal);
+              if ((profile && profile.onboardingComplete) || hasLegacyProfile) {
+                // Backfill onboardingComplete + gender for legacy users
+                if (hasLegacyProfile && !profile.onboardingComplete) {
+                  profile.onboardingComplete = true;
+                  if (!profile.gender) profile.gender = 'male';
+                  db.collection("users").doc(user.uid).set({ profile }, { merge: true });
+                }
                 document.getElementById("mainApp").style.display = "block";
                 document.getElementById("bottomNav").style.display = "block";
                 document.getElementById("floatCta").style.display = "";
                 initApp();
               } else {
-                // Existing user but onboarding not done — resume it
+                // Truly new user with no profile data — start onboarding
                 startOnboarding();
               }
             } else {
@@ -3547,7 +3554,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
       window.saveBody = function () {
         const g = id => document.getElementById(id)?.value;
         const f = id => { const v = parseFloat(g(id)); return isFinite(v) && v > 0 ? Math.round(v * 10) / 10 : null; };
-        dayData.body = { weight: f("bWeight"), bodyFat: f("bBodyFat"), waist: f("bWaist"), shoulders: f("bShoulders"), skeletalMuscle: f("bSMM"), visceralFat: f("bVisceral") };
+        dayData.body = { weight: f("bWeight"), bodyFat: f("bBodyFat"), waist: f("bWaist"), shoulders: f("bShoulders"), hips: f("bHips"), skeletalMuscle: f("bSMM"), visceralFat: f("bVisceral") };
         if (dayData.body.weight) localStorage.setItem("HT_LAST_WEIGHT", dayData.body.weight);
         touch(); saveDay(); render(); toast("Body metrics saved");
       }
@@ -4047,10 +4054,23 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
 
       window.renderProfileModal = function () {
         const p = userProfile || getDefaultProfile();
+        const g = p.gender || 'male';
+        const at = p.aestheticTargets || {};
+        const selOpt = "document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')";
+
+        // Build aesthetic targets section based on gender
+        let aesHtml = '';
+        if (g === 'male' || g === 'nonbinary') {
+          aesHtml += `<div class="form-row" style="margin-top:.4rem"><div class="form-field"><label>Target S:W Ratio</label><input type="number" id="profAesSW" value="${at.swRatio || 1.6}" step="0.05" class="profile-inline-input" style="width:100%"></div></div>`;
+        }
+        if (g === 'female' || g === 'nonbinary') {
+          aesHtml += `<div class="form-row" style="margin-top:.4rem"><div class="form-field"><label>Target W:H Ratio</label><input type="number" id="profAesWH" value="${at.whRatio || 0.70}" step="0.01" class="profile-inline-input" style="width:100%"></div></div>`;
+        }
+
         return `<div class="modal-overlay profile-modal"><div class="modal" style="max-height:90vh">
           <div class="modal-head"><div class="modal-title">My Profile</div><button class="modal-close" onclick="closeProfileModal()">✕</button></div>
           <div class="modal-body">
-            
+
             <div class="profile-section">
               <div class="profile-section-title">${licon('ruler')} Measurements</div>
               <div class="form-row">
@@ -4061,21 +4081,42 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             </div>
 
             <div class="profile-section">
+              <div class="profile-section-title">${licon('user')} Gender</div>
+              <div style="display:flex;gap:.3rem;flex-wrap:wrap">
+                <label class="profile-option ${g === 'male' ? 'selected' : ''}" style="flex:1;min-width:70px;justify-content:center" onclick="${selOpt.replace(/profWeightGoal/g, 'profGender')}">
+                  <input type="radio" name="profGender" value="male" ${g === 'male' ? 'checked' : ''}> Male
+                </label>
+                <label class="profile-option ${g === 'female' ? 'selected' : ''}" style="flex:1;min-width:70px;justify-content:center" onclick="${selOpt.replace(/profWeightGoal/g, 'profGender')}">
+                  <input type="radio" name="profGender" value="female" ${g === 'female' ? 'checked' : ''}> Female
+                </label>
+                <label class="profile-option ${g === 'nonbinary' ? 'selected' : ''}" style="flex:1;min-width:70px;justify-content:center" onclick="${selOpt.replace(/profWeightGoal/g, 'profGender')}">
+                  <input type="radio" name="profGender" value="nonbinary" ${g === 'nonbinary' ? 'checked' : ''}> Non-binary
+                </label>
+              </div>
+            </div>
+
+            <div class="profile-section">
               <div class="profile-section-title">${licon('target')} Weight Goal</div>
-              <label class="profile-option ${p.weightGoal === 'lose' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
+              <label class="profile-option ${p.weightGoal === 'lose' ? 'selected' : ''}" onclick="${selOpt}">
                 <input type="radio" name="profWeightGoal" value="lose" ${p.weightGoal === 'lose' ? 'checked' : ''}> Lose
                 <div style="margin-left:auto;display:flex;align-items:center;gap:.3rem">
                   <input type="number" id="profWeightRate" value="${p.weightGoalRate}" step="0.1" class="profile-inline-input" onclick="event.stopPropagation()"> <span style="font-size:.68rem;color:var(--muted)">kg / wk</span>
                 </div>
               </label>
-              <label class="profile-option ${p.weightGoal === 'maintain' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
+              <label class="profile-option ${p.weightGoal === 'maintain' ? 'selected' : ''}" onclick="${selOpt}">
                 <input type="radio" name="profWeightGoal" value="maintain" ${p.weightGoal === 'maintain' ? 'checked' : ''}> Maintain
               </label>
-              <label class="profile-option ${p.weightGoal === 'gain' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
+              <label class="profile-option ${p.weightGoal === 'gain' ? 'selected' : ''}" onclick="${selOpt}">
                 <input type="radio" name="profWeightGoal" value="gain" ${p.weightGoal === 'gain' ? 'checked' : ''}> Gain
+                <div style="margin-left:auto;display:flex;align-items:center;gap:.3rem">
+                  <input type="number" id="profGainRate" value="${p.gainRate || 0.3}" step="0.1" class="profile-inline-input" onclick="event.stopPropagation()"> <span style="font-size:.68rem;color:var(--muted)">kg / wk</span>
+                </div>
               </label>
-              <label class="profile-option ${p.weightGoal === 'recompose' ? 'selected' : ''}" onclick="document.querySelectorAll('input[name=profWeightGoal]').forEach(i=>i.closest('.profile-option').classList.remove('selected'));this.classList.add('selected')">
-                <input type="radio" name="profWeightGoal" value="recompose" ${p.weightGoal === 'recompose' ? 'checked' : ''}> Recompose 
+              <label class="profile-option ${p.weightGoal === 'recompose' ? 'selected' : ''}" onclick="${selOpt}">
+                <input type="radio" name="profWeightGoal" value="recompose" ${p.weightGoal === 'recompose' ? 'checked' : ''}> Recompose
+                <div style="margin-left:auto;display:flex;align-items:center;gap:.3rem">
+                  <input type="number" id="profMusclePct" value="${p.recomposeMusclePct || 30}" step="1" class="profile-inline-input" onclick="event.stopPropagation()"> <span style="font-size:.68rem;color:var(--muted)">% muscle</span>
+                </div>
               </label>
             </div>
 
@@ -4097,6 +4138,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                 <label class="profile-chip ${p.trackHaircare ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackHair" ${p.trackHaircare ? 'checked' : ''} style="display:none"> ${licon('wind')} Haircare</label>
                 <label class="profile-chip ${p.trackTrends ? 'active' : ''}" onclick="this.classList.toggle('active')"><input type="checkbox" id="profTrackTrends" ${p.trackTrends ? 'checked' : ''} style="display:none"> ${licon('trending-up')} Trends</label>
               </div>
+              ${aesHtml}
             </div>
 
             <div class="profile-section">
@@ -4118,7 +4160,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             </div>
 
             <button class="btn-primary" style="width:100%;padding:.7rem;margin-top:.5rem" onclick="saveProfile()">Save</button>
-            
+
             <div class="danger-zone" style="margin-top:2rem">
               <button class="btn-secondary" style="width:100%;margin-bottom:.5rem" onclick="signOut()">Sign Out</button>
               <button class="delete-btn" style="width:100%" onclick="closeProfileModal();openDeleteModal()">Delete Account & Data</button>
@@ -4247,9 +4289,9 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
       /* ─── MOVE TAB ─── */
       window.renderMove = function () {
         const dayNum = dow(selectedDate);
-        const workout = WORKOUT_PLAN[dayNum];
-        const warmup = WARMUP_PLAN[dayNum] || [];
-        const cooldown = COOLDOWN_PLAN[dayNum] || [];
+        const workout = getWorkoutPlan()[dayNum];
+        const warmup = getWarmupPlan()[dayNum] || [];
+        const cooldown = getCooldownPlan()[dayNum] || [];
         const steps = dayData.steps || 0;
         const burned = dayData.calBurned || 0;
         const stepLogs = activeItems(dayData.stepLogs || []).sort((a, b) => a.ts - b.ts);
@@ -4354,7 +4396,9 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         const sToggle = "localStorage.setItem('HT_move_'+ this.dataset.key, this.open?'1':'0')";
         const b = dayData.body || {};
         const bmi = b.weight ? calcBMI(b.weight) : null;
-        const ratio = (b.shoulders && b.waist) ? (b.shoulders / b.waist) : null;
+        const gender = (userProfile || {}).gender || 'male';
+        const swRatio = (b.shoulders && b.waist) ? (b.shoulders / b.waist) : null;
+        const whRatio = (b.waist && b.hips) ? (b.waist / b.hips) : null;
         const h = dayData.sleep?.hours || 0;
         const sleepPct = h ? (h / TARGETS.sleep) * 100 : 0;
 
@@ -4362,9 +4406,30 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         const bmiCat = !bmi ? '' : bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal weight' : bmi < 30 ? 'Overweight' : 'Obese';
         const bmiCol = !bmi ? '' : bmi < 18.5 ? 'var(--blue)' : bmi < 25 ? 'var(--success)' : bmi < 30 ? 'var(--warn)' : 'var(--danger)';
 
-        // S:W ratio label + colour
-        const swCat = !ratio ? '' : ratio >= 1.5 ? 'Excellent' : ratio >= 1.4 ? 'Good' : ratio >= 1.3 ? 'Average' : 'Develop shoulders';
-        const swCol = !ratio ? '' : ratio >= 1.4 ? 'var(--success)' : ratio >= 1.3 ? 'var(--warn)' : 'var(--danger)';
+        // S:W ratio label + colour (men / non-binary)
+        const swCat = !swRatio ? '' : swRatio >= 1.5 ? 'Excellent' : swRatio >= 1.4 ? 'Good' : swRatio >= 1.3 ? 'Average' : 'Develop shoulders';
+        const swCol = !swRatio ? '' : swRatio >= 1.4 ? 'var(--success)' : swRatio >= 1.3 ? 'var(--warn)' : 'var(--danger)';
+        // W:H ratio label + colour (women / non-binary)
+        const whCat = !whRatio ? '' : whRatio <= 0.75 ? 'Excellent' : whRatio <= 0.80 ? 'Good' : whRatio <= 0.85 ? 'Average' : 'Needs attention';
+        const whCol = !whRatio ? '' : whRatio <= 0.75 ? 'var(--success)' : whRatio <= 0.80 ? 'var(--warn)' : 'var(--danger)';
+
+        const showShoulders = gender === 'male' || gender === 'nonbinary';
+        const showHips = gender === 'female' || gender === 'nonbinary';
+        let ratioHtml = '';
+        if (showShoulders && swRatio) {
+          ratioHtml += `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:.4rem .75rem;margin-top:.5rem">
+            <span style="font-size:.72rem;color:var(--muted)">Shoulder : Waist</span>
+            <span style="font-size:1rem;font-weight:700;color:${swCol}">${swRatio.toFixed(2)}</span>
+            <span style="font-size:.72rem;font-weight:600;color:${swCol}">${swCat}</span>
+          </div>`;
+        }
+        if (showHips && whRatio) {
+          ratioHtml += `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:.4rem .75rem;margin-top:.5rem">
+            <span style="font-size:.72rem;color:var(--muted)">Waist : Hip</span>
+            <span style="font-size:1rem;font-weight:700;color:${whCol}">${whRatio.toFixed(2)}</span>
+            <span style="font-size:.72rem;font-weight:600;color:${whCol}">${whCat}</span>
+          </div>`;
+        }
 
         return `
         <div class="card">
@@ -4382,16 +4447,12 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
               <div class="custom-grid">
                 <div class="form-field"><label>Body Fat %</label><input type="number" id="bBodyFat" step="0.1" value="${b.bodyFat || ""}"></div>
                 <div class="form-field"><label>Waist (cm)</label><input type="number" id="bWaist" step="0.1" value="${b.waist || ""}"></div>
-                <div class="form-field"><label>Shoulders (cm)</label><input type="number" id="bShoulders" step="0.1" value="${b.shoulders || ""}"></div>
+                ${showShoulders ? `<div class="form-field"><label>Shoulders (cm)</label><input type="number" id="bShoulders" step="0.1" value="${b.shoulders || ""}"></div>` : ''}
+                ${showHips ? `<div class="form-field"><label>Hips (cm)</label><input type="number" id="bHips" step="0.1" value="${b.hips || ""}"></div>` : ''}
                 <div class="form-field"><label>Skeletal Muscle (kg)</label><input type="number" id="bSMM" step="0.1" value="${b.skeletalMuscle || ""}"></div>
                 <div class="form-field"><label>Visceral Fat Level</label><input type="number" id="bVisceral" step="0.1" value="${b.visceralFat || ""}"></div>
               </div>
-              ${ratio ? `
-              <div style="display:flex;align-items:center;justify-content:space-between;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:.4rem .75rem;margin-top:.5rem">
-                <span style="font-size:.72rem;color:var(--muted)">Shoulder : Waist</span>
-                <span style="font-size:1rem;font-weight:700;color:${swCol}">${ratio.toFixed(2)}</span>
-                <span style="font-size:.72rem;font-weight:600;color:${swCol}">${swCat}</span>
-              </div>` : ''}
+              ${ratioHtml}
             </div>
           </details>
           <button class="btn-primary" style="width:100%;margin-top:.75rem" onclick="saveBody()">Save</button>
@@ -4820,7 +4881,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
               date: dk, day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(dk + "T12:00:00").getDay()],
               cal: t.cal, protein: t.protein, fiber: t.fiber, water, sleep: num0(dd.sleep?.hours),
               weight: dd.body?.weight || null, bodyFat: dd.body?.bodyFat || null,
-              waist: dd.body?.waist || null, shoulders: dd.body?.shoulders || null,
+              waist: dd.body?.waist || null, shoulders: dd.body?.shoulders || null, hips: dd.body?.hips || null,
               skeletalMuscle: dd.body?.skeletalMuscle || null, visceralFat: dd.body?.visceralFat || null,
               exCal, microsMet, delightCount
             };
@@ -4837,8 +4898,11 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           const avgBf = wBf.length ? Math.round(wBf.reduce((s, d) => s + d.bodyFat, 0) / wBf.length * 10) / 10 : null;
           const wWaist = weekDays.filter(d => d.waist);
           const avgWaist = wWaist.length ? Math.round(wWaist.reduce((s, d) => s + d.waist, 0) / wWaist.length * 10) / 10 : null;
+          const statsGender = (userProfile || {}).gender || 'male';
           const wSW = weekDays.filter(d => d.shoulders && d.waist);
           const avgSW = wSW.length ? Math.round(wSW.reduce((s, d) => s + d.shoulders / d.waist, 0) / wSW.length * 100) / 100 : null;
+          const wWH = weekDays.filter(d => d.waist && d.hips);
+          const avgWH = wWH.length ? Math.round(wWH.reduce((s, d) => s + d.waist / d.hips, 0) / wWH.length * 100) / 100 : null;
           const wSMM = weekDays.filter(d => d.skeletalMuscle);
           const avgSMM = wSMM.length ? Math.round(wSMM.reduce((s, d) => s + d.skeletalMuscle, 0) / wSMM.length * 10) / 10 : null;
           const wVF = weekDays.filter(d => d.visceralFat);
@@ -4862,13 +4926,14 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
               ${avgW ? `<div class="stat-box"><div class="stat-val">${avgW}</div><div class="stat-label">avg weight</div></div>` : ''}
               ${avgBMI ? `<div class="stat-box"><div class="stat-val">${avgBMI.toFixed(1)}</div><div class="stat-label">avg BMI</div></div>` : ''}
             </div>
-            ${(avgBf || avgWaist || avgSW || avgSMM || avgVF) ? `
+            ${(avgBf || avgWaist || avgSW || avgWH || avgSMM || avgVF) ? `
             <details class="move-section" data-key="weekAes" ${so('weekAes') ? 'open' : ''} ontoggle="${sToggle}" style="margin-top:.6rem">
               <summary>${licon('ruler')} Aesthetic Metrics</summary>
               <div class="section-body"><div class="stats-row" style="margin-top:0">
                 ${avgBf !== null ? `<div class="stat-box"><div class="stat-val">${avgBf}%</div><div class="stat-label">Body Fat</div></div>` : ''}
                 ${avgWaist ? `<div class="stat-box"><div class="stat-val">${avgWaist}</div><div class="stat-label">Waist</div></div>` : ''}
-                ${avgSW ? `<div class="stat-box"><div class="stat-val">${avgSW}</div><div class="stat-label">Shoulder : Waist</div></div>` : ''}
+                ${(statsGender === 'male' || statsGender === 'nonbinary') && avgSW ? `<div class="stat-box"><div class="stat-val">${avgSW}</div><div class="stat-label">S:W Ratio</div></div>` : ''}
+                ${(statsGender === 'female' || statsGender === 'nonbinary') && avgWH ? `<div class="stat-box"><div class="stat-val">${avgWH}</div><div class="stat-label">W:H Ratio</div></div>` : ''}
                 ${avgSMM ? `<div class="stat-box"><div class="stat-val">${avgSMM}</div><div class="stat-label">Skeletal Muscle</div></div>` : ''}
                 ${avgVF !== null ? `<div class="stat-box"><div class="stat-val">${avgVF}</div><div class="stat-label">Visceral Fat</div></div>` : ''}
               </div></div>
@@ -4899,24 +4964,42 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           // Aggregate to weekly averages for 30d/90d
           const trendData = statsPeriod <= 7 ? pDays : aggregateWeekly(pDays);
 
-          // Aesthetic trend lines (only for 30d/90d)
+          // Aesthetic trend lines (only for 30d/90d) — gender-aware
           let aestheticHtml = '';
           if (statsPeriod >= 30) {
+            const profGender = (userProfile || {}).gender || 'male';
+            const at = (userProfile || {}).aestheticTargets || {};
+            const defAt = profGender === 'female' ? { weight: 55, bodyFat: 20, waist: 68, skeletalMuscle: 22, visceralFat: 4, whRatio: 0.70 } :
+              profGender === 'nonbinary' ? { weight: 60, bodyFat: 16, waist: 72, skeletalMuscle: 25, visceralFat: 4, swRatio: 1.5, whRatio: 0.75 } :
+              { weight: 57, bodyFat: 12, waist: 72, skeletalMuscle: 28, visceralFat: 4, swRatio: 1.6 };
             const aesMetrics = [
-              { key: 'weight', label: 'Weight', unit: 'kg', ref: 57, color: 'var(--accent)' },
-              { key: 'bodyFat', label: 'Body Fat %', unit: '%', ref: 12, color: 'var(--orange)' },
-              { key: 'waist', label: 'Waist', unit: 'cm', ref: 72, color: 'var(--warn)' },
-              { key: 'skeletalMuscle', label: 'Skeletal Muscle', unit: 'kg', ref: 28, color: 'var(--success)' },
-              { key: 'visceralFat', label: 'Visceral Fat', unit: '', ref: 4, color: 'var(--danger)' }
+              { key: 'weight', label: 'Weight', unit: 'kg', ref: at.weight || defAt.weight, color: 'var(--accent)' },
+              { key: 'bodyFat', label: 'Body Fat %', unit: '%', ref: at.bodyFat || defAt.bodyFat, color: 'var(--orange)' },
+              { key: 'waist', label: 'Waist', unit: 'cm', ref: at.waist || defAt.waist, color: 'var(--warn)' },
+              { key: 'skeletalMuscle', label: 'Skeletal Muscle', unit: 'kg', ref: at.skeletalMuscle || defAt.skeletalMuscle, color: 'var(--success)' },
+              { key: 'visceralFat', label: 'Visceral Fat', unit: '', ref: at.visceralFat || defAt.visceralFat, color: 'var(--danger)' }
             ];
-            const swDays = pDays.filter(d => d.shoulders && d.waist);
-            const swData = swDays.map(d => ({ ...d, swRatio: Math.round(d.shoulders / d.waist * 100) / 100 }));
             let aesInner = aesMetrics.map(m => {
               const pts = pDays.filter(d => d[m.key] !== null);
               return pts.length >= 2 ? `<div style="margin-bottom:.5rem"><div class="chart-title">${m.label} (ref: ${m.ref}${m.unit})</div>${trendLineRef(pts, m.key, m.color, m.unit, m.ref)}</div>` : '';
             }).join('');
-            if (swData.length >= 2) {
-              aesInner += `<div style="margin-bottom:.5rem"><div class="chart-title">S:W Ratio (ref: 1.6)</div>${trendLineRef(swData, 'swRatio', 'var(--purple)', '', 1.6)}</div>`;
+            // S:W ratio for men / non-binary
+            if (profGender === 'male' || profGender === 'nonbinary') {
+              const swDays = pDays.filter(d => d.shoulders && d.waist);
+              const swData = swDays.map(d => ({ ...d, swRatio: Math.round(d.shoulders / d.waist * 100) / 100 }));
+              const swRef = at.swRatio || defAt.swRatio || 1.6;
+              if (swData.length >= 2) {
+                aesInner += `<div style="margin-bottom:.5rem"><div class="chart-title">S:W Ratio (ref: ${swRef})</div>${trendLineRef(swData, 'swRatio', 'var(--purple)', '', swRef)}</div>`;
+              }
+            }
+            // W:H ratio for women / non-binary
+            if (profGender === 'female' || profGender === 'nonbinary') {
+              const whDays = pDays.filter(d => d.waist && d.hips);
+              const whData = whDays.map(d => ({ ...d, whRatio: Math.round(d.waist / d.hips * 100) / 100 }));
+              const whRef = at.whRatio || defAt.whRatio || 0.70;
+              if (whData.length >= 2) {
+                aesInner += `<div style="margin-bottom:.5rem"><div class="chart-title">W:H Ratio (ref: ${whRef})</div>${trendLineRef(whData, 'whRatio', 'var(--purple)', '', whRef)}</div>`;
+              }
             }
             if (aesInner) {
               aestheticHtml = `<div class="card"><details class="move-section" data-key="trendAes" ${so('trendAes') ? 'open' : ''} ontoggle="${sToggle}">
