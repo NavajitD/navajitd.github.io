@@ -2656,14 +2656,14 @@
         0: [{ id: "cd0_1", label: "Hamstring stretch 60s/side", kcal: 5 }, { id: "cd0_2", label: "Hip flexor stretch 60s/side", kcal: 5 }, { id: "cd0_3", label: "Calf stretch 45s/side", kcal: 3 }, { id: "cd0_4", label: "Thoracic spine mobility 3 min", kcal: 8 }, { id: "cd0_5", label: "Slow breathing 2 min", kcal: 3 }]
       };
 
-      // Female-focused plans: more lower-body/glute emphasis, balanced upper body
+      // Female plans: balanced with athletic shaping — strong legs, toned upper body, defined core
       const WORKOUT_PLAN_F = {
-        1: { name: "Lower Body (Glute & Hamstring Focus)", exercises: ["Hip Thrust 4×8-12", "Romanian Deadlift 3×8-12", "Bulgarian Split Squat 3×10-12/side", "Cable Kickbacks 3×12-15/side", "Lying Leg Curl 3×10-15", "Standing Calf Raises 3×12-15"] },
-        2: { name: "Upper Body (Push + Pull)", exercises: ["Incline DB Press 3×8-12", "Seated Cable Row 3×10-12", "Shoulder Press 3×8-12", "Lat Pulldown 3×10-12", "Lateral Raise 3×12-15", "Tricep Rope Pressdown 2×12-15", "Bicep Curls 2×10-15"] },
+        1: { name: "Lower Body (Glute & Hamstring)", exercises: ["Hip Thrust 4×8-12", "Romanian Deadlift 3×8-12", "Bulgarian Split Squat 3×10-12/side", "Lying Leg Curl 3×10-15", "Standing Calf Raises 3×12-15", "Hanging Knee Raises 3×10-15"] },
+        2: { name: "Upper Body Push + Pull", exercises: ["Incline DB Press 3×8-12", "Seated Cable Row 3×10-12", "Shoulder Press 3×8-12", "Lat Pulldown 3×10-12", "Lateral Raise 3×12-15", "Tricep Rope Pressdown 2×12-15", "Bicep Curls 2×10-15"] },
         3: { name: "Active Recovery (Mobility + Walk)", exercises: ["30-45 min easy walk", "Couch stretch 60s/side", "Deep squat hold 60s", "Pigeon pose 60s/side", "Cat-cow × 10", "Thoracic openers 6/side"] },
-        4: { name: "Lower Body (Quad & Glute Focus)", exercises: ["Back Squat/Goblet Squat 4×6-10", "Leg Press 3×10-15", "Walking Lunges 3×12/side", "Leg Extension 3×12-15", "Hip Abduction 3×15-20", "Seated Calf Raise 3×12-15"] },
-        5: { name: "Upper Body + Core", exercises: ["Push-ups 3×8-15", "Single-Arm DB Row 3×10-12/side", "Arnold Press 3×10-12", "Face Pulls 3×12-20", "Cable Woodchop 3×10/side", "Plank Hold 3×30-45s", "Dead Bug 3×10/side"] },
-        6: { name: "Glute Pump + Cardio (Optional)", exercises: ["Banded Hip Thrust 3×15-20", "Sumo Deadlift 3×10-12", "Step-ups 3×12/side", "Cable Pull-through 3×12-15", "20 min moderate cardio (elliptical/cycling)"] },
+        4: { name: "Lower Body (Quad & Posterior)", exercises: ["Back Squat/Goblet Squat 4×6-10", "Leg Press 3×10-15", "Walking Lunges 3×12/side", "Leg Extension 3×12-15", "Hip Abduction 3×15-20", "Seated Calf Raise 3×12-15"] },
+        5: { name: "Upper Body + Core Sculpt", exercises: ["Push-ups 3×8-15", "Single-Arm DB Row 3×10-12/side", "Arnold Press 3×10-12", "Face Pulls 3×12-20", "Cable Woodchop 3×10/side", "Plank Hold 3×30-45s", "Dead Bug 3×10/side"] },
+        6: { name: "Full Body Pump (Optional)", exercises: ["Banded Hip Thrust 3×15-20", "Lateral Raise 4×12-20", "Sumo Deadlift 3×10-12", "Cable Pull-through 3×12-15", "Incline Curls 3×10-15", "10 min easy incline walk"] },
         0: { name: "Social 5K + Long Mobility", exercises: ["5 min walk warm-up", "5K run (conversational pace)", "5 min walk cool-down", "Hamstring stretch 60s/side", "Hip flexor stretch 60s/side", "Pigeon pose 60s/side", "Full body foam roll 5 min"] }
       };
 
@@ -2687,13 +2687,13 @@
         0: [{ id: "cdf0_1", label: "Hamstring stretch 60s/side", kcal: 5 }, { id: "cdf0_2", label: "Hip flexor stretch 60s/side", kcal: 5 }, { id: "cdf0_3", label: "Pigeon pose 60s/side", kcal: 5 }, { id: "cdf0_4", label: "Full body foam roll 3 min", kcal: 8 }, { id: "cdf0_5", label: "Slow breathing 2 min", kcal: 3 }]
       };
 
-      // Non-binary / balanced plans: full-body approach
+      // Non-binary / balanced plans: even upper-lower split
       const WORKOUT_PLAN_NB = {
-        1: { name: "Full Body Push", exercises: ["Incline DB Press 3×8-12", "Shoulder Press 3×8-12", "Leg Press 3×10-15", "Cable Fly 2×12-15", "Lateral Raise 3×12-20", "Tricep Rope Pressdown 3×10-15", "Standing Calf Raises 3×12-15"] },
-        2: { name: "Lower Body + Core", exercises: ["Back Squat/Goblet Squat 4×6-10", "Romanian Deadlift 3×8-12", "Walking Lunges 3×12/side", "Leg Curl 3×10-15", "Hip Thrust 3×10-12", "Ab Wheel/Cable Crunch 3×10-15"] },
+        1: { name: "Upper Push (Shoulders + Chest)", exercises: ["Incline DB Press 3×8-12", "Shoulder Press 3×8-12", "Cable Fly 2×12-15", "Lateral Raise 3×12-20", "Tricep Rope Pressdown 3×10-15", "Push-ups 2×failure (optional)"] },
+        2: { name: "Lower Body (Squat Focus)", exercises: ["Back Squat/Goblet Squat 4×6-10", "Romanian Deadlift 3×8-12", "Walking Lunges 3×12/side", "Leg Curl 3×10-15", "Standing Calf Raises 3×12-15", "Hanging Knee Raises 3×10-15"] },
         3: { name: "Active Recovery (Mobility + Walk)", exercises: ["30-45 min easy walk", "Couch stretch 60s/side", "Deep squat hold 60s", "Pigeon pose 60s/side", "Thoracic openers 6/side", "Shoulder wall slides 10 reps"] },
-        4: { name: "Full Body Pull", exercises: ["Pull-ups/Lat Pulldown 4×6-12", "Chest-Supported Row 3×8-12", "Face Pulls 3×12-20", "Barbell/DB Curls 3×8-12", "Rear Delt Fly 3×12-20", "Hammer Curls 2×10-15"] },
-        5: { name: "Lower Body + Accessories", exercises: ["Trap Bar Deadlift 3×4-8", "Bulgarian Split Squat 3×10-12/side", "Hip Thrust 3×10-12", "Leg Extension 2×12-15", "Seated Calf Raise 3×10-15", "Plank Hold 3×30-45s", "Farmer's Carries 3×30-45s"] },
+        4: { name: "Upper Pull (Back + Arms)", exercises: ["Pull-ups/Lat Pulldown 4×6-12", "Chest-Supported Row 3×8-12", "Face Pulls 3×12-20", "Barbell/DB Curls 3×8-12", "Rear Delt Fly 3×12-20", "Hammer Curls 2×10-15"] },
+        5: { name: "Lower Body (Hinge/Glute) + Core", exercises: ["Trap Bar Deadlift 3×4-8", "Bulgarian Split Squat 3×10-12/side", "Hip Thrust 3×10-12", "Leg Extension 2×12-15", "Seated Calf Raise 3×10-15", "Plank Hold 3×30-45s", "Farmer's Carries 3×30-45s"] },
         6: { name: "Full Body Pump (Optional)", exercises: ["Push-ups 3×10-15", "Lateral Raise 4×12-20", "Cable Row 3×12-15", "Bodyweight Squats 3×15", "Incline Curls 3×10-15", "10 min easy incline walk"] },
         0: { name: "Social 5K + Long Mobility", exercises: ["5 min walk warm-up", "5K run (conversational pace)", "5 min walk cool-down", "Hamstring stretch 60s/side", "Hip flexor stretch 60s/side", "Calf stretch 45s/side", "Thoracic spine mobility 5 min"] }
       };
@@ -2811,7 +2811,7 @@
           if (f.micros && typeof f.micros === "object") for (const [k, v] of Object.entries(f.micros)) { t.micros[k] = (t.micros[k] || 0) + num0(v); }
         }
 
-        SUPPLEMENTS.forEach(s => {
+        getUserSupplements().forEach(s => {
           if (lwwGet(d?.supplementChecks, s.id)) {
             t.cal += num0(s.cal); t.protein += num0(s.protein); t.carbs += num0(s.carbs); t.fat += num0(s.fat); t.fiber += num0(s.fiber);
             if (s.micros) for (const [k, v] of Object.entries(s.micros)) { t.micros[k] = (t.micros[k] || 0) + num0(v); }
@@ -3149,6 +3149,9 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         p.exerciseGoal = obData.exerciseGoal;
         Object.assign(p, obData.tracks);
         p.aestheticTargets = obData.aestheticTargets;
+        p.customSkincare = [];
+        p.customHaircare = [];
+        p.customSupplements = [];
         p.onboardingComplete = true;
 
         try {
@@ -3419,6 +3422,9 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           trackHaircare: true,
           trackTrends: true,
           aestheticTargets: {}, // { swRatio, whRatio, weight, bodyFat, waist, skeletalMuscle, visceralFat }
+          customSkincare: null, // null = use defaults (legacy), [] = user-defined list
+          customHaircare: null, // null = use defaults (legacy), [] = user-defined list
+          customSupplements: null, // null = use defaults (legacy), [] = user-defined list
           onboardingComplete: false,
           mode: 'vanilla' // vanilla or gamified
         };
@@ -3436,6 +3442,81 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           render();
         } catch (e) { toast("Save failed: " + e.message, "error"); }
       }
+
+      // ── Customisable skincare / haircare / supplement helpers ──
+      window.getUserSkincare = function () {
+        const p = userProfile || {};
+        if (Array.isArray(p.customSkincare)) return p.customSkincare;
+        return SKINCARE_TASKS; // legacy fallback
+      };
+      window.getUserHaircare = function (dayNum) {
+        const p = userProfile || {};
+        if (Array.isArray(p.customHaircare)) {
+          return p.customHaircare.filter(t => !t.days || t.days.length === 0 || t.days.includes(dayNum));
+        }
+        return HAIRCARE_SCHEDULE[dayNum] || []; // legacy fallback
+      };
+      window.getUserSupplements = function () {
+        const p = userProfile || {};
+        if (Array.isArray(p.customSupplements)) return p.customSupplements;
+        return SUPPLEMENTS; // legacy fallback
+      };
+
+      // Save a profile field and sync
+      window._saveProfileField = async function (field, value) {
+        userProfile[field] = value;
+        await db.collection("users").doc(currentUser.uid).set({ profile: userProfile }, { merge: true });
+        _htWriteCache(currentUser.uid, selectedDate, null, userProfile);
+      };
+
+      // ── Skincare CRUD ──
+      window.addSkincareTask = async function () {
+        const label = document.getElementById('scNewLabel')?.value?.trim();
+        if (!label) { toast('Enter a step name', 'warn'); return; }
+        const amPm = document.getElementById('scNewAmPm')?.value || 'am';
+        const freq = document.getElementById('scNewFreq')?.value || 'daily';
+        const list = Array.isArray(userProfile.customSkincare) ? [...userProfile.customSkincare] : [];
+        list.push({ id: 'sc_' + Date.now(), label: (amPm === 'am' ? 'AM' : 'PM') + ': ' + label, amPm, freq, req: true });
+        await _saveProfileField('customSkincare', list);
+        render(); toast('Step added');
+      };
+      window.removeSkincareTask = async function (id) {
+        const list = (userProfile.customSkincare || []).filter(t => t.id !== id);
+        await _saveProfileField('customSkincare', list);
+        render();
+      };
+
+      // ── Haircare CRUD ──
+      window.addHaircareTask = async function () {
+        const label = document.getElementById('hcNewLabel')?.value?.trim();
+        if (!label) { toast('Enter a step name', 'warn'); return; }
+        const daysStr = document.getElementById('hcNewDays')?.value || '';
+        const days = daysStr ? daysStr.split(',').map(Number).filter(n => n >= 0 && n <= 6) : [];
+        const list = Array.isArray(userProfile.customHaircare) ? [...userProfile.customHaircare] : [];
+        list.push({ id: 'hc_' + Date.now(), label, days });
+        await _saveProfileField('customHaircare', list);
+        render(); toast('Step added');
+      };
+      window.removeHaircareTask = async function (id) {
+        const list = (userProfile.customHaircare || []).filter(t => t.id !== id);
+        await _saveProfileField('customHaircare', list);
+        render();
+      };
+
+      // ── Supplement CRUD ──
+      window.addSupplement = async function () {
+        const name = document.getElementById('suppNewName')?.value?.trim();
+        if (!name) { toast('Enter supplement name', 'warn'); return; }
+        const list = Array.isArray(userProfile.customSupplements) ? [...userProfile.customSupplements] : [];
+        list.push({ id: 'supp_' + Date.now(), name, freq: 'daily', icon: 'pill', micros: {} });
+        await _saveProfileField('customSupplements', list);
+        render(); toast('Supplement added');
+      };
+      window.removeSupplement = async function (id) {
+        const list = (userProfile.customSupplements || []).filter(s => s.id !== id);
+        await _saveProfileField('customSupplements', list);
+        render();
+      };
 
       let HEIGHT_CM_DYNAMIC = HEIGHT_CM;
       // Override calcBMI to use dynamic height
@@ -4047,6 +4128,9 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         if (swEl) at.swRatio = parseFloat(swEl.value) || 1.6;
         if (whEl) at.whRatio = parseFloat(whEl.value) || 0.70;
         p.aestheticTargets = at;
+        p.customSkincare = prev.customSkincare;
+        p.customHaircare = prev.customHaircare;
+        p.customSupplements = prev.customSupplements;
         p.onboardingComplete = prev.onboardingComplete || true;
         p.mode = document.getElementById('modeToggle')?.dataset.mode || 'vanilla';
         return p;
@@ -4213,12 +4297,18 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           <button class="food-remove" onclick="removeFood('${f.id}')">✕</button>
         </div>`).join("");
 
-        let suppList = SUPPLEMENTS.map(s => {
+        const suppItems = getUserSupplements();
+        const isCustomSupp = Array.isArray((userProfile || {}).customSupplements);
+        let suppList = suppItems.map(s => {
           const taken = lwwGet(dayData.supplementChecks, s.id);
-          return `<div class="supp-item ${taken ? "taken" : ""}" onclick="toggleSupp('${s.id}')">
-          <span class="supp-icon">${licon(s.icon)}</span><span class="supp-name">${esc(s.name)}</span>
-          <span class="supp-freq">${esc(s.freq)}</span><span class="supp-check">${taken ? "✓" : ""}</span></div>`;
+          return `<div class="supp-item ${taken ? "taken" : ""}" style="position:relative" onclick="toggleSupp('${s.id}')">
+          <span class="supp-icon">${licon(s.icon || 'pill')}</span><span class="supp-name">${esc(s.name)}</span>
+          <span class="supp-freq">${esc(s.freq)}</span><span class="supp-check">${taken ? "✓" : ""}</span>${isCustomSupp ? `<button class="log-del" style="position:absolute;right:.3rem;top:50%;transform:translateY(-50%)" onclick="event.stopPropagation();removeSupplement('${s.id}')">✕</button>` : ''}
+          </div>`;
         }).join("");
+        if (!suppItems.length) {
+          suppList = `<div class="empty-state"><div class="empty-icon">${licon('pill', 24)}</div>No supplements — add yours below</div>`;
+        }
 
         // Micros
         const met = MICROS.filter(m => (t.micros[m.key] || 0) >= m.target).length;
@@ -4283,6 +4373,13 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         <div class="card">
           <div class="card-title">${licon('pill')} Supplements</div>
           ${suppList}
+          <details style="margin-top:.5rem">
+            <summary style="font-size:.72rem;color:var(--accent);cursor:pointer;font-weight:600">+ Add supplement</summary>
+            <div class="form-row form-row-btn" style="margin-top:.4rem">
+              <div class="form-field"><label>Name</label><input type="text" id="suppNewName" placeholder="e.g. Magnesium 400mg"></div>
+              <button class="btn-primary" style="height:2.4rem" onclick="addSupplement()">Add</button>
+            </div>
+          </details>
         </div>`;
       }
 
@@ -4494,26 +4591,57 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
 
       /* ─── CARE TAB ─── */
       window.renderCare = function () {
-        const scReq = SKINCARE_TASKS.filter(t => t.req !== false);
-        const scDone = scReq.every(t => lwwGet(dayData.skincareChecks, t.id));
-        const hcTasks = HAIRCARE_SCHEDULE[dow(selectedDate)] || [];
-        const hcDone = hcTasks.length === 0 || hcTasks.every(t => lwwGet(dayData.haircareChecks, t.id));
-
+        const scTasks = getUserSkincare();
+        const scReq = scTasks.filter(t => t.req !== false);
+        const scDone = scReq.length > 0 && scReq.every(t => lwwGet(dayData.skincareChecks, t.id));
+        const hcTasks = getUserHaircare(dow(selectedDate));
+        const hcDone = hcTasks.length > 0 && hcTasks.every(t => lwwGet(dayData.haircareChecks, t.id));
+        const isCustomSc = Array.isArray((userProfile || {}).customSkincare);
+        const isCustomHc = Array.isArray((userProfile || {}).customHaircare);
+        const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
         return `
         <div class="card">
           <div class="card-title">${licon('droplets')} Skincare <span class="card-title-status" style="color:var(--success)">${scDone ? licon('check-circle', 14) : ""}</span></div>
-          ${SKINCARE_TASKS.map(t => {
+          ${scTasks.length ? scTasks.map(t => {
           const on = lwwGet(dayData.skincareChecks, t.id);
-          return `<label class="check-item"><input type="checkbox" ${on ? "checked" : ""} onchange="toggleCheck('skincareChecks','${t.id}')"><span>${esc(t.label)}${t.req === false ? ' <span class="opt-tag">(optional)</span>' : ""}</span></label>`;
-        }).join("")}
+          return `<label class="check-item" style="position:relative"><input type="checkbox" ${on ? "checked" : ""} onchange="toggleCheck('skincareChecks','${t.id}')"><span>${esc(t.label)}${t.req === false ? ' <span class="opt-tag">(optional)</span>' : ""}${t.freq && t.freq !== 'daily' ? ` <span class="opt-tag">(${esc(t.freq)})</span>` : ""}</span>${isCustomSc ? `<button class="log-del" style="position:absolute;right:0;top:50%;transform:translateY(-50%)" onclick="event.preventDefault();event.stopPropagation();removeSkincareTask('${t.id}')">✕</button>` : ''}</label>`;
+        }).join("") : `<div class="empty-state"><div class="empty-icon">${licon('sparkles', 24)}</div>No skincare steps yet — add yours below</div>`}
+          <details style="margin-top:.5rem">
+            <summary style="font-size:.72rem;color:var(--accent);cursor:pointer;font-weight:600">+ Add step</summary>
+            <div style="margin-top:.4rem">
+              <div class="form-row" style="flex-wrap:nowrap;gap:.3rem">
+                <div class="form-field" style="flex:3"><label>Step</label><input type="text" id="scNewLabel" placeholder="e.g. Cleanse face"></div>
+                <div class="form-field" style="flex:1;min-width:60px"><label>When</label><select id="scNewAmPm" style="width:100%;height:2.4rem;font-family:var(--font);font-size:.8rem;border:1px solid var(--input-border);border-radius:5px;background:var(--input-bg);color:var(--text)"><option value="am">AM</option><option value="pm">PM</option></select></div>
+              </div>
+              <div class="form-row" style="flex-wrap:nowrap;gap:.3rem;margin-top:.3rem">
+                <div class="form-field" style="flex:2"><label>Frequency</label><select id="scNewFreq" style="width:100%;height:2.4rem;font-family:var(--font);font-size:.8rem;border:1px solid var(--input-border);border-radius:5px;background:var(--input-bg);color:var(--text)"><option value="daily">Daily</option><option value="2-3x/week">2-3x/week</option><option value="weekly">Weekly</option><option value="as needed">As needed</option></select></div>
+                <button class="btn-primary" style="height:2.4rem;align-self:flex-end" onclick="addSkincareTask()">Add</button>
+              </div>
+            </div>
+          </details>
         </div>
         <div class="card">
           <div class="card-title">${licon('wind')} Haircare <span class="card-title-status" style="color:var(--success)">${hcDone ? licon('check-circle', 14) : ""}</span></div>
           ${hcTasks.length ? hcTasks.map(t => {
           const on = lwwGet(dayData.haircareChecks, t.id);
-          return `<label class="check-item"><input type="checkbox" ${on ? "checked" : ""} onchange="toggleCheck('haircareChecks','${t.id}')"><span>${esc(t.label)}</span></label>`;
-        }).join("") : `<div class="empty-state">No haircare tasks for today</div>`}
+          return `<label class="check-item" style="position:relative"><input type="checkbox" ${on ? "checked" : ""} onchange="toggleCheck('haircareChecks','${t.id}')"><span>${esc(t.label)}${t.days && t.days.length && t.days.length < 7 ? ` <span class="opt-tag">(${t.days.map(d => dayNames[d]).join(', ')})</span>` : ''}</span>${isCustomHc ? `<button class="log-del" style="position:absolute;right:0;top:50%;transform:translateY(-50%)" onclick="event.preventDefault();event.stopPropagation();removeHaircareTask('${t.id}')">✕</button>` : ''}</label>`;
+        }).join("") : `<div class="empty-state"><div class="empty-icon">${licon('wind', 24)}</div>${isCustomHc ? 'No haircare steps for today — add yours below' : 'No haircare tasks for today'}</div>`}
+          <details style="margin-top:.5rem">
+            <summary style="font-size:.72rem;color:var(--accent);cursor:pointer;font-weight:600">+ Add step</summary>
+            <div style="margin-top:.4rem">
+              <div class="form-row" style="flex-wrap:nowrap;gap:.3rem">
+                <div class="form-field" style="flex:3"><label>Step</label><input type="text" id="hcNewLabel" placeholder="e.g. Shampoo"></div>
+              </div>
+              <div class="form-row" style="flex-wrap:nowrap;gap:.3rem;margin-top:.3rem">
+                <div class="form-field" style="flex:3"><label>Days (blank = every day)</label>
+                  <div style="display:flex;gap:.2rem;flex-wrap:wrap">${[0,1,2,3,4,5,6].map(d => `<label style="display:flex;align-items:center;gap:.15rem;font-size:.68rem;cursor:pointer"><input type="checkbox" class="hcDayCb" value="${d}" style="accent-color:var(--accent);width:14px;height:14px">${dayNames[d]}</label>`).join('')}</div>
+                </div>
+                <button class="btn-primary" style="height:2.4rem;align-self:flex-end" onclick="document.getElementById('hcNewDays').value=[...document.querySelectorAll('.hcDayCb:checked')].map(c=>c.value).join(',');addHaircareTask()">Add</button>
+              </div>
+              <input type="hidden" id="hcNewDays" value="">
+            </div>
+          </details>
         </div>
         <div class="card">
           <div class="card-title">${licon('message-circle')} Healthee Mate</div>
