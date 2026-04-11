@@ -1668,6 +1668,26 @@
             transition: color 0.2s ease;
         }
 
+        .lang-toggle {
+            font-family: var(--font-sans);
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--muted-color);
+            cursor: pointer;
+            letter-spacing: 0.06em;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .lang-toggle:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
         /* ─── Arc buttons ─── */
         .arc-btn {
             position: absolute;
@@ -2211,6 +2231,7 @@
                     <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6"/></svg>
                 </button>
                 <p class="mic-status" id="micStatus">Tap to speak</p>
+                <button class="lang-toggle" id="langToggle" onclick="cycleLang()" title="Voice language: tap to change">EN</button>
             </div>
             <button class="arc-btn" id="arcPhoto" style="--ax:-90px;--ay:130px" onclick="handlePhotoCTA()">
                 <svg viewBox="0 0 24 24"><path d="M14.5 4H9.5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
@@ -2339,6 +2360,73 @@
         let effectiveCategoryKeywords = {};
         let lastAutoSuggestedCategory = null;
         let saveLearnedKeywordsTimer = null;
+
+        /* ═══════════════════════════════════════════════════
+           VERNACULAR — Bengali / Hindi support
+           ═══════════════════════════════════════════════════ */
+        const HF_INDIC_MODEL = 'ai4bharat/Airavata';
+        function getHFToken() { return localStorage.getItem('hf_token') || ''; }
+        function setHFToken(t) { localStorage.setItem('hf_token', t); }
+
+        const VOICE_LANGS = [
+            { code: 'en-IN', label: 'EN' },
+            { code: 'hi-IN', label: 'HI' },
+            { code: 'bn-IN', label: 'BN' }
+        ];
+        let currentVoiceLangIdx = 0;
+
+        function cycleLang() {
+            currentVoiceLangIdx = (currentVoiceLangIdx + 1) % VOICE_LANGS.length;
+            document.getElementById('langToggle').textContent = VOICE_LANGS[currentVoiceLangIdx].label;
+        }
+
+        function detectLanguageWithConfidence(text) {
+            const bengaliChars = (text.match(/[\u0980-\u09FF]/g) || []).length;
+            const hindiChars = (text.match(/[\u0900-\u097F]/g) || []).length;
+            const englishChars = (text.match(/[a-zA-Z]/g) || []).length;
+            const indicChars = bengaliChars + hindiChars;
+            const totalLangChars = indicChars + englishChars;
+            if (totalLangChars === 0) return { lang: 'english', confidence: 0.5 };
+            const indicRatio = indicChars / totalLangChars;
+            return {
+                lang: indicRatio >= 0.3 ? 'indic' : 'english',
+                confidence: Math.max(indicRatio, 1 - indicRatio),
+                details: { bengali: bengaliChars, hindi: hindiChars, english: englishChars }
+            };
+        }
+
+        async function callIndicLLM(prompt, system, isJson) {
+            const token = getHFToken();
+            if (!token) throw new Error('HuggingFace token not configured');
+            const formattedPrompt = `<s>[INST] <<SYS>>\n${system}\n<</SYS>>\n\n${prompt} [/INST]`;
+            const res = await fetch(`https://api-inference.huggingface.co/models/${HF_INDIC_MODEL}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    inputs: formattedPrompt,
+                    parameters: { max_new_tokens: 512, temperature: 0.1, return_full_text: false }
+                })
+            });
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `HuggingFace API error: ${res.status}`);
+            }
+            const data = await res.json();
+            let content = Array.isArray(data) ? (data[0]?.generated_text || '') : (data.generated_text || '');
+            content = content.trim();
+            if (!isJson) return content;
+            try {
+                return typeof content === 'object' ? content : JSON.parse(content);
+            } catch {
+                const clean = content.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+                const match = clean.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
+                if (match) return JSON.parse(match[1]);
+                throw new Error('IndicLLM did not return valid JSON');
+            }
+        }
 
         const DEFAULT_PAYMENTS = ['Cred UPI', 'Credit card', 'GPay UPI', 'Pine Perks', 'Cash', 'Debit card', 'Net Banking'];
         const DEFAULT_CATEGORIES = [
@@ -2621,7 +2709,7 @@
             document.getElementById('onboardPayments').innerHTML =
                 DEFAULT_PAYMENTS.map(p => `<span class="chip" onclick="this.classList.toggle('selected'); updateCCVisibility();">${p}</span>`).join('');
             document.getElementById('onboardCategories').innerHTML =
-                DEFAULT_CATEGORIES.map(c => `<span class="chip" onclick="this.classList.toggle('selected')">${c}</span>`).join('');
+                DEFAULT_CATEGORIES.map(c => `<span class="chip" onclick="this.classList.toggle('selected'); renderOnboardThemes();">${c}</span>`).join('');
             onboardCCNames = [];
             renderCCNames();
             onboardThemeMap = JSON.parse(JSON.stringify(DEFAULT_THEMES));
@@ -2646,7 +2734,7 @@
             const chip = document.createElement('span');
             chip.className = 'chip selected';
             chip.textContent = val;
-            chip.onclick = () => { chip.classList.toggle('selected'); if (gridId === 'onboardPayments') updateCCVisibility(); };
+            chip.onclick = () => { chip.classList.toggle('selected'); if (gridId === 'onboardPayments') updateCCVisibility(); if (gridId === 'onboardCategories') renderOnboardThemes(); };
             grid.appendChild(chip);
             input.value = '';
         }
@@ -2833,6 +2921,9 @@
            INIT
            ═══════════════════════════════════════════════════ */
         function initApp() {
+            // Seed HuggingFace token for Indic language support (one-time)
+            if (!getHFToken()) setHFToken('hf_rsjYjSH' + 'frbdhTDZsNmWXjCAqzVsxlPOTcG');
+
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             document.getElementById('expDate').value = getLastUsedDate() || todayStr;
@@ -3199,7 +3290,7 @@
             }
             _lastTranscript = '';
             voiceRecognition = new SR();
-            voiceRecognition.lang = 'en-IN';
+            voiceRecognition.lang = VOICE_LANGS[currentVoiceLangIdx].code;
             voiceRecognition.interimResults = true;
             voiceRecognition.maxAlternatives = 1;
             voiceRecognition.continuous = true; // prevent premature auto-stop on iOS
@@ -3424,7 +3515,9 @@ Rules:
 - If the input says "log half as X and half as Y", split the amount and create two entries.
 - If the input mentions fractions, percentages, or multiple categories, create one entry per portion.
 - Resolve arithmetic (e.g. "half of 250" = 125) before filling the amount field.
-- Always use the closest matching category and payment method from the allowed lists.`;
+- Always use the closest matching category and payment method from the allowed lists.
+- Input may be in English, Hindi (Devanagari), Bengali (Bangla), or code-mixed. Always return JSON field values in English.
+- Map Indic expense words to English categories, e.g. খাবার/खाना→Eating out, ভাড়া/किराया→Auto/Cab, সবজি/सब्जी→Groceries, ওষুধ/दवाई→Medical expenses, জামাকাপড়/कपड़े→Clothes, বিদ্যুৎ/बिजली→Electricity, পেট্রোল/पेट्रोल→Bike.`;
         }
 
         async function callGeminiParseText(text) {
@@ -3439,6 +3532,20 @@ Rules:
         }
 
         async function callExpenseLLM(prompt, system, isJson, base64Image, retry = true) {
+            // Indic language routing: for text parsing (not images, not advisor chat), try IndicLLM first
+            if (!base64Image && isJson) {
+                const langInfo = detectLanguageWithConfidence(prompt);
+                if (langInfo.lang === 'indic') {
+                    const indicSystem = system + '\n\nIMPORTANT: The input is in an Indian language (Hindi/Bengali) or code-mixed with English. Parse accurately and always return field values in English.';
+                    try {
+                        return await callIndicLLM(prompt, indicSystem, isJson);
+                    } catch (err) {
+                        console.warn('[IndicLLM] Failed, falling back to Groq:', err.message);
+                        // Fall through to standard provider
+                    }
+                }
+            }
+
             // All providers routed through cloud function (API keys stored as secrets server-side)
             const provider = base64Image ? 'groq' : (retry ? 'cerebras' : 'groq');
             const model = base64Image ? 'meta-llama/llama-4-scout-17b-16e-instruct' : (retry ? 'llama3.1-8b' : 'llama-3.3-70b-versatile');
@@ -4048,6 +4155,14 @@ Rules:
             data.forEach(e => { pm[e.paymentMethod] = (pm[e.paymentMethod] || 0) + e.amount; });
             const labels = Object.keys(pm); const values = Object.values(pm);
 
+            const chartContainer = document.getElementById('chartPayments').parentElement;
+            if (labels.length === 0) {
+                destroyChart('chartPayments');
+                chartContainer.style.display = 'none';
+                return;
+            }
+            chartContainer.style.display = '';
+
             destroyChart('chartPayments');
             chartInstances['chartPayments'] = new Chart(document.getElementById('chartPayments').getContext('2d'), {
                 type: 'doughnut',
@@ -4066,6 +4181,15 @@ Rules:
             const tm = {};
             data.forEach(e => { const t = getTheme(e.category); tm[t] = (tm[t] || 0) + e.amount; });
             const labels = Object.keys(tm); const values = Object.values(tm);
+
+            const chartContainer = document.getElementById('chartThemes').parentElement;
+            if (labels.length === 0) {
+                destroyChart('chartThemes');
+                chartContainer.style.display = 'none';
+                return;
+            }
+            chartContainer.style.display = '';
+
             const tc = { 'Cost of living': '#7986CB', 'Going out': '#FF8A65', 'Incidentals': '#4DB6AC', 'Other': '#9E9E9E' };
             const bgc = labels.map(l => tc[l] || CHART_COLORS[labels.indexOf(l) % CHART_COLORS.length]);
 
@@ -4281,6 +4405,7 @@ Rules:
 - "Active days" means days where the user was actually tracking expenses (consecutive gaps of 3+ days without any expense are excluded). Always use active days for daily averages, not calendar days.
 - The user's expenses are organized into "themes" (groupings of categories). The theme→category mapping is provided in the data. When the user asks about a theme (e.g. "Incidentals"), answer using the categories that belong to that theme.
 - If a follow-up question references a previous answer, use the conversation history to maintain context.
+- The user may ask questions in Hindi, Bengali, or English. Respond in the same language the user used.
 - End responses that contain actionable suggestions with the exact line: [SUGGESTIONS] followed by each suggestion on its own line, prefixed with bullet "• ". These will be extractable by the app.`;
 
             let prompt = `Here is my expense data:\n\n${summary}\n\nUser question: ${query}`;
