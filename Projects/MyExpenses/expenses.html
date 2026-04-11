@@ -1670,17 +1670,20 @@
 
         .lang-toggle {
             font-family: var(--font-sans);
-            font-size: 0.68rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            padding: 0.15rem 0.5rem;
-            border-radius: 4px;
+            width: 2.5rem;
+            height: 2rem;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
             background: var(--bg-color);
             color: var(--muted-color);
             cursor: pointer;
-            letter-spacing: 0.06em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.2s ease;
-            text-transform: uppercase;
+            flex-shrink: 0;
         }
 
         .lang-toggle:hover {
@@ -1945,6 +1948,7 @@
             <h1>Expense Tracker</h1>
         </div>
         <div class="header-right">
+            <button class="lang-toggle" id="langToggle" onclick="cycleLang()" title="Voice language: tap to change">EN</button>
             <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
                 <svg class="icon-original" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="4" />
@@ -2231,7 +2235,6 @@
                     <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M9 22h6"/></svg>
                 </button>
                 <p class="mic-status" id="micStatus">Tap to speak</p>
-                <button class="lang-toggle" id="langToggle" onclick="cycleLang()" title="Voice language: tap to change">EN</button>
             </div>
             <button class="arc-btn" id="arcPhoto" style="--ax:-90px;--ay:130px" onclick="handlePhotoCTA()">
                 <svg viewBox="0 0 24 24"><path d="M14.5 4H9.5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
@@ -2370,8 +2373,8 @@
 
         const VOICE_LANGS = [
             { code: 'en-IN', label: 'EN' },
-            { code: 'hi-IN', label: 'HI' },
-            { code: 'bn-IN', label: 'BN' }
+            { code: 'hi-IN', label: 'हि' },
+            { code: 'bn-IN', label: 'বা' }
         ];
         let currentVoiceLangIdx = 0;
 
