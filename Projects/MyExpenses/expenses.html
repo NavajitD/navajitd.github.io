@@ -3072,9 +3072,6 @@
             allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
             sortExpenses();
             renderRecent();
-            toast('Expense added!', 'success');
-            resetForm();
-            closeFormSheet();
 
             getCollection().add({
                 ...docData,
@@ -3083,6 +3080,22 @@
                 toast('Sync failed — will retry', 'error');
                 console.error(err);
             });
+
+            // If there are queued items, advance to the next one
+            if (_formQueue.length > 0) {
+                const next = _formQueue.shift();
+                toast('Saved! Next expense…', 'success');
+                resetForm();
+                populateFormFromParsed(next);
+                updateQueueUI();
+                setTimeout(() => document.getElementById('expName').focus(), 80);
+            } else {
+                const wasQueue = _formQueueTotal > 1;
+                toast(wasQueue ? 'All expenses saved!' : 'Expense added!', 'success');
+                resetForm();
+                resetQueueUI();
+                closeFormSheet();
+            }
         }
 
         /* ═══════════════════════════════════════════════════
@@ -3171,6 +3184,9 @@
         let holdMode = false;
         let holdTimer = null;
         let _lastTranscript = '';
+        let _userStopped = false;        // true only when user explicitly taps stop
+        let _formQueue = [];             // sequential review queue for multi-payment expenses
+        let _formQueueTotal = 0;         // total items in current queue batch
 
         const HOLD_THRESHOLD = 400; // ms — longer press = hold-to-talk
 
@@ -3285,36 +3301,35 @@
             });
         }
 
-        function startVoiceRecognition() {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) {
-                setCaptureStatus('Voice not supported in this browser', 'error');
-                return;
-            }
-            _lastTranscript = '';
-            voiceRecognition = new SR();
-            voiceRecognition.lang = VOICE_LANGS[currentVoiceLangIdx].code;
-            voiceRecognition.interimResults = true;
-            voiceRecognition.maxAlternatives = 1;
-            voiceRecognition.continuous = true; // prevent premature auto-stop on iOS
+        // Accumulated transcript fragments across auto-restarts
+        let _accumulatedTranscript = '';
 
-            voiceRecognition.onstart = () => {
+        function setupVoiceHandlers(rec) {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            rec.onstart = () => {
                 voiceActive = true;
                 document.getElementById('micBtn').classList.add('listening');
                 setMicStatus('Listening…');
             };
 
-            voiceRecognition.onresult = e => {
+            rec.onresult = e => {
                 const finalParts = Array.from(e.results).filter(r => r.isFinal).map(r => r[0].transcript);
                 const interimParts = Array.from(e.results).filter(r => !r.isFinal).map(r => r[0].transcript);
-                _lastTranscript = [...finalParts, ...interimParts].join(' ').trim();
+                const sessionTranscript = [...finalParts, ...interimParts].join(' ').trim();
+                _lastTranscript = (_accumulatedTranscript + ' ' + sessionTranscript).trim();
                 if (_lastTranscript) {
-                    const short = _lastTranscript.length > 50 ? _lastTranscript.substring(0, 50) + '…' : _lastTranscript;
+                    const short = _lastTranscript.length > 80 ? _lastTranscript.substring(0, 80) + '…' : _lastTranscript;
                     setMicStatus('"' + short + '"');
                 }
             };
 
-            voiceRecognition.onerror = e => {
+            rec.onerror = e => {
+                // Recoverable errors (no-speech, audio-capture glitch): keep
+                // voiceActive true so onend's auto-restart logic fires.
+                if (e.error === 'no-speech' || e.error === 'audio-capture') {
+                    return;
+                }
                 clearTimeout(holdTimer);
                 holdMode = false;
                 voiceActive = false;
@@ -3322,17 +3337,38 @@
                 voiceRecognition = null;
                 if (e.error === 'not-allowed') {
                     showPermissionModal('mic');
-                } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
-                    // 'aborted' fires when stop() is called manually — not a real error
+                } else if (e.error !== 'aborted') {
                     setCaptureStatus('Voice error: ' + e.error, 'error');
                 }
                 setMicStatus('Tap to speak');
             };
 
-            voiceRecognition.onend = () => {
-                // With continuous=true this only fires after stop() is called or on error;
-                // transcript is already handled by stopVoiceAndProcess(). Guard against
-                // edge cases where onend fires while still supposedly active.
+            rec.onend = () => {
+                // Browsers may fire onend prematurely even with continuous=true
+                // (especially mobile). Auto-restart if user hasn't tapped stop.
+                if (voiceActive && !_userStopped) {
+                    // Preserve what we got so far before restarting
+                    _accumulatedTranscript = _lastTranscript;
+                    try {
+                        voiceRecognition = new SR();
+                        voiceRecognition.lang = VOICE_LANGS[currentVoiceLangIdx].code;
+                        voiceRecognition.interimResults = true;
+                        voiceRecognition.maxAlternatives = 1;
+                        voiceRecognition.continuous = true;
+                        setupVoiceHandlers(voiceRecognition);
+                        voiceRecognition.start();
+                    } catch (err) {
+                        voiceActive = false;
+                        document.getElementById('micBtn').classList.remove('listening');
+                        voiceRecognition = null;
+                        if (_lastTranscript) {
+                            processVoiceTranscript(_lastTranscript);
+                        } else {
+                            setMicStatus('Nothing heard — try again');
+                        }
+                    }
+                    return;
+                }
                 if (voiceActive) {
                     voiceActive = false;
                     document.getElementById('micBtn').classList.remove('listening');
@@ -3344,11 +3380,28 @@
                     }
                 }
             };
+        }
 
+        function startVoiceRecognition() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                setCaptureStatus('Voice not supported in this browser', 'error');
+                return;
+            }
+            _lastTranscript = '';
+            _accumulatedTranscript = '';
+            _userStopped = false;
+            voiceRecognition = new SR();
+            voiceRecognition.lang = VOICE_LANGS[currentVoiceLangIdx].code;
+            voiceRecognition.interimResults = true;
+            voiceRecognition.maxAlternatives = 1;
+            voiceRecognition.continuous = true;
+            setupVoiceHandlers(voiceRecognition);
             voiceRecognition.start();
         }
 
         function stopVoiceAndProcess() {
+            _userStopped = true;
             const wasActive = voiceActive;
             voiceActive = false;
             document.getElementById('micBtn').classList.remove('listening');
@@ -3365,6 +3418,7 @@
 
         async function processVoiceTranscript(transcript) {
             _lastTranscript = '';
+            _accumulatedTranscript = '';
             const short = transcript.length > 50 ? transcript.substring(0, 50) + '…' : transcript;
             setMicStatus('"' + short + '"');
             setCaptureStatus('Parsing…');
@@ -3373,7 +3427,10 @@
                 const direct = await handleParsedExpenses(parsed);
                 if (!direct) {
                     openFormSheet();
-                    setCaptureStatus('Form filled — review and submit', 'success');
+                    // Don't override status if queue UI already set it
+                    if (_formQueueTotal <= 1) {
+                        setCaptureStatus('Form filled — review and submit', 'success');
+                    }
                 }
                 setMicStatus('Tap to speak');
             } catch (err) {
@@ -3438,10 +3495,10 @@
             btn.disabled = true; btn.textContent = 'Parsing…';
             try {
                 const parsed = await callGeminiParseText(text);
-                const direct = await handleParsedExpenses(parsed);
+                await handleParsedExpenses(parsed);
                 closePasteZone();
-                if (!direct) {
-                    openFormSheet();
+                openFormSheet();
+                if (_formQueueTotal <= 1) {
                     setCaptureStatus('Form filled — review and submit', 'success');
                 }
             } catch (e) {
@@ -3631,13 +3688,63 @@ Rules:
                 populateFormFromParsed(items[0]);
                 return false; // caller should open form sheet
             }
-            items.forEach(addExpenseDirect);
-            sortExpenses();
-            renderRecent();
-            const names = items.map(i => i.name || 'Expense').join(', ');
-            setCaptureStatus(`Added ${items.length} expenses: ${names}`, 'success');
-            toast(`${items.length} expenses added ✓`);
-            return true;
+
+            // Check if all items share the same payment method
+            const methods = new Set(items.map(i => (i.paymentMethod || '').toLowerCase()));
+            if (methods.size <= 1) {
+                // Same payment method → consolidate into a single line item
+                const consolidated = {
+                    name: items.map(i => i.name || 'Expense').join(', '),
+                    amount: items.reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0),
+                    category: items[0].category,
+                    date: items[0].date,
+                    paymentMethod: items[0].paymentMethod
+                };
+                // Truncate name if too long
+                if (consolidated.name.length > 60) {
+                    consolidated.name = consolidated.name.substring(0, 57) + '…';
+                }
+                populateFormFromParsed(consolidated);
+                setCaptureStatus(`${items.length} items consolidated (₹${consolidated.amount}) — review and submit`, 'success');
+                return false; // caller opens form sheet
+            }
+
+            // Different payment methods → sequential form review
+            _formQueue = items.slice(1); // remaining items after the first
+            _formQueueTotal = items.length;
+            populateFormFromParsed(items[0]);
+            updateQueueUI();
+            return false; // caller opens form sheet
+        }
+
+        /* ── Queue UI for sequential multi-expense review ── */
+        function updateQueueUI() {
+            const btn = document.getElementById('submitBtn');
+            const header = document.querySelector('#expenseSheetPanel .sheet-header h3');
+            if (_formQueue.length > 0) {
+                const current = _formQueueTotal - _formQueue.length;
+                header.textContent = `Expense ${current} of ${_formQueueTotal}`;
+                btn.textContent = `Save & Next (${_formQueue.length} left)`;
+                setCaptureStatus(`Expense ${current} of ${_formQueueTotal} — review and save`, 'success');
+            } else if (_formQueueTotal > 1) {
+                // Last item in queue
+                const current = _formQueueTotal;
+                header.textContent = `Expense ${current} of ${_formQueueTotal}`;
+                btn.textContent = 'Save (last one)';
+                setCaptureStatus(`Last expense — review and save`, 'success');
+            } else {
+                header.textContent = 'Add Expense';
+                btn.textContent = 'Add Expense';
+            }
+        }
+
+        function resetQueueUI() {
+            _formQueue = [];
+            _formQueueTotal = 0;
+            const btn = document.getElementById('submitBtn');
+            const header = document.querySelector('#expenseSheetPanel .sheet-header h3');
+            header.textContent = 'Add Expense';
+            btn.textContent = 'Add Expense';
         }
 
         /* ── Form sheet ── */
@@ -3650,6 +3757,10 @@ Rules:
         function closeFormSheet() {
             document.getElementById('expenseSheet').classList.remove('show');
             document.body.style.overflow = '';
+            // If user closes mid-queue, discard remaining queued items
+            if (_formQueue.length > 0) {
+                resetQueueUI();
+            }
         }
 
         function handleSheetOverlayClick(e) {
