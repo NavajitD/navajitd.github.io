@@ -332,6 +332,10 @@ Gems are a soft currency earned through play — never purchasable for real mone
 
 **Octalysis note:** The Gem Shop is where **CD4 (Ownership)** and **CD6 (Scarcity)** intersect — gems are limited enough to feel valuable, but earnable enough that the user feels in control (**CD3**). **ME Time** is a deliberate White Hat reward that reinforces **CD3 (Empowerment of Creativity)** — the user decides what they've been putting off, and the app simply celebrates them for finally doing it.
 
+### Gem Decay
+
+After 14 consecutive days without any logging, 10% of banked gems are lost (min 1, max 10). A warning notification fires at day 10. Chill Mode suspends decay entirely. Full mechanics in **Section 11: Penalties & Consequence Mechanics**.
+
 ---
 
 ## 8. Notifications & Nudges
@@ -397,18 +401,106 @@ Below is the rough cadence of when users hit major milestones, to ensure early-g
 
 Gamification can backfire if it creates anxiety. These mechanics prevent that:
 
-1. **No punishment for missed days** — only streak freezes and neutral resets; no XP deductions, no lost badges.
+1. **Graduated consequences only** — penalties (detailed in Section 11) scale with inactivity, always with advance warnings and clear recovery paths. No XP is ever deducted; no badge is ever permanently removed.
 2. **Chill Mode toggle** — users can temporarily disable all challenge and streak notifications for up to 7 days (e.g., during travel or illness) without losing their streak, once every 60 days.
 3. **ME Time reward** — purchasable with gems, a user-defined personal reward. The user chooses something they've been holding out on and the app celebrates the follow-through. No prescriptions, just empowerment.
 4. **"Good Enough" framing** — goal hit notifications use language like *"Close enough — you were within 5%!"* rather than binary pass/fail.
 5. **Offline grace** — if a user logs data late (e.g., forgets to log dinner until next morning), the app accepts backdating for the previous day up to 6 AM.
 6. **No leaderboards** — social comparison is a leading cause of app abandonment among health apps. All gamification is personal-progress-based only.
 
-> **Octalysis balance:** HealThee's gamification is deliberately **White Hat dominant**. CD1 (Epic Meaning), CD2 (Accomplishment), and CD3 (Creativity) are the primary engines. Black Hat drives (CD6 Scarcity, CD7 Unpredictability, CD8 Loss Avoidance) are used only to add urgency, never anxiety. Every Black Hat mechanic has a corresponding safeguard.
+> **Octalysis balance:** HealThee's gamification is deliberately **White Hat dominant**. CD1 (Epic Meaning), CD2 (Accomplishment), and CD3 (Creativity) are the primary engines. Black Hat drives (CD6 Scarcity, CD7 Unpredictability, CD8 Loss Avoidance) are used only to add urgency, never anxiety. Every Black Hat mechanic — including all consequence mechanics in Section 11 — has a corresponding safeguard in this section.
 
 ---
 
-## 11. Octalysis Scorecard
+## 11. Penalties & Consequence Mechanics
+
+**Primary Drives:** CD8 (Loss & Avoidance) · CD6 (Scarcity & Impatience) · CD4 (Ownership & Possession)
+
+Penalties in HealThee function as **natural consequences** — graduated, forewarned, and always reversible. Every mechanic below scales with inactivity rather than triggering immediately, and each has a clear recovery path. The aim is to create *stakes*, not *stress*.
+
+> **Design Principle:** No penalty is permanent. No XP or badge is ever deducted or removed. All consequence mechanics are paired with a safeguard from Section 10. Chill Mode suspends all penalty timers for its full duration.
+
+### 1. Streak Loss (CD8)
+
+The foundational consequence: a broken daily streak resets to 0 the morning after a missed day. Streak Freezes auto-consume first if one is banked.
+
+- **Recovery:** The first logged day after a reset awards a **Comeback Bonus (+20 XP)** to restart momentum.
+- **Safeguards:** Streak Freezes (earned every 14 days or purchased for 5 gems), Grace Period (2-hour midnight window), Chill Mode.
+
+### 2. XP Momentum Decay (CD8 · CD2)
+
+A multiplier on all XP earned degrades with consecutive days of no logging. Existing XP and level progress are never touched — only *future* earnings are affected.
+
+| Days Without Logging | XP Multiplier |
+|---|---|
+| 0–2 | 1.0× (baseline) |
+| 3–6 | 0.85× |
+| 7–13 | 0.7× |
+| 14+ | 0.5× |
+
+Recovery: **+0.1× per consecutive logged day**, returning to 1.0× after 5 active days. The current multiplier is shown in the Profile screen with a progress indicator.
+
+- **Safeguard:** Chill Mode freezes the multiplier at its current value — it neither decays nor recovers while active.
+- **Notification:** A nudge fires on day 3 of inactivity: *"Your XP momentum is slipping — log anything to keep it up."*
+
+### 3. Gem Decay (CD4 · CD8)
+
+After 14 consecutive days without any logging, **10% of banked gems are lost** (min 1, max 10 gems). Repeats every 14 days of continued inactivity.
+
+- **Advance warning:** Notification at day 10 — *"Your gems are at risk. Log anything to protect them."*
+- **Recovery:** Logging any entry before day 14 resets the decay timer.
+- **Safeguards:** Chill Mode fully suspends gem decay. Gems already spent in the Shop are unaffected.
+
+### 4. Badge Dormancy (CD4 · CD8)
+
+Streak-based badges earn a **greyed-out "Dormant" overlay** on the Trophy Wall when their qualifying streak is broken. The badge is never removed or reset — dormancy is cosmetic only.
+
+| Badge Type | Behaviour on Streak Break |
+|---|---|
+| Streak-based (e.g., Week Warrior, Step Streak, Sleep Scholar) | Goes dormant; reactivates automatically when streak is re-achieved |
+| One-time achievements (e.g., First Step, Clean Sweep, Easter Eggs) | Unaffected — permanent |
+
+A dormant badge counter appears at the top of the Trophy Wall: *"2 badges dormant — rebuild your streak to reactivate."*
+
+### 5. Level Title Dormancy (CD1 · CD8)
+
+Extended inactivity adds a staged cosmetic indicator to the user's level title — tapping into narrative identity (CD1) rather than any numeric loss.
+
+| Inactivity Duration | Effect |
+|---|---|
+| 7 days | Notification: *"Your [Title] status is at risk."* |
+| 14 days | Title displays as **"[Title] · Dormant"** in Profile and on the dashboard |
+| 21 days | HealThee Mate sends a personal check-in message |
+| 5 consecutive logged days | Dormant tag removed; full title restored |
+
+Level and XP are **never deducted**. This is a display-only penalty.
+
+### 6. Challenge Forfeit (CD6 · CD8)
+
+| Scenario | Consequence |
+|---|---|
+| Daily Challenge not completed by midnight | Expires — no XP or Bonus Burst; no carryover to next day |
+| Weekly Challenge with 4+ days of zero logging | Forfeited and marked "Abandoned"; slot resets for the following week |
+| Purchased Bonus Weekly Slot + forfeited challenge | **Gems not refunded** — a confirmation prompt warns the user at purchase time |
+
+The gem non-refund on a purchased forfeited slot is the sharpest penalty in HealThee. It is intentional — spending creates commitment (**CD6**). The upfront confirmation preserves informed consent.
+
+### Summary
+
+| Mechanic | Trigger | Consequence | Recovery | Safeguard |
+|---|---|---|---|---|
+| **Streak Loss** | 1 missed day (no Freeze) | Streak → 0 | Log any day (+20 XP Comeback bonus) | Streak Freeze, Grace Period, Chill Mode |
+| **XP Momentum Decay** | 3+ days without logging | XP multiplier 0.85× → 0.5× | +0.1× per active day (full at 5 days) | Chill Mode freezes multiplier |
+| **Gem Decay** | 14 days without logging | −10% gems (min 1, max 10) | Log before day 14 to reset timer | Chill Mode suspends; day-10 warning |
+| **Badge Dormancy** | Qualifying streak broken | Badge greyed out on Trophy Wall | Re-achieve the streak | One-time badges never affected |
+| **Level Title Dormancy** | 14 days without logging | "(Dormant)" suffix on title | 5 consecutive logged days | Cosmetic only; no XP/level lost |
+| **Challenge Forfeit** | Midnight / 4+ inactive days | No XP; gems not refunded (purchased slot) | Fresh challenges next day/week | Confirmation prompt at gem purchase |
+
+> **Octalysis note:** All six mechanics map primarily to **CD8 (Loss & Avoidance)**, with CD4 (Ownership) and CD6 (Scarcity) as secondary drivers. None deduct earned XP, remove badges, or demote levels — the historical progress record is always protected.
+
+---
+
+## 12. Octalysis Scorecard
 
 A self-assessment of how strongly each drive is represented in HealThee's design:
 
@@ -421,13 +513,13 @@ A self-assessment of how strongly each drive is represented in HealThee's design
 | CD5 — Social Influence & Relatedness | 4 | HealThee Mate companion, shareable Report Card |
 | CD6 — Scarcity & Impatience | 6 | Limited Streak Freezes, Gem economy, bonus challenge slot |
 | CD7 — Unpredictability & Curiosity | 6 | Random daily challenges, Easter Egg badges, mystery PR toasts |
-| CD8 — Loss & Avoidance | 5 | Streak protection, at-risk notifications (softened by safeguards) |
+| CD8 — Loss & Avoidance | 7 | Streak Loss, XP Momentum Decay, Gem Decay, Badge Dormancy, Level Title Dormancy, Challenge Forfeit (all graduated; all paired with safeguards) |
 
-**Target profile:** Strong White Hat foundation (CD1–3 average: 7.3) with moderate Black Hat urgency (CD6–8 average: 5.7). This aligns with health app best practices — sustaining motivation through positive reinforcement rather than fear of loss.
+**Target profile:** Strong White Hat foundation (CD1–3 average: 7.3) with measured Black Hat urgency (CD6–8 average: 6.3). This aligns with health app best practices — sustaining motivation through positive reinforcement, with graduated consequences that create meaningful stakes without anxiety.
 
 ---
 
-## 12. Phased Implementation Roadmap
+## 13. Phased Implementation Roadmap
 
 ### Phase 1 — Foundation & Core Loop (Weeks 1–6)
 
@@ -436,7 +528,7 @@ Everything needed for a functional, motivating gamification experience from day 
 | Week | Deliverables | Drives Activated |
 |---|---|---|
 | 1–2 | XP system with all earning actions, Levels 1–10 with titles, Level-up celebration screen | CD2 |
-| 3 | Daily Streak counter with Grace Period, Streak Freeze earn logic (every 14 days, max 2) | CD2, CD8 |
+| 3 | Daily Streak counter with Grace Period, Streak Freeze earn logic (every 14 days, max 2), Streak Loss reset + Comeback Bonus (+20 XP) | CD2, CD8 |
 | 4 | 15 core badges (all Consistency + first-time milestones), Trophy Wall screen (basic grid) | CD2, CD4 |
 | 5 | Daily Challenge system (pool of 20 challenges, 3 per day), Bonus Burst reward for completing all 3 | CD7, CD2 |
 | 6 | Gems currency (earning only), Weekly Challenge (pool of 6 challenges, 1 active slot), Weekly Report Card | CD4, CD6, CD2 |
@@ -453,11 +545,11 @@ Enriches the system with creativity, ownership, social-emotional features, and s
 | 8 | Personal Records tracking + PR toast notifications, Goal Streaks (per-category streak badges) | CD2, CD3 |
 | 9 | Full badge library (all 30+ standard badges), Easter Egg badges (5 hidden), Boosted Picks (daily challenge swap) | CD4, CD7, CD3 |
 | 10 | Smart notification nudges (pattern-based), HealThee Mate milestone acknowledgements | CD8, CD5 |
-| 11 | Anti-burnout safeguards: Chill Mode toggle, "Good Enough" framing, backdating grace period | Counter-CD8 |
+| 11 | Penalty mechanics: XP Momentum Decay, Gem Decay, Badge Dormancy, Level Title Dormancy, Challenge Forfeit rules; Anti-burnout safeguards: Chill Mode toggle, "Good Enough" framing, backdating grace period | CD8, Counter-CD8 |
 | 12 | 4-week Goal Review prompts, remaining challenge pool expansion (to 30 daily + 8 weekly), final polish & QA | CD3, CD2 |
 
-**Phase 2 exit criteria:** Full gamification system live with all 8 core drives activated, safeguards in place, and gem economy balanced.
+**Phase 2 exit criteria:** Full gamification system live with all 8 core drives activated, penalty mechanics and safeguards in place, and gem economy balanced.
 
 ---
 
-*Last updated: March 2026*
+*Last updated: April 2026*
