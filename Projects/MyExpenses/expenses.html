@@ -2368,8 +2368,6 @@
            VERNACULAR — Bengali / Hindi support
            ═══════════════════════════════════════════════════ */
         const HF_INDIC_MODEL = 'ai4bharat/Airavata';
-        function getHFToken() { return localStorage.getItem('hf_token') || ''; }
-        function setHFToken(t) { localStorage.setItem('hf_token', t); }
 
         const VOICE_LANGS = [
             { code: 'en-IN', label: 'EN' },
@@ -2398,38 +2396,6 @@
             };
         }
 
-        async function callIndicLLM(prompt, system, isJson) {
-            const token = getHFToken();
-            if (!token) throw new Error('HuggingFace token not configured');
-            const formattedPrompt = `<s>[INST] <<SYS>>\n${system}\n<</SYS>>\n\n${prompt} [/INST]`;
-            const res = await fetch(`https://api-inference.huggingface.co/models/${HF_INDIC_MODEL}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    inputs: formattedPrompt,
-                    parameters: { max_new_tokens: 512, temperature: 0.1, return_full_text: false }
-                })
-            });
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.error || `HuggingFace API error: ${res.status}`);
-            }
-            const data = await res.json();
-            let content = Array.isArray(data) ? (data[0]?.generated_text || '') : (data.generated_text || '');
-            content = content.trim();
-            if (!isJson) return content;
-            try {
-                return typeof content === 'object' ? content : JSON.parse(content);
-            } catch {
-                const clean = content.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
-                const match = clean.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
-                if (match) return JSON.parse(match[1]);
-                throw new Error('IndicLLM did not return valid JSON');
-            }
-        }
 
         const DEFAULT_PAYMENTS = ['Cred UPI', 'Credit card', 'GPay UPI', 'Pine Perks', 'Cash', 'Debit card', 'Net Banking'];
         const DEFAULT_CATEGORIES = [
@@ -2924,9 +2890,6 @@
            INIT
            ═══════════════════════════════════════════════════ */
         function initApp() {
-            // Seed HuggingFace token for Indic language support (one-time)
-            if (!getHFToken()) setHFToken('hf_rsjYjSH' + 'frbdhTDZsNmWXjCAqzVsxlPOTcG');
-
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             document.getElementById('expDate').value = getLastUsedDate() || todayStr;
@@ -3599,16 +3562,18 @@ Object schema (all fields required):
 { "name": "<short description, max 40 chars>", "amount": <number in INR, no symbol>, "category": "<one of: ${categories}>", "date": "<YYYY-MM-DD, use ${todayStr} if not found>", "paymentMethod": "<one of: ${payments}, use closest match>" }
 
 MULTI-EXPENSE DETECTION (CRITICAL):
-An input describes multiple expenses when it mentions more than one (amount, item) pair — even in a single sentence. Create one array entry per pair. Clues in any language:
-- English: "and", "plus", "also", "then", commas between items
-- Hindi: "और" (and), "भी" (also), "फिर" (then) — e.g. "200 की सब्ज़ी और 500 का खाना"
-- Bengali: "আর"/"ও" (and), "ও" (also) — e.g. "২০০ টাকার সবজি আর ৫০০ টাকার খাবার"
+An input describes multiple expenses when it mentions more than one (amount, item) pair — even WITHOUT conjunctions. Any sequence of distinct amount+item pairs means multiple expenses. Create one array entry per pair.
+- Conjunctions are optional hints, not requirements. "200 groceries 500 dinner" is still two expenses.
+- Clues: "and/और/আর", "also/भी/ও", commas, or simply listing pairs in sequence.
 
 EXAMPLES:
 Input: "I paid 200 for groceries and 500 for dinner on UPI"
 Output: [{"name":"Groceries","amount":200,"category":"Groceries","date":"${todayStr}","paymentMethod":"UPI"},{"name":"Dinner","amount":500,"category":"Eating out","date":"${todayStr}","paymentMethod":"UPI"}]
 
-Input: "आज 300 रुपये की सब्ज़ी और 150 रुपये का ऑटो"
+Input: "200 groceries 500 dinner UPI"
+Output: [{"name":"Groceries","amount":200,"category":"Groceries","date":"${todayStr}","paymentMethod":"UPI"},{"name":"Dinner","amount":500,"category":"Eating out","date":"${todayStr}","paymentMethod":"UPI"}]
+
+Input: "आज 300 सब्ज़ी 150 ऑटो"
 Output: [{"name":"Vegetables","amount":300,"category":"Groceries","date":"${todayStr}","paymentMethod":"UPI"},{"name":"Auto","amount":150,"category":"Auto/Cab","date":"${todayStr}","paymentMethod":"Cash"}]
 
 Input: "আজ ২৫০ টাকার ওষুধ কিনেছি কার্ডে"
@@ -3648,22 +3613,33 @@ OTHER RULES:
             //   (b) multi-expense utterances (8B tends to collapse to one item).
             // Everyone else starts on fast Cerebras 8B and falls back to 70B on failure.
             let useStrongFirst = false;
+            let useHuggingFace = false;
             let effectiveSystem = system;
             if (!base64Image && isJson) {
                 const langInfo = detectLanguageWithConfidence(prompt);
                 const amountCount = countAmountMentions(prompt);
                 if (langInfo.lang === 'indic') {
-                    useStrongFirst = true;
+                    useHuggingFace = true;
                     effectiveSystem = system + '\n\nIMPORTANT: The input is in an Indian language (Hindi/Bengali) or code-mixed with English. Always return JSON field values in English.';
                 } else if (amountCount >= 2) {
                     useStrongFirst = true;
                 }
             }
 
-            const provider = base64Image ? 'groq' : (useStrongFirst || !retry ? 'groq' : 'cerebras');
-            const model = base64Image
-                ? 'meta-llama/llama-4-scout-17b-16e-instruct'
-                : (useStrongFirst || !retry ? 'llama-3.3-70b-versatile' : 'llama3.1-8b');
+            let provider, model;
+            if (base64Image) {
+                provider = 'groq';
+                model = 'meta-llama/llama-4-scout-17b-16e-instruct';
+            } else if (useHuggingFace) {
+                provider = 'huggingface';
+                model = HF_INDIC_MODEL;
+            } else if (useStrongFirst || !retry) {
+                provider = 'groq';
+                model = 'llama-3.3-70b-versatile';
+            } else {
+                provider = 'cerebras';
+                model = 'llama3.1-8b';
+            }
 
             const res = await fetch(EXPENSES_LLM_URL, {
                 method: 'POST',
@@ -3674,8 +3650,9 @@ OTHER RULES:
             if (!res.ok) {
                 let data; try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }
                 const msg = data.error || '';
-                // HTTP failure on first-try weak model → retry with strong model.
-                if (retry && !useStrongFirst && !base64Image) {
+                // Any non-image first-try failure → retry with strong Groq model.
+                if (retry && !base64Image) {
+                    console.warn(`[${provider}] HTTP ${res.status} — falling back to Groq 70B:`, msg);
                     return callExpenseLLM(prompt, system, isJson, null, false);
                 }
                 throw new Error(msg || `HTTP ${res.status}`);
@@ -3686,10 +3663,9 @@ OTHER RULES:
             const parsed = tryParseJson(content);
             if (parsed !== undefined) return parsed;
 
-            // JSON parse failed. Retry once on the strong model before giving up
-            // — weak models occasionally emit prose / malformed JSON, especially
-            // for Indic or multi-expense inputs.
-            if (retry && !useStrongFirst && !base64Image) {
+            // JSON parse failed. Retry once on Groq 70B before giving up.
+            if (retry && !base64Image) {
+                console.warn(`[${provider}] Non-JSON response — falling back to Groq 70B`);
                 return callExpenseLLM(prompt, system, isJson, null, false);
             }
             throw new Error('Model did not return valid JSON: ' + String(content).substring(0, 120));

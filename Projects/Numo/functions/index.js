@@ -168,7 +168,7 @@ exports.healtheeLLM = onRequest(
     region: "us-central1",
     memory: "256MiB",
     timeoutSeconds: 120,
-    secrets: ["CEREBRAS_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY"],
+    secrets: ["CEREBRAS_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY", "HF_TOKEN"],
   },
   (req, res) => {
     corsHandler(req, res, async () => {
@@ -241,6 +241,44 @@ exports.healtheeLLM = onRequest(
           const orOptions = { ...bodyOptions };
           delete orOptions.response_format;
           completion = await orClient.chat.completions.create(orOptions);
+        } else if (provider === 'huggingface') {
+          const hfToken = process.env.HF_TOKEN || "";
+          if (!hfToken) {
+            res.status(500).json({ error: "HuggingFace token not configured" });
+            return;
+          }
+          // HF Inference API uses a Llama-style prompt for Airavata
+          const formattedPrompt = system
+            ? `<s>[INST] <<SYS>>\n${system}\n<</SYS>>\n\n${prompt} [/INST]`
+            : `<s>[INST] ${prompt} [/INST]`;
+          const hfRes = await fetch(
+            `https://api-inference.huggingface.co/models/${model || "ai4bharat/Airavata"}`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${hfToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                inputs: formattedPrompt,
+                parameters: {
+                  max_new_tokens: max_tokens || 512,
+                  temperature: 0.1,
+                  return_full_text: false,
+                },
+              }),
+            }
+          );
+          if (!hfRes.ok) {
+            const errData = await hfRes.json().catch(() => ({}));
+            throw new Error(errData.error || `HuggingFace API error: ${hfRes.status}`);
+          }
+          const hfData = await hfRes.json();
+          const hfContent = Array.isArray(hfData)
+            ? (hfData[0]?.generated_text || "")
+            : (hfData.generated_text || "");
+          res.json({ content: hfContent.trim() });
+          return;
         } else {
           res.status(400).json({ error: "Invalid provider" });
           return;
