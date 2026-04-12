@@ -2281,6 +2281,108 @@
     .ftue-item-icon i { width: 16px; height: 16px; stroke: var(--accent); }
     .ftue-item-text { font-size: .78rem; line-height: 1.4; }
     .ftue-item-text strong { font-weight: 600; }
+
+    /* ── Notifications / Reminders ────────────────── */
+    .ntf-bell-btn {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2rem;
+      height: 1.8rem;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      transition: border-color .2s, color .2s;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .ntf-bell-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .ntf-bell-btn.active { color: var(--accent); border-color: var(--accent); }
+    .ntf-badge {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 1.5px solid var(--bg);
+      display: none;
+    }
+    .ntf-master-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .5rem 0 .75rem;
+      margin-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .82rem;
+      font-weight: 600;
+    }
+    .ntf-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .45rem .5rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-bottom: .4rem;
+      font-size: .78rem;
+      transition: border-color .2s;
+    }
+    .ntf-row:has(input[type=checkbox]:checked) {
+      border-color: var(--accent);
+    }
+    .ntf-row-label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      cursor: pointer;
+      font-size: .78rem;
+    }
+    .ntf-row-label i { width: 13px; height: 13px; stroke: var(--muted); flex-shrink: 0; }
+    .ntf-row input[type="checkbox"] {
+      accent-color: var(--accent);
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+    .ntf-input-sm {
+      font-family: var(--font);
+      font-size: .75rem;
+      padding: .2rem .35rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--input-bg, var(--card));
+      color: var(--text);
+      text-align: center;
+      outline: none;
+      width: 72px;
+    }
+    .ntf-input-sm:focus { border-color: var(--accent); }
+    .ntf-input-sm.wide { width: auto; flex: 1; min-width: 80px; text-align: left; }
+    .ntf-input-label { font-size: .68rem; color: var(--muted); white-space: nowrap; }
+    .ntf-delete-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .75rem;
+      padding: .2rem .3rem;
+      border-radius: 4px;
+      font-family: var(--font);
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .ntf-delete-btn:hover { color: var(--danger); }
   </style>
 </head>
 
@@ -2393,7 +2495,16 @@
       <button onclick="shiftDate(-1)">← prev</button>
       <div class="date-label" id="dateLabel"></div>
       <button onclick="shiftDate(1)">next →</button>
-
+      <button class="ntf-bell-btn" id="ntfBellBtn" onclick="openNotifModal()"
+              aria-label="Reminder settings" title="Reminders" style="position:relative">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="ntf-badge" id="ntfBadge"></span>
+      </button>
     </div>
     <div id="tabContent"></div>
   </main>
@@ -3392,6 +3503,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         loadDay();
         ensureEventsLoaded(); // pre-warm in background so modal opens instantly
         setupPullToRefresh();
+        initNotifications();
       }
 
       // ── Profile helpers ──
@@ -5677,6 +5789,285 @@ Do NOT output JSON. Output regular conversational text only.`;
         if (btn) { btn.disabled = false; btn.textContent = 'Plan Weekend'; }
         if (currentTab !== 'care') openChatPopup();
       }
+
+      /* ═══════════════════════════════════════════════════
+         NOTIFICATIONS / REMINDERS ENGINE
+         ═══════════════════════════════════════════════════ */
+
+      const NTF_DEFAULT_IDS = ['ntf_water','ntf_breakfast','ntf_lunch','ntf_dinner','ntf_exercise','ntf_sleep'];
+
+      function _ntfDefaults() {
+        return {
+          enabled: false,
+          permissionAsked: false,
+          reminders: [
+            { id: 'ntf_water',     label: 'Drink Water',      icon: 'droplets', type: 'interval', intervalMin: 90,  enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_breakfast', label: 'Prep Breakfast',   icon: 'utensils', type: 'time',     timeHH: 7,  timeMM: 30, enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_lunch',     label: 'Prep Lunch',       icon: 'utensils', type: 'time',     timeHH: 12, timeMM: 0,  enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_dinner',    label: 'Prep Dinner',      icon: 'utensils', type: 'time',     timeHH: 18, timeMM: 30, enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_exercise',  label: 'Time to Exercise', icon: 'dumbbell', type: 'time',     timeHH: 17, timeMM: 30, enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_sleep',     label: 'Wind Down',        icon: 'moon',     type: 'time',     timeHH: 22, timeMM: 0,  enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 }
+          ]
+        };
+      }
+
+      window._ntfLoad = function () {
+        try { return JSON.parse(localStorage.getItem('HT_notifs') || 'null') || _ntfDefaults(); }
+        catch (_) { return _ntfDefaults(); }
+      };
+
+      window._ntfSave = function (cfg) {
+        try { localStorage.setItem('HT_notifs', JSON.stringify(cfg)); } catch (_) {}
+      };
+
+      function _ntfBodyText(r) {
+        if (r.type === 'interval') return 'Every ' + (r.intervalMin || 90) + ' minutes';
+        const p = n => String(n).padStart(2, '0');
+        return 'Scheduled at ' + p(r.timeHH) + ':' + p(r.timeMM);
+      }
+
+      function _ntfUpdateBellBadge() {
+        const cfg = _ntfLoad();
+        const badge = document.getElementById('ntfBadge');
+        const btn   = document.getElementById('ntfBellBtn');
+        if (!badge) return;
+        const anyActive = cfg.enabled && cfg.reminders.some(r => r.enabled);
+        badge.style.display = anyActive ? 'block' : 'none';
+        if (btn) btn.classList.toggle('active', anyActive);
+      }
+
+      function _ntfFire(r) {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        const title = 'HealThee · ' + r.label;
+        const body  = _ntfBodyText(r);
+        const sw = navigator.serviceWorker && navigator.serviceWorker.controller;
+        if (sw) {
+          sw.postMessage({ type: 'SHOW_NOTIFICATION', title, body, tag: r.id });
+        } else {
+          try { new Notification(title, { body, tag: r.id }); } catch (_) {}
+        }
+      }
+
+      function _ntfCheck() {
+        const cfg = _ntfLoad();
+        if (!cfg.enabled) return;
+
+        const now  = Date.now();
+        const d    = new Date();
+        const nowHH = d.getHours();
+        const nowMM = d.getMinutes();
+
+        cfg.reminders.forEach(function (r) {
+          if (!r.enabled) return;
+          if (r.snoozedUntilTs && now < r.snoozedUntilTs) return;
+
+          let shouldFire = false;
+
+          if (r.type === 'interval') {
+            const elapsed = now - (r.lastFiredTs || 0);
+            if (elapsed >= (r.intervalMin || 90) * 60000) shouldFire = true;
+          } else if (r.type === 'time') {
+            const firedToday = r.lastFiredTs
+              ? new Date(r.lastFiredTs).toDateString() === d.toDateString()
+              : false;
+            const withinWindow = (nowMM - (r.timeMM || 0) >= 0) && (nowMM - (r.timeMM || 0) <= 4);
+            if (!firedToday && nowHH === r.timeHH && withinWindow) shouldFire = true;
+          }
+
+          if (shouldFire) {
+            _ntfFire(r);
+            r.lastFiredTs = now;
+            r.snoozedUntilTs = 0;
+          }
+        });
+
+        _ntfSave(cfg);
+      }
+
+      async function _ntfRequestPermission() {
+        if (!('Notification' in window)) return 'unsupported';
+        if (Notification.permission === 'granted') return 'granted';
+        if (Notification.permission === 'denied') return 'denied';
+        const result = await Notification.requestPermission();
+        return result;
+      }
+
+      window.initNotifications = function () {
+        _ntfUpdateBellBadge();
+        if (window._ntfIntervalId) clearInterval(window._ntfIntervalId);
+        window._ntfIntervalId = setInterval(_ntfCheck, 60000);
+        _ntfCheck();
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'visible') _ntfCheck();
+        });
+      };
+
+      // ── Modal ──────────────────────────────────────────
+
+      function _renderNotifModal(cfg) {
+        const masterOn = cfg.enabled;
+
+        const remRows = cfg.reminders.map(function (r) {
+          const isDefault = NTF_DEFAULT_IDS.includes(r.id);
+          const timeVal = r.type === 'time'
+            ? String(r.timeHH ?? 0).padStart(2, '0') + ':' + String(r.timeMM ?? 0).padStart(2, '0')
+            : '';
+          const control = r.type === 'interval'
+            ? '<input class="ntf-input-sm" type="number" id="ntfInterval_' + r.id + '" min="15" max="480" step="15" value="' + (r.intervalMin || 90) + '"><span class="ntf-input-label">&nbsp;min</span>'
+            : '<input class="ntf-input-sm" type="time" id="ntfTime_' + r.id + '" value="' + timeVal + '">';
+          const delBtn = isDefault ? '' : '<button class="ntf-delete-btn" onclick="_ntfRemoveRow(\'' + r.id + '\')" title="Remove">✕</button>';
+          return '<div class="ntf-row" id="ntfRow_' + r.id + '">'
+            + '<input type="checkbox" id="ntfEn_' + r.id + '"' + (r.enabled ? ' checked' : '') + '>'
+            + '<label class="ntf-row-label" for="ntfEn_' + r.id + '">'
+            + licon(r.icon || 'bell', 13) + ' ' + esc(r.label)
+            + '</label>'
+            + control
+            + delBtn
+            + '</div>';
+        }).join('');
+
+        return '<div class="modal-overlay" onclick="if(event.target===this)closeNotifModal()">'
+          + '<div class="modal">'
+          + '<div class="modal-head">'
+          + '<div class="modal-title">' + licon('bell', 14) + ' Reminders</div>'
+          + '<button class="modal-close" onclick="closeNotifModal()">✕</button>'
+          + '</div>'
+          + '<div class="modal-body">'
+          + '<div class="ntf-master-row">'
+          + '<span>Enable Reminders</span>'
+          + '<label style="display:flex;align-items:center;gap:.4rem;cursor:pointer">'
+          + '<input type="checkbox" id="ntfMasterToggle"' + (masterOn ? ' checked' : '') + ' style="accent-color:var(--accent);width:16px;height:16px">'
+          + '</label>'
+          + '</div>'
+          + '<div style="font-size:.7rem;color:var(--muted);margin-bottom:.7rem">Notifications fire even when this tab is in the background.</div>'
+          + '<div id="ntfReminderList">' + remRows + '</div>'
+          + '<div style="margin-top:.85rem;padding-top:.75rem;border-top:1px solid var(--border)">'
+          + '<div style="font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">' + licon('plus', 12) + ' Add Custom</div>'
+          + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">'
+          + '<input class="ntf-input-sm wide" id="ntfCustomLabel" placeholder="Label" style="text-align:left">'
+          + '<select id="ntfCustomType" class="ntf-input-sm" style="width:auto" onchange="_ntfCustomTypeChange()">'
+          + '<option value="time">At time</option>'
+          + '<option value="interval">Every N min</option>'
+          + '</select>'
+          + '<span id="ntfCustomTimeWrap"><input class="ntf-input-sm" type="time" id="ntfCustomTime" value="08:00"></span>'
+          + '<span id="ntfCustomIntervalWrap" style="display:none"><input class="ntf-input-sm" type="number" id="ntfCustomInterval" min="15" max="480" step="15" value="60"><span class="ntf-input-label">&nbsp;min</span></span>'
+          + '<button class="food-btn" style="padding:.3rem .65rem;font-size:.72rem" onclick="_ntfAddCustomRow()">Add</button>'
+          + '</div>'
+          + '</div>'
+          + '<div style="margin-top:1rem">'
+          + '<button class="btn-primary" style="width:100%" onclick="saveNotifSettings()">Save</button>'
+          + '</div>'
+          + '</div>'
+          + '</div>'
+          + '</div>';
+      }
+
+      window.openNotifModal = function () {
+        const cfg = _ntfLoad();
+        document.getElementById('modalContainer').innerHTML = _renderNotifModal(cfg);
+        document.getElementById('modalContainer').style.display = 'flex';
+        refreshIcons();
+      };
+
+      window.closeNotifModal = function () {
+        document.getElementById('modalContainer').innerHTML = '';
+        document.getElementById('modalContainer').style.display = 'none';
+      };
+
+      window.saveNotifSettings = async function () {
+        const cfg = _ntfLoad();
+        const masterEl = document.getElementById('ntfMasterToggle');
+        const turningOn = masterEl && masterEl.checked && !cfg.enabled;
+        cfg.enabled = masterEl ? masterEl.checked : cfg.enabled;
+
+        cfg.reminders.forEach(function (r) {
+          const enEl = document.getElementById('ntfEn_' + r.id);
+          if (!enEl) return;
+          const wasOff = !r.enabled;
+          r.enabled = enEl.checked;
+          if (r.type === 'interval') {
+            const v = parseInt((document.getElementById('ntfInterval_' + r.id) || {}).value);
+            if (v >= 15 && v <= 480) r.intervalMin = v;
+            // Don't fire immediately when first enabled
+            if (wasOff && r.enabled && r.lastFiredTs === 0) r.lastFiredTs = Date.now();
+          } else {
+            const t = ((document.getElementById('ntfTime_' + r.id) || {}).value) || '';
+            if (t && t.includes(':')) {
+              const parts = t.split(':').map(Number);
+              r.timeHH = parts[0]; r.timeMM = parts[1];
+              r.lastFiredTs = 0; // reset so edited time fires correctly
+            }
+          }
+        });
+
+        // Request permission if turning master switch on for first time
+        if (cfg.enabled) {
+          if (!('Notification' in window)) {
+            toast('Notifications not supported in this browser', 'warn');
+            cfg.enabled = false;
+          } else if (Notification.permission === 'denied') {
+            toast('Notifications blocked — enable them in browser settings', 'warn');
+            cfg.enabled = false;
+          } else if (Notification.permission === 'default') {
+            const result = await _ntfRequestPermission();
+            if (result !== 'granted') {
+              toast('Enable notifications in browser settings to use reminders', 'warn');
+              cfg.enabled = false;
+            }
+          }
+        }
+
+        _ntfSave(cfg);
+        _ntfUpdateBellBadge();
+        closeNotifModal();
+        if (cfg.enabled) {
+          toast('Reminders on', 'success');
+        } else {
+          toast('Reminder settings saved');
+        }
+      };
+
+      window._ntfCustomTypeChange = function () {
+        const t = (document.getElementById('ntfCustomType') || {}).value;
+        const tw = document.getElementById('ntfCustomTimeWrap');
+        const iw = document.getElementById('ntfCustomIntervalWrap');
+        if (tw) tw.style.display = t === 'time' ? '' : 'none';
+        if (iw) iw.style.display = t === 'interval' ? '' : 'none';
+      };
+
+      window._ntfAddCustomRow = function () {
+        const label = (document.getElementById('ntfCustomLabel') || {}).value || '';
+        if (!label.trim()) { toast('Enter a reminder label'); return; }
+        const type = (document.getElementById('ntfCustomType') || {}).value || 'time';
+        const r = {
+          id: genId('ntf'),
+          label: label.trim(),
+          icon: 'bell',
+          type,
+          intervalMin: parseInt((document.getElementById('ntfCustomInterval') || {}).value) || 60,
+          timeHH: null, timeMM: null,
+          enabled: true,
+          lastFiredTs: type === 'interval' ? Date.now() : 0,
+          snoozedUntilTs: 0
+        };
+        if (type === 'time') {
+          const t = ((document.getElementById('ntfCustomTime') || {}).value) || '08:00';
+          const parts = t.split(':').map(Number);
+          r.timeHH = parts[0]; r.timeMM = parts[1];
+        }
+        const cfg = _ntfLoad();
+        cfg.reminders.push(r);
+        _ntfSave(cfg);
+        openNotifModal(); // re-render with new row
+      };
+
+      window._ntfRemoveRow = function (id) {
+        const cfg = _ntfLoad();
+        cfg.reminders = cfg.reminders.filter(function (r) { return r.id !== id; });
+        _ntfSave(cfg);
+        const rowEl = document.getElementById('ntfRow_' + id);
+        if (rowEl) rowEl.remove();
+      };
 
     }); // End of DOMContentLoaded block
 

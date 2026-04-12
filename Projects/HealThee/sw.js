@@ -13,6 +13,30 @@ self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+  if (e.data && e.data.type === 'SHOW_NOTIFICATION') {
+    const { title, body, tag } = e.data;
+    e.waitUntil(
+      self.registration.showNotification(title, {
+        body,
+        tag,
+        requireInteraction: false,
+        data: { tag }
+      })
+    );
+  }
+});
+
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+      for (var i = 0; i < clientList.length; i++) {
+        var client = clientList[i];
+        if (client.url.includes('health.html') && 'focus' in client) return client.focus();
+      }
+      return clients.openWindow('./health.html');
+    })
+  );
 });
 
 self.addEventListener('install', e => {

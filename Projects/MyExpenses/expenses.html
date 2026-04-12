@@ -3185,6 +3185,8 @@
         let holdTimer = null;
         let _lastTranscript = '';
         let _userStopped = false;        // true only when user explicitly taps stop
+        let _pendingFinalize = false;    // guards against double-finalize (onend + safety timeout)
+        let _finalizeTimer = null;       // safety timeout for browsers that never fire onend
         let _formQueue = [];             // sequential review queue for multi-payment expenses
         let _formQueueTotal = 0;         // total items in current queue batch
 
@@ -3317,7 +3319,8 @@
                 const finalParts = Array.from(e.results).filter(r => r.isFinal).map(r => r[0].transcript);
                 const interimParts = Array.from(e.results).filter(r => !r.isFinal).map(r => r[0].transcript);
                 const sessionTranscript = [...finalParts, ...interimParts].join(' ').trim();
-                _lastTranscript = (_accumulatedTranscript + ' ' + sessionTranscript).trim();
+                const combined = (_accumulatedTranscript + ' ' + sessionTranscript).trim();
+                if (combined) _lastTranscript = combined;
                 if (_lastTranscript) {
                     const short = _lastTranscript.length > 80 ? _lastTranscript.substring(0, 80) + '…' : _lastTranscript;
                     setMicStatus('"' + short + '"');
@@ -3325,29 +3328,26 @@
             };
 
             rec.onerror = e => {
-                // Recoverable errors (no-speech, audio-capture glitch): keep
-                // voiceActive true so onend's auto-restart logic fires.
-                if (e.error === 'no-speech' || e.error === 'audio-capture') {
+                // Recoverable glitches: let onend decide (auto-restart if not user-stopped,
+                // otherwise finalize with whatever transcript we have).
+                if (e.error === 'no-speech' || e.error === 'audio-capture' || e.error === 'aborted') {
                     return;
                 }
+                // Terminal errors: prevent auto-restart and surface error.
+                _userStopped = true;
                 clearTimeout(holdTimer);
                 holdMode = false;
-                voiceActive = false;
-                document.getElementById('micBtn').classList.remove('listening');
-                voiceRecognition = null;
                 if (e.error === 'not-allowed') {
                     showPermissionModal('mic');
-                } else if (e.error !== 'aborted') {
+                } else {
                     setCaptureStatus('Voice error: ' + e.error, 'error');
                 }
-                setMicStatus('Tap to speak');
             };
 
             rec.onend = () => {
-                // Browsers may fire onend prematurely even with continuous=true
-                // (especially mobile). Auto-restart if user hasn't tapped stop.
+                // Auto-restart path: browsers (especially mobile) fire onend prematurely
+                // even with continuous=true. Only restart if the user has NOT tapped stop.
                 if (voiceActive && !_userStopped) {
-                    // Preserve what we got so far before restarting
                     _accumulatedTranscript = _lastTranscript;
                     try {
                         voiceRecognition = new SR();
@@ -3357,28 +3357,15 @@
                         voiceRecognition.continuous = true;
                         setupVoiceHandlers(voiceRecognition);
                         voiceRecognition.start();
+                        return;
                     } catch (err) {
-                        voiceActive = false;
-                        document.getElementById('micBtn').classList.remove('listening');
-                        voiceRecognition = null;
-                        if (_lastTranscript) {
-                            processVoiceTranscript(_lastTranscript);
-                        } else {
-                            setMicStatus('Nothing heard — try again');
-                        }
-                    }
-                    return;
-                }
-                if (voiceActive) {
-                    voiceActive = false;
-                    document.getElementById('micBtn').classList.remove('listening');
-                    voiceRecognition = null;
-                    if (_lastTranscript) {
-                        processVoiceTranscript(_lastTranscript);
-                    } else {
-                        setMicStatus('Nothing heard — try again');
+                        // Restart failed — fall through to finalize.
                     }
                 }
+                // Terminal end: finalize with whatever transcript was accumulated.
+                // onend fires AFTER any final onresult, so _lastTranscript is populated
+                // by now even for engines that only emit results on stop (e.g. bn-IN).
+                finalizeVoiceCapture();
             };
         }
 
@@ -3388,30 +3375,66 @@
                 setCaptureStatus('Voice not supported in this browser', 'error');
                 return;
             }
+            if (voiceRecognition) return; // already running — ignore duplicate taps
             _lastTranscript = '';
             _accumulatedTranscript = '';
             _userStopped = false;
+            _pendingFinalize = false;
+            clearTimeout(_finalizeTimer);
+            _finalizeTimer = null;
             voiceRecognition = new SR();
             voiceRecognition.lang = VOICE_LANGS[currentVoiceLangIdx].code;
             voiceRecognition.interimResults = true;
             voiceRecognition.maxAlternatives = 1;
             voiceRecognition.continuous = true;
             setupVoiceHandlers(voiceRecognition);
-            voiceRecognition.start();
+            try {
+                voiceRecognition.start();
+            } catch (err) {
+                voiceRecognition = null;
+                voiceActive = false;
+                setCaptureStatus('Voice error: ' + (err.message || err), 'error');
+                setMicStatus('Tap to speak');
+            }
         }
 
         function stopVoiceAndProcess() {
+            if (_userStopped) return; // already stopping — ignore repeat taps
             _userStopped = true;
-            const wasActive = voiceActive;
-            voiceActive = false;
+            clearTimeout(holdTimer);
+            holdMode = false;
             document.getElementById('micBtn').classList.remove('listening');
+            // Keep the current mic status (which may be showing an interim transcript).
+            // Only swap to "Processing…" if we have nothing yet, so the user knows we're
+            // waiting for the engine's final result (critical for bn-IN / hi-IN).
+            if (!_lastTranscript) setMicStatus('Processing…');
             if (voiceRecognition) {
                 try { voiceRecognition.stop(); } catch (e) { }
-                voiceRecognition = null;
+                // Do NOT null voiceRecognition here — onend will fire and finalize.
+            } else {
+                finalizeVoiceCapture();
+                return;
             }
-            if (wasActive && _lastTranscript) {
-                processVoiceTranscript(_lastTranscript);
-            } else if (wasActive) {
+            // Safety net: if the engine never fires onend (seen on some iOS Safari
+            // versions), finalize after 2.5s so the UI never hangs on "Processing…".
+            clearTimeout(_finalizeTimer);
+            _finalizeTimer = setTimeout(() => {
+                if (!_pendingFinalize) finalizeVoiceCapture();
+            }, 2500);
+        }
+
+        function finalizeVoiceCapture() {
+            if (_pendingFinalize) return;
+            _pendingFinalize = true;
+            clearTimeout(_finalizeTimer);
+            _finalizeTimer = null;
+            voiceActive = false;
+            voiceRecognition = null;
+            document.getElementById('micBtn').classList.remove('listening');
+            const transcript = (_lastTranscript || '').trim();
+            if (transcript) {
+                processVoiceTranscript(transcript);
+            } else {
                 setMicStatus('Nothing heard — try again');
             }
         }
@@ -3437,6 +3460,8 @@
                 console.error(err);
                 setCaptureStatus('Could not parse: ' + (err.message || 'try again'), 'error');
                 setMicStatus('Tap to speak');
+            } finally {
+                _pendingFinalize = false;
             }
         }
 
@@ -3566,18 +3591,44 @@
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             return `You are an expense parser for an Indian expense tracker. Extract expense details and return ONLY raw JSON — no markdown fences, no explanation, no extra text.
 
-Return a single object for one expense, or a JSON array for multiple expenses (splits, multiple items, etc.).
+OUTPUT FORMAT:
+- Return a single JSON object if the input describes exactly ONE expense.
+- Return a JSON array if the input describes TWO OR MORE expenses — even if they share the same payment method.
 
 Object schema (all fields required):
 { "name": "<short description, max 40 chars>", "amount": <number in INR, no symbol>, "category": "<one of: ${categories}>", "date": "<YYYY-MM-DD, use ${todayStr} if not found>", "paymentMethod": "<one of: ${payments}, use closest match>" }
 
-Rules:
-- If the input says "log half as X and half as Y", split the amount and create two entries.
-- If the input mentions fractions, percentages, or multiple categories, create one entry per portion.
+MULTI-EXPENSE DETECTION (CRITICAL):
+An input describes multiple expenses when it mentions more than one (amount, item) pair — even in a single sentence. Create one array entry per pair. Clues in any language:
+- English: "and", "plus", "also", "then", commas between items
+- Hindi: "और" (and), "भी" (also), "फिर" (then) — e.g. "200 की सब्ज़ी और 500 का खाना"
+- Bengali: "আর"/"ও" (and), "ও" (also) — e.g. "২০০ টাকার সবজি আর ৫০০ টাকার খাবার"
+
+EXAMPLES:
+Input: "I paid 200 for groceries and 500 for dinner on UPI"
+Output: [{"name":"Groceries","amount":200,"category":"Groceries","date":"${todayStr}","paymentMethod":"UPI"},{"name":"Dinner","amount":500,"category":"Eating out","date":"${todayStr}","paymentMethod":"UPI"}]
+
+Input: "आज 300 रुपये की सब्ज़ी और 150 रुपये का ऑटो"
+Output: [{"name":"Vegetables","amount":300,"category":"Groceries","date":"${todayStr}","paymentMethod":"UPI"},{"name":"Auto","amount":150,"category":"Auto/Cab","date":"${todayStr}","paymentMethod":"Cash"}]
+
+Input: "আজ ২৫০ টাকার ওষুধ কিনেছি কার্ডে"
+Output: {"name":"Medicine","amount":250,"category":"Medical expenses","date":"${todayStr}","paymentMethod":"Credit Card"}
+
+OTHER RULES:
+- "log half as X and half as Y" → split the amount into two entries.
 - Resolve arithmetic (e.g. "half of 250" = 125) before filling the amount field.
 - Always use the closest matching category and payment method from the allowed lists.
-- Input may be in English, Hindi (Devanagari), Bengali (Bangla), or code-mixed. Always return JSON field values in English.
+- Convert Indic numerals (০১২৩৪৫৬৭৮৯ / ०१२३४५६७८९) to Arabic numerals in the amount field.
+- All field values in English regardless of input language.
 - Map Indic expense words to English categories, e.g. খাবার/खाना→Eating out, ভাড়া/किराया→Auto/Cab, সবজি/सब्जी→Groceries, ওষুধ/दवाई→Medical expenses, জামাকাপড়/कपड़े→Clothes, বিদ্যুৎ/बिजली→Electricity, পেট্রোল/पेट्रोल→Bike.`;
+        }
+
+        // Counts distinct amount-like tokens (Arabic + Devanagari + Bengali numerals)
+        // Used to route multi-expense inputs to the stronger 70B model on first try.
+        function countAmountMentions(text) {
+            if (!text) return 0;
+            const matches = text.match(/[0-9०-९০-৯]+(?:[.,][0-9०-९০-৯]+)?/g) || [];
+            return matches.filter(m => parseInt(m.replace(/\D/g, ''), 10) >= 5).length;
         }
 
         async function callGeminiParseText(text) {
@@ -3592,34 +3643,39 @@ Rules:
         }
 
         async function callExpenseLLM(prompt, system, isJson, base64Image, retry = true) {
-            // Indic language routing: for text parsing (not images, not advisor chat), try IndicLLM first
+            // Routing: use the strong 70B model on first try for
+            //   (a) Indic / code-mixed input (8B is weak at Hindi/Bengali), and
+            //   (b) multi-expense utterances (8B tends to collapse to one item).
+            // Everyone else starts on fast Cerebras 8B and falls back to 70B on failure.
+            let useStrongFirst = false;
+            let effectiveSystem = system;
             if (!base64Image && isJson) {
                 const langInfo = detectLanguageWithConfidence(prompt);
+                const amountCount = countAmountMentions(prompt);
                 if (langInfo.lang === 'indic') {
-                    const indicSystem = system + '\n\nIMPORTANT: The input is in an Indian language (Hindi/Bengali) or code-mixed with English. Parse accurately and always return field values in English.';
-                    try {
-                        return await callIndicLLM(prompt, indicSystem, isJson);
-                    } catch (err) {
-                        console.warn('[IndicLLM] Failed, falling back to Groq:', err.message);
-                        // Fall through to standard provider
-                    }
+                    useStrongFirst = true;
+                    effectiveSystem = system + '\n\nIMPORTANT: The input is in an Indian language (Hindi/Bengali) or code-mixed with English. Always return JSON field values in English.';
+                } else if (amountCount >= 2) {
+                    useStrongFirst = true;
                 }
             }
 
-            // All providers routed through cloud function (API keys stored as secrets server-side)
-            const provider = base64Image ? 'groq' : (retry ? 'cerebras' : 'groq');
-            const model = base64Image ? 'meta-llama/llama-4-scout-17b-16e-instruct' : (retry ? 'llama3.1-8b' : 'llama-3.3-70b-versatile');
+            const provider = base64Image ? 'groq' : (useStrongFirst || !retry ? 'groq' : 'cerebras');
+            const model = base64Image
+                ? 'meta-llama/llama-4-scout-17b-16e-instruct'
+                : (useStrongFirst || !retry ? 'llama-3.3-70b-versatile' : 'llama3.1-8b');
+
             const res = await fetch(EXPENSES_LLM_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt, system, isJson, provider, model, max_tokens: 512, ...(base64Image && { base64Image }) })
+                body: JSON.stringify({ prompt, system: effectiveSystem, isJson, provider, model, max_tokens: 768, ...(base64Image && { base64Image }) })
             });
             let content;
             if (!res.ok) {
                 let data; try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }
                 const msg = data.error || '';
-                // Any Cerebras failure → fall back to Groq once
-                if (retry && !base64Image) {
+                // HTTP failure on first-try weak model → retry with strong model.
+                if (retry && !useStrongFirst && !base64Image) {
                     return callExpenseLLM(prompt, system, isJson, null, false);
                 }
                 throw new Error(msg || `HTTP ${res.status}`);
@@ -3627,14 +3683,28 @@ Rules:
             content = (await res.json()).content;
 
             if (!isJson) return content;
-            try {
-                return typeof content === 'object' ? content : JSON.parse(content);
-            } catch {
-                const clean = content.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
-                const match = clean.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
-                if (match) return JSON.parse(match[1]);
-                throw new Error('Model did not return valid JSON: ' + clean.substring(0, 100));
+            const parsed = tryParseJson(content);
+            if (parsed !== undefined) return parsed;
+
+            // JSON parse failed. Retry once on the strong model before giving up
+            // — weak models occasionally emit prose / malformed JSON, especially
+            // for Indic or multi-expense inputs.
+            if (retry && !useStrongFirst && !base64Image) {
+                return callExpenseLLM(prompt, system, isJson, null, false);
             }
+            throw new Error('Model did not return valid JSON: ' + String(content).substring(0, 120));
+        }
+
+        function tryParseJson(content) {
+            if (content == null) return undefined;
+            if (typeof content === 'object') return content;
+            try { return JSON.parse(content); } catch {}
+            const clean = content.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+            const match = clean.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
+            if (match) {
+                try { return JSON.parse(match[1]); } catch {}
+            }
+            return undefined;
         }
 
         function populateFormFromParsed(parsed) {
