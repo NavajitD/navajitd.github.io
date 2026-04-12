@@ -6,6 +6,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
     <title>Blog - Navajit D</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --text-color: #0a1f00; --bg-color: #fff; --accent-color: #2563eb;
@@ -44,8 +46,6 @@
         [data-theme="colorful"] .blog-card-date{color:var(--secondary-color)}
         .blog-card-title{font-size:1.125rem;font-weight:600;line-height:1.4;margin-bottom:.375rem;transition:color .2s}
         .blog-card-excerpt{font-size:.9375rem;color:var(--muted-color);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-        .blog-card-excerpt.loading{height:2.4em;background:linear-gradient(90deg,var(--border-color) 25%,transparent 50%,var(--border-color) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px;width:80%}
-        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
         .blog-card-reading{font-size:.75rem;color:var(--muted-color);margin-top:.375rem}
 
         .loading-state,.error-state,.empty-state{text-align:center;padding:4rem 1rem;color:var(--muted-color)}
@@ -53,10 +53,6 @@
         @keyframes spin{to{transform:rotate(360deg)}}
         .error-state{color:#dc2626} .error-state code{display:block;margin-top:.75rem;font-size:.8125rem;color:var(--muted-color);word-break:break-all}
         .sentinel{height:1px}
-
-        .setup-banner{padding:1.25rem;border:1px dashed var(--border-color);border-radius:8px;margin-bottom:2rem;font-size:.875rem;color:var(--muted-color);line-height:1.6}
-        .setup-banner code{background:rgba(0,0,0,.05);padding:.125rem .375rem;border-radius:3px;font-size:.8125rem}
-        [data-theme="colorful"] .setup-banner code{background:rgba(22,163,74,.08)}
 
         footer{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border-color);font-size:.875rem;color:var(--muted-color);display:flex;justify-content:space-between;align-items:center}
         .footer-links{display:flex;gap:1.5rem}
@@ -103,13 +99,26 @@
     </footer>
 
 <script>
-const BLOG_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8TvdpRImp9--UHINhEWzisrA_YHFvAcCu5JFPYNQnoJNuz7W6LWcThI7k7sWUrOtj0g/exec";
+// ─── Firebase Config (Numo) ───────────────────────────────────────────────────
+const firebaseConfig = {
+    apiKey: "AIzaSyCuJBqQWKpbhj3FEYpg_p_nhbjTEFg8Lt4",
+    authDomain: "numo-3984a.firebaseapp.com",
+    projectId: "numo-3984a",
+    storageBucket: "numo-3984a.firebasestorage.app",
+    messagingSenderId: "952036501569",
+    appId: "1:952036501569:web:c5776da3fe8eb0c249fec0"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
+// ─── Constants ────────────────────────────────────────────────────────────────
 const POSTS_PER_BATCH = 5;
-const EXCERPT_CACHE_TTL = 5 * 50 * 1000;
+const LIST_CACHE_TTL = 30 * 60 * 1000; // 30 min
 
 let allPosts = [], renderedCount = 0, isLoadingMore = false;
 
+// ─── Theme Toggle ─────────────────────────────────────────────────────────────
 const themeToggle = document.getElementById('themeToggle');
 const savedTheme = localStorage.getItem('theme') || 'original';
 if (savedTheme === 'colorful') document.body.setAttribute('data-theme', 'colorful');
@@ -119,76 +128,53 @@ themeToggle.addEventListener('click', () => {
     else { document.body.setAttribute('data-theme', 'colorful'); localStorage.setItem('theme', 'colorful'); }
 });
 
-function getScriptUrl() { return BLOG_SCRIPT_URL || localStorage.getItem('blog_script_url') || ''; }
+// ─── Utils ────────────────────────────────────────────────────────────────────
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-IN', { year:'numeric', month:'long', day:'numeric' }); }
 
-// ─── Upgraded to Smart Fetch (Solves the Window/Browser Bug) ───
-async function smartFetch(url, params = {}) {
-    const u = new URL(url);
-    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
-    
+// ─── Post List Cache (localStorage, 30 min) ───────────────────────────────────
+function getCachedList() {
     try {
-        const res = await fetch(u.toString(), { redirect: "follow" });
-        if (res.ok) return await res.json();
-    } catch (e) {
-        console.warn("Fetch blocked (likely by extension), falling back to JSONP.");
-    }
-    
-    return new Promise((resolve, reject) => {
-        const cb = '__blog_' + Math.random().toString(36).slice(2);
-        u.searchParams.set('prefix', cb);
-        let done = false;
-        window[cb] = (data) => { if (done) return; done = true; cleanup(); resolve(data); };
-        const s = document.createElement('script');
-        s.src = u.toString(); s.async = true;
-        s.onerror = () => { if (done) return; done = true; cleanup(); reject(new Error('Request failed')); };
-        function cleanup() { try { delete window[cb]; } catch(e) {} s.remove(); }
-        document.head.appendChild(s);
-        setTimeout(() => { if(!done) { done = true; cleanup(); reject(new Error('Timeout')); } }, 15000);
-    });
-}
-
-function getCachedExc(id, modTime) {
-    try { const r = sessionStorage.getItem('bexc_' + id); if (!r) return null; const p = JSON.parse(r); if (p.mod !== modTime) return null; return (Date.now() - p.ts < EXCERPT_CACHE_TTL) ? p : null; } catch(e) { return null; }
-}
-function setCachedExc(id, modTime, d) { try { sessionStorage.setItem('bexc_' + id, JSON.stringify({ ...d, mod: modTime, ts: Date.now() })); } catch(e) {} }
-
-async function fetchPostList() {
-    const url = getScriptUrl();
-    if (!url) throw new Error('NO_URL');
-    const res = await smartFetch(url, { action: 'list' });
-    if (!res?.ok) throw new Error(res?.error || 'Failed');
-    return res.posts || [];
-}
-
-async function fetchExcerpt(id, modTime) {
-    const cached = getCachedExc(id, modTime);
-    if (cached) return cached;
-    const url = getScriptUrl();
-    if (!url) return null;
-    try {
-        const res = await smartFetch(url, { action: 'excerpt', id, mod: modTime || '' });
-        if (!res?.ok) return null;
-        
-        let rawText = res.excerpt || '';
-        let processedText = rawText.split(/\r?\n/).slice(2).join('\n').trim();
-        
-        const d = { excerpt: processedText, readTime: res.readTime || '' };
-        setCachedExc(id, modTime, d);
-        return d;
+        const r = localStorage.getItem('blog_list');
+        if (!r) return null;
+        const p = JSON.parse(r);
+        return (Date.now() - p.ts < LIST_CACHE_TTL) ? p.posts : null;
     } catch(e) { return null; }
 }
+function setCachedList(posts) {
+    try { localStorage.setItem('blog_list', JSON.stringify({ posts, ts: Date.now() })); } catch(e) {}
+}
 
+// ─── Fetch Post List from Firestore ──────────────────────────────────────────
+async function fetchPostList() {
+    const cached = getCachedList();
+    if (cached) return cached;
+    const snapshot = await db.collection('posts').orderBy('date', 'desc').get();
+    const posts = snapshot.docs.map(doc => {
+        const d = doc.data();
+        const dateVal = d.date?.toDate ? d.date.toDate().toISOString() : (d.date || new Date().toISOString());
+        return {
+            id: doc.id,
+            title: d.title || 'Untitled',
+            date: dateVal,
+            excerpt: d.excerpt || '',
+            readTime: d.readTime || ''
+        };
+    });
+    setCachedList(posts);
+    return posts;
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
 function renderCard(post) {
     const card = document.createElement('a');
     card.className = 'blog-card';
-    card.href = `/blog-post.html?id=${post.id}&mod=${post.modifiedTime}`;
+    card.href = `/blog-post.html?id=${post.id}`;
     card.innerHTML = `
-        <div class="blog-card-date">${fmtDate(post.modifiedTime)}</div>
+        <div class="blog-card-date">${fmtDate(post.date)}</div>
         <div class="blog-card-title">${esc(post.title)}</div>
-        <div class="blog-card-excerpt loading" data-fid="${post.id}"></div>
-        <div class="blog-card-reading" data-rid="${post.id}"></div>`;
+        <div class="blog-card-excerpt">${esc(post.excerpt)}${post.excerpt.length >= 240 ? '…' : ''}</div>
+        ${post.readTime ? `<div class="blog-card-reading">${esc(post.readTime)}</div>` : ''}`;
     return card;
 }
 
@@ -197,43 +183,31 @@ function renderBatch() {
     isLoadingMore = true;
     const c = document.getElementById('blogContainer');
     const end = Math.min(renderedCount + POSTS_PER_BATCH, allPosts.length);
-    for (let i = renderedCount; i < end; i++) { 
-        c.appendChild(renderCard(allPosts[i])); 
-        loadExc(allPosts[i].id, allPosts[i].modifiedTime); 
-    }
-    renderedCount = end; isLoadingMore = false;
-}
-
-async function loadExc(id, modTime) {
-    const d = await fetchExcerpt(id, modTime);
-    const el = document.querySelector(`.blog-card-excerpt[data-fid="${id}"]`);
-    const rl = document.querySelector(`.blog-card-reading[data-rid="${id}"]`);
-    if (el) { el.classList.remove('loading'); el.textContent = d?.excerpt ? d.excerpt + (d.excerpt.length >= 240 ? '…' : '') : ''; }
-    if (rl && d?.readTime) rl.textContent = d.readTime;
-}
-
-function showSetup() {
-    document.getElementById('blogContainer').innerHTML = `<div class="setup-banner">... Setup required ...</div>`;
+    for (let i = renderedCount; i < end; i++) { c.appendChild(renderCard(allPosts[i])); }
+    renderedCount = end;
+    isLoadingMore = false;
 }
 
 function setupScroll() {
-    new IntersectionObserver((e) => { if (e[0].isIntersecting && renderedCount < allPosts.length) renderBatch(); }, { rootMargin: '200px' }).observe(document.getElementById('sentinel'));
+    new IntersectionObserver((e) => {
+        if (e[0].isIntersecting && renderedCount < allPosts.length) renderBatch();
+    }, { rootMargin: '200px' }).observe(document.getElementById('sentinel'));
 }
 
+// ─── Init ─────────────────────────────────────────────────────────────────────
 (async () => {
-    if (!getScriptUrl()) { showSetup(); return; }
     try {
         allPosts = await fetchPostList();
         if (location.hash === '#latest' && allPosts.length) { location.replace(`/blog-post.html?id=${allPosts[0].id}`); return; }
         document.getElementById('loadingState')?.remove();
         if (!allPosts.length) { document.getElementById('blogContainer').innerHTML = '<div class="empty-state">No posts yet.</div>'; return; }
-        renderBatch(); setupScroll();
+        renderBatch();
+        setupScroll();
     } catch(e) {
-        if (e.message === 'NO_URL') showSetup();
-        else document.getElementById('blogContainer').innerHTML = `<div class="error-state">Failed to load posts<code>${esc(e.message)}</code></div>`;
+        document.getElementById('blogContainer').innerHTML = `<div class="error-state">Failed to load posts<code>${esc(e.message)}</code></div>`;
     }
 })();
 </script>
-    
+
 </body>
 </html>

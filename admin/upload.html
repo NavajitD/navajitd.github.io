@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin — Navajit D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
+    <style>
+        :root {
+            --text: #0a1f00; --bg: #fff; --accent: #2563eb; --muted: #6b7280;
+            --border: #e5e7eb; --bg-subtle: #f9fafb; --danger: #dc2626;
+            --success: #16a34a; --font: "Inconsolata", monospace;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:var(--font);color:var(--text);background:var(--bg);min-height:100vh;padding:2rem 1.5rem;max-width:52rem;margin:0 auto}
+
+        /* ─── Login Screen ─── */
+        #loginScreen{display:flex;align-items:center;justify-content:center;min-height:80vh}
+        .login-box{width:100%;max-width:22rem;border:1px solid var(--border);border-radius:10px;padding:2rem;text-align:center}
+        .login-box h2{font-size:1.25rem;font-weight:700;margin-bottom:.5rem}
+        .login-box p{font-size:.875rem;color:var(--muted);margin-bottom:1.5rem}
+        .btn-google{background:#fff;color:#374151;border:1px solid var(--border);width:100%;justify-content:center;gap:.625rem}
+        .btn-google:hover{border-color:#4285f4;color:#4285f4}
+
+        /* ─── Header ─── */
+        .admin-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:1.5rem;border-bottom:1px solid var(--border);margin-bottom:2rem}
+        .admin-header h1{font-size:1.25rem;font-weight:700}
+        .admin-header a{font-size:.875rem;color:var(--muted);text-decoration:none}
+        .admin-header a:hover{color:var(--accent)}
+        .user-badge{font-size:.8125rem;color:var(--muted);display:flex;align-items:center;gap:.75rem}
+
+        /* ─── Tabs ─── */
+        .tabs{display:flex;gap:.25rem;margin-bottom:2rem;border-bottom:1px solid var(--border)}
+        .tab{padding:.625rem 1rem;font-size:.875rem;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font);transition:all .2s}
+        .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+        .tab:hover{color:var(--text)}
+        .tab-panel{display:none} .tab-panel.active{display:block}
+
+        /* ─── Forms ─── */
+        label{display:block;font-size:.8125rem;font-weight:600;margin-bottom:.375rem;color:var(--muted)}
+        input[type=text],input[type=date],input[type=email],input[type=password],textarea,select{width:100%;padding:.625rem .75rem;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.9375rem;color:var(--text);background:var(--bg);transition:border-color .2s;outline:none}
+        input:focus,textarea:focus{border-color:var(--accent)}
+        textarea{resize:vertical;min-height:5rem}
+        .form-row{margin-bottom:1.25rem}
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+        @media(max-width:500px){.form-grid{grid-template-columns:1fr}}
+
+        /* ─── Drop Zone ─── */
+        .drop-zone{border:2px dashed var(--border);border-radius:8px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;color:var(--muted);font-size:.9375rem}
+        .drop-zone:hover,.drop-zone.over{border-color:var(--accent);color:var(--accent);background:rgba(37,99,235,.03)}
+        .drop-zone input{display:none}
+        .drop-zone strong{display:block;font-size:1rem;margin-bottom:.375rem;color:var(--text)}
+
+        /* ─── Buttons ─── */
+        .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1.25rem;border-radius:6px;border:none;cursor:pointer;font-family:var(--font);font-size:.9375rem;font-weight:600;transition:all .2s}
+        .btn-primary{background:var(--accent);color:#fff} .btn-primary:hover{background:#1d4ed8}
+        .btn-secondary{background:var(--bg-subtle);color:var(--text);border:1px solid var(--border)} .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+        .btn-danger{background:#fef2f2;color:var(--danger);border:1px solid #fecaca} .btn-danger:hover{background:#fee2e2}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .btn-row{display:flex;gap:.75rem;margin-top:1.5rem;flex-wrap:wrap}
+
+        /* ─── Preview ─── */
+        .preview-box{border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-top:1rem;max-height:300px;overflow-y:auto;font-size:.875rem;line-height:1.7;color:var(--text)}
+        .preview-box *{font-family:inherit}
+        .preview-label{font-size:.8125rem;font-weight:600;color:var(--muted);margin-bottom:.5rem}
+
+        /* ─── Post List ─── */
+        .post-item{padding:1rem 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+        .post-item:last-child{border-bottom:none}
+        .post-item-title{font-weight:600;font-size:.9375rem;margin-bottom:.25rem}
+        .post-item-meta{font-size:.8125rem;color:var(--muted)}
+        .post-item-actions{display:flex;gap:.5rem;flex-shrink:0}
+        .btn-sm{padding:.375rem .75rem;font-size:.8125rem}
+
+        /* ─── Alerts ─── */
+        .alert{padding:.875rem 1rem;border-radius:6px;font-size:.875rem;margin-bottom:1rem;display:none}
+        .alert.show{display:block}
+        .alert-success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+        .alert-error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+        .alert-info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+
+        /* ─── Spinner ─── */
+        .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+        .spinner-dark{border-color:rgba(0,0,0,.15);border-top-color:var(--accent)}
+        @keyframes spin{to{transform:rotate(360deg)}}
+    </style>
+</head>
+<body>
+
+<!-- ─── Login Screen ─────────────────────────────────────────────────────── -->
+<div id="loginScreen">
+    <div class="login-box">
+        <h2>Blog Admin</h2>
+        <p>Sign in with your Google account to continue.</p>
+        <div class="alert alert-error" id="loginError"></div>
+        <button class="btn btn-google" id="loginBtn">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M47.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h13.1c-.6 3-2.3 5.5-4.9 7.2v6h7.9c4.6-4.3 7.4-10.6 7.4-17.2z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.9-6c-2.1 1.4-4.9 2.3-8 2.3-6.1 0-11.3-4.1-13.1-9.7H2.7v6.2C6.7 43.1 14.8 48 24 48z"/><path fill="#FBBC05" d="M10.9 28.8c-.5-1.4-.7-2.8-.7-4.3s.3-3 .7-4.3v-6.2H2.7C1 17.4 0 20.6 0 24s1 6.6 2.7 9.1l8.2-4.3z"/><path fill="#EA4335" d="M24 9.5c3.4 0 6.5 1.2 8.9 3.5l6.6-6.6C35.9 2.5 30.5 0 24 0 14.8 0 6.7 4.9 2.7 12.2l8.2 6.2C12.7 13.6 17.9 9.5 24 9.5z"/></svg>
+            <span id="loginBtnText">Sign in with Google</span>
+        </button>
+    </div>
+</div>
+
+<!-- ─── Admin App ─────────────────────────────────────────────────────────── -->
+<div id="adminApp" style="display:none">
+    <div class="admin-header">
+        <h1>Blog Admin</h1>
+        <div class="user-badge">
+            <span id="userEmail"></span>
+            <button class="btn btn-secondary btn-sm" id="signOutBtn">Sign out</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-tab="upload">Upload Post</button>
+        <button class="tab" data-tab="posts">All Posts</button>
+    </div>
+
+    <!-- ─── Upload Tab ─── -->
+    <div class="tab-panel active" id="tabUpload">
+        <div class="alert alert-success" id="uploadSuccess"></div>
+        <div class="alert alert-error" id="uploadError"></div>
+
+        <div class="form-row">
+            <div class="drop-zone" id="dropZone">
+                <input type="file" id="fileInput" accept=".docx">
+                <strong>Drop a .docx file here</strong>
+                <span>or click to browse</span>
+            </div>
+            <div id="fileStatus" style="margin-top:.5rem;font-size:.8125rem;color:var(--muted)"></div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-row">
+                <label for="postTitle">Title</label>
+                <input type="text" id="postTitle" placeholder="Post title">
+            </div>
+            <div class="form-row">
+                <label for="postDate">Date</label>
+                <input type="date" id="postDate">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="postExcerpt">Excerpt <span style="font-weight:400">(shown on blog list)</span></label>
+            <textarea id="postExcerpt" rows="3" placeholder="Short preview of the post…"></textarea>
+        </div>
+
+        <div class="form-row">
+            <label for="postAuthor">Author</label>
+            <input type="text" id="postAuthor" value="Navajit D">
+        </div>
+
+        <div id="previewSection" style="display:none">
+            <div class="preview-label">Content preview</div>
+            <div class="preview-box" id="htmlPreview"></div>
+            <div style="font-size:.8125rem;color:var(--muted);margin-top:.5rem" id="readTimeDisplay"></div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" id="submitBtn" disabled>
+                <span id="submitBtnText">Publish post</span>
+            </button>
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+        </div>
+    </div>
+
+    <!-- ─── Posts Tab ─── -->
+    <div class="tab-panel" id="tabPosts">
+        <div class="alert alert-error" id="listError"></div>
+        <div id="postList">
+            <div style="text-align:center;padding:3rem;color:var(--muted)">
+                <div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading posts…
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ─── Firebase Config (Numo) ───────────────────────────────────────────────────
+const firebaseConfig = {
+    apiKey: "AIzaSyCuJBqQWKpbhj3FEYpg_p_nhbjTEFg8Lt4",
+    authDomain: "numo-3984a.firebaseapp.com",
+    projectId: "numo-3984a",
+    storageBucket: "numo-3984a.firebasestorage.app",
+    messagingSenderId: "952036501569",
+    appId: "1:952036501569:web:c5776da3fe8eb0c249fec0"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const ALLOWED_EMAIL = 'navjitdebnath5@gmail.com';
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+auth.onAuthStateChanged(user => {
+    if (user && user.email === ALLOWED_EMAIL) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminApp').style.display = 'block';
+        document.getElementById('userEmail').textContent = user.email;
+        loadPosts();
+    } else {
+        if (user) { auth.signOut(); showAlert(document.getElementById('loginError'), 'Access restricted to ' + ALLOWED_EMAIL); }
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('adminApp').style.display = 'none';
+    }
+});
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
+    const errEl = document.getElementById('loginError');
+    const btnText = document.getElementById('loginBtnText');
+    btnText.innerHTML = '<span class="spinner spinner-dark"></span>';
+    document.getElementById('loginBtn').disabled = true;
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ login_hint: ALLOWED_EMAIL });
+        await auth.signInWithPopup(provider);
+    } catch(e) {
+        if (e.code !== 'auth/popup-closed-by-user') showAlert(errEl, e.message);
+        btnText.textContent = 'Sign in with Google';
+        document.getElementById('loginBtn').disabled = false;
+    }
+});
+document.getElementById('signOutBtn').addEventListener('click', () => auth.signOut());
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
+        if (tab.dataset.tab === 'posts') loadPosts();
+    });
+});
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function showAlert(el, msg) { el.textContent = msg; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 6000); }
+function readTime(text) { return Math.max(1, Math.round(text.split(/\s+/).filter(Boolean).length / 200)) + ' min read'; }
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+// ─── File Drop & Upload ───────────────────────────────────────────────────────
+let convertedHtml = '';
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('over'); handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+
+async function handleFile(file) {
+    if (!file || !file.name.endsWith('.docx')) {
+        document.getElementById('fileStatus').textContent = 'Please select a .docx file.';
+        return;
+    }
+    document.getElementById('fileStatus').textContent = 'Converting…';
+    document.getElementById('submitBtn').disabled = true;
+
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        convertedHtml = result.value;
+
+        // Auto-extract title from first heading
+        const tmp = document.createElement('div');
+        tmp.innerHTML = convertedHtml;
+        const firstHeading = tmp.querySelector('h1, h2, h3');
+        if (firstHeading && !document.getElementById('postTitle').value) {
+            document.getElementById('postTitle').value = firstHeading.textContent.trim();
+            firstHeading.remove();
+            convertedHtml = tmp.innerHTML;
+        }
+
+        // Auto-excerpt from first paragraph
+        if (!document.getElementById('postExcerpt').value) {
+            const firstPara = tmp.querySelector('p');
+            if (firstPara) {
+                const text = firstPara.textContent.trim();
+                document.getElementById('postExcerpt').value = text.slice(0, 300);
+            }
+        }
+
+        // Auto-date
+        if (!document.getElementById('postDate').value) {
+            document.getElementById('postDate').value = todayISO();
+        }
+
+        // Show preview + read time
+        const rt = readTime(tmp.textContent);
+        document.getElementById('htmlPreview').innerHTML = convertedHtml;
+        document.getElementById('readTimeDisplay').textContent = rt + ' · ' + (result.messages.length ? result.messages.length + ' conversion note(s)' : 'Clean conversion');
+        document.getElementById('previewSection').style.display = 'block';
+        document.getElementById('fileStatus').textContent = '✓ ' + file.name;
+        document.getElementById('submitBtn').disabled = false;
+    } catch(e) {
+        document.getElementById('fileStatus').textContent = 'Conversion failed: ' + e.message;
+    }
+}
+
+// ─── Submit ───────────────────────────────────────────────────────────────────
+document.getElementById('submitBtn').addEventListener('click', async () => {
+    const title = document.getElementById('postTitle').value.trim();
+    const dateStr = document.getElementById('postDate').value;
+    const excerpt = document.getElementById('postExcerpt').value.trim();
+    const author = document.getElementById('postAuthor').value.trim() || 'Navajit D';
+    const successEl = document.getElementById('uploadSuccess');
+    const errorEl = document.getElementById('uploadError');
+
+    if (!title) { showAlert(errorEl, 'Title is required.'); return; }
+    if (!convertedHtml) { showAlert(errorEl, 'No content — upload a .docx file first.'); return; }
+
+    const btnText = document.getElementById('submitBtnText');
+    btnText.innerHTML = '<span class="spinner"></span> Publishing…';
+    document.getElementById('submitBtn').disabled = true;
+
+    try {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = convertedHtml;
+        const rt = readTime(tmp.textContent);
+
+        const editingId = document.getElementById('submitBtn').dataset.editId;
+        const postData = {
+            title,
+            author,
+            date: dateStr ? firebase.firestore.Timestamp.fromDate(new Date(dateStr)) : firebase.firestore.FieldValue.serverTimestamp(),
+            excerpt: excerpt || tmp.textContent.trim().slice(0, 300),
+            readTime: rt,
+            html: convertedHtml,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (editingId) {
+            await db.collection('posts').doc(editingId).update(postData);
+            showAlert(successEl, 'Post updated successfully.');
+            delete document.getElementById('submitBtn').dataset.editId;
+            document.getElementById('submitBtnText').textContent = 'Publish post';
+        } else {
+            postData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            const ref = await db.collection('posts').add(postData);
+            showAlert(successEl, 'Post published! ID: ' + ref.id);
+        }
+
+        clearForm();
+    } catch(e) {
+        showAlert(errorEl, 'Failed: ' + e.message);
+    } finally {
+        btnText.textContent = document.getElementById('submitBtn').dataset.editId ? 'Update post' : 'Publish post';
+        document.getElementById('submitBtn').disabled = false;
+    }
+});
+
+document.getElementById('clearBtn').addEventListener('click', clearForm);
+
+function clearForm() {
+    convertedHtml = '';
+    document.getElementById('postTitle').value = '';
+    document.getElementById('postDate').value = '';
+    document.getElementById('postExcerpt').value = '';
+    document.getElementById('postAuthor').value = 'Navajit D';
+    document.getElementById('fileStatus').textContent = '';
+    document.getElementById('previewSection').style.display = 'none';
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('fileInput').value = '';
+    delete document.getElementById('submitBtn').dataset.editId;
+    document.getElementById('submitBtnText').textContent = 'Publish post';
+}
+
+// ─── Post List ────────────────────────────────────────────────────────────────
+async function loadPosts() {
+    const listEl = document.getElementById('postList');
+    listEl.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading…</div>';
+    try {
+        const snap = await db.collection('posts').orderBy('date', 'desc').get();
+        if (snap.empty) { listEl.innerHTML = '<div style="padding:2rem;color:var(--muted);text-align:center">No posts yet.</div>'; return; }
+
+        listEl.innerHTML = '';
+        snap.docs.forEach(doc => {
+            const d = doc.data();
+            const dateVal = d.date?.toDate ? d.date.toDate() : new Date(d.date);
+            const fmtD = dateVal.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
+            const item = document.createElement('div');
+            item.className = 'post-item';
+            item.innerHTML = `
+                <div>
+                    <div class="post-item-title">${escHtml(d.title || 'Untitled')}</div>
+                    <div class="post-item-meta">${fmtD} · ${escHtml(d.readTime || '')} · ID: ${doc.id}</div>
+                </div>
+                <div class="post-item-actions">
+                    <button class="btn btn-secondary btn-sm" data-id="${doc.id}" data-action="edit">Edit</button>
+                    <button class="btn btn-danger btn-sm" data-id="${doc.id}" data-action="delete">Delete</button>
+                </div>`;
+            listEl.appendChild(item);
+        });
+
+        listEl.querySelectorAll('[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('Delete this post? This cannot be undone.')) return;
+                try {
+                    await db.collection('posts').doc(btn.dataset.id).delete();
+                    loadPosts();
+                } catch(e) {
+                    showAlert(document.getElementById('listError'), 'Delete failed: ' + e.message);
+                }
+            });
+        });
+
+        listEl.querySelectorAll('[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const snap = await db.collection('posts').doc(btn.dataset.id).get();
+                if (!snap.exists) return;
+                const d = snap.data();
+                const dateVal = d.date?.toDate ? d.date.toDate() : new Date(d.date);
+
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.querySelector('[data-tab="upload"]').classList.add('active');
+                document.getElementById('tabUpload').classList.add('active');
+
+                document.getElementById('postTitle').value = d.title || '';
+                document.getElementById('postDate').value = dateVal.toISOString().slice(0, 10);
+                document.getElementById('postExcerpt').value = d.excerpt || '';
+                document.getElementById('postAuthor').value = d.author || 'Navajit D';
+                convertedHtml = d.html || '';
+                document.getElementById('htmlPreview').innerHTML = convertedHtml;
+                document.getElementById('previewSection').style.display = 'block';
+                document.getElementById('readTimeDisplay').textContent = d.readTime || '';
+                document.getElementById('fileStatus').textContent = '✓ Loaded from Firestore';
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('submitBtn').dataset.editId = btn.dataset.id;
+                document.getElementById('submitBtnText').textContent = 'Update post';
+                window.scrollTo(0, 0);
+            });
+        });
+    } catch(e) {
+        showAlert(document.getElementById('listError'), 'Failed to load posts: ' + e.message);
+    }
+}
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+
+</body>
+</html>
