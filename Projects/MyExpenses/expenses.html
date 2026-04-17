@@ -2471,7 +2471,7 @@
             for (const [cat, kws] of Object.entries(effectiveCategoryKeywords)) {
                 if (kws.some(kw => lower.includes(kw))) return cat;
             }
-            return null;
+            return ragCategoryVote(name);
         }
 
         function rebuildEffectiveKeywords() {
@@ -2523,6 +2523,150 @@
                     console.warn('[LearnedKeywords] Firestore save failed:', err.message);
                 }
             }, 500);
+        }
+
+        /* ═══════════════════════════════════════════════════
+           RAG PIPELINE — retrieves the user's past similar
+           expenses to (a) classify locally without an LLM
+           call when confident, and (b) inject few-shot
+           examples into LLM parse prompts for text / voice /
+           image inputs. Grows autonomously: every add / edit
+           / delete rebuilds the index, and user corrections
+           get a weight boost, so accuracy compounds with use.
+           ═══════════════════════════════════════════════════ */
+        const RAG_CONFIG = {
+            topK: 5,                    // few-shot examples injected into LLM prompt
+            classifyK: 8,               // neighbours consulted for local category vote
+            minScore: 0.15,             // similarity floor for any retrieval
+            confidentMargin: 0.55,      // top-category vote share to auto-classify
+            ngramSize: 3,               // char n-gram length (works for Latin + Indic)
+            recencyHalfLifeDays: 120,   // decay old examples
+            correctionBoost: 1.3,       // user-edited docs weigh more
+        };
+
+        let _ragIndex = null;
+
+        function ragTokenize(text) {
+            const s = (text || '').toString().toLowerCase().normalize('NFKC');
+            if (!s) return [];
+            const words = s.split(/[^\p{L}\p{N}]+/u).filter(w => w && w.length >= 2);
+            const grams = [];
+            const n = RAG_CONFIG.ngramSize;
+            for (const chunk of s.replace(/[^\p{L}\p{N}]+/gu, ' ').split(/\s+/)) {
+                if (chunk.length < n) continue;
+                for (let i = 0; i <= chunk.length - n; i++) {
+                    grams.push('#' + chunk.substring(i, i + n));
+                }
+            }
+            return [...words, ...grams];
+        }
+
+        function buildRagIndex() {
+            const docs = [];
+            const df = new Map();
+            for (const e of allExpenses) {
+                if (!e.expenseName || !e.category) continue;
+                const tokens = ragTokenize(e.expenseName);
+                if (tokens.length === 0) continue;
+                const tf = new Map();
+                tokens.forEach(t => tf.set(t, (tf.get(t) || 0) + 1));
+                new Set(tokens).forEach(t => df.set(t, (df.get(t) || 0) + 1));
+                docs.push({
+                    id: e.id,
+                    name: e.expenseName,
+                    category: e.category,
+                    paymentMethod: e.paymentMethod,
+                    date: e.date,
+                    tf,
+                    norm: Math.sqrt(tokens.length),
+                    corrected: !!e.manuallyCategorized,
+                });
+            }
+            _ragIndex = { docs, df };
+        }
+
+        function ragRetrieve(query, k) {
+            if (!_ragIndex || _ragIndex.docs.length === 0) return [];
+            const N = _ragIndex.docs.length;
+            const qTokens = ragTokenize(query);
+            if (qTokens.length === 0) return [];
+            const qtf = new Map();
+            qTokens.forEach(t => qtf.set(t, (qtf.get(t) || 0) + 1));
+            const qnorm = Math.sqrt(qTokens.length);
+            const now = Date.now();
+
+            const scored = [];
+            for (const d of _ragIndex.docs) {
+                let dot = 0;
+                for (const [t, q] of qtf) {
+                    const dtf = d.tf.get(t);
+                    if (!dtf) continue;
+                    const df = _ragIndex.df.get(t) || 1;
+                    const idf = Math.log(1 + N / df);
+                    dot += q * dtf * idf * idf;
+                }
+                if (dot === 0) continue;
+                let score = dot / (qnorm * d.norm + 1e-6);
+                if (d.date) {
+                    const dt = d.date instanceof Date ? d.date : new Date(d.date);
+                    const ageDays = Math.max(0, (now - dt.getTime()) / 86400000);
+                    score *= Math.exp(-ageDays / RAG_CONFIG.recencyHalfLifeDays);
+                }
+                if (d.corrected) score *= RAG_CONFIG.correctionBoost;
+                scored.push({ doc: d, score });
+            }
+            scored.sort((a, b) => b.score - a.score);
+            return scored.slice(0, k).filter(s => s.score >= RAG_CONFIG.minScore);
+        }
+
+        function ragCategoryVote(query) {
+            const hits = ragRetrieve(query, RAG_CONFIG.classifyK);
+            if (hits.length === 0) return null;
+            const tally = {};
+            let total = 0;
+            for (const { doc, score } of hits) {
+                tally[doc.category] = (tally[doc.category] || 0) + score;
+                total += score;
+            }
+            const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+            if (!sorted.length || total === 0) return null;
+            const [topCat, topScore] = sorted[0];
+            const userCats = userProfile?.categories;
+            if (userCats && userCats.length && !userCats.includes(topCat)) return null;
+            return (topScore / total) >= RAG_CONFIG.confidentMargin ? topCat : null;
+        }
+
+        function ragBuildFewShot(query) {
+            const hits = ragRetrieve(query, RAG_CONFIG.topK);
+            if (hits.length === 0) return '';
+            const seen = new Set();
+            const uniq = [];
+            for (const { doc } of hits) {
+                const key = doc.name.toLowerCase() + '|' + doc.category;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                uniq.push(doc);
+                if (uniq.length >= RAG_CONFIG.topK) break;
+            }
+            const examples = uniq.map(d =>
+                `- "${d.name}" → category: ${d.category}, payment: ${d.paymentMethod || 'Cash'}`
+            ).join('\n');
+            return `\n\nPREVIOUS SIMILAR EXPENSES FROM THIS USER (follow the same category and payment conventions when the new expense looks similar):\n${examples}`;
+        }
+
+        function ragBuildRecentContext(limit = 10) {
+            if (!_ragIndex || _ragIndex.docs.length === 0) return '';
+            const recent = [..._ragIndex.docs]
+                .sort((a, b) => {
+                    const da = a.date instanceof Date ? a.date.getTime() : 0;
+                    const db = b.date instanceof Date ? b.date.getTime() : 0;
+                    return db - da;
+                })
+                .slice(0, limit);
+            const examples = recent.map(d =>
+                `- "${d.name}" → category: ${d.category}, payment: ${d.paymentMethod || 'Cash'}`
+            ).join('\n');
+            return `\n\nUSER'S RECENT EXPENSE PATTERNS (for context — match category/payment style):\n${examples}`;
         }
 
         /* ═══════════════════════════════════════════════════
@@ -2936,6 +3080,7 @@
                     if (e.timestamp && e.timestamp.toDate) e.timestamp = e.timestamp.toDate();
                 });
                 sortExpenses();
+                buildRagIndex();
                 renderRecent();
                 initFilters();
                 refreshAnalytics();
@@ -3001,7 +3146,8 @@
             saveLastUsedDate(dateStr);
 
             const suggestedAtSubmit = autoCategory(name);
-            if (category !== suggestedAtSubmit) {
+            const userOverrode = suggestedAtSubmit && category !== suggestedAtSubmit;
+            if (userOverrode) {
                 logManualCategory(name, category);
             }
             lastAutoSuggestedCategory = null;
@@ -3025,6 +3171,7 @@
                 paymentMethod: resolvedPayment,
                 shared: shared ? 'Yes' : 'No',
                 billingCycle: payment === 'Credit card' ? getBillingCycle(dateObj) : '',
+                manuallyCategorized: userOverrode,
                 timestamp: new Date()
             };
             if (shared) {
@@ -3034,6 +3181,7 @@
 
             allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
             sortExpenses();
+            buildRagIndex();
             renderRecent();
 
             getCollection().add({
@@ -3597,12 +3745,12 @@ OTHER RULES:
         }
 
         async function callGeminiParseText(text) {
-            const system = buildParseSystemInstruction();
+            const system = buildParseSystemInstruction() + ragBuildFewShot(text);
             return callExpenseLLM(text, system, true);
         }
 
         async function callGeminiParseImage(base64Data, mimeType) {
-            const system = buildParseSystemInstruction();
+            const system = buildParseSystemInstruction() + ragBuildRecentContext();
             const dataUrl = `data:${mimeType || 'image/jpeg'};base64,${base64Data}`;
             return callExpenseLLM('Extract expense details from this image.', system, true, dataUrl);
         }
@@ -3941,7 +4089,8 @@ OTHER RULES:
 
             const originalExpense = allExpenses.find(e => e.id === editingExpenseId);
             const originalCategory = originalExpense ? originalExpense.category : null;
-            if (originalCategory && category !== originalCategory) {
+            const categoryChanged = originalCategory && category !== originalCategory;
+            if (categoryChanged) {
                 logManualCategory(name, category);
             }
 
@@ -3971,6 +4120,7 @@ OTHER RULES:
                 shared: shared ? 'Yes' : 'No',
                 billingCycle: payment === 'Credit card' ? getBillingCycle(dateObj) : '',
             };
+            if (categoryChanged) updateData.manuallyCategorized = true;
             if (shared) {
                 updateData.splitBetween = parseInt(document.getElementById('editSplitCount').value) || 2;
                 updateData.splitAmount = finalAmount;
@@ -3982,6 +4132,7 @@ OTHER RULES:
                 allExpenses[idx] = { ...allExpenses[idx], ...updateData };
             }
             sortExpenses();
+            buildRagIndex();
             renderRecent();
             refreshAnalytics();
             closeEditModal();
@@ -4007,6 +4158,7 @@ OTHER RULES:
 
             const id = editingExpenseId;
             allExpenses = allExpenses.filter(e => e.id !== id);
+            buildRagIndex();
             renderRecent();
             refreshAnalytics();
             closeEditModal();
