@@ -2114,6 +2114,7 @@
       padding: 1.5rem;
       box-sizing: border-box;
     }
+
     .onboard-card {
       width: 100%;
       max-width: 420px;
@@ -2123,27 +2124,51 @@
       padding: 1.8rem 1.5rem;
       animation: obFadeIn .35s ease;
     }
-    @keyframes obFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    @keyframes obFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .onboard-step-dots {
       display: flex;
       justify-content: center;
       gap: .5rem;
       margin-bottom: 1.5rem;
     }
+
     .onboard-dot {
-      width: 8px; height: 8px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--border);
       transition: background .25s, transform .25s;
     }
-    .onboard-dot.active { background: var(--accent); transform: scale(1.3); }
-    .onboard-dot.done { background: var(--accent); opacity: .5; }
+
+    .onboard-dot.active {
+      background: var(--accent);
+      transform: scale(1.3);
+    }
+
+    .onboard-dot.done {
+      background: var(--accent);
+      opacity: .5;
+    }
+
     .onboard-title {
       font-size: 1.15rem;
       font-weight: 700;
       margin-bottom: .25rem;
       text-align: center;
     }
+
     .onboard-subtitle {
       font-size: .78rem;
       color: var(--muted);
@@ -2151,7 +2176,11 @@
       margin-bottom: 1.2rem;
       line-height: 1.45;
     }
-    .onboard-section { margin-bottom: 1rem; }
+
+    .onboard-section {
+      margin-bottom: 1rem;
+    }
+
     .onboard-section-title {
       font-size: .7rem;
       font-weight: 600;
@@ -2160,11 +2189,13 @@
       color: var(--muted);
       margin-bottom: .4rem;
     }
+
     .ob-gender-wrap {
       display: flex;
       gap: .4rem;
       flex-wrap: wrap;
     }
+
     .ob-gender-btn {
       flex: 1;
       min-width: 80px;
@@ -2180,12 +2211,17 @@
       text-align: center;
       transition: border-color .2s, background .2s;
     }
-    .ob-gender-btn:hover { border-color: var(--accent); }
+
+    .ob-gender-btn:hover {
+      border-color: var(--accent);
+    }
+
     .ob-gender-btn.selected {
       border-color: var(--accent);
       background: var(--hover);
       font-weight: 600;
     }
+
     .ob-textarea {
       width: 100%;
       box-sizing: border-box;
@@ -2201,7 +2237,11 @@
       outline: none;
       transition: border .2s;
     }
-    .ob-textarea:focus { border-color: var(--accent); }
+
+    .ob-textarea:focus {
+      border-color: var(--accent);
+    }
+
     .ob-ai-btn {
       display: flex;
       align-items: center;
@@ -2220,20 +2260,40 @@
       cursor: pointer;
       transition: background .2s;
     }
-    .ob-ai-btn:hover { background: var(--hover); }
-    .ob-ai-btn:disabled { opacity: .5; cursor: wait; }
+
+    .ob-ai-btn:hover {
+      background: var(--hover);
+    }
+
+    .ob-ai-btn:disabled {
+      opacity: .5;
+      cursor: wait;
+    }
+
     .ob-goal-result {
       display: none;
       animation: obFadeIn .3s ease;
     }
-    .ob-goal-result.visible { display: block; }
+
+    .ob-goal-result.visible {
+      display: block;
+    }
+
     .ob-nav {
       display: flex;
       gap: .5rem;
       margin-top: 1.2rem;
     }
-    .ob-nav .btn-primary { flex: 1; padding: .65rem; }
-    .ob-nav .btn-secondary { padding: .65rem .9rem; }
+
+    .ob-nav .btn-primary {
+      flex: 1;
+      padding: .65rem;
+    }
+
+    .ob-nav .btn-secondary {
+      padding: .65rem .9rem;
+    }
+
     .ob-reassure {
       font-size: .7rem;
       color: var(--muted);
@@ -2241,11 +2301,12 @@
       margin-top: .6rem;
       font-style: italic;
     }
+
     /* FTUE overlay */
     .ftue-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.55);
+      background: rgba(0, 0, 0, .55);
       z-index: 9999;
       display: flex;
       align-items: center;
@@ -2253,6 +2314,7 @@
       padding: 1rem;
       animation: obFadeIn .3s ease;
     }
+
     .ftue-card {
       background: var(--card);
       border-radius: 14px;
@@ -2262,12 +2324,14 @@
       max-height: 85vh;
       overflow-y: auto;
     }
+
     .ftue-item {
       display: flex;
       align-items: flex-start;
       gap: .6rem;
       padding: .5rem 0;
     }
+
     .ftue-item-icon {
       width: 28px;
       height: 28px;
@@ -2278,9 +2342,21 @@
       justify-content: center;
       flex-shrink: 0;
     }
-    .ftue-item-icon i { width: 16px; height: 16px; stroke: var(--accent); }
-    .ftue-item-text { font-size: .78rem; line-height: 1.4; }
-    .ftue-item-text strong { font-weight: 600; }
+
+    .ftue-item-icon i {
+      width: 16px;
+      height: 16px;
+      stroke: var(--accent);
+    }
+
+    .ftue-item-text {
+      font-size: .78rem;
+      line-height: 1.4;
+    }
+
+    .ftue-item-text strong {
+      font-weight: 600;
+    }
 
     /* ── Notifications / Reminders ────────────────── */
     .ntf-bell-btn {
@@ -2302,8 +2378,17 @@
       flex-shrink: 0;
       padding: 0;
     }
-    .ntf-bell-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .ntf-bell-btn.active { color: var(--accent); border-color: var(--accent); }
+
+    .ntf-bell-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .ntf-bell-btn.active {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
     .ntf-badge {
       position: absolute;
       top: 2px;
@@ -2315,6 +2400,7 @@
       border: 1.5px solid var(--bg);
       display: none;
     }
+
     .ntf-master-row {
       display: flex;
       align-items: center;
@@ -2325,6 +2411,7 @@
       font-size: .82rem;
       font-weight: 600;
     }
+
     .ntf-row {
       display: flex;
       align-items: center;
@@ -2336,9 +2423,11 @@
       font-size: .78rem;
       transition: border-color .2s;
     }
+
     .ntf-row:has(input[type=checkbox]:checked) {
       border-color: var(--accent);
     }
+
     .ntf-row-label {
       flex: 1;
       display: flex;
@@ -2347,7 +2436,14 @@
       cursor: pointer;
       font-size: .78rem;
     }
-    .ntf-row-label i { width: 13px; height: 13px; stroke: var(--muted); flex-shrink: 0; }
+
+    .ntf-row-label i {
+      width: 13px;
+      height: 13px;
+      stroke: var(--muted);
+      flex-shrink: 0;
+    }
+
     .ntf-row input[type="checkbox"] {
       accent-color: var(--accent);
       flex-shrink: 0;
@@ -2355,6 +2451,7 @@
       height: 14px;
       cursor: pointer;
     }
+
     .ntf-input-sm {
       font-family: var(--font);
       font-size: .75rem;
@@ -2367,9 +2464,24 @@
       outline: none;
       width: 72px;
     }
-    .ntf-input-sm:focus { border-color: var(--accent); }
-    .ntf-input-sm.wide { width: auto; flex: 1; min-width: 80px; text-align: left; }
-    .ntf-input-label { font-size: .68rem; color: var(--muted); white-space: nowrap; }
+
+    .ntf-input-sm:focus {
+      border-color: var(--accent);
+    }
+
+    .ntf-input-sm.wide {
+      width: auto;
+      flex: 1;
+      min-width: 80px;
+      text-align: left;
+    }
+
+    .ntf-input-label {
+      font-size: .68rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
     .ntf-delete-btn {
       background: none;
       border: none;
@@ -2382,7 +2494,301 @@
       flex-shrink: 0;
       line-height: 1;
     }
-    .ntf-delete-btn:hover { color: var(--danger); }
+
+    .ntf-delete-btn:hover {
+      color: var(--danger);
+    }
+
+    /* ── Voice Log Modal ─────────────────────────────────────── */
+    .vlog-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, .55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: fadeIn .2s;
+    }
+
+    .vlog-overlay.hidden {
+      display: none;
+    }
+
+    .vlog-card {
+      background: var(--card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      max-width: 420px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: slideUp .25s ease;
+    }
+
+    .vlog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .vlog-header h3 {
+      font-size: .95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .vlog-close {
+      padding: .2rem .4rem;
+      border-radius: 4px;
+      color: var(--muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: var(--font);
+      font-size: .9rem;
+    }
+
+    .vlog-close:hover {
+      color: var(--danger);
+    }
+
+    .vlog-mic-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .75rem;
+      padding: 1.5rem 0;
+    }
+
+    .vlog-mic-btn {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .15s;
+      box-shadow: 0 4px 16px rgba(22, 163, 74, .25);
+    }
+
+    .vlog-mic-btn:active {
+      transform: scale(.93);
+    }
+
+    .vlog-mic-btn.listening {
+      animation: vlogPulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes vlogPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, .35), 0 4px 16px rgba(22, 163, 74, .25);
+      }
+
+      50% {
+        box-shadow: 0 0 0 16px rgba(22, 163, 74, 0), 0 4px 16px rgba(22, 163, 74, .25);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0), 0 4px 16px rgba(22, 163, 74, .25);
+      }
+    }
+
+    [data-theme="dark"] .vlog-mic-btn {
+      box-shadow: 0 4px 16px rgba(74, 222, 128, .25);
+    }
+
+    [data-theme="dark"] .vlog-mic-btn.listening {
+      animation: vlogPulseDark 1.6s ease-in-out infinite;
+    }
+
+    @keyframes vlogPulseDark {
+      0% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, .35), 0 4px 16px rgba(74, 222, 128, .25);
+      }
+
+      50% {
+        box-shadow: 0 0 0 16px rgba(74, 222, 128, 0), 0 4px 16px rgba(74, 222, 128, .25);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0), 0 4px 16px rgba(74, 222, 128, .25);
+      }
+    }
+
+    .vlog-status {
+      font-size: .78rem;
+      color: var(--muted);
+      text-align: center;
+      min-height: 1.2em;
+    }
+
+    .vlog-transcript {
+      font-size: .8rem;
+      color: var(--text);
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      padding: .6rem .75rem;
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 3rem;
+      resize: none;
+      font-family: var(--font);
+      outline: none;
+      line-height: 1.45;
+      display: none;
+    }
+
+    .vlog-transcript:focus {
+      border-color: var(--accent);
+    }
+
+    .vlog-transcript.show {
+      display: block;
+    }
+
+    .vlog-parse-btn {
+      font-family: var(--font);
+      font-size: .85rem;
+      font-weight: 600;
+      padding: .6rem 1rem;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      width: 100%;
+      margin-top: .5rem;
+      display: none;
+    }
+
+    .vlog-parse-btn.show {
+      display: block;
+    }
+
+    .vlog-parse-btn:disabled {
+      opacity: .4;
+      cursor: wait;
+    }
+
+    [data-theme="dark"] .vlog-parse-btn {
+      color: #0a1f00;
+    }
+
+    /* Confirmation list */
+    .vlog-confirm-section {
+      display: none;
+      animation: obFadeIn .3s ease;
+    }
+
+    .vlog-confirm-section.show {
+      display: block;
+    }
+
+    .vlog-cat-label {
+      font-size: .68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      margin: .7rem 0 .3rem;
+    }
+
+    .vlog-item {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .4rem .5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: .25rem;
+      font-size: .78rem;
+    }
+
+    .vlog-item input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .vlog-item-text {
+      flex: 1;
+    }
+
+    .vlog-item-detail {
+      font-size: .68rem;
+      color: var(--muted);
+    }
+
+    .vlog-item .vlog-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .75rem;
+      padding: .1rem .3rem;
+      font-family: var(--font);
+    }
+
+    .vlog-item .vlog-remove:hover {
+      color: var(--danger);
+    }
+
+    .vlog-confirm-btn {
+      font-family: var(--font);
+      font-size: .9rem;
+      font-weight: 600;
+      padding: .65rem;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      width: 100%;
+      margin-top: .75rem;
+    }
+
+    .vlog-confirm-btn:disabled {
+      opacity: .4;
+      cursor: wait;
+    }
+
+    [data-theme="dark"] .vlog-confirm-btn {
+      color: #0a1f00;
+    }
+
+    .vlog-log-today-btn {
+      font-family: var(--font);
+      font-size: .78rem;
+      font-weight: 600;
+      padding: .45rem .75rem;
+      border-radius: 8px;
+      border: 1px dashed var(--accent);
+      background: transparent;
+      color: var(--accent);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      transition: background .2s;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .vlog-log-today-btn:hover {
+      background: var(--hover);
+    }
   </style>
 </head>
 
@@ -2495,13 +2901,12 @@
       <button onclick="shiftDate(-1)">← prev</button>
       <div class="date-label" id="dateLabel"></div>
       <button onclick="shiftDate(1)">next →</button>
-      <button class="ntf-bell-btn" id="ntfBellBtn" onclick="openNotifModal()"
-              aria-label="Reminder settings" title="Reminders" style="position:relative">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
-             stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      <button class="ntf-bell-btn" id="ntfBellBtn" onclick="openNotifModal()" aria-label="Reminder settings"
+        title="Reminders" style="position:relative">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
         <span class="ntf-badge" id="ntfBadge"></span>
       </button>
@@ -2988,7 +3393,7 @@
 
       window.renderOnboardStep = function () {
         const el = document.getElementById('onboardScreen');
-        const dots = [1,2,3,4].map(i => `<div class="onboard-dot ${i === obStep ? 'active' : i < obStep ? 'done' : ''}"></div>`).join('');
+        const dots = [1, 2, 3, 4].map(i => `<div class="onboard-dot ${i === obStep ? 'active' : i < obStep ? 'done' : ''}"></div>`).join('');
 
         if (obStep === 1) {
           el.innerHTML = `<div class="onboard-card">
@@ -3020,7 +3425,7 @@
           const wg = obData.weightGoal;
           const rateField = wg === 'lose' ? `<div style="margin-top:.3rem;display:flex;align-items:center;gap:.3rem"><input type="number" id="obWeightRate" value="${obData.weightGoalRate}" step="0.1" style="width:70px;height:2rem;font-family:var(--font);font-size:.8rem;padding:.3rem .5rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none" onchange="obData.weightGoalRate=parseFloat(this.value)||0.5"><span style="font-size:.68rem;color:var(--muted)">kg / week</span></div>` :
             wg === 'gain' ? `<div style="margin-top:.3rem;display:flex;align-items:center;gap:.3rem"><input type="number" id="obGainRate" value="${obData.gainRate}" step="0.1" style="width:70px;height:2rem;font-family:var(--font);font-size:.8rem;padding:.3rem .5rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none" onchange="obData.gainRate=parseFloat(this.value)||0.3"><span style="font-size:.68rem;color:var(--muted)">kg / week</span></div>` :
-            wg === 'recompose' ? `<div style="margin-top:.3rem;display:flex;align-items:center;gap:.3rem"><input type="number" id="obMusclePct" value="${obData.recomposeMusclePct}" step="1" style="width:70px;height:2rem;font-family:var(--font);font-size:.8rem;padding:.3rem .5rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none" onchange="obData.recomposeMusclePct=parseFloat(this.value)||30"><span style="font-size:.68rem;color:var(--muted)">% muscle mass target</span></div>` : '';
+              wg === 'recompose' ? `<div style="margin-top:.3rem;display:flex;align-items:center;gap:.3rem"><input type="number" id="obMusclePct" value="${obData.recomposeMusclePct}" step="1" style="width:70px;height:2rem;font-family:var(--font);font-size:.8rem;padding:.3rem .5rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none" onchange="obData.recomposeMusclePct=parseFloat(this.value)||30"><span style="font-size:.68rem;color:var(--muted)">% muscle mass target</span></div>` : '';
 
           el.innerHTML = `<div class="onboard-card">
             <div class="onboard-step-dots">${dots}</div>
@@ -3810,9 +4215,13 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
       window.showModal = function (type) {
         const c = document.getElementById("modalContainer");
         if (type === "plan") c.innerHTML = renderPlanModal();
-        else if (type === "custom") c.innerHTML = renderCustomFoodModal();
+        else if (type === "custom") {
+          if (!_editingFood) _editingFood = null; // ensure clean state for new adds
+          c.innerHTML = renderCustomFoodModal();
+          if (!_editingFood) loadRecentFoodsUI(); // load recent dishes for new adds
+        }
         else if (type === "water") c.innerHTML = renderWaterModal();
-        c.querySelector(".modal-overlay")?.addEventListener("click", e => { if (e.target.classList.contains("modal-overlay")) closeModal(); });
+        c.querySelector(".modal-overlay")?.addEventListener("click", e => { if (e.target.classList.contains("modal-overlay")) { _editingFood = null; closeModal(); } });
         refreshIcons();
       }
       window.closeModal = function () { document.getElementById("modalContainer").innerHTML = ""; }
@@ -3870,9 +4279,12 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
       }
 
       window.renderCustomFoodModal = function () {
+        const isEdit = !!_editingFood;
+        const ef = _editingFood || {};
         return `<div class="modal-overlay"><div class="modal">
-        <div class="modal-head"><div class="modal-title">Add Custom Food</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-head"><div class="modal-title">${isEdit ? 'Edit Food' : 'Add Custom Food'}</div><button class="modal-close" onclick="_editingFood=null;closeModal()">✕</button></div>
         <div class="modal-body">
+          <div id="cfRecentDishes" style="display:none;margin-bottom:.8rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)"></div>
           <div class="custom-grid">
             <input class="custom-full" id="cfName" placeholder="Name (e.g. Chicken biryani)*" style="font-family:var(--font);font-size:.8rem;padding:.45rem .6rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text)">
             
@@ -3880,7 +4292,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             <textarea class="custom-full" id="cfDesc" placeholder="Description / portion" rows="2" style="font-family:var(--font);font-size:.8rem;padding:.45rem .6rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);resize:vertical;"></textarea>
             
             <select class="custom-full" id="cfMeal" style="font-family:var(--font);font-size:.8rem;padding:.45rem .6rem;border-radius:5px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text)">
-              <option>Breakfast</option><option>Mid-Morning</option><option>Lunch</option><option>Afternoon</option><option>Dinner</option><option>Snack</option>
+              ${['Breakfast', 'Mid-Morning', 'Lunch', 'Afternoon', 'Dinner', 'Snack'].map(m => `<option${m === (_editingFood ? _editingFood.meal : inferMealFromTime()) ? ' selected' : ''}>${m}</option>`).join('')}
             </select>
           </div>
           
@@ -3908,8 +4320,78 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             <button onclick="clearFoodPhoto()" style="position:absolute;top:5px;right:5px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer">✕</button>
           </div>
 
-          <button class="btn-primary" id="cfBtn" style="width:100%" onclick="addCustomFood()">Add Food</button>
+          <button class="btn-primary" id="cfBtn" style="width:100%" onclick="addCustomFood()">${isEdit ? 'Save Changes' : 'Add Food'}</button>
         </div></div></div>`;
+      }
+
+      let _editingFood = null; // When editing, holds the food object being edited
+
+      window.editFood = function (id) {
+        const food = activeItems(dayData.foods).find(f => f.id === id);
+        if (!food) return;
+        _editingFood = { ...food };
+        showModal('custom');
+        // Pre-fill form fields after modal renders
+        setTimeout(() => {
+          const el = (id) => document.getElementById(id);
+          if (el('cfName')) el('cfName').value = food.name || '';
+          if (el('cfDesc')) el('cfDesc').value = food.desc || '';
+          if (el('cfCal')) el('cfCal').value = food.cal || '';
+          if (el('cfPro')) el('cfPro').value = food.protein || '';
+          if (el('cfCarb')) el('cfCarb').value = food.carbs || '';
+          if (el('cfFat')) el('cfFat').value = food.fat || '';
+          if (el('cfFib')) el('cfFib').value = food.fiber || '';
+        }, 50);
+      }
+
+      let _recentFoodsCache = [];
+
+      window.readdRecentFood = function (idx) {
+        const food = _recentFoodsCache[idx];
+        if (!food) return;
+        const f = { name: food.name, desc: food.desc || '', meal: food.meal, cal: food.cal, protein: food.protein, carbs: food.carbs, fat: food.fat, fiber: food.fiber, micros: food.micros || {}, estimated: food.estimated || false };
+        addFood(f);
+        closeModal();
+      }
+
+      window.loadRecentFoodsUI = async function () {
+        const container = document.getElementById('cfRecentDishes');
+        if (!container) return;
+        try {
+          const dates = [];
+          for (let i = 1; i <= 2; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            dates.push(localDateStr(d));
+          }
+          const todayNames = new Set(activeItems(dayData?.foods || []).map(f => f.name.toLowerCase().trim()));
+          const recentFoods = [];
+          for (const date of dates) {
+            try {
+              const doc = await dayRef(date).get();
+              if (doc.exists) {
+                activeItems(doc.data().foods || []).forEach(f => {
+                  if (!todayNames.has(f.name.toLowerCase().trim()) && !recentFoods.some(r => r.name.toLowerCase().trim() === f.name.toLowerCase().trim())) {
+                    recentFoods.push({ ...f, _date: date });
+                  }
+                });
+              }
+            } catch (_) { }
+          }
+          if (recentFoods.length === 0) { container.style.display = 'none'; return; }
+          _recentFoodsCache = recentFoods.slice(0, 10);
+          container.innerHTML = `<div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;font-weight:600">Recent (past 2 days)</div>` +
+            _recentFoodsCache.map((f, idx) => {
+              return `<div class="food-item" style="cursor:pointer;margin-bottom:.25rem" onclick="readdRecentFood(${idx})">
+                <div class="food-icon">${licon(MEAL_ICONS[f.meal] || 'utensils', 13)}</div>
+                <div class="food-info"><div class="food-name" style="font-size:.75rem">${esc(f.name)}</div>
+                  <div class="food-meta">${esc(f.meal)} · ${Math.round(num0(f.cal))} kcal · P:${Math.round(num0(f.protein))}g</div></div>
+                <div style="font-size:.65rem;color:var(--accent);font-weight:600">+ add</div>
+              </div>`;
+            }).join('');
+          container.style.display = 'block';
+          refreshIcons();
+        } catch (_) { container.style.display = 'none'; }
       }
 
       let currentFoodPhotoBase64 = null;
@@ -4159,18 +4641,33 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             toast("Added (AI estimated + validated)", "success");
           }
 
-          addFood(finalData);
+          if (_editingFood) {
+            // Update existing food in-place
+            dayData.foods = (dayData.foods || []).map(f => f.id === _editingFood.id ? { ...f, ...finalData, id: f.id, addedAt: f.addedAt, deletedAt: '' } : f);
+            touch(); saveDay(); render();
+            toast("Updated: " + finalData.name, "success");
+            _editingFood = null;
+          } else {
+            addFood(finalData);
+          }
           currentFoodPhotoBase64 = null;
           closeModal();
         } catch (e) {
           console.error("Estimation failed", e);
           if (hasMacros && !isRecipe && !currentFoodPhotoBase64) {
-            addFood(finalData);
+            if (_editingFood) {
+              dayData.foods = (dayData.foods || []).map(f => f.id === _editingFood.id ? { ...f, ...finalData, id: f.id, addedAt: f.addedAt, deletedAt: '' } : f);
+              touch(); saveDay(); render();
+              toast("Updated without micros", "warn");
+              _editingFood = null;
+            } else {
+              addFood(finalData);
+            }
             closeModal();
             toast("Added without micros (No API Key or Error)", "warn");
           } else {
             toast("AI failed. Set API key or enter manually.", "error");
-            btn.textContent = "Add Food";
+            btn.textContent = _editingFood ? "Save Changes" : "Add Food";
             btn.disabled = false;
           }
         }
@@ -4401,12 +4898,12 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         const waterPct = (waterMl / TARGETS.water) * 100;
 
         let foodList = foods.length === 0 ? `<div class="empty-state"><div class="empty-icon">${licon('utensils', 24)}</div>No foods logged yet</div>` :
-          foods.map(f => `<div class="food-item">
+          foods.map(f => `<div class="food-item" style="cursor:pointer" onclick="editFood('${f.id}')">
           <div class="food-icon">${licon(MEAL_ICONS[f.meal] || 'utensils', 13)}</div>
           <div class="food-info"><div class="food-name">${esc(f.name)}${f.estimated ? ' <span style="color:var(--muted);font-size:.58rem">AI</span>' : ""}</div>
             <div class="food-meta">${esc(f.meal)} · P:${Math.round(num0(f.protein))}g C:${Math.round(num0(f.carbs))}g F:${Math.round(num0(f.fat))}g</div></div>
           <div class="food-cal">${Math.round(num0(f.cal))}</div>
-          <button class="food-remove" onclick="removeFood('${f.id}')">✕</button>
+          <button class="food-remove" onclick="event.stopPropagation();removeFood('${f.id}')">✕</button>
         </div>`).join("");
 
         const suppItems = getUserSupplements();
@@ -4710,7 +5207,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         const hcDone = hcTasks.length > 0 && hcTasks.every(t => lwwGet(dayData.haircareChecks, t.id));
         const isCustomSc = Array.isArray((userProfile || {}).customSkincare);
         const isCustomHc = Array.isArray((userProfile || {}).customHaircare);
-        const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         return `
         <div class="card">
@@ -4747,7 +5244,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
               </div>
               <div class="form-row" style="flex-wrap:nowrap;gap:.3rem;margin-top:.3rem">
                 <div class="form-field" style="flex:3"><label>Days (blank = every day)</label>
-                  <div style="display:flex;gap:.2rem;flex-wrap:wrap">${[0,1,2,3,4,5,6].map(d => `<label style="display:flex;align-items:center;gap:.15rem;font-size:.68rem;cursor:pointer"><input type="checkbox" class="hcDayCb" value="${d}" style="accent-color:var(--accent);width:14px;height:14px">${dayNames[d]}</label>`).join('')}</div>
+                  <div style="display:flex;gap:.2rem;flex-wrap:wrap">${[0, 1, 2, 3, 4, 5, 6].map(d => `<label style="display:flex;align-items:center;gap:.15rem;font-size:.68rem;cursor:pointer"><input type="checkbox" class="hcDayCb" value="${d}" style="accent-color:var(--accent);width:14px;height:14px">${dayNames[d]}</label>`).join('')}</div>
                 </div>
                 <button class="btn-primary" style="height:2.4rem;align-self:flex-end" onclick="document.getElementById('hcNewDays').value=[...document.querySelectorAll('.hcDayCb:checked')].map(c=>c.value).join(',');addHaircareTask()">Add</button>
               </div>
@@ -5211,7 +5708,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             const at = (userProfile || {}).aestheticTargets || {};
             const defAt = profGender === 'female' ? { weight: 55, bodyFat: 20, waist: 68, skeletalMuscle: 22, visceralFat: 4, whRatio: 0.70 } :
               profGender === 'nonbinary' ? { weight: 60, bodyFat: 16, waist: 72, skeletalMuscle: 25, visceralFat: 4, swRatio: 1.5, whRatio: 0.75 } :
-              { weight: 57, bodyFat: 12, waist: 72, skeletalMuscle: 28, visceralFat: 4, swRatio: 1.6 };
+                { weight: 57, bodyFat: 12, waist: 72, skeletalMuscle: 28, visceralFat: 4, swRatio: 1.6 };
             const aesMetrics = [
               { key: 'weight', label: 'Weight', unit: 'kg', ref: at.weight || defAt.weight, color: 'var(--accent)' },
               { key: 'bodyFat', label: 'Body Fat %', unit: '%', ref: at.bodyFat || defAt.bodyFat, color: 'var(--orange)' },
@@ -5558,6 +6055,410 @@ Do NOT output JSON. Output regular conversational text only.`;
       }
 
       /* ═══════════════════════════════════════════════════
+         VOICE LOG MODAL
+         ═══════════════════════════════════════════════════ */
+      let _vlogRecog = null, _vlogActive = false, _vlogTranscript = '', _vlogAccum = '', _vlogUserStopped = false;
+      let _vlogParsedData = null;
+
+      window.openVoiceLogModal = function () {
+        const overlay = document.getElementById('vlogOverlay');
+        overlay.classList.remove('hidden');
+        // Reset state
+        _vlogParsedData = null;
+        document.getElementById('vlogMicArea').style.display = 'flex';
+        document.getElementById('vlogTranscript').value = '';
+        document.getElementById('vlogTranscript').classList.remove('show');
+        document.getElementById('vlogParseBtn').classList.remove('show');
+        document.getElementById('vlogConfirmSection').classList.remove('show');
+        document.getElementById('vlogStatus').textContent = 'Tap to speak — tell me everything you want to log';
+        document.getElementById('vlogMicBtn').classList.remove('listening');
+      }
+
+      window.closeVoiceLogModal = function () {
+        document.getElementById('vlogOverlay').classList.add('hidden');
+        stopVoiceLog();
+      }
+
+      window.toggleVoiceLog = function () {
+        _vlogActive ? stopVoiceLogAndProcess() : startVoiceLog();
+      }
+
+      window.startVoiceLog = function () {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { toast('Voice not supported in this browser'); return; }
+        if (_vlogRecog) return;
+        _vlogTranscript = '';
+        _vlogAccum = '';
+        _vlogUserStopped = false;
+        _vlogRecog = new SR();
+        _vlogRecog.lang = 'en-IN';
+        _vlogRecog.interimResults = true;
+        _vlogRecog.continuous = true;
+        _vlogRecog.maxAlternatives = 1;
+        setupVlogHandlers(_vlogRecog);
+        try { _vlogRecog.start(); }
+        catch (e) {
+          _vlogRecog = null; _vlogActive = false;
+          toast('Voice error: ' + (e.message || e));
+        }
+      }
+
+      function setupVlogHandlers(rec) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        rec.onstart = () => {
+          _vlogActive = true;
+          document.getElementById('vlogMicBtn').classList.add('listening');
+          document.getElementById('vlogStatus').textContent = 'Listening...';
+        };
+        rec.onresult = e => {
+          const finals = Array.from(e.results).filter(r => r.isFinal).map(r => r[0].transcript);
+          const interims = Array.from(e.results).filter(r => !r.isFinal).map(r => r[0].transcript);
+          const session = [...finals, ...interims].join(' ').trim();
+          const combined = (_vlogAccum + ' ' + session).trim();
+          if (combined) _vlogTranscript = combined;
+          if (_vlogTranscript) {
+            const short = _vlogTranscript.length > 100 ? _vlogTranscript.substring(0, 100) + '...' : _vlogTranscript;
+            document.getElementById('vlogStatus').textContent = '"' + short + '"';
+          }
+        };
+        rec.onerror = e => {
+          if (e.error === 'no-speech' || e.error === 'audio-capture' || e.error === 'aborted') return;
+          _vlogUserStopped = true;
+          toast('Voice error: ' + e.error);
+        };
+        rec.onend = () => {
+          if (_vlogActive && !_vlogUserStopped) {
+            _vlogAccum = _vlogTranscript;
+            try {
+              _vlogRecog = new SR();
+              _vlogRecog.lang = 'en-IN';
+              _vlogRecog.interimResults = true;
+              _vlogRecog.continuous = true;
+              _vlogRecog.maxAlternatives = 1;
+              setupVlogHandlers(_vlogRecog);
+              _vlogRecog.start();
+              return;
+            } catch (_) { }
+          }
+          finalizeVlog();
+        };
+      }
+
+      window.stopVoiceLog = function () {
+        _vlogUserStopped = true;
+        if (_vlogRecog) { try { _vlogRecog.stop(); } catch (_) { } _vlogRecog = null; }
+        _vlogActive = false;
+        document.getElementById('vlogMicBtn')?.classList.remove('listening');
+      }
+
+      window.stopVoiceLogAndProcess = function () {
+        _vlogUserStopped = true;
+        document.getElementById('vlogMicBtn').classList.remove('listening');
+        if (_vlogRecog) { try { _vlogRecog.stop(); } catch (_) { } }
+        else finalizeVlog();
+      }
+
+      function finalizeVlog() {
+        _vlogActive = false;
+        _vlogRecog = null;
+        document.getElementById('vlogMicBtn').classList.remove('listening');
+        const t = (_vlogTranscript || '').trim();
+        if (t) {
+          document.getElementById('vlogTranscript').value = t;
+          document.getElementById('vlogTranscript').classList.add('show');
+          document.getElementById('vlogParseBtn').classList.add('show');
+          document.getElementById('vlogStatus').textContent = 'Review or edit, then parse';
+        } else {
+          document.getElementById('vlogTranscript').classList.add('show');
+          document.getElementById('vlogParseBtn').classList.add('show');
+          document.getElementById('vlogStatus').textContent = 'Nothing heard — type below or try again';
+        }
+      }
+
+      window.parseVoiceLog = async function () {
+        const text = document.getElementById('vlogTranscript').value.trim();
+        if (!text) { toast('Enter or speak something to log'); return; }
+        const btn = document.getElementById('vlogParseBtn');
+        btn.disabled = true;
+        btn.textContent = 'Parsing...';
+
+        const suppList = getUserSupplements().map(s => s.id + ':' + s.name).join(', ');
+        const skinList = getUserSkincare().map(s => s.id + ':' + s.label).join(', ');
+        const hairList = (getUserHaircare(dow(selectedDate)) || []).map(s => s.id + ':' + s.label).join(', ');
+        const delightList = DELIGHTS.map(d => d.id + ':' + d.name).join(', ');
+
+        const sys = `You are a health logging parser. The user will describe things they want to log in their daily health tracker. Parse their input into structured categories. Return ONLY valid JSON matching this format:
+{
+  "foods": [{"name":string, "meal":string, "cal":number, "protein":number, "carbs":number, "fat":number, "fiber":number}],
+  "supplements": [string],
+  "water_ml": number,
+  "steps": number,
+  "exercises": [{"text":string, "kcal":number}],
+  "body": {"weight":number|null, "bodyFat":number|null, "waist":number|null, "shoulders":number|null},
+  "sleep_hours": number|null,
+  "skincare": [string],
+  "haircare": [string],
+  "delights": [string]
+}
+Rules:
+- For foods: estimate realistic Indian-serving macros. Meal should be one of: Breakfast, Mid-Morning, Lunch, Afternoon, Dinner, Snack. Default meal based on IST time.
+- For supplements: match to these IDs: ${suppList}. Return matched IDs only.
+- For skincare: match to these IDs: ${skinList}. Return matched IDs only.
+- For haircare: match to these IDs: ${hairList}. Return matched IDs only.
+- For delights: match to these IDs: ${delightList}. Return matched IDs only.
+- For exercises: estimate kcal burned for a ~60kg person.
+- For body metrics: weight in kg, bodyFat in %, waist/shoulders in cm.
+- Omit categories with no data (use empty arrays, null, or 0).
+- Current IST hour: ${getISTHour()}`;
+
+        try {
+          const parsed = await fetchLLM(
+            `User said: "${text}"`,
+            sys, 'cerebras', 'qwen-3-32b', true
+          );
+          _vlogParsedData = parsed;
+          renderVlogConfirmation(parsed);
+          btn.textContent = 'Parse & Preview';
+          btn.disabled = false;
+        } catch (e) {
+          console.error('Voice log parse failed:', e);
+          toast('Parse failed: ' + e.message, 'error');
+          btn.textContent = 'Parse & Preview';
+          btn.disabled = false;
+        }
+      }
+
+      window.renderVlogConfirmation = function (data) {
+        let html = '';
+        // Foods
+        if (data.foods?.length) {
+          html += `<div class="vlog-cat-label">Food</div>`;
+          data.foods.forEach((f, i) => {
+            html += `<div class="vlog-item">
+              <input type="checkbox" checked data-vlog="food" data-idx="${i}">
+              <div class="vlog-item-text">${esc(f.name)}<div class="vlog-item-detail">${esc(f.meal)} · ${f.cal || 0} kcal · P:${Math.round(f.protein || 0)}g C:${Math.round(f.carbs || 0)}g F:${Math.round(f.fat || 0)}g</div></div>
+              <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+            </div>`;
+          });
+        }
+        // Supplements
+        if (data.supplements?.length) {
+          const supps = getUserSupplements();
+          html += `<div class="vlog-cat-label">Supplements</div>`;
+          data.supplements.forEach((sid, i) => {
+            const s = supps.find(x => x.id === sid);
+            if (!s) return;
+            html += `<div class="vlog-item">
+              <input type="checkbox" checked data-vlog="supp" data-id="${sid}">
+              <div class="vlog-item-text">${esc(s.name)}</div>
+              <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+            </div>`;
+          });
+        }
+        // Water
+        if (data.water_ml > 0) {
+          html += `<div class="vlog-cat-label">Water</div>`;
+          html += `<div class="vlog-item">
+            <input type="checkbox" checked data-vlog="water" data-ml="${data.water_ml}">
+            <div class="vlog-item-text">${data.water_ml} ml</div>
+            <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+          </div>`;
+        }
+        // Steps
+        if (data.steps > 0) {
+          html += `<div class="vlog-cat-label">Steps</div>`;
+          html += `<div class="vlog-item">
+            <input type="checkbox" checked data-vlog="steps" data-val="${data.steps}">
+            <div class="vlog-item-text">${data.steps.toLocaleString()} steps</div>
+            <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+          </div>`;
+        }
+        // Exercises
+        if (data.exercises?.length) {
+          html += `<div class="vlog-cat-label">Exercise</div>`;
+          data.exercises.forEach((ex, i) => {
+            html += `<div class="vlog-item">
+              <input type="checkbox" checked data-vlog="exercise" data-idx="${i}">
+              <div class="vlog-item-text">${esc(ex.text)}<div class="vlog-item-detail">${ex.kcal || 0} kcal</div></div>
+              <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+            </div>`;
+          });
+        }
+        // Body metrics
+        const body = data.body || {};
+        const bodyItems = [];
+        if (body.weight) bodyItems.push({ key: 'weight', label: `Weight: ${body.weight} kg` });
+        if (body.bodyFat) bodyItems.push({ key: 'bodyFat', label: `Body Fat: ${body.bodyFat}%` });
+        if (body.waist) bodyItems.push({ key: 'waist', label: `Waist: ${body.waist} cm` });
+        if (body.shoulders) bodyItems.push({ key: 'shoulders', label: `Shoulders: ${body.shoulders} cm` });
+        if (bodyItems.length) {
+          html += `<div class="vlog-cat-label">Body Metrics</div>`;
+          bodyItems.forEach(b => {
+            html += `<div class="vlog-item">
+              <input type="checkbox" checked data-vlog="body" data-key="${b.key}" data-val="${body[b.key]}">
+              <div class="vlog-item-text">${b.label}</div>
+              <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+            </div>`;
+          });
+        }
+        // Sleep
+        if (data.sleep_hours > 0) {
+          html += `<div class="vlog-cat-label">Sleep</div>`;
+          html += `<div class="vlog-item">
+            <input type="checkbox" checked data-vlog="sleep" data-val="${data.sleep_hours}">
+            <div class="vlog-item-text">${data.sleep_hours} hours</div>
+            <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+          </div>`;
+        }
+        // Skincare
+        if (data.skincare?.length) {
+          const tasks = getUserSkincare();
+          html += `<div class="vlog-cat-label">Skincare</div>`;
+          data.skincare.forEach(sid => {
+            const t = tasks.find(x => x.id === sid);
+            if (!t) return;
+            html += `<div class="vlog-item">
+              <input type="checkbox" checked data-vlog="skincare" data-id="${sid}">
+              <div class="vlog-item-text">${esc(t.label)}</div>
+              <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+            </div>`;
+          });
+        }
+        // Haircare
+        if (data.haircare?.length) {
+          const tasks = getUserHaircare(dow(selectedDate)) || [];
+          html += `<div class="vlog-cat-label">Haircare</div>`;
+          data.haircare.forEach(sid => {
+            const t = tasks.find(x => x.id === sid);
+            if (!t) return;
+            html += `<div class="vlog-item">
+              <input type="checkbox" checked data-vlog="haircare" data-id="${sid}">
+              <div class="vlog-item-text">${esc(t.label)}</div>
+              <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+            </div>`;
+          });
+        }
+        // Delights
+        if (data.delights?.length) {
+          html += `<div class="vlog-cat-label">Daily Delight</div>`;
+          data.delights.forEach(did => {
+            const d = DELIGHTS.find(x => x.id === did);
+            if (!d) return;
+            html += `<div class="vlog-item">
+              <input type="checkbox" checked data-vlog="delight" data-id="${did}">
+              <div class="vlog-item-text">${esc(d.name)}</div>
+              <button class="vlog-remove" onclick="this.closest('.vlog-item').remove()">✕</button>
+            </div>`;
+          });
+        }
+
+        if (!html) { toast('Nothing to log from that input'); return; }
+
+        document.getElementById('vlogConfirmList').innerHTML = html;
+        document.getElementById('vlogConfirmSection').classList.add('show');
+        document.getElementById('vlogMicArea').style.display = 'none';
+        document.getElementById('vlogTranscript').classList.remove('show');
+        document.getElementById('vlogParseBtn').classList.remove('show');
+      }
+
+      window.confirmVoiceLog = function () {
+        if (!_vlogParsedData) return;
+        const data = _vlogParsedData;
+        const container = document.getElementById('vlogConfirmList');
+        let loggedCount = 0;
+
+        // Foods
+        container.querySelectorAll('input[data-vlog="food"]:checked').forEach(cb => {
+          const idx = parseInt(cb.dataset.idx);
+          const f = data.foods[idx];
+          if (f) {
+            addFood({ name: f.name, meal: f.meal || inferMealFromTime(), cal: Math.round(f.cal || 0), protein: Math.round((f.protein || 0) * 10) / 10, carbs: Math.round((f.carbs || 0) * 10) / 10, fat: Math.round((f.fat || 0) * 10) / 10, fiber: Math.round((f.fiber || 0) * 10) / 10, micros: {}, desc: 'Logged via voice', estimated: true });
+            loggedCount++;
+          }
+        });
+        // Supplements
+        container.querySelectorAll('input[data-vlog="supp"]:checked').forEach(cb => {
+          const sid = cb.dataset.id;
+          if (!lwwGet(dayData.supplementChecks, sid)) {
+            dayData.supplementChecks = lwwSet(dayData.supplementChecks, sid, true);
+            loggedCount++;
+          }
+        });
+        // Water
+        container.querySelectorAll('input[data-vlog="water"]:checked').forEach(cb => {
+          const ml = parseInt(cb.dataset.ml) || 0;
+          if (ml > 0) { addWater(ml); loggedCount++; }
+        });
+        // Steps
+        container.querySelectorAll('input[data-vlog="steps"]:checked').forEach(cb => {
+          const steps = parseInt(cb.dataset.val) || 0;
+          if (steps > 0) {
+            dayData.stepLogs = [...(dayData.stepLogs || []), { id: genId('step'), steps, ts: Date.now(), deletedAt: '' }];
+            loggedCount++;
+          }
+        });
+        // Exercises
+        container.querySelectorAll('input[data-vlog="exercise"]:checked').forEach(cb => {
+          const idx = parseInt(cb.dataset.idx);
+          const ex = data.exercises[idx];
+          if (ex) {
+            const isNeat = /walk|step|clean|chore/i.test(ex.text);
+            dayData.customExercises = [...(dayData.customExercises || []), { id: genId('cx'), text: ex.text, kcal: ex.kcal || 0, isNeat, ts: Date.now(), deletedAt: '' }];
+            loggedCount++;
+          }
+        });
+        // Body metrics
+        container.querySelectorAll('input[data-vlog="body"]:checked').forEach(cb => {
+          const key = cb.dataset.key;
+          const val = parseFloat(cb.dataset.val);
+          if (key && isFinite(val) && val > 0) {
+            dayData.body = dayData.body || {};
+            dayData.body[key] = Math.round(val * 10) / 10;
+            if (key === 'weight') localStorage.setItem('HT_LAST_WEIGHT', val);
+            loggedCount++;
+          }
+        });
+        // Sleep
+        container.querySelectorAll('input[data-vlog="sleep"]:checked').forEach(cb => {
+          const hrs = parseFloat(cb.dataset.val);
+          if (hrs > 0) {
+            dayData.sleep = dayData.sleep || {};
+            dayData.sleep.hours = hrs;
+            loggedCount++;
+          }
+        });
+        // Skincare
+        container.querySelectorAll('input[data-vlog="skincare"]:checked').forEach(cb => {
+          const sid = cb.dataset.id;
+          if (!lwwGet(dayData.skincareChecks, sid)) {
+            dayData.skincareChecks = lwwSet(dayData.skincareChecks, sid, true);
+            loggedCount++;
+          }
+        });
+        // Haircare
+        container.querySelectorAll('input[data-vlog="haircare"]:checked').forEach(cb => {
+          const sid = cb.dataset.id;
+          if (!lwwGet(dayData.haircareChecks, sid)) {
+            dayData.haircareChecks = lwwSet(dayData.haircareChecks, sid, true);
+            loggedCount++;
+          }
+        });
+        // Delights
+        container.querySelectorAll('input[data-vlog="delight"]:checked').forEach(cb => {
+          const did = cb.dataset.id;
+          if (!lwwGet(dayData.delightChecks, did)) {
+            dayData.delightChecks = lwwSet(dayData.delightChecks, did, true);
+            loggedCount++;
+          }
+        });
+
+        touch(); saveDay(); render();
+        closeVoiceLogModal();
+        toast(`Logged ${loggedCount} item${loggedCount !== 1 ? 's' : ''}`, 'success');
+        _vlogParsedData = null;
+      }
+
+      /* ═══════════════════════════════════════════════════
          FOOD INTENT DETECTION
          ═══════════════════════════════════════════════════ */
       // Returns the logged food name if food was added, otherwise null.
@@ -5593,12 +6494,20 @@ Do NOT output JSON. Output regular conversational text only.`;
         } catch (e) { console.warn('Water intent extraction failed:', e.message); return null; }
       }
 
+      window.getISTHour = function () {
+        const now = new Date();
+        const istMs = now.getTime() + (now.getTimezoneOffset() * 60000) + (5.5 * 3600000);
+        return new Date(istMs).getHours();
+      }
+
       window.inferMealFromTime = function () {
-        const h = new Date().getHours();
-        if (h < 10) return 'Breakfast';
-        if (h < 14) return 'Lunch';
-        if (h < 17) return 'Snack';
-        return 'Dinner';
+        const h = getISTHour();
+        if (h <= 10) return 'Breakfast';
+        if (h <= 12) return 'Mid-Morning';
+        if (h <= 14) return 'Lunch';
+        if (h <= 17) return 'Afternoon';
+        if (h <= 23) return 'Dinner';
+        return 'Snack';
       }
 
       /* ═══════════════════════════════════════════════════
@@ -5794,19 +6703,19 @@ Do NOT output JSON. Output regular conversational text only.`;
          NOTIFICATIONS / REMINDERS ENGINE
          ═══════════════════════════════════════════════════ */
 
-      const NTF_DEFAULT_IDS = ['ntf_water','ntf_breakfast','ntf_lunch','ntf_dinner','ntf_exercise','ntf_sleep'];
+      const NTF_DEFAULT_IDS = ['ntf_water', 'ntf_breakfast', 'ntf_lunch', 'ntf_dinner', 'ntf_exercise', 'ntf_sleep'];
 
       function _ntfDefaults() {
         return {
           enabled: false,
           permissionAsked: false,
           reminders: [
-            { id: 'ntf_water',     label: 'Drink Water',      icon: 'droplets', type: 'interval', intervalMin: 90,  enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
-            { id: 'ntf_breakfast', label: 'Prep Breakfast',   icon: 'utensils', type: 'time',     timeHH: 7,  timeMM: 30, enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
-            { id: 'ntf_lunch',     label: 'Prep Lunch',       icon: 'utensils', type: 'time',     timeHH: 12, timeMM: 0,  enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
-            { id: 'ntf_dinner',    label: 'Prep Dinner',      icon: 'utensils', type: 'time',     timeHH: 18, timeMM: 30, enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
-            { id: 'ntf_exercise',  label: 'Time to Exercise', icon: 'dumbbell', type: 'time',     timeHH: 17, timeMM: 30, enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 },
-            { id: 'ntf_sleep',     label: 'Wind Down',        icon: 'moon',     type: 'time',     timeHH: 22, timeMM: 0,  enabled: true,  lastFiredTs: 0, snoozedUntilTs: 0 }
+            { id: 'ntf_water', label: 'Drink Water', icon: 'droplets', type: 'interval', intervalMin: 90, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_breakfast', label: 'Prep Breakfast', icon: 'utensils', type: 'time', timeHH: 7, timeMM: 30, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_lunch', label: 'Prep Lunch', icon: 'utensils', type: 'time', timeHH: 12, timeMM: 0, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_dinner', label: 'Prep Dinner', icon: 'utensils', type: 'time', timeHH: 18, timeMM: 30, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_exercise', label: 'Time to Exercise', icon: 'dumbbell', type: 'time', timeHH: 17, timeMM: 30, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_sleep', label: 'Wind Down', icon: 'moon', type: 'time', timeHH: 22, timeMM: 0, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 }
           ]
         };
       }
@@ -5817,7 +6726,7 @@ Do NOT output JSON. Output regular conversational text only.`;
       };
 
       window._ntfSave = function (cfg) {
-        try { localStorage.setItem('HT_notifs', JSON.stringify(cfg)); } catch (_) {}
+        try { localStorage.setItem('HT_notifs', JSON.stringify(cfg)); } catch (_) { }
       };
 
       function _ntfBodyText(r) {
@@ -5829,7 +6738,7 @@ Do NOT output JSON. Output regular conversational text only.`;
       function _ntfUpdateBellBadge() {
         const cfg = _ntfLoad();
         const badge = document.getElementById('ntfBadge');
-        const btn   = document.getElementById('ntfBellBtn');
+        const btn = document.getElementById('ntfBellBtn');
         if (!badge) return;
         const anyActive = cfg.enabled && cfg.reminders.some(r => r.enabled);
         badge.style.display = anyActive ? 'block' : 'none';
@@ -5839,12 +6748,12 @@ Do NOT output JSON. Output regular conversational text only.`;
       function _ntfFire(r) {
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
         const title = 'HealThee · ' + r.label;
-        const body  = _ntfBodyText(r);
+        const body = _ntfBodyText(r);
         const sw = navigator.serviceWorker && navigator.serviceWorker.controller;
         if (sw) {
           sw.postMessage({ type: 'SHOW_NOTIFICATION', title, body, tag: r.id });
         } else {
-          try { new Notification(title, { body, tag: r.id }); } catch (_) {}
+          try { new Notification(title, { body, tag: r.id }); } catch (_) { }
         }
       }
 
@@ -5852,8 +6761,8 @@ Do NOT output JSON. Output regular conversational text only.`;
         const cfg = _ntfLoad();
         if (!cfg.enabled) return;
 
-        const now  = Date.now();
-        const d    = new Date();
+        const now = Date.now();
+        const d = new Date();
         const nowHH = d.getHours();
         const nowMM = d.getMinutes();
 
@@ -6262,6 +7171,43 @@ Do NOT output JSON. Output regular conversational text only.`;
     </svg>
   </button>
 
+  <!-- Voice Log Modal -->
+  <div class="vlog-overlay hidden" id="vlogOverlay">
+    <div class="vlog-card">
+      <div class="vlog-header">
+        <h3>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="11" rx="3" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+          </svg>
+          Log Today
+        </h3>
+        <button class="vlog-close" onclick="closeVoiceLogModal()">✕</button>
+      </div>
+      <div id="vlogMicArea" class="vlog-mic-area">
+        <button class="vlog-mic-btn" id="vlogMicBtn" onclick="toggleVoiceLog()">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#fff" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="11" rx="3" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+            <line x1="8" y1="22" x2="16" y2="22" />
+          </svg>
+        </button>
+        <div class="vlog-status" id="vlogStatus">Tap to speak — tell me everything you want to log</div>
+      </div>
+      <textarea class="vlog-transcript" id="vlogTranscript" placeholder="Or type what you want to log..."
+        rows="3"></textarea>
+      <button class="vlog-parse-btn" id="vlogParseBtn" onclick="parseVoiceLog()">Parse &amp; Preview</button>
+      <div class="vlog-confirm-section" id="vlogConfirmSection">
+        <div id="vlogConfirmList"></div>
+        <button class="vlog-confirm-btn" id="vlogConfirmBtn" onclick="confirmVoiceLog()">Confirm &amp; Log All</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Chat Popup Overlay -->
   <div class="chat-popup-overlay hidden" id="chatPopupOverlay" onclick="handlePopupOverlayClick(event)">
     <div class="chat-popup">
@@ -6276,6 +7222,16 @@ Do NOT output JSON. Output regular conversational text only.`;
         <button class="chat-popup-close" onclick="closeChatPopup()">✕</button>
       </div>
       <div class="chat-popup-body">
+        <button class="vlog-log-today-btn" onclick="closeChatPopup();openVoiceLogModal()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="11" rx="3" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+            <line x1="8" y1="22" x2="16" y2="22" />
+          </svg>
+          Log today
+        </button>
         <div id="popupChatMessages"></div>
         <div style="position:relative;display:flex;align-items:center;gap:.3rem" class="chat-popup-input-row">
           <button class="icon-btn"
