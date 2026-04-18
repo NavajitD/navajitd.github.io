@@ -4544,9 +4544,16 @@ OTHER RULES:
             let summary = `Period: ${fl} | Total: ₹${total.toFixed(0)} | ${data.length} txns | ${activeDays} active days (gaps of 3+ consecutive non-expense days excluded)\nDaily avg (active): ₹${(total / activeDays).toFixed(0)}\n`;
 
             const catMap = {};
-            data.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
+            const catTxnCount = {};
+            data.forEach(e => {
+                catMap[e.category] = (catMap[e.category] || 0) + e.amount;
+                catTxnCount[e.category] = (catTxnCount[e.category] || 0) + 1;
+            });
             const catSorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
-            summary += `\nCategories: ${catSorted.map(([c, a]) => `${c} ₹${a.toFixed(0)}`).join(', ')}\n`;
+            summary += `\nCategories (total | daily avg | txns):\n`;
+            catSorted.forEach(([c, a]) => {
+                summary += `  ${c}: ₹${a.toFixed(0)} total, ₹${(a / activeDays).toFixed(0)}/day, ${catTxnCount[c]} txns\n`;
+            });
 
             // Always include theme→category mapping so the model understands the structure
             const themes = window._profileThemes || DEFAULT_THEMES;
@@ -4592,8 +4599,9 @@ OTHER RULES:
                     themeExpenses.forEach(e => { themeCatMap[e.category] = (themeCatMap[e.category] || 0) + e.amount; });
                     const themeCatSorted = Object.entries(themeCatMap).sort((a, b) => b[1] - a[1]);
                     const themeTotal = themeExpenses.reduce((s, e) => s + e.amount, 0);
-                    summary += `\n"${mentionedTheme}" detailed breakdown (₹${themeTotal.toFixed(0)} total across ${themeExpenses.length} txns):\n`;
-                    themeCatSorted.forEach(([c, a]) => { summary += `  ${c}: ₹${a.toFixed(0)}\n`; });
+                    const themeDailyAvg = themeTotal / activeDays;
+                    summary += `\n"${mentionedTheme}" detailed breakdown (₹${themeTotal.toFixed(0)} total, ₹${themeDailyAvg.toFixed(0)}/day avg, ${themeExpenses.length} txns over ${activeDays} active days):\n`;
+                    themeCatSorted.forEach(([c, a]) => { summary += `  ${c}: ₹${a.toFixed(0)} total, ₹${(a / activeDays).toFixed(0)}/day\n`; });
                     summary += `\nRecent "${mentionedTheme}" transactions:\n`;
                     themeExpenses.slice(0, 15).forEach(e => {
                         const d = e.date instanceof Date ? e.date : new Date(e.date);
@@ -4603,11 +4611,14 @@ OTHER RULES:
                 }
             }
 
-            // If a specific category name is mentioned, include transactions for that category
+            // If a specific category name is mentioned, include pre-computed stats + transactions
             if (mentionedCategories.length > 0 && !hasRecent) {
                 const catExpenses = data.filter(e => mentionedCategories.includes(e.category.toLowerCase()));
                 if (catExpenses.length > 0) {
-                    summary += `\nTransactions for "${mentionedCategories.join(', ')}":\n`;
+                    const catTotal = catExpenses.reduce((s, e) => s + e.amount, 0);
+                    const catDailyAvg = catTotal / activeDays;
+                    summary += `\nPre-computed stats for "${mentionedCategories.join(', ')}": ₹${catTotal.toFixed(0)} total across ${catExpenses.length} txns, daily avg ₹${catDailyAvg.toFixed(0)} (over ${activeDays} active days)\n`;
+                    summary += `Transactions:\n`;
                     catExpenses.slice(0, 15).forEach(e => {
                         const d = e.date instanceof Date ? e.date : new Date(e.date);
                         summary += `  ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} ${e.expenseName} | ${e.category} | ₹${e.amount} | ${e.paymentMethod}\n`;
@@ -4710,6 +4721,7 @@ OTHER RULES:
             const systemPrompt = `You are a concise personal finance advisor analyzing an Indian user's expenses. Currency is INR (₹).
 Rules:
 - Be specific with numbers from the data, not generic advice.
+- The expense data includes pre-computed totals, daily averages, and transaction counts for each category. ALWAYS use these pre-computed numbers directly — never attempt your own arithmetic. If the user asks for an average or total, quote the number from the data as-is.
 - Keep responses under 150 words.
 - When suggesting changes, be actionable and reference specific categories/amounts.
 - If suggesting a spending target, frame it as: "Try to keep [category] under ₹X this month"
@@ -4717,7 +4729,7 @@ Rules:
 - "Active days" means days where the user was actually tracking expenses (consecutive gaps of 3+ days without any expense are excluded). Always use active days for daily averages, not calendar days.
 - The user's expenses are organized into "themes" (groupings of categories). The theme→category mapping is provided in the data. When the user asks about a theme (e.g. "Incidentals"), answer using the categories that belong to that theme.
 - If a follow-up question references a previous answer, use the conversation history to maintain context.
-- The user may ask questions in Hindi, Bengali, or English. Respond in the same language the user used.
+- The user may ask questions in Hindi, Bengali, or English. Respond in the same language as the user's CURRENT question — not the language of expense names in the data. Expense names may be in any language; ignore that when choosing your response language.
 - End responses that contain actionable suggestions with the exact line: [SUGGESTIONS] followed by each suggestion on its own line, prefixed with bullet "• ". These will be extractable by the app.`;
 
             let prompt = `Here is my expense data:\n\n${summary}\n\nUser question: ${query}`;
