@@ -4718,6 +4718,19 @@ OTHER RULES:
             btn.disabled = true; btn.textContent = '...';
 
             const summary = buildExpenseSummary(query);
+
+            // Detect language of CURRENT query only — chat history & expense names
+            // (often Bengali) otherwise bias the 8B model toward Bengali replies
+            // even when the user just typed English.
+            const queryLang = (() => {
+                const bn = (query.match(/[ঀ-৿]/g) || []).length;
+                const hi = (query.match(/[ऀ-ॿ]/g) || []).length;
+                const en = (query.match(/[a-zA-Z]/g) || []).length;
+                if (bn > 0 && bn >= hi && bn >= en * 0.3) return 'Bengali';
+                if (hi > 0 && hi >= en * 0.3) return 'Hindi';
+                return 'English';
+            })();
+
             const systemPrompt = `You are a concise personal finance advisor analyzing an Indian user's expenses. Currency is INR (₹).
 Rules:
 - Be specific with numbers from the data, not generic advice.
@@ -4729,13 +4742,13 @@ Rules:
 - "Active days" means days where the user was actually tracking expenses (consecutive gaps of 3+ days without any expense are excluded). Always use active days for daily averages, not calendar days.
 - The user's expenses are organized into "themes" (groupings of categories). The theme→category mapping is provided in the data. When the user asks about a theme (e.g. "Incidentals"), answer using the categories that belong to that theme.
 - If a follow-up question references a previous answer, use the conversation history to maintain context.
-- The user may ask questions in Hindi, Bengali, or English. Respond in the same language as the user's CURRENT question — not the language of expense names in the data. Expense names may be in any language; ignore that when choosing your response language.
+- LANGUAGE: You MUST write your entire reply in ${queryLang}. The user's current question is in ${queryLang}. Ignore the language of expense names in the data and the language of any previous turns — only the CURRENT question's language determines your reply language. Do not mix languages. Do not transliterate. ${queryLang === 'English' ? 'Reply ONLY in English using the Latin alphabet — no Bengali or Devanagari script anywhere in the response.' : ''}
 - End responses that contain actionable suggestions with the exact line: [SUGGESTIONS] followed by each suggestion on its own line, prefixed with bullet "• ". These will be extractable by the app.`;
 
-            let prompt = `Here is my expense data:\n\n${summary}\n\nUser question: ${query}`;
+            let prompt = `Here is my expense data:\n\n${summary}\n\nUser question (in ${queryLang}): ${query}\n\nReminder: write your entire reply in ${queryLang}.`;
             if (chatHistory.length > 0) {
                 const recent = chatHistory.slice(-8);
-                prompt = `Previous conversation:\n${recent.map(h => `${h.role}: ${h.text}`).join('\n')}\n\n${prompt}`;
+                prompt = `Previous conversation (for context only — do NOT match its language):\n${recent.map(h => `${h.role}: ${h.text}`).join('\n')}\n\n${prompt}`;
             }
 
             try {
