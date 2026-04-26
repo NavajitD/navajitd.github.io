@@ -1612,32 +1612,52 @@
       }
     }
 
-    .float-cta {
+    .float-cta-pill {
       position: fixed;
       bottom: 5.5rem;
       right: 1rem;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: var(--accent);
-      border: none;
-      cursor: pointer;
-      z-index: 45;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      border-radius: 30px;
+      overflow: hidden;
+      background: var(--accent);
+      z-index: 45;
       box-shadow: 0 4px 16px rgba(0, 0, 0, .22);
       animation: floatDrift 5s ease-in-out infinite;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .float-cta:hover {
+    .float-cta-pill:hover {
       animation-play-state: paused;
       box-shadow: 0 6px 22px rgba(0, 0, 0, .30);
     }
 
-    body.tab-care .float-cta {
+    body.tab-care .float-cta-pill {
       display: none;
+    }
+
+    .float-pill-btn {
+      width: 50px;
+      height: 50px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .float-pill-btn:active {
+      background: rgba(255, 255, 255, .15);
+    }
+
+    .float-pill-divider {
+      width: 32px;
+      height: 1px;
+      background: rgba(255, 255, 255, .25);
+      flex-shrink: 0;
     }
 
     /* ── Chat Popup ─────────────────────────────────────────────────────── */
@@ -2630,6 +2650,24 @@
       color: var(--muted);
       text-align: center;
       min-height: 1.2em;
+    }
+
+    .vlog-tip-bar {
+      font-size: .7rem;
+      color: var(--accent);
+      background: rgba(22, 163, 74, .08);
+      border: 1px solid rgba(22, 163, 74, .2);
+      border-radius: 6px;
+      padding: .3rem .55rem;
+      text-align: center;
+      display: none;
+      animation: obFadeIn .4s ease;
+      margin-top: .4rem;
+      line-height: 1.4;
+    }
+
+    .vlog-tip-bar.show {
+      display: block;
     }
 
     .vlog-transcript {
@@ -6058,13 +6096,54 @@ Do NOT output JSON. Output regular conversational text only.`;
          VOICE LOG MODAL
          ═══════════════════════════════════════════════════ */
       let _vlogRecog = null, _vlogActive = false, _vlogTranscript = '', _vlogAccum = '', _vlogUserStopped = false;
-      let _vlogParsedData = null;
+      let _vlogParsedData = null, _vlogBgProcessing = false;
+
+      // Rollout date for the "record & forget" onboarding tips (tips shown for 3 days
+      // after this date OR the user's signup date, whichever is later).
+      const VLOG_ROLLOUT_TS = new Date('2026-04-25T00:00:00Z').getTime();
+      let _voiceTipTimer = null, _voiceTipIdx = 0;
+      const VOICE_TIPS = [
+        'You can close this — your log processes in the background',
+        'Come back anytime to review before saving',
+        'Just speak naturally — we handle the rest'
+      ];
+
+      function shouldShowVoiceTip() {
+        if (!currentUser) return false;
+        const signupTs = new Date(currentUser.metadata.creationTime).getTime();
+        const windowStart = Math.max(signupTs, VLOG_ROLLOUT_TS);
+        return Date.now() < windowStart + 3 * 24 * 3600 * 1000;
+      }
+
+      function startVoiceTips() {
+        if (!shouldShowVoiceTip()) return;
+        const el = document.getElementById('vlogTipBar');
+        if (!el) return;
+        _voiceTipIdx = 0;
+        function showNext() {
+          el.textContent = VOICE_TIPS[_voiceTipIdx % VOICE_TIPS.length];
+          el.classList.add('show');
+          _voiceTipIdx++;
+          _voiceTipTimer = setTimeout(() => {
+            el.classList.remove('show');
+            _voiceTipTimer = setTimeout(showNext, 1800);
+          }, 3500);
+        }
+        showNext();
+      }
+
+      function stopVoiceTips() {
+        clearTimeout(_voiceTipTimer);
+        _voiceTipTimer = null;
+        const el = document.getElementById('vlogTipBar');
+        if (el) el.classList.remove('show');
+      }
 
       window.openVoiceLogModal = function () {
         const overlay = document.getElementById('vlogOverlay');
         overlay.classList.remove('hidden');
-        // Reset state
         _vlogParsedData = null;
+        _vlogBgProcessing = false;
         document.getElementById('vlogMicArea').style.display = 'flex';
         document.getElementById('vlogTranscript').value = '';
         document.getElementById('vlogTranscript').classList.remove('show');
@@ -6072,11 +6151,16 @@ Do NOT output JSON. Output regular conversational text only.`;
         document.getElementById('vlogConfirmSection').classList.remove('show');
         document.getElementById('vlogStatus').textContent = 'Tap to speak — tell me everything you want to log';
         document.getElementById('vlogMicBtn').classList.remove('listening');
+        stopVoiceTips();
       }
 
       window.closeVoiceLogModal = function () {
+        if (_vlogBgProcessing) {
+          toast('Processing in background — tap mic again to see results when ready');
+        }
         document.getElementById('vlogOverlay').classList.add('hidden');
         stopVoiceLog();
+        stopVoiceTips();
       }
 
       window.toggleVoiceLog = function () {
@@ -6109,6 +6193,7 @@ Do NOT output JSON. Output regular conversational text only.`;
           _vlogActive = true;
           document.getElementById('vlogMicBtn').classList.add('listening');
           document.getElementById('vlogStatus').textContent = 'Listening...';
+          startVoiceTips();
         };
         rec.onresult = e => {
           const finals = Array.from(e.results).filter(r => r.isFinal).map(r => r[0].transcript);
@@ -6149,6 +6234,7 @@ Do NOT output JSON. Output regular conversational text only.`;
         if (_vlogRecog) { try { _vlogRecog.stop(); } catch (_) { } _vlogRecog = null; }
         _vlogActive = false;
         document.getElementById('vlogMicBtn')?.classList.remove('listening');
+        stopVoiceTips();
       }
 
       window.stopVoiceLogAndProcess = function () {
@@ -6161,32 +6247,26 @@ Do NOT output JSON. Output regular conversational text only.`;
       function finalizeVlog() {
         _vlogActive = false;
         _vlogRecog = null;
+        stopVoiceTips();
         document.getElementById('vlogMicBtn').classList.remove('listening');
         const t = (_vlogTranscript || '').trim();
-        if (t) {
-          document.getElementById('vlogTranscript').value = t;
+        if (!t) {
+          document.getElementById('vlogTranscript').value = '';
           document.getElementById('vlogTranscript').classList.add('show');
           document.getElementById('vlogParseBtn').classList.add('show');
-          document.getElementById('vlogStatus').textContent = 'Review or edit, then parse';
-        } else {
-          document.getElementById('vlogTranscript').classList.add('show');
-          document.getElementById('vlogParseBtn').classList.add('show');
-          document.getElementById('vlogStatus').textContent = 'Nothing heard — type below or try again';
+          document.getElementById('vlogStatus').textContent = 'Nothing heard — type below and tap Process';
+          return;
         }
+        // Auto-parse immediately — no extra click needed
+        document.getElementById('vlogStatus').textContent = 'Processing your log…';
+        autoParseVlog(t);
       }
 
-      window.parseVoiceLog = async function () {
-        const text = document.getElementById('vlogTranscript').value.trim();
-        if (!text) { toast('Enter or speak something to log'); return; }
-        const btn = document.getElementById('vlogParseBtn');
-        btn.disabled = true;
-        btn.textContent = 'Parsing...';
-
+      async function _runVlogLLM(text) {
         const suppList = getUserSupplements().map(s => s.id + ':' + s.name).join(', ');
         const skinList = getUserSkincare().map(s => s.id + ':' + s.label).join(', ');
         const hairList = (getUserHaircare(dow(selectedDate)) || []).map(s => s.id + ':' + s.label).join(', ');
         const delightList = DELIGHTS.map(d => d.id + ':' + d.name).join(', ');
-
         const sys = `You are a health logging parser. The user will describe things they want to log in their daily health tracker. Parse their input into structured categories. Return ONLY valid JSON matching this format:
 {
   "foods": [{"name":string, "meal":string, "cal":number, "protein":number, "carbs":number, "fat":number, "fiber":number}],
@@ -6210,20 +6290,48 @@ Rules:
 - For body metrics: weight in kg, bodyFat in %, waist/shoulders in cm.
 - Omit categories with no data (use empty arrays, null, or 0).
 - Current IST hour: ${getISTHour()}`;
+        return fetchLLM(`User said: "${text}"`, sys, 'cerebras', 'qwen-3-32b', true);
+      }
 
+      async function autoParseVlog(text) {
+        _vlogBgProcessing = true;
         try {
-          const parsed = await fetchLLM(
-            `User said: "${text}"`,
-            sys, 'cerebras', 'qwen-3-32b', true
-          );
+          const parsed = await _runVlogLLM(text);
+          _vlogParsedData = parsed;
+          _vlogBgProcessing = false;
+          const overlay = document.getElementById('vlogOverlay');
+          if (overlay.classList.contains('hidden')) {
+            // Modal was dismissed — reopen with confirmation
+            overlay.classList.remove('hidden');
+            document.getElementById('vlogMicArea').style.display = 'none';
+            document.getElementById('vlogTranscript').classList.remove('show');
+            document.getElementById('vlogParseBtn').classList.remove('show');
+          }
+          renderVlogConfirmation(parsed);
+          toast('Log ready — review and confirm', 'success');
+        } catch (e) {
+          _vlogBgProcessing = false;
+          console.error('Voice log parse failed:', e);
+          toast('Parse failed: ' + e.message, 'error');
+        }
+      }
+
+      window.parseVoiceLog = async function () {
+        const text = document.getElementById('vlogTranscript').value.trim();
+        if (!text) { toast('Enter or speak something to log'); return; }
+        const btn = document.getElementById('vlogParseBtn');
+        btn.disabled = true;
+        btn.textContent = 'Processing…';
+        try {
+          const parsed = await _runVlogLLM(text);
           _vlogParsedData = parsed;
           renderVlogConfirmation(parsed);
-          btn.textContent = 'Parse & Preview';
+          btn.textContent = 'Process';
           btn.disabled = false;
         } catch (e) {
           console.error('Voice log parse failed:', e);
           toast('Parse failed: ' + e.message, 'error');
-          btn.textContent = 'Parse & Preview';
+          btn.textContent = 'Process';
           btn.disabled = false;
         }
       }
@@ -6511,11 +6619,8 @@ Rules:
       }
 
       /* ═══════════════════════════════════════════════════
-         FLOAT BUTTON — opens chat popup on click
+         FLOAT PILL — buttons use inline onclick handlers
          ═══════════════════════════════════════════════════ */
-      document.getElementById('floatCta').addEventListener('click', function () {
-        openChatPopup();
-      });
 
       /* ═══════════════════════════════════════════════════
          EVENTS
@@ -7163,13 +7268,23 @@ Rules:
     } catch (_) { }
   </script>
 
-  <!-- Floating HealThee Mate CTA -->
-  <button class="float-cta" id="floatCta" aria-label="Open HealThee Mate" style="display:none">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
-      stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  </button>
+  <!-- Floating HealThee Mate CTA (pill: mic top, chat bottom) -->
+  <div class="float-cta-pill" id="floatCta" role="group" aria-label="Quick actions" style="display:none">
+    <button class="float-pill-btn" id="floatMicBtn" aria-label="Voice log" onclick="openVoiceLogModal()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="2" width="6" height="11" rx="3"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="8" y1="22" x2="16" y2="22"/>
+      </svg>
+    </button>
+    <div class="float-pill-divider"></div>
+    <button class="float-pill-btn" id="floatChatBtn" aria-label="Chat" onclick="openChatPopup()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </button>
+  </div>
 
   <!-- Voice Log Modal -->
   <div class="vlog-overlay hidden" id="vlogOverlay">
@@ -7197,10 +7312,11 @@ Rules:
           </svg>
         </button>
         <div class="vlog-status" id="vlogStatus">Tap to speak — tell me everything you want to log</div>
+        <div class="vlog-tip-bar" id="vlogTipBar"></div>
       </div>
       <textarea class="vlog-transcript" id="vlogTranscript" placeholder="Or type what you want to log..."
         rows="3"></textarea>
-      <button class="vlog-parse-btn" id="vlogParseBtn" onclick="parseVoiceLog()">Parse &amp; Preview</button>
+      <button class="vlog-parse-btn" id="vlogParseBtn" onclick="parseVoiceLog()">Process</button>
       <div class="vlog-confirm-section" id="vlogConfirmSection">
         <div id="vlogConfirmList"></div>
         <button class="vlog-confirm-btn" id="vlogConfirmBtn" onclick="confirmVoiceLog()">Confirm &amp; Log All</button>
