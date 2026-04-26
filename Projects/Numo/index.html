@@ -6,17 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Numo</title>
     <meta name="description"
-        content="Numo is an AI-powered numerology assistant that provides personalized readings, reports, and life guidance based on the Sankar numerology system.">
+        content="Numo is an AI-powered numerology assistant that provides personalized readings, reports, compatibility checks, and life guidance based on the Sankar numerology system.">
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap"
         rel="stylesheet">
 
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%23F26B3A'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='18' font-weight='bold' text-anchor='middle' fill='white'%3E9%3C/text%3E%3C/svg%3E">
 
     <style>
-        /* ═══════════════ Design Tokens — Headspace Calm ═══════════════ */
         :root {
             --bg-primary: #FFF8F2;
             --bg-secondary: #FFFFFF;
@@ -54,7 +52,6 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ═══════════════ Reset & Base ═══════════════ */
         *,
         *::before,
         *::after {
@@ -77,7 +74,6 @@
             position: relative;
         }
 
-        /* ═══════════════ Ambient Background ═══════════════ */
         #cosmicCanvas {
             position: fixed;
             top: 0;
@@ -88,7 +84,6 @@
             pointer-events: none;
         }
 
-        /* ═══════════════ App Layout ═══════════════ */
         .app-container {
             position: relative;
             z-index: 1;
@@ -99,7 +94,6 @@
             margin: 0 auto;
         }
 
-        /* ═══════════════ Header ═══════════════ */
         .app-header {
             display: flex;
             align-items: center;
@@ -164,7 +158,6 @@
             color: var(--accent-orange);
         }
 
-        /* ═══════════════ Chat Area ═══════════════ */
         .chat-area {
             flex: 1;
             overflow-y: auto;
@@ -185,7 +178,6 @@
             border-radius: 3px;
         }
 
-        /* Welcome Screen */
         .welcome-screen {
             display: flex;
             flex-direction: column;
@@ -193,26 +185,27 @@
             justify-content: center;
             height: 100%;
             text-align: center;
-            gap: 20px;
+            gap: 18px;
             animation: fadeIn 0.8s ease;
+            padding: 12px;
         }
 
         .welcome-illustration {
-            width: 100px;
-            height: 100px;
+            width: 88px;
+            height: 88px;
             background: var(--gradient-primary);
-            border-radius: 32px;
+            border-radius: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 44px;
+            font-size: 38px;
             box-shadow: 0 8px 30px rgba(242, 107, 58, 0.2);
             animation: gentleFloat 6s ease-in-out infinite;
         }
 
         .welcome-title {
             font-family: var(--font-display);
-            font-size: 1.9rem;
+            font-size: 1.75rem;
             font-weight: 400;
             color: var(--text-primary);
             line-height: 1.3;
@@ -220,29 +213,37 @@
 
         .welcome-sub {
             color: var(--text-secondary);
-            font-size: 0.95rem;
-            max-width: 400px;
-            line-height: 1.65;
+            font-size: 0.92rem;
+            max-width: 420px;
+            line-height: 1.6;
             font-weight: 400;
         }
 
-        /* Quick Actions */
+        .quick-section-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
         .quick-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
-            max-width: 560px;
-            margin-top: 8px;
+            max-width: 620px;
+            margin-top: 4px;
         }
 
         .quick-chip {
-            padding: 10px 18px;
+            padding: 9px 16px;
             background: var(--bg-secondary);
             border: 1.5px solid var(--border-light);
             border-radius: var(--radius-full);
             color: var(--text-secondary);
-            font-size: 0.84rem;
+            font-size: 0.82rem;
             font-family: var(--font-body);
             font-weight: 500;
             cursor: pointer;
@@ -259,11 +260,20 @@
             box-shadow: 0 6px 20px rgba(242, 107, 58, 0.12);
         }
 
-        .quick-chip .chip-icon {
-            margin-right: 6px;
+        .quick-chip.tool {
+            background: linear-gradient(135deg, #FFF0E6, #FFE3D0);
+            border-color: var(--accent-peach);
+            color: var(--accent-orange);
         }
 
-        /* Messages */
+        .quick-chip.tool:hover {
+            background: linear-gradient(135deg, #FFE3D0, #FFD0B5);
+        }
+
+        .quick-chip .chip-icon {
+            margin-right: 5px;
+        }
+
         .message {
             margin-bottom: 16px;
             display: flex;
@@ -323,13 +333,8 @@
             box-shadow: var(--shadow-soft);
         }
 
-        .msg-bubble p {
-            margin-bottom: 8px;
-        }
-
-        .msg-bubble p:last-child {
-            margin-bottom: 0;
-        }
+        .msg-bubble p { margin-bottom: 8px; }
+        .msg-bubble p:last-child { margin-bottom: 0; }
 
         .msg-bubble strong {
             color: var(--accent-orange);
@@ -370,7 +375,7 @@
         }
 
         .msg-bubble li {
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .msg-bubble h3,
@@ -396,7 +401,6 @@
             border-top-color: rgba(255, 255, 255, 0.2);
         }
 
-        /* Typing indicator */
         .typing-indicator {
             display: flex;
             gap: 5px;
@@ -411,15 +415,9 @@
             animation: typingBounce 1.4s ease-in-out infinite;
         }
 
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
 
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        /* ═══════════════ Input Area ═══════════════ */
         .input-area {
             padding: 14px 24px 24px;
             background: rgba(255, 248, 242, 0.85);
@@ -499,13 +497,9 @@
             height: 20px;
         }
 
-        /* ═══════════════ Onboarding Modal ═══════════════ */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background: rgba(45, 42, 50, 0.3);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -517,63 +511,87 @@
             animation: fadeIn 0.4s ease;
         }
 
-        .modal-overlay.hidden {
-            display: none;
-        }
+        .modal-overlay.hidden { display: none; }
 
         .modal {
             background: var(--bg-secondary);
             border: 1px solid var(--border-light);
             border-radius: var(--radius-xl);
-            padding: 40px;
-            max-width: 440px;
+            padding: 36px;
+            max-width: 460px;
             width: 100%;
             box-shadow: var(--shadow-elevated);
-            animation: modalSlide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: modalSlide 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 26px;
         }
 
         .modal-logo {
-            width: 64px;
-            height: 64px;
+            width: 60px;
+            height: 60px;
             background: var(--accent-orange);
-            border-radius: 20px;
+            border-radius: 18px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             font-family: var(--font-display);
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 400;
             color: #fff;
-            margin-bottom: 18px;
-            box-shadow: 0 6px 24px rgba(242, 107, 58, 0.25);
+            margin-bottom: 14px;
+            box-shadow: 0 6px 22px rgba(242, 107, 58, 0.25);
         }
 
         .modal-title {
             font-family: var(--font-display);
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 400;
             color: var(--text-primary);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .modal-desc {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             line-height: 1.55;
         }
 
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: var(--bg-warm);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--accent-peach);
+            color: var(--accent-orange);
+        }
+
+        .modal-relative {
+            position: relative;
+        }
+
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         .form-label {
             display: block;
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             font-family: var(--font-body);
             font-weight: 600;
             color: var(--text-secondary);
@@ -612,11 +630,6 @@
             padding-right: 32px;
         }
 
-        .form-select option {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -625,17 +638,17 @@
 
         .submit-btn {
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background: var(--accent-orange);
             border: none;
             border-radius: var(--radius-md);
             color: #fff;
             font-family: var(--font-body);
-            font-size: 0.95rem;
+            font-size: 0.94rem;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
-            margin-top: 8px;
+            margin-top: 6px;
             box-shadow: 0 4px 16px rgba(242, 107, 58, 0.25);
             letter-spacing: 0.01em;
         }
@@ -646,7 +659,13 @@
             background: var(--accent-coral);
         }
 
-        /* ═══════════════ Profile Badge ═══════════════ */
+        .form-hint {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
         .profile-badge {
             display: flex;
             align-items: center;
@@ -666,162 +685,46 @@
             font-weight: 700;
         }
 
-        /* ═══════════════ Lo Shu Grid Display ═══════════════ */
-        .loshu-grid {
-            display: inline-grid;
-            grid-template-columns: repeat(3, 44px);
-            gap: 4px;
-            margin: 8px 0;
-        }
-
-        .loshu-cell {
-            width: 44px;
-            height: 44px;
-            background: var(--bg-warm);
-            border: 1.5px solid var(--border-light);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font-body);
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .loshu-cell.active {
-            background: rgba(242, 107, 58, 0.1);
-            border-color: var(--accent-peach);
-            color: var(--accent-orange);
-        }
-
-        .loshu-cell.multi {
-            background: rgba(242, 107, 58, 0.18);
-            color: var(--accent-orange);
-            font-weight: 700;
-        }
-
-        /* ═══════════════ Animations ═══════════════ */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         @keyframes modalSlide {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.92);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(30px) scale(0.92); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         @keyframes msgSlide {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes typingBounce {
-
-            0%,
-            80%,
-            100% {
-                transform: scale(0.6);
-                opacity: 0.3;
-            }
-
-            40% {
-                transform: scale(1);
-                opacity: 1;
-            }
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
         }
 
         @keyframes gentleFloat {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-8px);
-            }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
 
-        /* ═══════════════ Responsive ═══════════════ */
         @media (max-width: 640px) {
-            .app-header {
-                padding: 12px 16px;
-            }
-
-            .chat-area {
-                padding: 16px;
-            }
-
-            .input-area {
-                padding: 12px 16px 20px;
-            }
-
-            .modal {
-                padding: 28px 22px;
-            }
-
-            .welcome-title {
-                font-size: 1.5rem;
-            }
-
-            .welcome-illustration {
-                width: 80px;
-                height: 80px;
-                font-size: 36px;
-                border-radius: 24px;
-            }
-
-            .msg-bubble {
-                max-width: 85%;
-                font-size: 0.85rem;
-            }
-
-            .quick-actions {
-                gap: 8px;
-            }
-
-            .quick-chip {
-                padding: 9px 14px;
-                font-size: 0.78rem;
-            }
-
-            .profile-badge {
-                font-size: 0.7rem;
-                padding: 4px 10px;
-            }
-
-            .header-btn {
-                padding: 6px 11px;
-                font-size: 0.74rem;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
+            .app-header { padding: 12px 16px; }
+            .chat-area { padding: 16px; }
+            .input-area { padding: 12px 16px 20px; }
+            .modal { padding: 26px 22px; }
+            .welcome-title { font-size: 1.4rem; }
+            .welcome-illustration { width: 76px; height: 76px; font-size: 32px; border-radius: 22px; }
+            .msg-bubble { max-width: 86%; font-size: 0.86rem; }
+            .quick-actions { gap: 7px; }
+            .quick-chip { padding: 8px 13px; font-size: 0.76rem; }
+            .profile-badge { font-size: 0.68rem; padding: 4px 9px; }
+            .header-btn { padding: 6px 11px; font-size: 0.74rem; }
+            .form-row { grid-template-columns: 1fr; }
         }
 
-        /* ═══════════════ Markdown Rendering ═══════════════ */
         .msg-bubble table {
             border-collapse: collapse;
             margin: 8px 0;
@@ -868,7 +771,6 @@
 </head>
 
 <body>
-    <!-- Ambient background canvas -->
     <canvas id="cosmicCanvas"></canvas>
 
     <!-- Onboarding Modal -->
@@ -877,8 +779,7 @@
             <div class="modal-header">
                 <div class="modal-logo">9</div>
                 <div class="modal-title">Welcome to Numo</div>
-                <div class="modal-desc">Your personal numerology guide. Enter your details and let's explore the
-                    patterns in your numbers together.</div>
+                <div class="modal-desc">Your personal numerology guide. Enter your details and let's explore the patterns in your numbers together.</div>
             </div>
             <form id="onboardingForm">
                 <div class="form-group">
@@ -904,6 +805,146 @@
         </div>
     </div>
 
+    <!-- Compatibility Modal -->
+    <div class="modal-overlay hidden" id="compatibilityModal">
+        <div class="modal modal-relative">
+            <button class="modal-close" data-close="compatibilityModal" aria-label="Close">×</button>
+            <div class="modal-header">
+                <div class="modal-logo">∞</div>
+                <div class="modal-title">Compatibility Check</div>
+                <div class="modal-desc">See how your numbers blend with another person's — for marriage, partnership, or business.</div>
+            </div>
+            <form id="compatibilityForm">
+                <div class="form-group">
+                    <label class="form-label" for="compName">Their Name</label>
+                    <input type="text" id="compName" class="form-input" placeholder="Their full name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="compDob">Their Date of Birth</label>
+                        <input type="date" id="compDob" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="compGender">Gender</label>
+                        <select id="compGender" class="form-select" required>
+                            <option value="">Select</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="compType">Relationship Type</label>
+                    <select id="compType" class="form-select" required>
+                        <option value="marriage">Marriage / Romantic</option>
+                        <option value="business">Business Partner</option>
+                        <option value="friendship">Friendship</option>
+                        <option value="family">Family / Co-parent</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn">Check Compatibility</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Number Analyzer Modal (mobile, vehicle, house, hotel) -->
+    <div class="modal-overlay hidden" id="numberModal">
+        <div class="modal modal-relative">
+            <button class="modal-close" data-close="numberModal" aria-label="Close">×</button>
+            <div class="modal-header">
+                <div class="modal-logo">#</div>
+                <div class="modal-title">Number Analyzer</div>
+                <div class="modal-desc">Check whether a phone, vehicle, house, or hotel-room number is in tune with your energy.</div>
+            </div>
+            <form id="numberForm">
+                <div class="form-group">
+                    <label class="form-label" for="numType">Number Type</label>
+                    <select id="numType" class="form-select" required>
+                        <option value="mobile">Mobile / Phone</option>
+                        <option value="vehicle">Vehicle Registration</option>
+                        <option value="house">House / Flat Number</option>
+                        <option value="hotel">Hotel Room Number</option>
+                        <option value="account">Bank Account / ID</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="numValue">Number</label>
+                    <input type="text" id="numValue" class="form-input" placeholder="e.g. 9876543210 or DL3CAB1234" required>
+                    <div class="form-hint" id="numHint">For mobile, enter all digits. For a car, enter the full plate — Numo will look at the last four digits. For a flat, enter just the flat number.</div>
+                </div>
+                <button type="submit" class="submit-btn">Analyze This Number</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Auspicious Date Modal -->
+    <div class="modal-overlay hidden" id="dateModal">
+        <div class="modal modal-relative">
+            <button class="modal-close" data-close="dateModal" aria-label="Close">×</button>
+            <div class="modal-header">
+                <div class="modal-logo">★</div>
+                <div class="modal-title">Pick an Auspicious Date</div>
+                <div class="modal-desc">Find days that match your lucky energy for an event you're planning.</div>
+            </div>
+            <form id="dateForm">
+                <div class="form-group">
+                    <label class="form-label" for="eventType">Event</label>
+                    <select id="eventType" class="form-select" required>
+                        <option value="interview">Job Interview</option>
+                        <option value="business launch">Business / Product Launch</option>
+                        <option value="marriage">Marriage / Engagement</option>
+                        <option value="signing">Signing a Contract</option>
+                        <option value="surgery">Medical Procedure / Surgery</option>
+                        <option value="travel">Important Travel</option>
+                        <option value="house move">House Move / Griha Pravesh</option>
+                        <option value="purchase">Big Purchase (car, property)</option>
+                        <option value="meeting">Important Meeting</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="windowFrom">From Date</label>
+                        <input type="date" id="windowFrom" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="windowTo">To Date</label>
+                        <input type="date" id="windowTo" class="form-input" required>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">Find Best Dates</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Name Spelling Check Modal -->
+    <div class="modal-overlay hidden" id="nameModal">
+        <div class="modal modal-relative">
+            <button class="modal-close" data-close="nameModal" aria-label="Close">×</button>
+            <div class="modal-header">
+                <div class="modal-logo">A</div>
+                <div class="modal-title">Name Spelling Check</div>
+                <div class="modal-desc">See whether your name spelling supports your numbers — for yourself, a baby, or a brand.</div>
+            </div>
+            <form id="nameForm">
+                <div class="form-group">
+                    <label class="form-label" for="nameKind">What's this name for?</label>
+                    <select id="nameKind" class="form-select" required>
+                        <option value="self">My own name</option>
+                        <option value="baby">A baby name</option>
+                        <option value="business">A business / brand name</option>
+                        <option value="other">Someone else</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="nameValue">Name to check</label>
+                    <input type="text" id="nameValue" class="form-input" placeholder="Full name including surname" required>
+                    <div class="form-hint">Numo reads using the Cheiro letter system and checks fit with your driving energy.</div>
+                </div>
+                <button type="submit" class="submit-btn">Check This Name</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Main App -->
     <div class="app-container">
         <header class="app-header">
@@ -914,9 +955,6 @@
             <div class="header-actions">
                 <div class="profile-badge" id="profileBadge" style="display:none;">
                     <span id="profileName"></span>
-                    <span>·</span>
-                    <span>P:<span class="pilot-num" id="headerPilot"></span></span>
-                    <span>CP:<span class="pilot-num" id="headerCoPilot"></span></span>
                 </div>
                 <button class="header-btn" id="newChatBtn" title="Start a new conversation">New Chat</button>
                 <button class="header-btn" id="resetBtn" title="Reset profile">Reset</button>
@@ -924,30 +962,29 @@
         </header>
 
         <div class="chat-area" id="chatArea">
-            <!-- Welcome screen shown when no messages -->
             <div class="welcome-screen" id="welcomeScreen">
                 <div class="welcome-illustration">🪷</div>
                 <h1 class="welcome-title">What would you like to explore?</h1>
-                <p class="welcome-sub">Ask about your numerology profile, career path, lucky colours, personal year,
-                    remedies, or request a full reading.</p>
-                <div class="quick-actions" id="quickActions">
-                    <button class="quick-chip" data-msg="Give me my complete numerology report with all details."><span
-                            class="chip-icon">📜</span> Full Report</button>
-                    <button class="quick-chip"
-                        data-msg="What guidance does my personal year give me for this week? Suggest daily practices."><span
-                            class="chip-icon">🌿</span> Weekly Guide</button>
-                    <button class="quick-chip"
-                        data-msg="What careers and professions are best suited for me based on my numbers?"><span
-                            class="chip-icon">💼</span> Career Advice</button>
-                    <button class="quick-chip"
-                        data-msg="What are my lucky colours, numbers, and remedies I should follow?"><span
-                            class="chip-icon">🎨</span> Lucky Colours</button>
-                    <button class="quick-chip"
-                        data-msg="Check if my name spelling is numerologically compatible with my Pilot and Co-Pilot numbers."><span
-                            class="chip-icon">✏️</span> Name Check</button>
-                    <button class="quick-chip"
-                        data-msg="Analyze my Lo Shu Grid — what Yogas and arrows are active? What do they mean for me?"><span
-                            class="chip-icon">✦</span> Grid Analysis</button>
+                <p class="welcome-sub">Ask anything about your chart, or use a tool below for compatibility, lucky numbers, the right date, or a name check.</p>
+
+                <div class="quick-section-label">Readings</div>
+                <div class="quick-actions">
+                    <button class="quick-chip" data-msg="Give me my complete numerology reading — personality, strengths, blind spots, career direction, relationship patterns, current Personal Year guidance, lucky colours, and a yantra suggestion if relevant. End with 5-7 specific action items."><span class="chip-icon">📜</span>Full Reading</button>
+                    <button class="quick-chip" data-msg="What's my Personal Day energy today, and what should I focus on or avoid? Give me 3-5 simple practices for today."><span class="chip-icon">☀️</span>Today's Energy</button>
+                    <button class="quick-chip" data-msg="Give me a 7-day forecast — Personal Day for each of the next 7 days and one focused suggestion for each day."><span class="chip-icon">📅</span>This Week</button>
+                    <button class="quick-chip" data-msg="What careers and professions fit me best, and which should I avoid? Tie reasoning to my chart."><span class="chip-icon">💼</span>Career Fit</button>
+                    <button class="quick-chip" data-msg="What are my lucky colours and a few practical places to use them (clothes, room, car, business card)? Also tell me which colour to avoid."><span class="chip-icon">🎨</span>Lucky Colours</button>
+                    <button class="quick-chip" data-msg="Walk me through my Lo Shu Grid — which planes and yogas are active for me, what they mean, and where my biggest gap is. Also flag any karmic or master number indicators."><span class="chip-icon">⊞</span>Grid &amp; Yogas</button>
+                    <button class="quick-chip" data-msg="What remedies should I follow — including a yantra recommendation if one fits my chart — and what should I avoid? Give me a simple weekly routine."><span class="chip-icon">🪬</span>Remedies</button>
+                    <button class="quick-chip" data-msg="Am I better suited to love marriage or arranged marriage based on my chart? What kind of partner energy should I look for?"><span class="chip-icon">💞</span>Marriage Style</button>
+                </div>
+
+                <div class="quick-section-label">Tools</div>
+                <div class="quick-actions">
+                    <button class="quick-chip tool" id="toolCompat"><span class="chip-icon">∞</span>Compatibility</button>
+                    <button class="quick-chip tool" id="toolNumber"><span class="chip-icon">#</span>Number Check</button>
+                    <button class="quick-chip tool" id="toolDate"><span class="chip-icon">★</span>Auspicious Date</button>
+                    <button class="quick-chip tool" id="toolName"><span class="chip-icon">A</span>Name Check</button>
                 </div>
             </div>
         </div>
@@ -955,12 +992,10 @@
         <div class="input-area">
             <div class="input-wrapper">
                 <div class="input-field-wrapper">
-                    <textarea id="messageInput" rows="1" placeholder="Ask about your numbers, career, remedies..."
-                        disabled></textarea>
+                    <textarea id="messageInput" rows="1" placeholder="Ask about your numbers, career, remedies..." disabled></textarea>
                 </div>
                 <button id="sendBtn" disabled title="Send message">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg>
@@ -970,71 +1005,402 @@
     </div>
 
     <script>
-        /* ═══════════════════════════════════════════
+        /* ───────────────────────────────────────────
            CONFIGURATION
-           ═══════════════════════════════════════════ */
-        // UPDATE THIS to your deployed Firebase Cloud Function URL
+           ─────────────────────────────────────────── */
         const API_URL = 'https://us-central1-numo-3984a.cloudfunctions.net/numoChat';
 
-        /* ═══════════════════════════════════════════
+        /* ───────────────────────────────────────────
            STATE
-           ═══════════════════════════════════════════ */
+           ─────────────────────────────────────────── */
         let userProfile = null;
+        let userFacts = null;
         let sessionId = null;
         let isStreaming = false;
 
-        /* ═══════════════════════════════════════════
-           NUMEROLOGY CALCULATIONS
-           ═══════════════════════════════════════════ */
+        /* ───────────────────────────────────────────
+           NUMEROLOGY ENGINE — strict Sankar/Cheiro per the source PDF
+           ─────────────────────────────────────────── */
         function reduceToSingle(n) {
+            n = Math.abs(n);
             while (n > 9) {
-                n = String(n).split('').reduce((a, b) => a + parseInt(b), 0);
+                n = String(n).split('').reduce((a, b) => a + parseInt(b, 10), 0);
             }
             return n;
         }
 
-        function calcPilot(day) {
-            return reduceToSingle(day);
+        function digitsOf(n) {
+            return String(n).split('').map(d => parseInt(d, 10));
         }
 
+        function calcPilot(day) { return reduceToSingle(day); }
+
         function calcCoPilot(day, month, year) {
-            const digits = `${day}${month}${year}`.split('').map(Number);
-            const sum = digits.reduce((a, b) => a + b, 0);
-            return reduceToSingle(sum);
+            const all = (`${day}${month}${year}`).split('').map(Number);
+            return reduceToSingle(all.reduce((a, b) => a + b, 0));
         }
 
         function calcFlightAttendant(year, gender) {
-            const yearSum = reduceToSingle(String(year).split('').reduce((a, b) => a + parseInt(b), 0));
+            const yearSum = reduceToSingle(String(year).split('').reduce((a, b) => a + parseInt(b, 10), 0));
             if (gender === 'male') {
-                let result = 11 - yearSum;
-                return reduceToSingle(result < 0 ? -result : result);
-            } else {
-                return reduceToSingle(yearSum + 4);
+                const r = 11 - yearSum;
+                return reduceToSingle(r < 0 ? -r : r);
             }
+            return reduceToSingle(yearSum + 4);
         }
 
+        // Build a count-of-digits map from DOB + Pilot + Co-Pilot + Flight Attendant.
         function buildLoShuGrid(day, month, year, pilot, coPilot, fa) {
-            const allDigits = `${day}${month}${year}`.split('').map(Number);
-            allDigits.push(pilot, coPilot, fa);
+            const all = (`${day}${month}${year}`).split('').map(Number);
+            all.push(pilot, coPilot, fa);
             const counts = {};
-            for (let d of allDigits) {
+            for (const d of all) {
                 if (d === 0) continue;
                 counts[d] = (counts[d] || 0) + 1;
             }
             return counts;
         }
 
-        function calcPersonalYear(day, month) {
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            const digits = `${day}${month}${currentYear}`.split('').map(Number);
-            const sum = digits.reduce((a, b) => a + b, 0);
+        // Birth-day category description (used as silent context for the model)
+        function birthDayCategory(day) {
+            const map = {
+                1: '1 alone — King standing alone',
+                10: '10 — King + Zero (clean slate / karmic)',
+                19: '19 — King + Commander (strongest 1, but karmic — abuse of power)',
+                28: '28 — Moon + Saturn (water + iron, anti) — toughest 1',
+                2: '2 alone',
+                11: '11 — Master Number (double Sun → dreamer needing support)',
+                20: '20 — Moon + Zero',
+                29: '29 — Moon + Mars (anti, can disturb married life)',
+                3: '3 alone',
+                12: '12 — King + Queen (strongest 3)',
+                21: '21 — Queen + King',
+                30: '30 — Jupiter + Zero',
+                4: '4 alone',
+                13: '13 — Karmic number (heavy past-life debt)',
+                22: '22 — Master Number (double Moon → dreamer + doer)',
+                31: '31 — Jupiter + King (friendly)',
+                5: '5 alone',
+                14: '14 — Sun + Rahu (Karmic: abuse of freedom)',
+                23: '23 — Moon + Jupiter (gentle planets) — strongest 5',
+                6: '6 alone',
+                15: '15 — King + Prince (strongest 6)',
+                24: '24 — Queen + Gunda (non-friend; women may face marriage disturbance)',
+                7: '7 alone',
+                16: '16 — Sun + Venus (Karmic: abuse of love)',
+                25: '25 — Queen + Prince',
+                8: '8 alone',
+                17: '17 — Sun + Ketu (strongest 8)',
+                26: '26 — Moon + Venus (non-friend; women may face marriage disturbance)',
+                9: '9 alone (best 9)',
+                18: '18 — Sun + Saturn (ever-enemies; men with 9 from 18: father may suffer)',
+                27: '27 — Moon + Ketu (both lazy)',
+            };
+            return map[day] || `${day}`;
+        }
+
+        function isKarmicDay(day) {
+            const k = { 10: 'clean slate', 13: 'past-life sins — work without play, do not misuse power', 14: 'past abuse of freedom — do not misuse trust', 16: 'past abuse of love — be loyal', 19: 'past abuse of power — use authority for others' };
+            return k[day] || null;
+        }
+
+        // Master number flag — Sankar/PDF method:
+        //   Vertical sum = (day + month + year) treated as integers, then digit-sum.
+        //   If that lands on 11, 22, or 33 → Master Co-Pilot.
+        //   Master Pilot is independent: birth day 11 or 22.
+        function masterNumberFlag(day, month, year) {
+            const verticalSum = day + month + year;
+            const digitSum = String(verticalSum).split('').reduce((a, b) => a + parseInt(b, 10), 0);
+            let masterCP = null;
+            if (digitSum === 11 || digitSum === 22 || digitSum === 33) {
+                masterCP = digitSum;
+            } else {
+                let n = digitSum;
+                while (n > 9) {
+                    if (n === 11 || n === 22 || n === 33) { masterCP = n; break; }
+                    n = String(n).split('').reduce((a, b) => a + parseInt(b, 10), 0);
+                }
+            }
+            const isMasterPilot = (day === 11 || day === 22);
+            if (masterCP && isMasterPilot) {
+                return `${masterCP} (Master Pilot AND Master Co-Pilot — exceptional)`;
+            }
+            if (masterCP) return `${masterCP} (Master Co-Pilot)`;
+            if (day === 11) return '11 (Master Pilot — dreamer; needs family support)';
+            if (day === 22) return '22 (Master Pilot — dreamer + doer)';
+            return null;
+        }
+
+        // Friendship table (Sankar/Cheiro). Treat starred entries lightly.
+        const FRIENDSHIPS = {
+            1: { friends: [1, 2, 3, 5, 6, 9], enemies: [8], neutral: [4, 7] },
+            2: { friends: [1, 2, 3, 5], enemies: [4, 8, 9], neutral: [6, 7] },
+            3: { friends: [1, 2, 3, 5, 7], enemies: [6], neutral: [4, 8, 9] },
+            4: { friends: [1, 5, 6, 7], enemies: [2, 9], neutral: [3, 4, 8] },
+            5: { friends: [1, 2, 3, 5, 6], enemies: [], neutral: [4, 7, 8, 9] },
+            6: { friends: [1, 5, 6, 7], enemies: [3], neutral: [2, 4, 8, 9] },
+            7: { friends: [1, 3, 4, 5, 6], enemies: [], neutral: [2, 7, 8, 9] },
+            8: { friends: [3, 5, 6, 7], enemies: [1, 2], neutral: [4, 8, 9] },
+            9: { friends: [1, 3, 5], enemies: [2, 4], neutral: [6, 7, 8, 9] },
+        };
+
+        function relationship(a, b) {
+            const r = FRIENDSHIPS[a];
+            if (!r) return 'neutral';
+            if (r.enemies.includes(b)) return 'enemy';
+            if (r.friends.includes(b)) return 'friend';
+            return 'neutral';
+        }
+
+        // Lucky/Bad — PDF method:
+        //   Preferred lucky = friend of BOTH Pilot and Co-Pilot.
+        //   Less preferred = friend of one, neutral with the other (not enemy of either).
+        //   Bad = enemy of Pilot or Co-Pilot.
+        function luckyAndBad(pilot, coPilot) {
+            const luckyPreferred = [];
+            const luckyLess = [];
+            const bad = [];
+            for (let n = 1; n <= 9; n++) {
+                const r1 = relationship(pilot, n);
+                const r2 = relationship(coPilot, n);
+                if (r1 === 'enemy' || r2 === 'enemy') { bad.push(n); continue; }
+                if (r1 === 'friend' && r2 === 'friend') luckyPreferred.push(n);
+                else if (r1 === 'friend' || r2 === 'friend') luckyLess.push(n);
+            }
+            return { luckyPreferred, luckyLess, bad, lucky: [...luckyPreferred, ...luckyLess] };
+        }
+
+        // Plane analysis (yogas, raj yogas)
+        const PLANES = {
+            'Thought Plane (planning, prudence)': [4, 3, 8],
+            'Will Plane (fighter spirit, bounce-back)': [9, 5, 1],
+            'Action Plane (decisive doer)': [2, 7, 6],
+            'Mental Plane (sharp memory, intellect)': [4, 9, 2],
+            'Emotional Plane (golden-hearted, spiritual)': [3, 5, 7],
+            'Practical Plane (analytical, prosperity)': [8, 1, 6],
+            'Golden Raj Yoga (super success)': [4, 5, 6],
+            'Silver Raj Yoga (real estate, patience)': [2, 5, 8],
+        };
+
+        function analyzePlanes(grid) {
+            const complete = [];
+            const partial = [];
+            for (const [name, nums] of Object.entries(PLANES)) {
+                const present = nums.filter(n => grid[n]).length;
+                if (present === 3) complete.push(name);
+                else if (present === 2) partial.push(name);
+            }
+            return { complete, partial };
+        }
+
+        function presentAndMissing(grid) {
+            const present = [];
+            const missing = [];
+            for (let n = 1; n <= 9; n++) {
+                if (grid[n]) present.push(n); else missing.push(n);
+            }
+            return { present, missing };
+        }
+
+        function repetitionDescription(grid) {
+            const parts = [];
+            for (let n = 1; n <= 9; n++) {
+                const c = grid[n];
+                if (!c) continue;
+                if (c === 1) parts.push(`${n}×1`);
+                else parts.push(`${n}×${c}`);
+            }
+            return parts.join(', ');
+        }
+
+        // Personal Year, Month, Day
+        function calcPersonalYear(day, month, refDate) {
+            // PY cycle starts on Feb 5. If we're before Feb 5 of refDate's year, use previous year.
+            const ref = refDate || new Date();
+            let y = ref.getFullYear();
+            const cutoff = new Date(y, 1, 5); // Feb 5
+            if (ref < cutoff) y -= 1;
+            const sum = (`${day}${month}${y}`).split('').map(Number).reduce((a, b) => a + b, 0);
             return reduceToSingle(sum);
         }
 
-        /* ═══════════════════════════════════════════
+        function calcPersonalMonth(personalYear, monthNumber) {
+            return reduceToSingle(personalYear + monthNumber);
+        }
+
+        function calcPersonalDay(personalYear, personalMonth, dateNumber) {
+            const dateSum = reduceToSingle(String(dateNumber).split('').reduce((a, b) => a + parseInt(b, 10), 0));
+            return reduceToSingle(personalYear + personalMonth + dateSum);
+        }
+
+        // Cheiro letter values
+        const CHEIRO = {
+            A: 1, B: 2, C: 3, D: 4, E: 5, F: 8, G: 3, H: 5,
+            I: 1, J: 1, K: 2, L: 3, M: 4, N: 5, O: 7, P: 8,
+            Q: 1, R: 2, S: 3, T: 4, U: 6, V: 6, W: 6, X: 5, Y: 1, Z: 7,
+        };
+
+        function nameSpellingSum(rawName) {
+            const cleaned = (rawName || '').toUpperCase().replace(/[^A-Z]/g, '');
+            const total = cleaned.split('').reduce((a, c) => a + (CHEIRO[c] || 0), 0);
+            return { total, reduced: reduceToSingle(total) };
+        }
+
+        function firstNameSum(rawName) {
+            const first = (rawName || '').trim().split(/\s+/)[0] || '';
+            return nameSpellingSum(first);
+        }
+
+        // Recommend target name number based on chart
+        function nameTargetSuggestion(pilot, coPilot, missing) {
+            const candidates = [];
+            const has5 = !missing.includes(5);
+            const has6 = !missing.includes(6);
+            // Target 1 if both 5 and 6 present, and neither is 8
+            if (has5 && has6 && pilot !== 8 && coPilot !== 8) candidates.push(1);
+            // Target 5 if 5 is missing
+            if (!has5) candidates.push(5);
+            // Target 6 if 6 missing and neither is 3
+            if (!has6 && pilot !== 3 && coPilot !== 3) candidates.push(6);
+            // Target 3 if 3 missing and neither is 6
+            if (missing.includes(3) && pilot !== 6 && coPilot !== 6) candidates.push(3);
+            if (candidates.length === 0) candidates.push(5);
+            // Filter out anti targets
+            return candidates.filter(c => relationship(pilot, c) !== 'enemy' && relationship(coPilot, c) !== 'enemy');
+        }
+
+        // P-CP one-line read for the model (so it doesn't have to look it up)
+        const PCP_READS = {
+            '1-1': 'Parashmoni — touches iron, turns gold; double Sun energy',
+            '1-2': 'Navy / water / milk affinity, supportive success',
+            '1-3': 'Education, coaching, politics-friendly',
+            '1-4': 'Politics, Rahu compatible with King',
+            '1-5': 'Sure-shot success, banking and finance',
+            '1-6': 'Power + glamour, media and hotel',
+            '1-7': 'Education, occult, research',
+            '1-8': 'Anti — King vs deserted son, struggle, needs remedies',
+            '1-9': 'King + Commander — the elite combination',
+            '2-1': 'Queen + King, supportive',
+            '2-2': 'Flickering mind, confusion risk',
+            '2-3': 'Education, dairy, healing',
+            '2-4': 'Anti — depression risk, needs remedies',
+            '2-5': 'Real estate, banking, stable',
+            '2-6': 'Sweet business, ok',
+            '2-7': 'Lazy on surface but very intuitive — teaching, occult',
+            '2-8': 'Anti — water vs iron, struggle, needs remedies',
+            '2-9': 'Anti — needs remedies',
+            '3-1': 'Teacher, doctor, IAS/IPS',
+            '3-2': 'Education sector',
+            '3-3': 'Good starter, must guard the finish',
+            '3-4': 'Sales and marketing',
+            '3-5': 'Anchoring, news, banking',
+            '3-6': 'Anti — Dev Guru vs Daitya Guru, struggle in marriage and health',
+            '3-7': 'Wisdom + knowledge — admin/IAS',
+            '3-8': 'Lawyer, printing press',
+            '3-9': 'Police, army, training',
+            '4-1': 'Politics, business',
+            '4-2': 'Anti — depression risk',
+            '4-3': 'Sales, education, medical',
+            '4-4': 'Permanent struggle but ok temporarily; law',
+            '4-5': 'Banking, event management',
+            '4-6': 'Media, luxury',
+            '4-7': 'Rahu + Ketu form the complete body — best for occult',
+            '4-8': 'Difficult; law profession',
+            '4-9': 'Anti — surgery, accidents',
+            '5-1': 'Father + Son, finance, balance',
+            '5-2': 'Property, banking',
+            '5-3': 'Education, media, fashion',
+            '5-4': 'Sales, marketing',
+            '5-5': 'Lazy but blessed, foody, hypersensitive',
+            '5-6': 'Luxury + balance, hotel/casino',
+            '5-7': 'Occult, banking, research',
+            '5-8': 'Real estate (with 2 = Silver Raj Yoga)',
+            '5-9': 'Admin, army, police',
+            '6-1': 'Politics, media, glamour',
+            '6-2': 'Sweet business',
+            '6-3': 'Anti — health, marriage problems',
+            '6-4': 'Media',
+            '6-5': 'Luxury + balance, super success',
+            '6-6': 'Venus age — luxury, name & fame',
+            '6-7': 'Sports, romantic, ok',
+            '6-8': 'Law',
+            '6-9': 'Money/fame but scandals possible',
+            '7-1': 'Occult and teaching',
+            '7-2': 'Lazy but very intuitive',
+            '7-3': 'Wisdom + knowledge — admin',
+            '7-4': 'Best occult, success after delay',
+            '7-5': 'Banking, computer, design',
+            '7-6': 'Sports, physical',
+            '7-7': 'Disappointment, marriage problems, attracts opposite sex',
+            '7-8': 'Occult',
+            '7-9': 'Teaching, occult, police',
+            '8-1': 'Anti — King vs son, struggle',
+            '8-2': 'Anti — iron vs water',
+            '8-3': 'Law, printing, occult',
+            '8-4': 'Permanent struggle; law',
+            '8-5': 'Real estate, property',
+            '8-6': 'Law',
+            '8-7': 'Saturn + Ketu, ok',
+            '8-8': 'Hard struggle; law/labour',
+            '8-9': 'Police, army, law',
+            '9-1': 'Senapati + King — police, army, authoritative',
+            '9-2': 'Anti — child problems',
+            '9-3': 'Teaching, doctor, admin',
+            '9-4': 'Anti — surgery, accidents',
+            '9-5': 'Banking, very good',
+            '9-6': 'Marriage and scandal trouble',
+            '9-7': 'Neutral — teaching, healing, preaching',
+            '9-8': 'Dabang — army, police',
+            '9-9': 'Disturbed marriage, simple/monk-like life',
+        };
+
+        function pcpRead(p, cp) { return PCP_READS[`${p}-${cp}`] || `${p}-${cp}`; }
+
+        // Master analyze — produces the userFacts block sent to the LLM
+        function buildUserFacts(profile, refDate) {
+            const ref = refDate || new Date();
+            const grid = buildLoShuGrid(profile.day, profile.month, profile.year, profile.pilot, profile.coPilot, profile.fa);
+            const { present, missing } = presentAndMissing(grid);
+            const planes = analyzePlanes(grid);
+            const completePlanes = planes.complete;
+            const partialPlanes = planes.partial;
+            const rajYogas = completePlanes.filter(p => p.includes('Raj Yoga'));
+            const planesNoRaj = completePlanes.filter(p => !p.includes('Raj Yoga'));
+            const repetitions = repetitionDescription(grid);
+            const karmic = isKarmicDay(profile.day);
+            const master = masterNumberFlag(profile.day, profile.month, profile.year);
+            const { luckyPreferred, luckyLess, bad } = luckyAndBad(profile.pilot, profile.coPilot);
+            const py = calcPersonalYear(profile.day, profile.month, ref);
+            const pm = calcPersonalMonth(py, ref.getMonth() + 1);
+            const pd = calcPersonalDay(py, pm, ref.getDate());
+
+            return {
+                pilot: profile.pilot,
+                coPilot: profile.coPilot,
+                fa: profile.fa,
+                dayCategory: birthDayCategory(profile.day),
+                presentNumbers: present.join(', '),
+                missingNumbers: missing.length ? missing.join(', ') : 'none',
+                repetitions,
+                completePlanes: planesNoRaj.length ? planesNoRaj.join('; ') : 'none',
+                partialPlanes: partialPlanes.length ? partialPlanes.join('; ') : 'none',
+                rajYogas: rajYogas.length ? rajYogas.join('; ') : 'none',
+                karmic: karmic ? `Born on ${profile.day} — ${karmic}` : 'none',
+                master: master || 'none',
+                luckyNumbers: (luckyPreferred.length || luckyLess.length)
+                    ? `preferred ${luckyPreferred.join(', ') || '—'}; less preferred ${luckyLess.join(', ') || '—'}`
+                    : 'few — name correction important',
+                badNumbers: bad.length ? bad.join(', ') : 'none',
+                pcpRead: pcpRead(profile.pilot, profile.coPilot),
+                personalYear: py,
+                personalMonth: pm,
+                personalDay: pd,
+            };
+        }
+
+        /* ───────────────────────────────────────────
            DOM REFS
-           ═══════════════════════════════════════════ */
+           ─────────────────────────────────────────── */
         const onboardingModal = document.getElementById('onboardingModal');
         const onboardingForm = document.getElementById('onboardingForm');
         const chatArea = document.getElementById('chatArea');
@@ -1045,18 +1411,24 @@
         const newChatBtn = document.getElementById('newChatBtn');
         const resetBtn = document.getElementById('resetBtn');
 
-        /* ═══════════════════════════════════════════
+        /* ───────────────────────────────────────────
            INITIALIZATION
-           ═══════════════════════════════════════════ */
+           ─────────────────────────────────────────── */
         function init() {
             const saved = localStorage.getItem('numo_profile');
             if (saved) {
-                userProfile = JSON.parse(saved);
-                sessionId = localStorage.getItem('numo_session') || generateSessionId();
-                localStorage.setItem('numo_session', sessionId);
-                onboardingModal.classList.add('hidden');
-                enableChat();
-                updateProfileBadge();
+                try {
+                    userProfile = JSON.parse(saved);
+                    sessionId = localStorage.getItem('numo_session') || generateSessionId();
+                    localStorage.setItem('numo_session', sessionId);
+                    userFacts = buildUserFacts(userProfile);
+                    onboardingModal.classList.add('hidden');
+                    enableChat();
+                    updateProfileBadge();
+                } catch (e) {
+                    console.warn('Could not restore profile', e);
+                    localStorage.removeItem('numo_profile');
+                }
             }
             setupEventListeners();
             initAmbientCanvas();
@@ -1066,47 +1438,39 @@
             return 'ns_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
         }
 
-        /* ═══════════════════════════════════════════
+        /* ───────────────────────────────────────────
            ONBOARDING
-           ═══════════════════════════════════════════ */
+           ─────────────────────────────────────────── */
         onboardingForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('userName').value.trim();
             const dobStr = document.getElementById('userDob').value;
             const gender = document.getElementById('userGender').value;
-
             if (!name || !dobStr || !gender) return;
 
             const dob = new Date(dobStr);
             const day = dob.getDate();
             const month = dob.getMonth() + 1;
             const year = dob.getFullYear();
-
             const pilot = calcPilot(day);
             const coPilot = calcCoPilot(day, month, year);
             const fa = calcFlightAttendant(year, gender);
-            const grid = buildLoShuGrid(day, month, year, pilot, coPilot, fa);
-            const personalYear = calcPersonalYear(day, month);
-
             const dobFormatted = `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`;
 
-            userProfile = {
-                name, dob: dobFormatted, gender, day, month, year,
-                pilot, coPilot, fa, grid, personalYear
-            };
-
+            userProfile = { name, dob: dobFormatted, gender, day, month, year, pilot, coPilot, fa };
             sessionId = generateSessionId();
             localStorage.setItem('numo_profile', JSON.stringify(userProfile));
             localStorage.setItem('numo_session', sessionId);
+            userFacts = buildUserFacts(userProfile);
 
             onboardingModal.classList.add('hidden');
             enableChat();
             updateProfileBadge();
         });
 
-        /* ═══════════════════════════════════════════
-           CHAT FUNCTIONALITY
-           ═══════════════════════════════════════════ */
+        /* ───────────────────────────────────────────
+           CHAT
+           ─────────────────────────────────────────── */
         function enableChat() {
             messageInput.disabled = false;
             sendBtn.disabled = false;
@@ -1127,13 +1491,32 @@
                 messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
             });
 
-            document.querySelectorAll('.quick-chip').forEach(chip => {
+            // Quick-action chips with predefined messages
+            document.querySelectorAll('.quick-chip[data-msg]').forEach(chip => {
                 chip.addEventListener('click', () => {
-                    const msg = chip.dataset.msg;
-                    messageInput.value = msg;
-                    sendMessage();
+                    sendMessage(chip.dataset.msg);
                 });
             });
+
+            // Tool buttons
+            document.getElementById('toolCompat').addEventListener('click', () => openModal('compatibilityModal'));
+            document.getElementById('toolNumber').addEventListener('click', () => openModal('numberModal'));
+            document.getElementById('toolDate').addEventListener('click', () => openModal('dateModal'));
+            document.getElementById('toolName').addEventListener('click', () => openModal('nameModal'));
+
+            // Modal close buttons
+            document.querySelectorAll('[data-close]').forEach(btn => {
+                btn.addEventListener('click', () => closeModal(btn.dataset.close));
+            });
+
+            // Tool form submissions
+            document.getElementById('compatibilityForm').addEventListener('submit', handleCompatibility);
+            document.getElementById('numberForm').addEventListener('submit', handleNumber);
+            document.getElementById('dateForm').addEventListener('submit', handleDate);
+            document.getElementById('nameForm').addEventListener('submit', handleName);
+
+            // Type hint update for number tool
+            document.getElementById('numType').addEventListener('change', updateNumberHint);
 
             newChatBtn.addEventListener('click', () => {
                 sessionId = generateSessionId();
@@ -1141,6 +1524,8 @@
                 chatArea.innerHTML = '';
                 chatArea.appendChild(welcomeScreen);
                 welcomeScreen.style.display = 'flex';
+                // Refresh facts (date may have changed)
+                if (userProfile) userFacts = buildUserFacts(userProfile);
             });
 
             resetBtn.addEventListener('click', () => {
@@ -1152,16 +1537,34 @@
             });
         }
 
+        function updateNumberHint() {
+            const t = document.getElementById('numType').value;
+            const hint = document.getElementById('numHint');
+            const map = {
+                mobile: 'Enter all digits of the phone number. Numo will sum them all and reduce.',
+                vehicle: 'Enter the full plate (e.g. DL3CAB1234). Numo will read just the last four digits per the system.',
+                house: 'Enter only the flat or house number (skip block letter or building number).',
+                hotel: 'Enter the room number digits.',
+                account: 'Enter the full account or ID number — Numo will sum and reduce.',
+            };
+            hint.textContent = map[t];
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
         function updateProfileBadge() {
             if (!userProfile) return;
             profileBadge.style.display = 'flex';
             document.getElementById('profileName').textContent = userProfile.name.split(' ')[0];
-            document.getElementById('headerPilot').textContent = userProfile.pilot;
-            document.getElementById('headerCoPilot').textContent = userProfile.coPilot;
         }
 
-        async function sendMessage() {
-            const text = messageInput.value.trim();
+        async function sendMessage(presetText, toolContext) {
+            const text = (presetText !== undefined ? presetText : messageInput.value).trim();
             if (!text || isStreaming || !userProfile) return;
 
             welcomeScreen.style.display = 'none';
@@ -1171,31 +1574,31 @@
             messageInput.style.height = 'auto';
             isStreaming = true;
             sendBtn.disabled = true;
-
             const typingEl = appendTypingIndicator();
 
             try {
+                // Refresh facts in case the date rolled over
+                userFacts = buildUserFacts(userProfile);
+
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         message: text,
-                        sessionId: sessionId,
+                        sessionId,
                         userDob: userProfile.dob,
                         userName: userProfile.name,
                         userGender: userProfile.gender,
+                        userFacts,
+                        toolContext: toolContext || null,
                     }),
                 });
 
                 typingEl.remove();
-
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
                 const msgEl = appendMessage('assistant', '');
                 const bubbleEl = msgEl.querySelector('.msg-bubble');
-
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = '';
@@ -1204,11 +1607,9 @@
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-
                     buffer += decoder.decode(value, { stream: true });
                     const lines = buffer.split('\n');
                     buffer = lines.pop();
-
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             try {
@@ -1219,18 +1620,16 @@
                                     scrollToBottom();
                                 }
                                 if (data.error) {
-                                    bubbleEl.innerHTML = `<p style="color: #e74c3c;">⚠ ${data.error}</p>`;
+                                    bubbleEl.innerHTML = `<p style="color:#e74c3c;">⚠ ${data.error}</p>`;
                                 }
-                            } catch (e) { /* skip malformed JSON */ }
+                            } catch (e) { /* skip malformed */ }
                         }
                     }
                 }
-
                 bubbleEl.innerHTML = renderMarkdown(fullText);
-
             } catch (error) {
                 typingEl.remove();
-                appendMessage('assistant', `⚠ **Connection error.** Please check that the backend is deployed and try again.\n\n_${error.message}_`);
+                appendMessage('assistant', `⚠ **Connection error.** Please try again in a moment.\n\n_${error.message}_`);
             }
 
             isStreaming = false;
@@ -1239,18 +1638,228 @@
             scrollToBottom();
         }
 
+        /* ───────────────────────────────────────────
+           TOOL HANDLERS
+           ─────────────────────────────────────────── */
+
+        function handleCompatibility(e) {
+            e.preventDefault();
+            const partnerName = document.getElementById('compName').value.trim();
+            const dobStr = document.getElementById('compDob').value;
+            const gender = document.getElementById('compGender').value;
+            const relType = document.getElementById('compType').value;
+            if (!partnerName || !dobStr || !gender) return;
+
+            const d = new Date(dobStr);
+            const day = d.getDate();
+            const month = d.getMonth() + 1;
+            const year = d.getFullYear();
+            const pPilot = calcPilot(day);
+            const pCoPilot = calcCoPilot(day, month, year);
+            const pFa = calcFlightAttendant(year, gender);
+            const pGrid = buildLoShuGrid(day, month, year, pPilot, pCoPilot, pFa);
+            const { present: pPresent, missing: pMissing } = presentAndMissing(pGrid);
+
+            // Compute interaction
+            const myGrid = buildLoShuGrid(userProfile.day, userProfile.month, userProfile.year, userProfile.pilot, userProfile.coPilot, userProfile.fa);
+            const { present: myPresent, missing: myMissing } = presentAndMissing(myGrid);
+
+            const sharedNumbers = myPresent.filter(n => pPresent.includes(n));
+            const youFillForPartner = pMissing.filter(n => myPresent.includes(n));
+            const partnerFillsForYou = myMissing.filter(n => pPresent.includes(n));
+            const pilotRel = relationship(userProfile.pilot, pPilot);
+            const coPilotRel = relationship(userProfile.coPilot, pCoPilot);
+            const five6Shared = [5, 6].filter(n => sharedNumbers.includes(n));
+
+            closeModal('compatibilityModal');
+
+            const toolContext = {
+                tool: 'compatibility',
+                partnerName,
+                partnerDob: `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`,
+                partnerGender: gender,
+                relationshipType: relType,
+                partnerPilot: pPilot,
+                partnerCoPilot: pCoPilot,
+                partnerFA: pFa,
+                partnerPresent: pPresent.join(', '),
+                partnerMissing: pMissing.length ? pMissing.join(', ') : 'none',
+                pilotRelationship: pilotRel,
+                coPilotRelationship: coPilotRel,
+                sharedNumbers: sharedNumbers.length ? sharedNumbers.join(', ') : 'none',
+                fiveOrSixShared: five6Shared.length ? five6Shared.join(', ') : 'none',
+                youFillForPartner: youFillForPartner.join(', ') || 'none',
+                partnerFillsForYou: partnerFillsForYou.join(', ') || 'none',
+                partnerPCPRead: pcpRead(pPilot, pCoPilot),
+            };
+
+            const userMsg = `Check my compatibility with ${partnerName} (DOB ${toolContext.partnerDob}, ${gender}) for ${relType}. Tell me where we build each other up, where we grate, and what stabilising practices to follow. Don't show calculations — give me an analysis and clear action items.`;
+            sendMessage(userMsg, toolContext);
+        }
+
+        function handleNumber(e) {
+            e.preventDefault();
+            const type = document.getElementById('numType').value;
+            const raw = document.getElementById('numValue').value.trim();
+            if (!raw) return;
+
+            const allDigits = raw.replace(/\D/g, '');
+            let usedDigits = allDigits;
+            if (type === 'vehicle') {
+                usedDigits = allDigits.slice(-4);
+            } else if (type === 'house') {
+                usedDigits = allDigits;
+            }
+            if (!usedDigits) {
+                alert('Please include some digits in the number.');
+                return;
+            }
+            const sum = usedDigits.split('').reduce((a, b) => a + parseInt(b, 10), 0);
+            const reduced = reduceToSingle(sum);
+            const relPilot = relationship(userProfile.pilot, reduced);
+            const relCoPilot = relationship(userProfile.coPilot, reduced);
+            const verdict = (relPilot === 'enemy' || relCoPilot === 'enemy') ? 'fighting'
+                : (relPilot === 'friend' && relCoPilot === 'friend') ? 'lucky'
+                    : 'neutral';
+
+            closeModal('numberModal');
+
+            const toolContext = {
+                tool: 'number-analyzer',
+                numberType: type,
+                rawValue: raw,
+                usedDigits,
+                reducedEnergy: reduced,
+                relationshipWithPilot: relPilot,
+                relationshipWithCoPilot: relCoPilot,
+                verdict,
+            };
+
+            const friendly = `${type === 'mobile' ? 'mobile number' : type === 'vehicle' ? 'vehicle number' : type === 'house' ? 'house/flat number' : type === 'hotel' ? 'hotel room number' : 'account number'}`;
+            const userMsg = `Check this ${friendly}: ${raw}. Tell me whether it's lucky, neutral, or fighting my energy, what it brings into my life, and — if it's not great — suggest what kind of digit-sum to look for in a replacement. No calculations or tables — give me a plain-language analysis and 2-4 action items.`;
+            sendMessage(userMsg, toolContext);
+        }
+
+        function handleDate(e) {
+            e.preventDefault();
+            const event = document.getElementById('eventType').value;
+            const fromStr = document.getElementById('windowFrom').value;
+            const toStr = document.getElementById('windowTo').value;
+            if (!fromStr || !toStr) return;
+            const from = new Date(fromStr);
+            const to = new Date(toStr);
+            if (to < from) { alert('"To" date must be after "From" date.'); return; }
+
+            const { lucky } = luckyAndBad(userProfile.pilot, userProfile.coPilot);
+            const candidates = [];
+            const cur = new Date(from);
+            const cap = 60; // max days searched
+            let scanned = 0;
+            while (cur <= to && scanned < cap) {
+                const day = cur.getDate();
+                const month = cur.getMonth() + 1;
+                const year = cur.getFullYear();
+                const dayDigitSum = reduceToSingle(String(day).split('').reduce((a, b) => a + parseInt(b, 10), 0));
+                const py = calcPersonalYear(userProfile.day, userProfile.month, cur);
+                const pm = calcPersonalMonth(py, month);
+                const pd = calcPersonalDay(py, pm, day);
+                // Auspiciousness signal: day-sum is in lucky list AND day is not 4/8 dates AND not Saturday for sensitive events
+                const isFourEight = [4, 13, 22, 31, 8, 17, 26].includes(day);
+                const isSat = cur.getDay() === 6;
+                const score =
+                    (lucky.includes(dayDigitSum) ? 2 : 0) +
+                    (lucky.includes(pd) ? 2 : 0) +
+                    (isFourEight ? -2 : 0) +
+                    ((['marriage', 'business launch', 'house move', 'signing'].includes(event) && isSat) ? -1 : 0);
+                if (score > 0) {
+                    candidates.push({
+                        date: `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`,
+                        weekday: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][cur.getDay()],
+                        dayEnergy: dayDigitSum,
+                        personalDay: pd,
+                        score,
+                    });
+                }
+                cur.setDate(cur.getDate() + 1);
+                scanned++;
+            }
+            candidates.sort((a, b) => b.score - a.score);
+            const top = candidates.slice(0, 5);
+
+            closeModal('dateModal');
+
+            const toolContext = {
+                tool: 'auspicious-date',
+                event,
+                window: `${fromStr} to ${toStr}`,
+                userLuckyNumbers: lucky.join(', '),
+                topCandidates: top.length ? top.map(c => `${c.date} (${c.weekday}, dayEnergy=${c.dayEnergy}, personalDay=${c.personalDay})`).join(' | ') : 'none in window',
+            };
+
+            const userMsg = `I'm planning a ${event} between ${fromStr} and ${toStr}. Suggest the 2-3 best dates from the candidates and explain in plain language why each one supports the event. Then give me 3-4 action items for the day itself. No tables or raw numbers in the response.`;
+            sendMessage(userMsg, toolContext);
+        }
+
+        function handleName(e) {
+            e.preventDefault();
+            const kind = document.getElementById('nameKind').value;
+            const name = document.getElementById('nameValue').value.trim();
+            if (!name) return;
+
+            const total = nameSpellingSum(name);
+            const first = firstNameSum(name);
+            const totalRaw = total.total;
+            const firstRaw = first.total;
+            // Anti pairs: 18, 36, 48 (per PDF)
+            const isAntiPair = [18, 36, 48].includes(firstRaw);
+            const myGrid = buildLoShuGrid(userProfile.day, userProfile.month, userProfile.year, userProfile.pilot, userProfile.coPilot, userProfile.fa);
+            const { missing } = presentAndMissing(myGrid);
+            const targets = nameTargetSuggestion(userProfile.pilot, userProfile.coPilot, missing);
+
+            const totalRel = {
+                withPilot: relationship(userProfile.pilot, total.reduced),
+                withCoPilot: relationship(userProfile.coPilot, total.reduced),
+            };
+            const verdict =
+                (total.reduced === 4 || total.reduced === 8 || first.reduced === 4 || first.reduced === 8 || isAntiPair)
+                    ? 'risky — name lands on a struggle/anti-pair number'
+                    : (totalRel.withPilot === 'enemy' || totalRel.withCoPilot === 'enemy')
+                        ? 'fights your driving energy'
+                        : (totalRel.withPilot === 'friend' && totalRel.withCoPilot === 'friend')
+                            ? 'supports your driving energy'
+                            : 'neutral — passable, can be improved';
+
+            closeModal('nameModal');
+
+            const toolContext = {
+                tool: 'name-spelling',
+                kind,
+                nameToCheck: name,
+                firstNameReduced: first.reduced,
+                firstNameRaw: firstRaw,
+                fullNameReduced: total.reduced,
+                fullNameRaw: totalRaw,
+                isAntiPair,
+                relationshipFullNameWithPilot: totalRel.withPilot,
+                relationshipFullNameWithCoPilot: totalRel.withCoPilot,
+                recommendedTargets: targets.join(', ') || '5',
+                verdict,
+            };
+
+            const subject = kind === 'self' ? 'my own name' : kind === 'baby' ? 'a baby name' : kind === 'business' ? 'this business / brand name' : 'this name';
+            const userMsg = `Check ${subject}: ${name}. Tell me — in plain language — whether it supports or fights the energy, and if it can be improved, suggest 2-3 corrected spellings (small changes only — added or doubled letters, middle initials) along with where to use the corrected version (visiting card, email, social, name plate). No calculations or tables in the answer.`;
+            sendMessage(userMsg, toolContext);
+        }
+
         function appendMessage(role, content) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${role}`;
-
             const avatar = document.createElement('div');
             avatar.className = 'msg-avatar';
             avatar.textContent = role === 'assistant' ? '9' : (userProfile?.name?.[0] || 'U');
-
             const bubble = document.createElement('div');
             bubble.className = 'msg-bubble';
             bubble.innerHTML = renderMarkdown(content);
-
             msgDiv.appendChild(avatar);
             msgDiv.appendChild(bubble);
             chatArea.appendChild(msgDiv);
@@ -1275,136 +1884,99 @@
             chatArea.scrollTop = chatArea.scrollHeight;
         }
 
-        /* ═══════════════════════════════════════════
+        /* ───────────────────────────────────────────
            SIMPLE MARKDOWN RENDERER
-           ═══════════════════════════════════════════ */
+           ─────────────────────────────────────────── */
         function renderMarkdown(text) {
             if (!text) return '';
-
             let html = text
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
-
                 .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
                 .replace(/^### (.+)$/gm, '<h3>$1</h3>')
                 .replace(/^## (.+)$/gm, '<h3>$1</h3>')
                 .replace(/^# (.+)$/gm, '<h3>$1</h3>')
-
                 .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
                 .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.+?)\*/g, '<em>$1</em>')
                 .replace(/_(.+?)_/g, '<em>$1</em>')
-
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
-
                 .replace(/^---$/gm, '<hr>')
                 .replace(/^═+$/gm, '<hr>')
-
                 .replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>')
-
-                .replace(/^[\-\•] (.+)$/gm, '<li>$1</li>')
-                .replace(/^  [\-\•] (.+)$/gm, '<li style="margin-left:16px">$1</li>')
-
+                .replace(/^[\-•] (.+)$/gm, '<li>$1</li>')
+                .replace(/^  [\-•] (.+)$/gm, '<li style="margin-left:16px">$1</li>')
                 .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-
                 .replace(/\n\n/g, '</p><p>')
                 .replace(/\n/g, '<br>');
-
             html = '<p>' + html + '</p>';
-
             html = html.replace(/<p><\/p>/g, '');
             html = html.replace(/<p>(<h[34]>)/g, '$1');
             html = html.replace(/(<\/h[34]>)<\/p>/g, '$1');
             html = html.replace(/<p>(<hr>)<\/p>/g, '$1');
             html = html.replace(/<p>(<li>)/g, '<ul>$1');
             html = html.replace(/(<\/li>)<\/p>/g, '$1</ul>');
-
             html = html.replace(/(<\/ul>)\s*<ul>/g, '');
-
             return html;
         }
 
-        /* ═══════════════════════════════════════════
-           AMBIENT FLOATING BLOBS CANVAS
-           ═══════════════════════════════════════════ */
+        /* ───────────────────────────────────────────
+           AMBIENT CANVAS
+           ─────────────────────────────────────────── */
         function initAmbientCanvas() {
             const canvas = document.getElementById('cosmicCanvas');
             const ctx = canvas.getContext('2d');
             let blobs = [];
             let w, h;
-
-            function resize() {
-                w = canvas.width = window.innerWidth;
-                h = canvas.height = window.innerHeight;
-            }
-
+            function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
             function createBlobs() {
                 blobs = [];
                 const colors = [
-                    { r: 255, g: 200, b: 160, a: 0.12 },  // warm peach
-                    { r: 242, g: 170, b: 130, a: 0.08 },  // soft coral
-                    { r: 200, g: 220, b: 255, a: 0.08 },  // sky blue
-                    { r: 180, g: 220, b: 190, a: 0.07 },  // sage green
-                    { r: 220, b: 200, g: 180, a: 0.06 },  // soft lavender
-                    { r: 255, g: 220, b: 180, a: 0.1 },   // warm gold
+                    { r: 255, g: 200, b: 160, a: 0.12 },
+                    { r: 242, g: 170, b: 130, a: 0.08 },
+                    { r: 200, g: 220, b: 255, a: 0.08 },
+                    { r: 180, g: 220, b: 190, a: 0.07 },
+                    { r: 220, g: 200, b: 180, a: 0.06 },
+                    { r: 255, g: 220, b: 180, a: 0.10 },
                 ];
                 const count = Math.min(6, Math.max(3, Math.floor(w / 300)));
                 for (let i = 0; i < count; i++) {
                     const c = colors[i % colors.length];
                     blobs.push({
-                        x: Math.random() * w,
-                        y: Math.random() * h,
-                        radius: Math.random() * 200 + 150,
-                        color: c,
-                        dx: (Math.random() - 0.5) * 0.3,
-                        dy: (Math.random() - 0.5) * 0.3,
-                        phase: Math.random() * Math.PI * 2,
-                        phaseSpeed: Math.random() * 0.003 + 0.001,
+                        x: Math.random() * w, y: Math.random() * h,
+                        radius: Math.random() * 200 + 150, color: c,
+                        dx: (Math.random() - 0.5) * 0.3, dy: (Math.random() - 0.5) * 0.3,
+                        phase: Math.random() * Math.PI * 2, phaseSpeed: Math.random() * 0.003 + 0.001,
                     });
                 }
             }
-
             function draw() {
                 ctx.clearRect(0, 0, w, h);
-
-                for (let b of blobs) {
-                    b.x += b.dx;
-                    b.y += b.dy;
-                    b.phase += b.phaseSpeed;
-
-                    // Soft bounce
+                for (const b of blobs) {
+                    b.x += b.dx; b.y += b.dy; b.phase += b.phaseSpeed;
                     if (b.x < -b.radius) b.x = w + b.radius;
                     if (b.x > w + b.radius) b.x = -b.radius;
                     if (b.y < -b.radius) b.y = h + b.radius;
                     if (b.y > h + b.radius) b.y = -b.radius;
-
                     const pulseR = b.radius + Math.sin(b.phase) * 20;
-                    const { r, g, a } = b.color;
-                    const blue = b.color.b;
-
-                    const gradient = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, pulseR);
-                    gradient.addColorStop(0, `rgba(${r}, ${g}, ${blue}, ${a})`);
-                    gradient.addColorStop(1, `rgba(${r}, ${g}, ${blue}, 0)`);
-
+                    const { r, g, b: blue, a } = b.color;
+                    const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, pulseR);
+                    grad.addColorStop(0, `rgba(${r},${g},${blue},${a})`);
+                    grad.addColorStop(1, `rgba(${r},${g},${blue},0)`);
                     ctx.beginPath();
                     ctx.arc(b.x, b.y, pulseR, 0, Math.PI * 2);
-                    ctx.fillStyle = gradient;
+                    ctx.fillStyle = grad;
                     ctx.fill();
                 }
-
                 requestAnimationFrame(draw);
             }
-
             resize();
             createBlobs();
             draw();
             window.addEventListener('resize', () => { resize(); createBlobs(); });
         }
 
-        /* ═══════════════════════════════════════════
-           INIT
-           ═══════════════════════════════════════════ */
         init();
     </script>
 </body>

@@ -10,10 +10,10 @@ const db = admin.firestore();
 // CORS middleware
 const corsHandler = cors({ origin: true });
 
-// Initialize Cerebras client (OpenAI-compatible)
-const cerebras = new OpenAI({
-  baseURL: "https://api.cerebras.ai/v1",
-  apiKey: process.env.CEREBRAS_API_KEY || "",
+// Initialize Groq client (OpenAI-compatible)
+const groq = new OpenAI({
+  baseURL: "https://api.groq.com/openai/v1",
+  apiKey: process.env.GROQ_API_KEY || "",
 });
 
 /**
@@ -27,7 +27,7 @@ exports.numoChat = onRequest(
     region: "us-central1",
     memory: "256MiB",
     timeoutSeconds: 120,
-    secrets: ["CEREBRAS_API_KEY"],
+    secrets: ["GROQ_API_KEY"],
   },
   (req, res) => {
     corsHandler(req, res, async () => {
@@ -43,7 +43,15 @@ exports.numoChat = onRequest(
       }
 
       try {
-        const { message, sessionId, userDob, userName, userGender } = req.body;
+        const {
+          message,
+          sessionId,
+          userDob,
+          userName,
+          userGender,
+          userFacts,
+          toolContext,
+        } = req.body;
 
         if (!message || !sessionId) {
           res.status(400).json({ error: "message and sessionId are required" });
@@ -77,10 +85,48 @@ exports.numoChat = onRequest(
           history.push({ role: data.role, content: data.content });
         });
 
-        // Build context with user info
+        // Build user context: prefer the precomputed facts block (deterministic)
+        // over asking the model to recompute.
         let userContext = "";
-        if (userDob) {
+        if (userFacts && typeof userFacts === "object") {
+          userContext += "\n\n═══ CURRENT USER FACTS (trust these, do not recompute) ═══\n";
+          userContext += `Name: ${userName || "Friend"}\n`;
+          userContext += `First name: ${(userName || "Friend").split(" ")[0]}\n`;
+          userContext += `Date of Birth: ${userDob || "unknown"}\n`;
+          userContext += `Gender: ${userGender || "unspecified"}\n`;
+          userContext += `Pilot (driving energy): ${userFacts.pilot}\n`;
+          userContext += `Co-Pilot (life path): ${userFacts.coPilot}\n`;
+          userContext += `Flight Attendant (Kua): ${userFacts.fa}\n`;
+          userContext += `Birth-day category: ${userFacts.dayCategory || "—"}\n`;
+          userContext += `Numbers present in chart: ${userFacts.presentNumbers || "—"}\n`;
+          userContext += `Missing numbers: ${userFacts.missingNumbers || "none"}\n`;
+          userContext += `Number repetitions: ${userFacts.repetitions || "—"}\n`;
+          userContext += `Active planes (complete): ${userFacts.completePlanes || "none"}\n`;
+          userContext += `Partial planes (66%): ${userFacts.partialPlanes || "none"}\n`;
+          userContext += `Raj Yogas active: ${userFacts.rajYogas || "none"}\n`;
+          userContext += `Karmic flag: ${userFacts.karmic || "none"}\n`;
+          userContext += `Master number flag: ${userFacts.master || "none"}\n`;
+          userContext += `Lucky numbers: ${userFacts.luckyNumbers || "—"}\n`;
+          userContext += `Bad numbers: ${userFacts.badNumbers || "—"}\n`;
+          userContext += `P-CP combination read: ${userFacts.pcpRead || "—"}\n`;
+          userContext += `Personal Year (current): ${userFacts.personalYear}\n`;
+          userContext += `Personal Month (current): ${userFacts.personalMonth || "—"}\n`;
+          userContext += `Personal Day (today): ${userFacts.personalDay || "—"}\n`;
+          if (userFacts.notes) userContext += `Notes: ${userFacts.notes}\n`;
+          userContext += "═══════════════════════════════════════════════\n";
+        } else if (userDob) {
+          // Legacy fallback if a client doesn't send precomputed facts
           userContext = `\n\nCURRENT USER INFO:\nName: ${userName || "Not provided"}\nDate of Birth: ${userDob}\nGender: ${userGender || "Not specified"}\n\nCalculate their Pilot, Co-Pilot, and Flight Attendant numbers from this DOB and use them in all readings.`;
+        }
+
+        if (toolContext && typeof toolContext === "object") {
+          userContext += "\n\n═══ TOOL CONTEXT FOR THIS QUESTION ═══\n";
+          userContext += `Tool: ${toolContext.tool || "—"}\n`;
+          for (const [k, v] of Object.entries(toolContext)) {
+            if (k === "tool") continue;
+            userContext += `${k}: ${typeof v === "object" ? JSON.stringify(v) : v}\n`;
+          }
+          userContext += "═══════════════════════════════════════\n";
         }
 
         // Build messages array for Cerebras
@@ -95,9 +141,9 @@ exports.numoChat = onRequest(
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
 
-        // Call Cerebras API with streaming
-        const stream = await cerebras.chat.completions.create({
-          model: "llama3.1-8b",
+        // Call Groq API with streaming
+        const stream = await groq.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
           messages: messages,
           temperature: 0.7,
           max_tokens: 2048,
