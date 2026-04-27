@@ -10,10 +10,10 @@ const db = admin.firestore();
 // CORS middleware
 const corsHandler = cors({ origin: true });
 
-// Initialize Groq client (OpenAI-compatible)
-const groq = new OpenAI({
-  baseURL: "https://api.groq.com/openai/v1",
-  apiKey: process.env.GROQ_API_KEY || "",
+// Initialize Cerebras client (OpenAI-compatible) — large model, high TPM
+const cerebras = new OpenAI({
+  baseURL: "https://api.cerebras.ai/v1",
+  apiKey: process.env.CEREBRAS_API_KEY || "",
 });
 
 /**
@@ -27,7 +27,7 @@ exports.numoChat = onRequest(
     region: "us-central1",
     memory: "256MiB",
     timeoutSeconds: 120,
-    secrets: ["GROQ_API_KEY"],
+    secrets: ["CEREBRAS_API_KEY"],
   },
   (req, res) => {
     corsHandler(req, res, async () => {
@@ -141,9 +141,9 @@ exports.numoChat = onRequest(
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
 
-        // Call Groq API with streaming
-        const stream = await groq.chat.completions.create({
-          model: "llama-3.3-70b-versatile",
+        // Call Cerebras API with streaming (large model, high TPM)
+        const stream = await cerebras.chat.completions.create({
+          model: "llama-3.3-70b",
           messages: messages,
           temperature: 0.7,
           max_tokens: 2048,
