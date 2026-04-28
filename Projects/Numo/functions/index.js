@@ -141,9 +141,9 @@ exports.numoChat = onRequest(
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
 
-        // Call Cerebras API with streaming (large model, high TPM)
+        // Call Cerebras API with streaming (Qwen 235B — large model, high TPM)
         const stream = await cerebras.chat.completions.create({
-          model: "llama-3.3-70b",
+          model: "qwen-3-235b-a22b-instruct-2507",
           messages: messages,
           temperature: 0.7,
           max_tokens: 2048,
