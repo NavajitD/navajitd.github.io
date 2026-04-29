@@ -270,19 +270,19 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-auth.getRedirectResult().then(result => {
-    if (result && result.user && result.user.email !== ALLOWED_EMAIL) {
-        auth.signOut();
-        showAlert(document.getElementById('loginError'), 'Access restricted to ' + ALLOWED_EMAIL);
+document.getElementById('loginBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    document.getElementById('loginBtnText').textContent = 'Signing in…';
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ login_hint: ALLOWED_EMAIL });
+        await auth.signInWithPopup(provider);
+    } catch(e) {
+        showAlert(document.getElementById('loginError'), e.message);
+        btn.disabled = false;
+        document.getElementById('loginBtnText').textContent = 'Sign in with Google';
     }
-}).catch(e => {
-    showAlert(document.getElementById('loginError'), e.message);
-});
-
-document.getElementById('loginBtn').addEventListener('click', () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ login_hint: ALLOWED_EMAIL });
-    auth.signInWithRedirect(provider);
 });
 document.getElementById('signOutBtn').addEventListener('click', () => auth.signOut());
 
