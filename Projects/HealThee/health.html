@@ -4046,10 +4046,21 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         await _saveProfileField('customSupplements', list);
         render(); toast('Supplement added');
       };
-      window.removeSupplement = async function (id) {
+      window.removeSupplement = async function (id, fromProfile) {
         const list = (userProfile.customSupplements || []).filter(s => s.id !== id);
         await _saveProfileField('customSupplements', list);
         render();
+        if (fromProfile) openProfileModal();
+      };
+      window.addSupplementFromProfile = async function () {
+        const input = document.getElementById('profSuppName');
+        const name = input?.value?.trim();
+        if (!name) { toast('Enter supplement name', 'warn'); return; }
+        const list = Array.isArray(userProfile.customSupplements) ? [...userProfile.customSupplements] : [];
+        list.push({ id: 'supp_' + Date.now(), name, freq: 'daily', icon: 'pill', micros: {} });
+        await _saveProfileField('customSupplements', list);
+        render(); toast('Supplement added');
+        openProfileModal();
       };
 
       let HEIGHT_CM_DYNAMIC = HEIGHT_CM;
@@ -4397,7 +4408,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           }
           if (recentFoods.length === 0) { container.style.display = 'none'; return; }
           _recentFoodsCache = recentFoods.slice(0, 10);
-          container.innerHTML = `<div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;font-weight:600">Recent (past 2 days)</div>` +
+          container.innerHTML = `<details open><summary style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;gap:.3rem"><span>Recent</span><span style="margin-left:auto;font-size:.6rem;opacity:.6">${_recentFoodsCache.length}</span></summary><div style="max-height:200px;overflow-y:auto">` +
             _recentFoodsCache.map((f, idx) => {
               return `<div class="food-item" style="cursor:pointer;margin-bottom:.25rem" onclick="readdRecentFood(${idx})">
                 <div class="food-icon">${licon(MEAL_ICONS[f.meal] || 'utensils', 13)}</div>
@@ -4405,7 +4416,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                   <div class="food-meta">${esc(f.meal)} · ${Math.round(num0(f.cal))} kcal · P:${Math.round(num0(f.protein))}g</div></div>
                 <div style="font-size:.65rem;color:var(--accent);font-weight:600">+ add</div>
               </div>`;
-            }).join('');
+            }).join('') + `</div></details>`;
           container.style.display = 'block';
           refreshIcons();
         } catch (_) { container.style.display = 'none'; }
@@ -4866,6 +4877,22 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                   <div class="mode-knob" style="transform:${p.mode === 'gamified' ? 'translateX(calc(100% + 2px))' : ''}"></div>
                   <span class="mode-label-right" style="opacity:${p.mode === 'gamified' ? '1' : '0.45'}">${licon('sword', 13)} Gamified</span>
                 </div>
+              </div>
+            </div>
+
+            <div class="profile-section">
+              <div class="profile-section-title">${licon('pill')} Supplements</div>
+              ${(() => {
+                const suppItems = getUserSupplements();
+                if (!suppItems.length) return `<div style="font-size:.75rem;color:var(--muted);padding:.3rem 0">No supplements yet</div>`;
+                return suppItems.map(s => `<div style="display:flex;align-items:center;gap:.4rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
+                  <span style="font-size:.78rem;flex:1">${esc(s.name)}</span>
+                  <button class="log-del" onclick="removeSupplement('${s.id}', true)">✕</button>
+                </div>`).join('');
+              })()}
+              <div class="form-row form-row-btn" style="margin-top:.5rem">
+                <div class="form-field"><input type="text" id="profSuppName" placeholder="New supplement name" style="width:100%"></div>
+                <button class="btn-primary" style="height:2.4rem;white-space:nowrap" onclick="addSupplementFromProfile()">Add</button>
               </div>
             </div>
 
