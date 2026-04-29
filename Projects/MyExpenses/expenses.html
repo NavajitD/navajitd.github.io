@@ -3697,9 +3697,13 @@
 
         function buildParseSystemInstruction() {
             const categories = (userProfile?.categories || DEFAULT_CATEGORIES).join(', ');
-            const payments = (userProfile?.payments || DEFAULT_PAYMENTS).join(', ');
+            const payments = (userProfile?.paymentMethods || userProfile?.payments || DEFAULT_PAYMENTS).join(', ');
+            const ccNames = userProfile?.creditCards || [];
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const ccBlock = ccNames.length
+                ? `\n\nCREDIT CARD EXTRACTION (CRITICAL):\nThe user has these credit cards: ${ccNames.join(', ')}.\n- If the input mentions a specific card by name (exact, partial, or fuzzy — e.g. "neu", "neucard", "HDFC neu", "sapphiro", "saph", "on the sapphiro"), set paymentMethod to "CC - <CardName>" using the EXACT casing from the list above.\n- If the input mentions a credit card / CC / "card" generally without naming one, set paymentMethod to "Credit card" (the app will default to the last-used card).\n- Do NOT invent a card name that isn't in the list. If unsure, use "Credit card".`
+                : '';
             return `You are an expense parser for an Indian expense tracker. Extract expense details and return ONLY raw JSON — no markdown fences, no explanation, no extra text.
 
 OUTPUT FORMAT:
@@ -3707,7 +3711,7 @@ OUTPUT FORMAT:
 - Return a JSON array if the input describes TWO OR MORE expenses — even if they share the same payment method.
 
 Object schema (all fields required):
-{ "name": "<short description, max 40 chars>", "amount": <number in INR, no symbol>, "category": "<one of: ${categories}>", "date": "<YYYY-MM-DD, use ${todayStr} if not found>", "paymentMethod": "<one of: ${payments}, use closest match>" }
+{ "name": "<short description, max 40 chars>", "amount": <number in INR, no symbol>, "category": "<one of: ${categories}>", "date": "<YYYY-MM-DD, use ${todayStr} if not found>", "paymentMethod": "<one of: ${payments}, use closest match — OR \"CC - <CardName>\" when a specific credit card is named>" }${ccBlock}
 
 MULTI-EXPENSE DETECTION (CRITICAL):
 An input describes multiple expenses when it mentions more than one (amount, item) pair — even WITHOUT conjunctions. Any sequence of distinct amount+item pairs means multiple expenses. Create one array entry per pair.
@@ -3725,8 +3729,14 @@ Input: "आज 300 सब्ज़ी 150 ऑटो"
 Output: [{"name":"Vegetables","amount":300,"category":"Groceries","date":"${todayStr}","paymentMethod":"UPI"},{"name":"Auto","amount":150,"category":"Auto/Cab","date":"${todayStr}","paymentMethod":"Cash"}]
 
 Input: "আজ ২৫০ টাকার ওষুধ কিনেছি কার্ডে"
-Output: {"name":"Medicine","amount":250,"category":"Medical expenses","date":"${todayStr}","paymentMethod":"Credit Card"}
-
+Output: {"name":"Medicine","amount":250,"category":"Medical expenses","date":"${todayStr}","paymentMethod":"Credit card"}
+${ccNames.length ? `
+Input: "1200 dinner on ${ccNames[0]}"
+Output: {"name":"Dinner","amount":1200,"category":"Eating out","date":"${todayStr}","paymentMethod":"CC - ${ccNames[0]}"}
+${ccNames.length > 1 ? `
+Input: "paid 800 groceries via ${ccNames[1].toLowerCase()}"
+Output: {"name":"Groceries","amount":800,"category":"Groceries","date":"${todayStr}","paymentMethod":"CC - ${ccNames[1]}"}
+` : ''}` : ''}
 OTHER RULES:
 - "log half as X and half as Y" → split the amount into two entries.
 - Resolve arithmetic (e.g. "half of 250" = 125) before filling the amount field.
@@ -3842,13 +3852,45 @@ OTHER RULES:
                 const opt = Array.from(sel.options).find(o => o.value.toLowerCase() === parsed.category.toLowerCase());
                 if (opt) sel.value = opt.value;
             }
-            // Payment method
+            // Payment method — handle "CC - <CardName>" by routing to Credit card + selecting the matching radio
             if (parsed.paymentMethod) {
+                const raw = String(parsed.paymentMethod).trim();
                 const sel = document.getElementById('expPayment');
-                const opt = Array.from(sel.options).find(o => o.value.toLowerCase() === parsed.paymentMethod.toLowerCase());
-                if (opt) { sel.value = opt.value; updateBillingInfo(); }
+                const isCC = /^cc\s*-\s*/i.test(raw);
+                if (isCC) {
+                    const ccOpt = Array.from(sel.options).find(o => o.value.toLowerCase() === 'credit card');
+                    if (ccOpt) sel.value = ccOpt.value;
+                    const cardName = raw.replace(/^cc\s*-\s*/i, '').trim();
+                    selectCardRadio(cardName);
+                } else {
+                    const opt = Array.from(sel.options).find(o => o.value.toLowerCase() === raw.toLowerCase());
+                    if (opt) sel.value = opt.value;
+                }
             }
             updateBillingInfo();
+        }
+
+        // Select the credit-card radio matching `cardName` (case-insensitive, fuzzy contains).
+        // Falls back to last-used card (already set by resetForm) if no match — no-op in that case.
+        const CC_GENERIC_WORDS = new Set(['card', 'credit', 'cc', 'creditcard']);
+        function selectCardRadio(cardName) {
+            if (!cardName) return;
+            const radios = document.querySelectorAll('input[name="cardType"]');
+            if (!radios.length) return;
+            const target = cardName.toLowerCase().trim();
+            if (!target) return;
+            let match = Array.from(radios).find(r => r.value.toLowerCase() === target);
+            // Skip fuzzy matching for generic words ("card", "credit") that match too aggressively
+            if (!match && !CC_GENERIC_WORDS.has(target) && target.length >= 3) {
+                match = Array.from(radios).find(r => {
+                    const v = r.value.toLowerCase();
+                    return v.includes(target) || (target.length > v.length && target.includes(v));
+                });
+            }
+            if (match) {
+                match.checked = true;
+                saveLastSelectedCard(match.value);
+            }
         }
 
         /* ── Direct-add (multi-expense from parsed array) ── */
