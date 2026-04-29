@@ -16,6 +16,169 @@ const cerebras = new OpenAI({
   apiKey: process.env.CEREBRAS_API_KEY || "",
 });
 
+// ============ MEMORY CONFIG ============
+const PRIMARY_MODEL = "qwen-3-235b-a22b-instruct-2507";
+const FALLBACK_MODEL = "llama3.1-8b";
+const RECENT_MESSAGES_KEPT = 6;            // verbatim history kept in prompt
+const SUMMARY_TRIGGER_THRESHOLD = 6;       // re-summarize once this many new old-msgs accumulate
+const TOP_K_FACTS = 3;                      // semantic facts to inject per turn
+const FACT_RELEVANCE_FLOOR = 0.55;          // cosine sim cutoff for BGE-small
+const EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5";  // 384-dim, free on HF Inference
+
+// ============ MEMORY HELPERS ============
+
+async function embedText(text) {
+  const hfToken = process.env.HF_TOKEN || "";
+  if (!hfToken || !text) return null;
+  try {
+    // HF moved to the inference router in 2025; legacy /models/* path is gone.
+    const res = await fetch(
+      `https://router.huggingface.co/hf-inference/models/${EMBEDDING_MODEL}/pipeline/feature-extraction`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${hfToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ inputs: text.slice(0, 2000) }),
+      }
+    );
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.warn(`[memory] HF embed ${res.status}: ${body.slice(0, 200)}`);
+      return null;
+    }
+    const data = await res.json();
+    return Array.isArray(data) ? data : null;
+  } catch (e) {
+    console.warn("[memory] embed failed:", e.message);
+    return null;
+  }
+}
+
+// Slim prompt used when we fall back to llama3.1-8b (8K context). The full SYSTEM_PROMPT
+// would overflow, so we keep only persona + format rules and lean entirely on the
+// userFacts block (which the model is already told to trust) for chart specifics.
+const SLIM_SYSTEM_PROMPT = `You are Numo, a numerology assistant practicing the Sankar method (a blend of Vedic, Chinese, Chaldean, and Cheiro traditions).
+
+The user's chart numbers are provided below in a CURRENT USER FACTS block — trust them exactly and do NOT recompute. Pilot = driving energy (from birth day), Co-Pilot = life path (full DOB digit-sum), Flight Attendant = Kua number (year-based, gender-modified).
+
+Style rules (strict):
+- Warm, plain English — no tables, no arithmetic, no ASCII grids, no star ratings.
+- Open with 1-2 sentences in plain language naming what's going on.
+- Add one short analysis paragraph grounded in the user's actual numbers.
+- End with "### Action items" — 2-4 bold bullets, each with a one-sentence "why".
+- Ground every answer in the user's chart. Be specific, not generic.`;
+
+function cosineSim(a, b) {
+  if (!a || !b || a.length !== b.length) return 0;
+  let dot = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    na += a[i] * a[i];
+    nb += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-8);
+}
+
+async function retrieveRelevantFacts(sessionRef, queryText, k) {
+  const queryEmbedding = await embedText(queryText);
+  if (!queryEmbedding) return [];
+  const factsSnap = await sessionRef.collection("facts").get();
+  if (factsSnap.empty) return [];
+  const scored = [];
+  factsSnap.docs.forEach((doc) => {
+    const f = doc.data();
+    if (!f.embedding || !Array.isArray(f.embedding)) return;
+    scored.push({ text: f.text, score: cosineSim(queryEmbedding, f.embedding) });
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, k).filter((s) => s.score > FACT_RELEVANCE_FLOOR);
+}
+
+async function extractAndSaveFacts(sessionRef, userMsg, assistantMsg) {
+  try {
+    const prompt = `From the exchange below, extract 0-3 short durable facts about the USER (their goals, life situation, relationships, recurring concerns, stated preferences). Each fact must be a single self-contained sentence under 25 words. Skip transient questions, calculations, generic advice. Return ONLY a JSON array of strings. Empty array [] if nothing durable.
+
+USER: ${userMsg}
+NUMO: ${(assistantMsg || "").slice(0, 1500)}
+
+JSON:`;
+    const completion = await cerebras.chat.completions.create({
+      model: FALLBACK_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0,
+      max_tokens: 250,
+    });
+    const content = completion.choices[0]?.message?.content || "[]";
+    const match = content.match(/\[[\s\S]*\]/);
+    if (!match) return;
+    let facts;
+    try { facts = JSON.parse(match[0]); } catch { return; }
+    if (!Array.isArray(facts) || facts.length === 0) return;
+
+    for (const factText of facts.slice(0, 3)) {
+      if (typeof factText !== "string" || factText.trim().length < 8) continue;
+      const embedding = await embedText(factText);
+      if (!embedding) continue;
+      await sessionRef.collection("facts").add({
+        text: factText.trim(),
+        embedding,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  } catch (e) {
+    console.warn("[memory] fact extraction failed:", e.message);
+  }
+}
+
+async function maybeUpdateSummary(sessionRef, sessionData) {
+  try {
+    const allSnap = await sessionRef
+      .collection("messages")
+      .orderBy("timestamp", "asc")
+      .get();
+    const total = allSnap.size;
+    if (total <= RECENT_MESSAGES_KEPT + 1) return;
+
+    const summarizedCount = sessionData.summarizedCount || 0;
+    const olderCutoff = total - RECENT_MESSAGES_KEPT;
+    if (olderCutoff - summarizedCount < SUMMARY_TRIGGER_THRESHOLD) return;
+
+    // Only feed the NEW older messages into the summarizer; previous summary carries the rest.
+    const newOlderDocs = allSnap.docs.slice(summarizedCount, olderCutoff);
+    const transcript = newOlderDocs.map((d) => {
+      const m = d.data();
+      return `${m.role === "user" ? "User" : "Numo"}: ${(m.content || "").slice(0, 600)}`;
+    }).join("\n");
+
+    const previousSummary = sessionData.summary || "";
+    const prompt = `You are maintaining a memory summary of an ongoing numerology consultation. Produce a tight ≤200-word summary in plain prose (no bullets) capturing: the user's situation, recurring themes, key advice already given, and any decisions/commitments. Merge the previous summary with the new transcript — do not duplicate facts.
+
+${previousSummary ? `PREVIOUS SUMMARY:\n${previousSummary}\n\n` : ""}NEW TRANSCRIPT:
+${transcript}
+
+UPDATED SUMMARY:`;
+
+    const completion = await cerebras.chat.completions.create({
+      model: FALLBACK_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+      max_tokens: 400,
+    });
+    const summary = completion.choices[0]?.message?.content?.trim();
+    if (!summary) return;
+
+    await sessionRef.update({
+      summary,
+      summarizedCount: olderCutoff,
+      summaryUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    console.warn("[memory] summary update failed:", e.message);
+  }
+}
+
 /**
  * Main chat endpoint
  * POST /numoChat
@@ -27,7 +190,7 @@ exports.numoChat = onRequest(
     region: "us-central1",
     memory: "256MiB",
     timeoutSeconds: 120,
-    secrets: ["CEREBRAS_API_KEY"],
+    secrets: ["CEREBRAS_API_KEY", "HF_TOKEN"],
   },
   (req, res) => {
     corsHandler(req, res, async () => {
@@ -41,6 +204,8 @@ exports.numoChat = onRequest(
         res.status(405).json({ error: "Method not allowed" });
         return;
       }
+
+      const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
       try {
         const {
@@ -61,9 +226,9 @@ exports.numoChat = onRequest(
         // Get or create session
         const sessionRef = db.collection("numo_sessions").doc(sessionId);
         const sessionDoc = await sessionRef.get();
+        const sessionData = sessionDoc.exists ? sessionDoc.data() : {};
 
         if (!sessionDoc.exists && userDob) {
-          // Create new session with user profile
           await sessionRef.set({
             userName: userName || "Friend",
             userDob: userDob,
@@ -72,11 +237,11 @@ exports.numoChat = onRequest(
           });
         }
 
-        // Load last 10 messages for context
+        // Load recent messages (verbatim window)
         const messagesSnap = await sessionRef
           .collection("messages")
           .orderBy("timestamp", "desc")
-          .limit(10)
+          .limit(RECENT_MESSAGES_KEPT)
           .get();
 
         const history = [];
@@ -84,6 +249,24 @@ exports.numoChat = onRequest(
           const data = doc.data();
           history.push({ role: data.role, content: data.content });
         });
+
+        // Retrieve relevant facts in parallel; cap retrieval at 1.5s so it never stalls the response.
+        const facts = await Promise.race([
+          retrieveRelevantFacts(sessionRef, message, TOP_K_FACTS),
+          new Promise((resolve) => setTimeout(() => resolve([]), 1500)),
+        ]);
+
+        // Build memory context (summary + relevant facts) — placed BEFORE userContext so the
+        // model sees long-term memory first, current snapshot second.
+        let memoryContext = "";
+        if (sessionData.summary) {
+          memoryContext += `\n\n═══ EARLIER CONVERSATION SUMMARY ═══\n${sessionData.summary}\n═══════════════════════════════════════════════\n`;
+        }
+        if (facts.length > 0) {
+          memoryContext += `\n\n═══ RELEVANT REMEMBERED FACTS ═══\n`;
+          facts.forEach((f) => { memoryContext += `- ${f.text}\n`; });
+          memoryContext += `═══════════════════════════════════════════════\n`;
+        }
 
         // Build user context: prefer the precomputed facts block (deterministic)
         // over asking the model to recompute.
@@ -131,7 +314,7 @@ exports.numoChat = onRequest(
 
         // Build messages array for Cerebras
         const messages = [
-          { role: "system", content: SYSTEM_PROMPT + userContext },
+          { role: "system", content: SYSTEM_PROMPT + memoryContext + userContext },
           ...history,
           { role: "user", content: message },
         ];
@@ -141,61 +324,105 @@ exports.numoChat = onRequest(
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
 
-        // Call Cerebras API with streaming (Qwen 235B — large model, high TPM)
-        const stream = await cerebras.chat.completions.create({
-          model: "qwen-3-235b-a22b-instruct-2507",
-          messages: messages,
-          temperature: 0.7,
-          max_tokens: 2048,
-          stream: true,
-        });
+        // Try primary (Qwen 235B); fall back to llama3.1-8b on rate-limit / 5xx so the user
+        // gets *some* answer instead of a 500.
+        let stream;
+        let modelUsed = PRIMARY_MODEL;
+        try {
+          stream = await cerebras.chat.completions.create({
+            model: PRIMARY_MODEL,
+            messages,
+            temperature: 0.7,
+            max_tokens: 2048,
+            stream: true,
+          });
+        } catch (primaryErr) {
+          const status = primaryErr.status;
+          console.warn(`[${requestId}] primary model ${PRIMARY_MODEL} failed (status=${status} type=${primaryErr.type || "?"}): ${primaryErr.message}`);
+          if (status === 429 || (status >= 500 && status < 600)) {
+            modelUsed = FALLBACK_MODEL;
+            // Rebuild messages with slim prompt — full SYSTEM_PROMPT overflows llama3.1-8b's 8K window.
+            const slimMessages = [
+              { role: "system", content: SLIM_SYSTEM_PROMPT + memoryContext + userContext },
+              ...history,
+              { role: "user", content: message },
+            ];
+            stream = await cerebras.chat.completions.create({
+              model: FALLBACK_MODEL,
+              messages: slimMessages,
+              temperature: 0.7,
+              max_tokens: 1500,
+              stream: true,
+            });
+            console.info(`[${requestId}] fell back to ${FALLBACK_MODEL} with slim prompt`);
+          } else {
+            throw primaryErr;
+          }
+        }
 
         let fullResponse = "";
-
         for await (const chunk of stream) {
           const content = chunk.choices[0]?.delta?.content || "";
           if (content) {
             fullResponse += content;
-            // Send SSE event
             res.write(`data: ${JSON.stringify({ content })}\n\n`);
           }
         }
 
-        // Send done event
-        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        res.write(`data: ${JSON.stringify({ done: true, model: modelUsed })}\n\n`);
         res.end();
 
-        // Save messages to Firestore (fire and forget)
-        const batch = db.batch();
-        const userMsgRef = sessionRef.collection("messages").doc();
-        batch.set(userMsgRef, {
-          role: "user",
-          content: message,
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        // ===== Post-response memory work (run after end() so user perceives no extra latency) =====
+        try {
+          // 1. Persist this turn
+          const batch = db.batch();
+          const userMsgRef = sessionRef.collection("messages").doc();
+          batch.set(userMsgRef, {
+            role: "user",
+            content: message,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          const assistantMsgRef = sessionRef.collection("messages").doc();
+          batch.set(assistantMsgRef, {
+            role: "assistant",
+            content: fullResponse,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          await batch.commit();
 
-        const assistantMsgRef = sessionRef.collection("messages").doc();
-        batch.set(assistantMsgRef, {
-          role: "assistant",
-          content: fullResponse,
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        await batch.commit();
+          // 2. Async: extract facts + maybe-roll summary, in parallel.
+          //    Settled-not-thrown so one failure doesn't kill the other.
+          await Promise.allSettled([
+            extractAndSaveFacts(sessionRef, message, fullResponse),
+            maybeUpdateSummary(sessionRef, sessionData),
+          ]);
+        } catch (memErr) {
+          console.warn(`[${requestId}] post-response memory write failed:`, memErr.message);
+        }
       } catch (error) {
-        console.error("Numo chat error:", error);
+        // Structured error log — easier to grep, includes status + type + request id
+        const errDetails = {
+          requestId,
+          message: error.message,
+          status: error.status,
+          code: error.code,
+          type: error.type,
+          stack: (error.stack || "").split("\n").slice(0, 5).join(" | "),
+        };
+        console.error("[numoChat] error:", JSON.stringify(errDetails));
 
-        // If headers haven't been sent yet, send error as JSON
         if (!res.headersSent) {
+          const userMessage = error.status === 429
+            ? "Numo is busy right now. Please try again in a moment."
+            : "Something went wrong. Please try again.";
           res.status(500).json({
-            error: "Something went wrong. Please try again.",
-            details:
-              process.env.NODE_ENV === "development" ? error.message : undefined,
+            error: userMessage,
+            requestId,
+            details: process.env.NODE_ENV === "development" ? error.message : undefined,
           });
         } else {
-          // If streaming was in progress, send error as SSE
           res.write(
-            `data: ${JSON.stringify({ error: "Stream interrupted. Please try again." })}\n\n`
+            `data: ${JSON.stringify({ error: "Stream interrupted. Please try again.", requestId })}\n\n`
           );
           res.end();
         }
