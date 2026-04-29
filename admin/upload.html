@@ -8,8 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
     <style>
         :root {
             --text: #0a1f00; --bg: #fff; --accent: #2563eb; --muted: #6b7280;
@@ -251,7 +249,44 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
+let storage = null;
+
+function loadScript(src) {
+    return new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = src; s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+    });
+}
+async function ensureStorage() {
+    if (storage) return;
+    await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js');
+    storage = firebase.storage();
+}
+async function ensureMammoth() {
+    if (window.mammoth) return;
+    await loadScript('https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js');
+}
+
+async function forceDownload(url, filename) {
+    const btn = event.currentTarget;
+    const orig = btn.textContent;
+    btn.textContent = 'Downloading…'; btn.disabled = true;
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const blob = await resp.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    } catch(e) {
+        alert('Download failed: ' + e.message);
+    } finally {
+        btn.textContent = orig; btn.disabled = false;
+    }
+}
 
 const ALLOWED_EMAIL = 'navjitdebnath5@gmail.com';
 
@@ -262,7 +297,7 @@ auth.onAuthStateChanged(user => {
         document.getElementById('adminApp').style.display = 'block';
         document.getElementById('userEmail').textContent = user.email;
         loadPosts();
-        loadResumes();
+        ensureStorage().then(loadResumes);
     } else {
         if (user) { auth.signOut(); showAlert(document.getElementById('loginError'), 'Access restricted to ' + ALLOWED_EMAIL); }
         document.getElementById('loginScreen').style.display = 'flex';
@@ -294,7 +329,7 @@ document.querySelectorAll('.main-tab').forEach(tab => {
         tab.classList.add('active');
         const id = 'main' + tab.dataset.main.charAt(0).toUpperCase() + tab.dataset.main.slice(1);
         document.getElementById(id).classList.add('active');
-        if (tab.dataset.main === 'jobhunt') loadResumes();
+        if (tab.dataset.main === 'jobhunt') ensureStorage().then(loadResumes);
     });
 });
 
@@ -338,6 +373,7 @@ async function handleFile(file) {
 
     try {
         const arrayBuffer = await file.arrayBuffer();
+        await ensureMammoth();
         const result = await mammoth.convertToHtml({ arrayBuffer });
         convertedHtml = result.value;
 
@@ -600,24 +636,24 @@ async function loadResumes() {
         const snap = await db.collection('resumes').orderBy('uploadedAt', 'desc').get();
 
         // Always show the GitHub Pages version as a pinned entry
-        const staticEntry = `
-            <div class="resume-item" style="border-color:#bbf7d0;background:#f0fdf4">
-                <div class="resume-item-info">
-                    <div class="resume-item-name">Navjit_Debnath_Resume.pdf</div>
-                    <div class="resume-item-meta">Hosted on GitHub Pages · Current</div>
-                </div>
-                <div class="resume-item-actions">
-                    <a href="/resume.pdf" download class="btn btn-success btn-sm">Download</a>
-                    <a href="/resume.pdf" target="_blank" class="btn btn-secondary btn-sm">View</a>
-                </div>
+        const staticDiv = document.createElement('div');
+        staticDiv.className = 'resume-item';
+        staticDiv.style.cssText = 'border-color:#bbf7d0;background:#f0fdf4';
+        staticDiv.innerHTML = `
+            <div class="resume-item-info">
+                <div class="resume-item-name">Navjit_Debnath_Resume.pdf</div>
+                <div class="resume-item-meta">Hosted on GitHub Pages · Current</div>
+            </div>
+            <div class="resume-item-actions">
+                <button class="btn btn-success btn-sm" id="staticDownloadBtn">Download</button>
+                <a href="/resume.pdf" target="_blank" class="btn btn-secondary btn-sm">View</a>
             </div>`;
+        listEl.innerHTML = '';
+        listEl.appendChild(staticDiv);
+        listEl.querySelector('#staticDownloadBtn').addEventListener('click', function() {
+            forceDownload('/resume.pdf', 'Navjit_Debnath_Resume.pdf');
+        });
 
-        if (snap.empty) {
-            listEl.innerHTML = staticEntry;
-            return;
-        }
-
-        listEl.innerHTML = staticEntry;
         snap.docs.forEach(doc => {
             const d = doc.data();
             const uploadedAt = d.uploadedAt?.toDate ? d.uploadedAt.toDate() : new Date();
@@ -630,11 +666,17 @@ async function loadResumes() {
                     <div class="resume-item-meta">${fmtD} · ${fmtBytes(d.size || 0)} · Firebase Storage</div>
                 </div>
                 <div class="resume-item-actions">
-                    <a href="${escHtml(d.url)}" download class="btn btn-success btn-sm">Download</a>
+                    <button class="btn btn-success btn-sm" data-url="${escHtml(d.url)}" data-name="${escHtml(d.name)}" data-action="dlresume">Download</button>
                     <a href="${escHtml(d.url)}" target="_blank" class="btn btn-secondary btn-sm">View</a>
                     <button class="btn btn-danger btn-sm" data-id="${doc.id}" data-url="${escHtml(d.url)}" data-action="delresume">Delete</button>
                 </div>`;
             listEl.appendChild(item);
+        });
+
+        listEl.querySelectorAll('[data-action="dlresume"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                forceDownload(btn.dataset.url, btn.dataset.name);
+            });
         });
 
         listEl.querySelectorAll('[data-action="delresume"]').forEach(btn => {
