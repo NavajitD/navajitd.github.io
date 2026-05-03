@@ -30,14 +30,7 @@
         .admin-header h1{font-size:1.25rem;font-weight:700}
         .user-badge{font-size:.8125rem;color:var(--muted);display:flex;align-items:center;gap:.75rem}
 
-        /* ─── Top-level Tabs ─── */
-        .main-tabs{display:flex;gap:.25rem;margin-bottom:2rem;border-bottom:2px solid var(--border)}
-        .main-tab{padding:.75rem 1.25rem;font-size:.9375rem;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--muted);background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font);font-weight:600;transition:all .2s}
-        .main-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-        .main-tab:hover{color:var(--text)}
-        .main-panel{display:none} .main-panel.active{display:block}
-
-        /* ─── Sub-Tabs ─── */
+        /* ─── Tabs ─── */
         .tabs{display:flex;gap:.25rem;margin-bottom:2rem;border-bottom:1px solid var(--border)}
         .tab{padding:.625rem 1rem;font-size:.875rem;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font);transition:all .2s}
         .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
@@ -64,7 +57,6 @@
         .btn-primary{background:var(--accent);color:#fff} .btn-primary:hover{background:#1d4ed8}
         .btn-secondary{background:var(--bg-subtle);color:var(--text);border:1px solid var(--border)} .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
         .btn-danger{background:#fef2f2;color:var(--danger);border:1px solid #fecaca} .btn-danger:hover{background:#fee2e2}
-        .btn-success{background:#f0fdf4;color:var(--success);border:1px solid #bbf7d0} .btn-success:hover{background:#dcfce7}
         .btn:disabled{opacity:.5;cursor:not-allowed}
         .btn-row{display:flex;gap:.75rem;margin-top:1.5rem;flex-wrap:wrap}
 
@@ -92,16 +84,6 @@
         .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
         .spinner-dark{border-color:rgba(0,0,0,.15);border-top-color:var(--accent)}
         @keyframes spin{to{transform:rotate(360deg)}}
-
-        /* ─── Resume Section ─── */
-        .section-heading{font-size:1rem;font-weight:700;margin-bottom:1rem;padding-bottom:.625rem;border-bottom:1px solid var(--border)}
-        .resume-item{display:flex;align-items:center;justify-content:space-between;padding:1rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.75rem;gap:1rem}
-        .resume-item-info{flex:1;min-width:0}
-        .resume-item-name{font-weight:600;font-size:.9375rem;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .resume-item-meta{font-size:.8125rem;color:var(--muted)}
-        .resume-item-actions{display:flex;gap:.5rem;flex-shrink:0}
-        .progress-bar-wrap{height:4px;background:var(--border);border-radius:2px;margin-top:.75rem;display:none}
-        .progress-bar{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width .3s}
     </style>
 </head>
 <body>
@@ -122,115 +104,74 @@
 <!-- ─── Admin App ─────────────────────────────────────────────────────────── -->
 <div id="adminApp" style="display:none">
     <div class="admin-header">
-        <h1>Admin</h1>
+        <h1>Blog Admin</h1>
         <div class="user-badge">
             <span id="userEmail"></span>
             <button class="btn btn-secondary btn-sm" id="signOutBtn">Sign out</button>
         </div>
     </div>
 
-    <!-- ─── Main Tabs: Blog | Job Hunt ─── -->
-    <div class="main-tabs">
-        <button class="main-tab active" data-main="blog">Blog</button>
-        <button class="main-tab" data-main="jobhunt">Job Hunt</button>
+    <div class="tabs">
+        <button class="tab active" data-tab="upload">Upload Post</button>
+        <button class="tab" data-tab="posts">All Posts</button>
     </div>
 
-    <!-- ══════════════ BLOG ══════════════ -->
-    <div class="main-panel active" id="mainBlog">
-        <div class="tabs">
-            <button class="tab active" data-tab="upload">Upload Post</button>
-            <button class="tab" data-tab="posts">All Posts</button>
-        </div>
+    <!-- ─── Upload Tab ─── -->
+    <div class="tab-panel active" id="tabUpload">
+        <div class="alert alert-success" id="uploadSuccess"></div>
+        <div class="alert alert-error" id="uploadError"></div>
 
-        <!-- ─── Upload Tab ─── -->
-        <div class="tab-panel active" id="tabUpload">
-            <div class="alert alert-success" id="uploadSuccess"></div>
-            <div class="alert alert-error" id="uploadError"></div>
-
-            <div class="form-row">
-                <div class="drop-zone" id="dropZone">
-                    <input type="file" id="fileInput" accept=".docx">
-                    <strong>Drop a .docx file here</strong>
-                    <span>or click to browse</span>
-                </div>
-                <div id="fileStatus" style="margin-top:.5rem;font-size:.8125rem;color:var(--muted)"></div>
-            </div>
-
-            <div class="form-grid">
-                <div class="form-row">
-                    <label for="postTitle">Title</label>
-                    <input type="text" id="postTitle" placeholder="Post title">
-                </div>
-                <div class="form-row">
-                    <label for="postDate">Date</label>
-                    <input type="date" id="postDate">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <label for="postExcerpt">Excerpt <span style="font-weight:400">(shown on blog list)</span></label>
-                <textarea id="postExcerpt" rows="3" placeholder="Short preview of the post…"></textarea>
-            </div>
-
-            <div class="form-row">
-                <label for="postAuthor">Author</label>
-                <input type="text" id="postAuthor" value="Navajit D">
-            </div>
-
-            <div id="previewSection" style="display:none">
-                <div class="preview-label">Content preview</div>
-                <div class="preview-box" id="htmlPreview"></div>
-                <div style="font-size:.8125rem;color:var(--muted);margin-top:.5rem" id="readTimeDisplay"></div>
-            </div>
-
-            <div class="btn-row">
-                <button class="btn btn-primary" id="submitBtn" disabled>
-                    <span id="submitBtnText">Publish post</span>
-                </button>
-                <button class="btn btn-secondary" id="clearBtn">Clear</button>
-            </div>
-        </div>
-
-        <!-- ─── Posts Tab ─── -->
-        <div class="tab-panel" id="tabPosts">
-            <div class="alert alert-error" id="listError"></div>
-            <div id="postList">
-                <div style="text-align:center;padding:3rem;color:var(--muted)">
-                    <div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading posts…
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════════ JOB HUNT ══════════════ -->
-    <div class="main-panel" id="mainJobhunt">
-        <div class="alert alert-success" id="resumeSuccess"></div>
-        <div class="alert alert-error" id="resumeError"></div>
-
-        <div class="section-heading">Current Resume</div>
-
-        <div id="resumeList">
-            <div style="text-align:center;padding:2rem;color:var(--muted)">
-                <div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading…
-            </div>
-        </div>
-
-        <div style="margin-top:1.5rem">
-            <div class="drop-zone" id="resumeDropZone">
-                <input type="file" id="resumeFileInput" accept=".pdf">
-                <strong>Drop a PDF resume here</strong>
+        <div class="form-row">
+            <div class="drop-zone" id="dropZone">
+                <input type="file" id="fileInput" accept=".docx">
+                <strong>Drop a .docx file here</strong>
                 <span>or click to browse</span>
             </div>
-            <div class="progress-bar-wrap" id="resumeProgressWrap">
-                <div class="progress-bar" id="resumeProgressBar"></div>
+            <div id="fileStatus" style="margin-top:.5rem;font-size:.8125rem;color:var(--muted)"></div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-row">
+                <label for="postTitle">Title</label>
+                <input type="text" id="postTitle" placeholder="Post title">
             </div>
-            <div id="resumeFileStatus" style="margin-top:.5rem;font-size:.8125rem;color:var(--muted)"></div>
+            <div class="form-row">
+                <label for="postDate">Date</label>
+                <input type="date" id="postDate">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="postExcerpt">Excerpt <span style="font-weight:400">(shown on blog list)</span></label>
+            <textarea id="postExcerpt" rows="3" placeholder="Short preview of the post…"></textarea>
+        </div>
+
+        <div class="form-row">
+            <label for="postAuthor">Author</label>
+            <input type="text" id="postAuthor" value="Navajit D">
+        </div>
+
+        <div id="previewSection" style="display:none">
+            <div class="preview-label">Content preview</div>
+            <div class="preview-box" id="htmlPreview"></div>
+            <div style="font-size:.8125rem;color:var(--muted);margin-top:.5rem" id="readTimeDisplay"></div>
         </div>
 
         <div class="btn-row">
-            <button class="btn btn-primary" id="uploadResumeBtn" disabled>
-                <span id="uploadResumeBtnText">Upload resume</span>
+            <button class="btn btn-primary" id="submitBtn" disabled>
+                <span id="submitBtnText">Publish post</span>
             </button>
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+        </div>
+    </div>
+
+    <!-- ─── Posts Tab ─── -->
+    <div class="tab-panel" id="tabPosts">
+        <div class="alert alert-error" id="listError"></div>
+        <div id="postList">
+            <div style="text-align:center;padding:3rem;color:var(--muted)">
+                <div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading posts…
+            </div>
         </div>
     </div>
 </div>
@@ -249,43 +190,15 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-let storage = null;
 
-function loadScript(src) {
-    return new Promise((res, rej) => {
-        const s = document.createElement('script');
-        s.src = src; s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-    });
-}
-async function ensureStorage() {
-    if (storage) return;
-    await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js');
-    storage = firebase.storage();
-}
 async function ensureMammoth() {
     if (window.mammoth) return;
-    await loadScript('https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js');
-}
-
-async function forceDownload(url, filename) {
-    const btn = event.currentTarget;
-    const orig = btn.textContent;
-    btn.textContent = 'Downloading…'; btn.disabled = true;
-    try {
-        const resp = await fetch(url);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const blob = await resp.blob();
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-    } catch(e) {
-        alert('Download failed: ' + e.message);
-    } finally {
-        btn.textContent = orig; btn.disabled = false;
-    }
+    await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+    });
 }
 
 const ALLOWED_EMAIL = 'navjitdebnath5@gmail.com';
@@ -297,7 +210,6 @@ auth.onAuthStateChanged(user => {
         document.getElementById('adminApp').style.display = 'block';
         document.getElementById('userEmail').textContent = user.email;
         loadPosts();
-        ensureStorage().then(loadResumes);
     } else {
         if (user) { auth.signOut(); showAlert(document.getElementById('loginError'), 'Access restricted to ' + ALLOWED_EMAIL); }
         document.getElementById('loginScreen').style.display = 'flex';
@@ -321,19 +233,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 });
 document.getElementById('signOutBtn').addEventListener('click', () => auth.signOut());
 
-// ─── Main Tabs ────────────────────────────────────────────────────────────────
-document.querySelectorAll('.main-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.main-panel').forEach(p => p.classList.remove('active'));
-        tab.classList.add('active');
-        const id = 'main' + tab.dataset.main.charAt(0).toUpperCase() + tab.dataset.main.slice(1);
-        document.getElementById(id).classList.add('active');
-        if (tab.dataset.main === 'jobhunt') ensureStorage().then(loadResumes);
-    });
-});
-
-// ─── Blog Sub-Tabs ────────────────────────────────────────────────────────────
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -519,11 +419,6 @@ async function loadPosts() {
                 const d = snap.data();
                 const dateVal = d.date?.toDate ? d.date.toDate() : new Date(d.date);
 
-                document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.main-panel').forEach(p => p.classList.remove('active'));
-                document.querySelector('[data-main="blog"]').classList.add('active');
-                document.getElementById('mainBlog').classList.add('active');
-
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 document.querySelector('[data-tab="upload"]').classList.add('active');
@@ -549,152 +444,6 @@ async function loadPosts() {
     }
 }
 
-// ─── Job Hunt: Resume ─────────────────────────────────────────────────────────
-let pendingResumeFile = null;
-
-const resumeDropZone = document.getElementById('resumeDropZone');
-const resumeFileInput = document.getElementById('resumeFileInput');
-
-resumeDropZone.addEventListener('click', () => resumeFileInput.click());
-resumeDropZone.addEventListener('dragover', e => { e.preventDefault(); resumeDropZone.classList.add('over'); });
-resumeDropZone.addEventListener('dragleave', () => resumeDropZone.classList.remove('over'));
-resumeDropZone.addEventListener('drop', e => {
-    e.preventDefault(); resumeDropZone.classList.remove('over');
-    handleResumeFile(e.dataTransfer.files[0]);
-});
-resumeFileInput.addEventListener('change', () => handleResumeFile(resumeFileInput.files[0]));
-
-function handleResumeFile(file) {
-    if (!file || file.type !== 'application/pdf') {
-        document.getElementById('resumeFileStatus').textContent = 'Please select a PDF file.';
-        document.getElementById('uploadResumeBtn').disabled = true;
-        return;
-    }
-    pendingResumeFile = file;
-    document.getElementById('resumeFileStatus').textContent = file.name + ' · ' + fmtBytes(file.size) + ' — ready to upload';
-    document.getElementById('uploadResumeBtn').disabled = false;
-}
-
-document.getElementById('uploadResumeBtn').addEventListener('click', async () => {
-    if (!pendingResumeFile) return;
-    const btn = document.getElementById('uploadResumeBtn');
-    const btnText = document.getElementById('uploadResumeBtnText');
-    const progressWrap = document.getElementById('resumeProgressWrap');
-    const progressBar = document.getElementById('resumeProgressBar');
-
-    btn.disabled = true;
-    btnText.innerHTML = '<span class="spinner"></span> Uploading…';
-    progressWrap.style.display = 'block';
-    progressBar.style.width = '0';
-
-    try {
-        const fileName = pendingResumeFile.name;
-        const storageRef = storage.ref('resumes/' + fileName);
-        const uploadTask = storageRef.put(pendingResumeFile, { contentType: 'application/pdf' });
-
-        uploadTask.on('state_changed',
-            snap => {
-                const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-                progressBar.style.width = pct + '%';
-            },
-            err => {
-                showAlert(document.getElementById('resumeError'), 'Upload failed: ' + err.message);
-                btn.disabled = false;
-                btnText.textContent = 'Upload resume';
-                progressWrap.style.display = 'none';
-            },
-            async () => {
-                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                await db.collection('resumes').add({
-                    name: fileName,
-                    url: downloadURL,
-                    size: pendingResumeFile.size,
-                    uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                showAlert(document.getElementById('resumeSuccess'), 'Resume uploaded successfully.');
-                pendingResumeFile = null;
-                resumeFileInput.value = '';
-                document.getElementById('resumeFileStatus').textContent = '';
-                document.getElementById('uploadResumeBtn').disabled = true;
-                progressWrap.style.display = 'none';
-                btnText.textContent = 'Upload resume';
-                loadResumes();
-            }
-        );
-    } catch(e) {
-        showAlert(document.getElementById('resumeError'), 'Upload failed: ' + e.message);
-        btn.disabled = false;
-        btnText.textContent = 'Upload resume';
-        progressWrap.style.display = 'none';
-    }
-});
-
-async function loadResumes() {
-    const listEl = document.getElementById('resumeList');
-    listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)"><div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading…</div>';
-    try {
-        const snap = await db.collection('resumes').orderBy('uploadedAt', 'desc').get();
-
-        // Always show the GitHub Pages version as a pinned entry
-        const staticDiv = document.createElement('div');
-        staticDiv.className = 'resume-item';
-        staticDiv.style.cssText = 'border-color:#bbf7d0;background:#f0fdf4';
-        staticDiv.innerHTML = `
-            <div class="resume-item-info">
-                <div class="resume-item-name">Navjit_Debnath_Resume.pdf</div>
-                <div class="resume-item-meta">Hosted on GitHub Pages · Current</div>
-            </div>
-            <div class="resume-item-actions">
-                <button class="btn btn-success btn-sm" id="staticDownloadBtn">Download</button>
-                <a href="/resume.pdf" target="_blank" class="btn btn-secondary btn-sm">View</a>
-            </div>`;
-        listEl.innerHTML = '';
-        listEl.appendChild(staticDiv);
-        listEl.querySelector('#staticDownloadBtn').addEventListener('click', function() {
-            forceDownload('/resume.pdf', 'Navjit_Debnath_Resume.pdf');
-        });
-
-        snap.docs.forEach(doc => {
-            const d = doc.data();
-            const uploadedAt = d.uploadedAt?.toDate ? d.uploadedAt.toDate() : new Date();
-            const fmtD = uploadedAt.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
-            const item = document.createElement('div');
-            item.className = 'resume-item';
-            item.innerHTML = `
-                <div class="resume-item-info">
-                    <div class="resume-item-name">${escHtml(d.name)}</div>
-                    <div class="resume-item-meta">${fmtD} · ${fmtBytes(d.size || 0)} · Firebase Storage</div>
-                </div>
-                <div class="resume-item-actions">
-                    <button class="btn btn-success btn-sm" data-url="${escHtml(d.url)}" data-name="${escHtml(d.name)}" data-action="dlresume">Download</button>
-                    <a href="${escHtml(d.url)}" target="_blank" class="btn btn-secondary btn-sm">View</a>
-                    <button class="btn btn-danger btn-sm" data-id="${doc.id}" data-url="${escHtml(d.url)}" data-action="delresume">Delete</button>
-                </div>`;
-            listEl.appendChild(item);
-        });
-
-        listEl.querySelectorAll('[data-action="dlresume"]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                forceDownload(btn.dataset.url, btn.dataset.name);
-            });
-        });
-
-        listEl.querySelectorAll('[data-action="delresume"]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (!confirm('Delete this resume?')) return;
-                try {
-                    await db.collection('resumes').doc(btn.dataset.id).delete();
-                    try { await storage.refFromURL(btn.dataset.url).delete(); } catch(_) {}
-                    loadResumes();
-                } catch(e) {
-                    showAlert(document.getElementById('resumeError'), 'Delete failed: ' + e.message);
-                }
-            });
-        });
-    } catch(e) {
-        showAlert(document.getElementById('resumeError'), 'Failed to load resumes: ' + e.message);
-    }
-}
 </script>
 
 </body>
