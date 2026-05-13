@@ -2345,6 +2345,37 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Offline support: cached reads + queued writes that replay on reconnect.
+        // Must be called before any Firestore op. synchronizeTabs lets multiple
+        // open tabs share the same offline cache.
+        db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+            // 'failed-precondition' = multiple tabs without sync support;
+            // 'unimplemented' = browser doesn't support IndexedDB (e.g. private Firefox).
+            console.warn('[Offline] Firestore persistence disabled:', err && err.code);
+        });
+
+        // Track writes initiated while offline so we can report a meaningful
+        // count when the tab reconnects.
+        let _offlineWriteCount = 0;
+        function noteWrite() {
+            if (!navigator.onLine) _offlineWriteCount++;
+        }
+
+        window.addEventListener('offline', () => {
+            toast("You're offline — changes will save and sync later", '');
+        });
+
+        window.addEventListener('online', async () => {
+            if (_offlineWriteCount === 0) return;
+            const n = _offlineWriteCount;
+            toast(`Back online — syncing ${n} change${n === 1 ? '' : 's'}`, 'success');
+            try {
+                await db.waitForPendingWrites();
+                toast('All changes synced', 'success');
+            } catch { /* ignore */ }
+            _offlineWriteCount = 0;
+        });
+
         /* ═══════════════════════════════════════════════════
            STATE
            ═══════════════════════════════════════════════════ */
@@ -2516,6 +2547,7 @@
             saveLearnedKeywordsTimer = setTimeout(async () => {
                 if (!currentUser || !userProfile) return;
                 try {
+                    noteWrite();
                     await db.collection('users').doc(currentUser.uid).update({
                         learnedKeywords: userProfile.learnedKeywords || {}
                     });
@@ -2717,7 +2749,10 @@
                 document.getElementById('userAvatar').src = user.photoURL || '';
 
                 try {
-                    const profileDoc = await db.collection('users').doc(user.uid).get();
+                    // Offline boot: skip the network round-trip and serve from
+                    // IndexedDB cache instantly. Online: normal server fetch.
+                    const readOpts = navigator.onLine ? {} : { source: 'cache' };
+                    const profileDoc = await db.collection('users').doc(user.uid).get(readOpts);
                     if (profileDoc.exists) {
                         userProfile = profileDoc.data();
                         if (!userProfile.learnedKeywords) userProfile.learnedKeywords = {};
@@ -3072,7 +3107,8 @@
 
         async function loadExpenses() {
             try {
-                const snap = await getCollection().orderBy('date', 'desc').get();
+                const readOpts = navigator.onLine ? {} : { source: 'cache' };
+                const snap = await getCollection().orderBy('date', 'desc').get(readOpts);
                 allExpenses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 allExpenses.forEach(e => {
                     if (e.date && e.date.toDate) e.date = e.date.toDate();
@@ -3179,16 +3215,24 @@
                 docData.splitAmount = finalAmount;
             }
 
-            allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
+            // Generate the Firestore ID locally so subsequent edits/deletes
+            // (including offline ones) can target the same doc by ID. Firestore's
+            // IndexedDB persistence queues the .set() and replays it on reconnect.
+            const docRef = getCollection().doc();
+            allExpenses.unshift({ id: docRef.id, ...docData });
             sortExpenses();
             buildRagIndex();
             renderRecent();
 
-            getCollection().add({
+            noteWrite();
+            docRef.set({
                 ...docData,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(err => {
-                toast('Sync failed — will retry', 'error');
+                // Note: while offline, this promise stays pending (does NOT reject)
+                // because Firestore queues the write. It only rejects on real errors
+                // like permission denied.
+                toast('Sync failed: ' + err.message, 'error');
                 console.error(err);
             });
 
@@ -3910,8 +3954,10 @@ OTHER RULES:
                 billingCycle: '',
                 timestamp: new Date()
             };
-            allExpenses.unshift({ id: 'pending-' + Date.now(), ...docData });
-            getCollection().add({
+            const docRef = getCollection().doc();
+            allExpenses.unshift({ id: docRef.id, ...docData });
+            noteWrite();
+            docRef.set({
                 ...docData,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(err => console.error('Sync failed:', err));
@@ -4182,6 +4228,9 @@ OTHER RULES:
 
             try {
                 if (!idToSave.startsWith('pending-')) {
+                    noteWrite();
+                    // Offline: this awaits the local cache write (which is instant);
+                    // server commit is queued and replayed on reconnect.
                     await getCollection().doc(idToSave).update(updateData);
                 }
             } catch (err) {
@@ -4208,6 +4257,7 @@ OTHER RULES:
 
             try {
                 if (!id.startsWith('pending-')) {
+                    noteWrite();
                     await getCollection().doc(id).delete();
                 }
             } catch (err) {
@@ -4758,6 +4808,12 @@ OTHER RULES:
 
             const btn = document.getElementById('chatSendBtn');
             btn.disabled = true; btn.textContent = '...';
+
+            if (!navigator.onLine) {
+                appendChat('assistant', "I need an internet connection for chat. Your logs and analytics still work offline — try reconnecting and I'll be here.");
+                btn.disabled = false; btn.textContent = 'Send';
+                return;
+            }
 
             const summary = buildExpenseSummary(query);
 
