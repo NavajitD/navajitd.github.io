@@ -2380,10 +2380,6 @@
 
     /* ── Notifications / Reminders ────────────────── */
     .ntf-bell-btn {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
       width: 2rem;
       height: 1.8rem;
       border-radius: 5px;
@@ -2828,6 +2824,15 @@
       <h1>HealThee</h1>
     </div>
     <div class="hdr-right">
+      <button class="ntf-bell-btn" id="ntfBellBtn" onclick="openNotifModal()" aria-label="Reminder settings"
+        title="Reminders" style="display:none;position:relative">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+        <span class="ntf-badge" id="ntfBadge"></span>
+      </button>
       <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
         <svg class="icon-light" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="4" />
@@ -2914,19 +2919,10 @@
 
 
   <main id="mainApp" style="display:none;">
-    <div class="date-nav" style="position:relative">
+    <div class="date-nav">
       <button onclick="shiftDate(-1)">← prev</button>
       <div class="date-label" id="dateLabel"></div>
       <button onclick="shiftDate(1)">next →</button>
-      <button class="ntf-bell-btn" id="ntfBellBtn" onclick="openNotifModal()" aria-label="Reminder settings"
-        title="Reminders" style="position:relative">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
-        <span class="ntf-badge" id="ntfBadge"></span>
-      </button>
     </div>
     <div id="tabContent"></div>
   </main>
@@ -3546,6 +3542,7 @@
           document.getElementById('mainApp').style.display = 'block';
           document.getElementById('bottomNav').style.display = 'block';
           document.getElementById('floatCta').style.display = '';
+          document.getElementById('ntfBellBtn').style.display = 'flex';
           initApp();
           showFTUE();
         }
@@ -3783,6 +3780,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                 document.getElementById("mainApp").style.display = "block";
                 document.getElementById("bottomNav").style.display = "block";
                 document.getElementById("floatCta").style.display = "";
+                document.getElementById("ntfBellBtn").style.display = "flex";
                 initApp();
               } else {
                 // Truly new user with no profile data — start onboarding
@@ -3819,6 +3817,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         document.getElementById("capScreen").style.display = "none";
         document.getElementById("onboardScreen").style.display = "none";
         document.getElementById("userMenu").style.display = "none";
+        document.getElementById("ntfBellBtn").style.display = "none";
       });
 
       window.signInWithGoogle = function () {
@@ -4047,7 +4046,8 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         render(); toast('Supplement added');
       };
       window.removeSupplement = async function (id, fromProfile) {
-        const list = (userProfile.customSupplements || []).filter(s => s.id !== id);
+        const base = Array.isArray(userProfile.customSupplements) ? userProfile.customSupplements : SUPPLEMENTS;
+        const list = base.filter(s => s.id !== id);
         await _saveProfileField('customSupplements', list);
         render();
         if (fromProfile) openProfileModal();
@@ -4954,9 +4954,9 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         const isCustomSupp = Array.isArray((userProfile || {}).customSupplements);
         let suppList = suppItems.map(s => {
           const taken = lwwGet(dayData.supplementChecks, s.id);
-          return `<div class="supp-item ${taken ? "taken" : ""}" style="position:relative" onclick="toggleSupp('${s.id}')">
+          return `<div class="supp-item ${taken ? "taken" : ""}" onclick="toggleSupp('${s.id}')">
           <span class="supp-icon">${licon(s.icon || 'pill')}</span><span class="supp-name">${esc(s.name)}</span>
-          <span class="supp-freq">${esc(s.freq)}</span><span class="supp-check">${taken ? "✓" : ""}</span>${isCustomSupp ? `<button class="log-del" style="position:absolute;right:.3rem;top:50%;transform:translateY(-50%)" onclick="event.stopPropagation();removeSupplement('${s.id}')">✕</button>` : ''}
+          <span class="supp-freq">${esc(s.freq)}</span><span class="supp-check">${taken ? "✓" : ""}</span>${isCustomSupp ? `<button class="log-del" onclick="event.stopPropagation();removeSupplement('${s.id}')">✕</button>` : ''}
           </div>`;
         }).join("");
         if (!suppItems.length) {

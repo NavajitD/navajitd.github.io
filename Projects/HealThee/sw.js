@@ -1,12 +1,13 @@
-const CACHE_NAME = 'healthee-v2';
+const CACHE_NAME = 'healthee-v3';
 const STATIC_ASSETS = [
+  './health.html',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600;700&display=swap',
   'https://unpkg.com/lucide@0.475.0/dist/umd/lucide.js'
 ];
 
 // CDN assets that should be cached aggressively (rarely change)
-const CDN_CACHE = 'healthee-cdn-v2';
+const CDN_CACHE = 'healthee-cdn-v3';
 const CDN_ORIGINS = ['unpkg.com', 'gstatic.com', 'fonts.gstatic.com'];
 
 self.addEventListener('message', e => {
@@ -93,10 +94,16 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Network-only for HTML — always fresh
+  // Network-first for HTML — serve fresh when online, fall back to cache offline
   if (e.request.mode === 'navigate' || e.request.destination === 'document') {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
+      fetch(e.request).then(res => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(e.request))
     );
     return;
   }
