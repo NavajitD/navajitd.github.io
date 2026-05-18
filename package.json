@@ -1,0 +1,16 @@
+{
+  "name": "navajitd-github-io",
+  "version": "1.0.0",
+  "description": "navajitd.github.io — personal site + projects",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test 'tests/unit/*.test.js'",
+    "test:e2e": "playwright test",
+    "test:all": "npm run test && npm run test:e2e",
+    "serve": "python3 -m http.server 8765"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}
