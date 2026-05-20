@@ -2972,6 +2972,7 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script type="module" src="./gamification/index.js"></script>
 
   <script>
     /* ═══════════════════════════════════════════════════
@@ -3913,6 +3914,8 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           try { await dayRef(selectedDate).set(dayData, { merge: true }); }
           catch (e) { console.error("Save failed", e); }
         }, 600);
+        // Gamification hook — no-op when disabled or module not ready
+        try { window.HTGam && window.HTGam.onDaySaved(dayData, selectedDate); } catch (e) { /* never block save */ }
       }
 
       /* ═══════════════════════════════════════════════════
@@ -3925,6 +3928,49 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         ensureEventsLoaded(); // pre-warm in background so modal opens instantly
         setupPullToRefresh();
         initNotifications();
+        initGamification();
+      }
+
+      window.initGamification = async function () {
+        if (!window.HTGam || !currentUser) return;
+        try {
+          await window.HTGam.init({
+            firebaseDb: db,
+            uid: currentUser.uid,
+            enabled: (userProfile && userProfile.mode === 'gamified'),
+          });
+          renderGamificationMounts();
+        } catch (e) { console.warn('Gamification init failed (non-fatal):', e); }
+      }
+
+      window.setGameMode = async function (mode) {
+        if (!userProfile) return;
+        userProfile.mode = mode === 'gamified' ? 'gamified' : 'vanilla';
+        try { await db.collection('users').doc(currentUser.uid).set({ profile: userProfile }, { merge: true }); }
+        catch (e) { console.warn('Mode save failed:', e); }
+        if (window.HTGam) {
+          window.HTGam.setEnabled(userProfile.mode === 'gamified');
+          if (userProfile.mode === 'gamified' && !window.HTGam.isReady()) {
+            await window.HTGam.init({ firebaseDb: db, uid: currentUser.uid, enabled: true });
+          }
+        }
+        toast(mode === 'gamified' ? '🎮 Gamified mode on' : 'Vanilla mode on');
+        renderGamificationMounts();
+      }
+
+      window.renderGamificationMounts = function () {
+        const hudEl = document.getElementById('htgamHud');
+        const wallEl = document.getElementById('htgamTrophyWall');
+        const dailyEl = document.getElementById('htgamDailyChallenges');
+        if (!window.HTGam || !window.HTGam.isEnabled()) {
+          if (hudEl) hudEl.innerHTML = '';
+          if (wallEl) wallEl.innerHTML = '';
+          if (dailyEl) dailyEl.innerHTML = '';
+          return;
+        }
+        if (hudEl) window.HTGam.renderHud(hudEl);
+        if (wallEl) window.HTGam.renderTrophyWall(wallEl);
+        if (dailyEl) window.HTGam.renderDailyChallenges(dailyEl, selectedDate);
       }
 
       // ── Profile helpers ──
@@ -4735,6 +4781,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         c.innerHTML = renderProfileModal();
         c.querySelector(".modal-overlay")?.addEventListener("click", e => { if (e.target.classList.contains("modal-overlay")) closeProfileModal(); });
         refreshIcons();
+        if (typeof renderGamificationMounts === 'function') renderGamificationMounts();
       }
 
       window.closeProfileModal = function () {
@@ -4871,13 +4918,20 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                   t.querySelector('.mode-knob').style.transform=m==='gamified'?'translateX(calc(100% + 2px))':'';
                   t.querySelector('.mode-label-left').style.opacity=m==='vanilla'?'1':'0.45';
                   t.querySelector('.mode-label-right').style.opacity=m==='gamified'?'1':'0.45';
-                  if(m==='gamified'){setTimeout(()=>toast('Gamified mode is being built — you\\'ll get access soon!','warn'),100);}
+                  if(typeof setGameMode==='function'){setGameMode(m);}
                 ">
                   <span class="mode-label-left" style="opacity:${p.mode === 'gamified' ? '0.45' : '1'}">${licon('layout-dashboard', 13)} Vanilla</span>
                   <div class="mode-knob" style="transform:${p.mode === 'gamified' ? 'translateX(calc(100% + 2px))' : ''}"></div>
                   <span class="mode-label-right" style="opacity:${p.mode === 'gamified' ? '1' : '0.45'}">${licon('sword', 13)} Gamified</span>
                 </div>
               </div>
+              ${p.mode === 'gamified' ? `
+                <div id="htgamHud" style="margin-top:10px"></div>
+                <div style="margin-top:14px;font-size:12px;opacity:.7">Today&rsquo;s challenges</div>
+                <div id="htgamDailyChallenges" style="margin-top:6px"></div>
+                <div style="margin-top:14px;font-size:12px;opacity:.7">Trophy Wall</div>
+                <div id="htgamTrophyWall" style="margin-top:6px"></div>
+              ` : ''}
             </div>
 
             <div class="profile-section">
