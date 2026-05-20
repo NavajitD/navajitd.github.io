@@ -3945,7 +3945,9 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
 
       window.setGameMode = async function (mode) {
         if (!userProfile) return;
+        const wasMode = userProfile.mode;
         userProfile.mode = mode === 'gamified' ? 'gamified' : 'vanilla';
+        if (wasMode === userProfile.mode) return; // no change
         try { await db.collection('users').doc(currentUser.uid).set({ profile: userProfile }, { merge: true }); }
         catch (e) { console.warn('Mode save failed:', e); }
         if (window.HTGam) {
@@ -3954,8 +3956,14 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             await window.HTGam.init({ firebaseDb: db, uid: currentUser.uid, enabled: true });
           }
         }
-        toast(mode === 'gamified' ? '🎮 Gamified mode on' : 'Vanilla mode on');
-        renderGamificationMounts();
+        toast(userProfile.mode === 'gamified' ? '🎮 Gamified mode on' : 'Vanilla mode on');
+        // If the Profile modal is open, re-render it so the gamification sections appear/disappear.
+        const modalOpen = document.querySelector('#profileModalContainer .modal-overlay');
+        if (modalOpen) {
+          openProfileModal();
+        } else {
+          renderGamificationMounts();
+        }
       }
 
       window.renderGamificationMounts = function () {
