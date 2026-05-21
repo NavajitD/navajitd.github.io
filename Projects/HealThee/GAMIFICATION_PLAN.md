@@ -521,35 +521,298 @@ A self-assessment of how strongly each drive is represented in HealThee's design
 
 ## 13. Phased Implementation Roadmap
 
-### Phase 1 — Foundation & Core Loop (Weeks 1–6)
+### Phase 1 — Foundation & Core Loop ✅ SHIPPED (May 2026)
 
-Everything needed for a functional, motivating gamification experience from day one.
+**4 commits on `main` · 70 tests (63 unit + 7 Playwright e2e) · All green**
 
-| Week | Deliverables | Drives Activated |
+The complete core engagement loop is live. Users can switch to Gamified mode in Profile → App Mode and immediately start earning.
+
+#### Architecture
+
+The gamification system is isolated in `Projects/HealThee/gamification/` as pure ES modules — no changes to the existing health.html logic. The app hooks in via a single `window.HTGam.onDaySaved(dayData, dateKey)` call inside `saveDay()`. Everything else is derived inside the module.
+
+```
+gamification/
+  core.js     — pure logic: XP math, level table, streak rules, challenge
+                picking, badge predicates, gems. No DOM, testable in Node.
+  store.js    — Firestore + localStorage + memory adapters with migration.
+  ui.js       — toast, level-up overlay, Trophy Wall, HUD, challenge list.
+  index.js    — HTGam singleton: orchestrates core + store + ui,
+                exposes window.HTGam public API.
+tests/
+  unit/core.test.js   — 34 tests: XP/levels, streaks, challenges, badges, gems
+  unit/store.test.js  — 10 tests: adapter round-trips, migration, composite
+  unit/index.test.js  — 19 tests: applyDaySave, idempotency, level-up, persist
+  e2e/healthee.baseline.spec.js     — 3 Playwright tests: page loads, no errors
+  e2e/healthee.gamification.spec.js — 4 Playwright tests: API surface, end-to-end
+```
+
+#### What shipped
+
+| Deliverable | Status | Notes |
 |---|---|---|
-| 1–2 | XP system with all earning actions, Levels 1–10 with titles, Level-up celebration screen | CD2 |
-| 3 | Daily Streak counter with Grace Period, Streak Freeze earn logic (every 14 days, max 2), Streak Loss reset + Comeback Bonus (+20 XP) | CD2, CD8 |
-| 4 | 15 core badges (all Consistency + first-time milestones), Trophy Wall screen (basic grid) | CD2, CD4 |
-| 5 | Daily Challenge system (pool of 20 challenges, 3 per day), Bonus Burst reward for completing all 3 | CD7, CD2 |
-| 6 | Gems currency (earning only), Weekly Challenge (pool of 6 challenges, 1 active slot), Weekly Report Card | CD4, CD6, CD2 |
+| XP system — all earning actions | ✅ | Signature-based, idempotent per day — no double-awarding on re-saves |
+| Levels 1–11 with titles + Ascended tiers | ✅ | Non-linear curve; full-screen celebration overlay on level-up |
+| Daily streak — 4-tab qualification | ✅ | Streak increments only when Eat + Move + Sleep + Care all touched |
+| Streak Freeze — earn every 14 days, max 2 banked | ✅ | Auto-consumed on 1-day gap |
+| Comeback Bonus — +20 XP after broken streak | ✅ | |
+| Streak milestone toasts — 3/7/14/21/30/60/90/180/365 | ✅ | |
+| 15 core badges + Trophy Wall grid | ✅ | Consistency (8), Nutrition (2), Movement (2), Sleep (1), Care (1), Special (1) |
+| Badge unlock toast + +1 gem per badge | ✅ | |
+| Daily Challenges — 3/day from pool of 20 | ✅ | Deterministic by date (seeded Fisher-Yates); different every day |
+| Bonus Burst — +50 XP + 1 gem for all 3 completed | ✅ | Fires exactly once per day |
+| Weekly Challenge — 1 slot, pool of 6 | ✅ | Deterministic by ISO week key |
+| Gems (earn-only) | ✅ | All earning sources wired: badge, level-up, bonus burst, 30-day streak |
+| HUD — level, XP, streak counter, gem balance | ✅ | Renders inside Profile modal when Gamified |
+| Daily challenges list in Profile modal | ✅ | Shows current day's 3 picks with completion state |
+| Gamified / Vanilla toggle — live, persistent | ✅ | Saves to Firestore; re-renders modal on toggle; no reload needed |
+| Firestore + localStorage persistence | ✅ | Composite adapter: local-first, Firestore fan-out |
+| Offline resilience | ✅ | HTGam.onDaySaved is try/caught; never blocks the save path |
+| Service worker cache bumped to v4 | ✅ | Forces fresh module fetch on next visit |
+| Mode toggle re-renders Profile immediately | ✅ | Fixed: toggle inside open modal now shows/hides sections without close-reopen |
 
-**Phase 1 exit criteria:** User can earn XP, level up, maintain streaks, complete daily/weekly challenges, earn gems and badges. The core engagement loop is fully functional.
+#### What is NOT in Phase 1 (deferred to Phase 2)
 
-### Phase 2 — Depth, Polish & Anti-Burnout (Weeks 7–12)
-
-Enriches the system with creativity, ownership, social-emotional features, and safeguards.
-
-| Week | Deliverables | Drives Activated |
-|---|---|---|
-| 7 | Gem Shop with all 5 rewards (Streak Freeze, Avatar, Focus Mode, Bonus Slot, ME Time), Profile Avatar system | CD4, CD6, CD3, CD1 |
-| 8 | Personal Records tracking + PR toast notifications, Goal Streaks (per-category streak badges) | CD2, CD3 |
-| 9 | Full badge library (all 30+ standard badges), Easter Egg badges (5 hidden), Boosted Picks (daily challenge swap) | CD4, CD7, CD3 |
-| 10 | Smart notification nudges (pattern-based), HealThee Mate milestone acknowledgements | CD8, CD5 |
-| 11 | Penalty mechanics: XP Momentum Decay, Gem Decay, Badge Dormancy, Level Title Dormancy, Challenge Forfeit rules; Anti-burnout safeguards: Chill Mode toggle, "Good Enough" framing, backdating grace period | CD8, Counter-CD8 |
-| 12 | 4-week Goal Review prompts, remaining challenge pool expansion (to 30 daily + 8 weekly), final polish & QA | CD3, CD2 |
-
-**Phase 2 exit criteria:** Full gamification system live with all 8 core drives activated, penalty mechanics and safeguards in place, and gem economy balanced.
+- Gem Shop (gems are earned but unspendable)
+- Boosted Picks (daily challenge swap)
+- Full badge library (30+ badges) and Easter Egg badges
+- Goal Streaks (per-category streak tracking)
+- Personal Records + PR toasts
+- Smart / pattern-based notifications
+- HealThee Mate milestone messages
+- Weekly Report Card
+- All penalty mechanics (XP Momentum Decay, Gem Decay, Badge Dormancy, Level Title Dormancy, Challenge Forfeit rules)
+- Anti-burnout safeguards (Chill Mode, "Good Enough" framing)
+- Goal Calibration prompts
+- Daily challenges visible outside Profile (e.g., on dashboard)
 
 ---
 
-*Last updated: April 2026*
+### Phase 2 — Depth, Polish & Anti-Burnout
+
+**Target: 6 sessions across the mechanics below. Ship per-mechanic, test before each push.**
+
+Everything in Phase 2 enriches the system with ownership mechanics (Gem Shop), creative agency (Boosted Picks, Goal Calibration), social-emotional depth (HealThee Mate milestones, Weekly Report Card), and the full consequence/safeguard system that keeps long-term users engaged without burnout.
+
+#### Week 7 — Gem Shop + Personal Records
+
+**Gem Shop** (CD4, CD6, CD3, CD1)
+
+Build the spendable economy. All 5 reward types:
+
+| Item | Cost | Implementation notes |
+|---|---|---|
+| **Streak Freeze (extra)** | 5 gems | Increment `streak.freezesBanked` (cap at 3 when purchased, vs 2 earned); deduct gems with confirmation dialog |
+| **Profile Avatar / Icon Unlock** | 3 gems | Unlock one of a set of pixel-art avatars stored on `userProfile.avatar`; render in Profile header |
+| **"Focus Mode" Theme** | 5 gems | Set `userProfile.focusMode = true`; minimal CSS class on `<body>` that hides decorative elements for 7 days |
+| **Unlock Bonus Weekly Challenge Slot** | 4 gems | Set `gam.weeklyChallenge.bonusSlotActive = true`; pick a second challenge from the pool; gem non-refund if forfeited |
+| **ME Time** | 5 gems | Modal prompts user to define their ME Time activity; confirms follow-through; awards a special badge |
+
+**Personal Records** (CD2, CD3)
+
+Track in `gam.stats.records`: `{ maxSteps, maxProtein, maxSleepHours, longestStreak, maxXpWeek }`. On each `onDaySaved`, compare new values to records; fire a PR toast (`🏆 New record: 12,450 steps!`) when broken. Add a "My Records" section to the Profile modal.
+
+---
+
+#### Week 8 — Full Badge Library + Easter Eggs + Boosted Picks
+
+**Full badge library** (CD2, CD4)
+
+Expand from 15 to 30+ badges. Add all the badges defined in Section 3 that aren't yet implemented:
+
+- Nutrition: Protein Pioneer, Calorie Commander, Variety Pack, Rainbow Plate
+- Movement: Step Streak, Iron Week, 10K Club, Marathon Month
+- Sleep: Early Bird, Night Owl Redeemed, Deep Sleeper
+- Care: Reflector, Mate Connection, Mood Tracker
+- Special: Overachiever, Clean Sweep, Comeback Kid, Night Shift
+
+Each requires new context fields in `applyDaySave`: goal-streak tracking, cumulative stats (total steps, step history, sleep history). These are safe to add to `gam.stats` without touching `dayData`.
+
+**Easter Egg badges** (CD7)
+
+Five hidden badges (see Section 3). Key implementation note: they must not appear in the Trophy Wall until earned — locked slots show as `?` tiles. The unlock animation should have a 1-second delay with a mystery "reveal" effect to maximise the surprise. Their predicates require cross-day context (e.g., Déjà Vu needs meal history, Bullseye needs exact calorie comparison to target).
+
+**Boosted Picks** (CD3)
+
+Once per day, user can swap one of their 3 daily challenges for a new one from the same category. Store `gam.dailyChallenges.swapUsed: boolean`. The swap draws a new challenge that isn't already in today's picks. Show a "Swap" button next to uncompleted challenges.
+
+---
+
+#### Week 9 — Goal Streaks + Weekly Report Card
+
+**Goal Streaks** (CD2, CD8)
+
+Track per-category consecutive days of hitting the goal in `gam.stats`:
+- `calorieGoalStreak`, `proteinGoalStreak`, `stepGoalStreak`, `sleepGoalStreak`
+
+These require the existing `computeTotals()` output and goal targets to be passed into `onDaySaved`. Show small flame icons on each tab's summary card when a goal streak is active. Feed into the badge predicates (Protein Pioneer, Calorie Commander, etc.).
+
+**Weekly Report Card** (CD2, CD5)
+
+Every Sunday, generate and surface a summary card:
+- XP earned this week vs. last week
+- Goal hit rate per category (out of 7 days)
+- Streak status
+- Badges earned this week
+- One insight line (generated by HealThee Mate — a simple template, not an LLM call)
+- Weekly Challenge result
+
+Render as a shareable card (screenshot-friendly layout, no PII visible by default).
+
+---
+
+#### Week 10 — HealThee Mate Milestone Messages + Smart Nudges
+
+**HealThee Mate milestones** (CD5)
+
+At specific gamification events, inject a contextual message into the chat history so HealThee Mate "notices" the user's progress. Triggered by events from `applyDaySave`:
+- Streak milestones (7, 14, 30 days)
+- Level-ups
+- First badge in a new category
+- Coming back after a break (comeback event)
+- Weekly Challenge completion
+
+These are templated messages, not LLM-generated — fast, offline-capable, and predictable.
+
+**Smart nudge notifications** (CD8, CD7)
+
+Extend the existing notification system (`_ntfCheck`) with gamification-aware nudges:
+- Day's streak not yet qualified by 8 PM: *"3 tabs done — just add a Care entry to keep your streak alive."*
+- Daily challenges expiring at midnight (if 1–2 incomplete): *"You've got time — 2 challenges left today."*
+- XP close to a level-up (within 20 XP): *"Almost there — just log one more thing to level up."*
+
+---
+
+#### Week 11 — Penalty Mechanics + Anti-Burnout Safeguards
+
+**All consequence mechanics** (CD8, CD6, CD4) — see Section 11 for full spec:
+- XP Momentum Decay: track `gam.inactiveDays`; apply multiplier on all XP earned
+- Gem Decay: fire at day 14 inactivity with day-10 warning notification
+- Badge Dormancy: grey out streak-based badges in Trophy Wall; show dormant counter
+- Level Title Dormancy: show `"[Title] · Dormant"` in HUD and Profile after 14 days
+
+**Anti-burnout safeguards** (Counter-CD8) — see Section 10:
+- **Chill Mode toggle**: 7-day freeze on all streak/challenge notifications and penalty timers. Once every 60 days. Stored on `userProfile.chillMode: { active, activatedAt, expiresAt }`.
+- **"Good Enough" framing**: when a goal is hit within ±5%, show a softer success message rather than nothing.
+- **Backdating grace**: accept `dayData` saves to the previous calendar day up to 6 AM. Already partially supported by `saveDay`; needs the grace window explicitly enforced in `applyDaySave`.
+
+---
+
+#### Week 12 — Challenge Pool Expansion + Goal Calibration + Polish
+
+**Challenge pool expansion**
+
+Grow daily pool from 20 → 30 challenges. Grow weekly pool from 6 → 8. New additions should skew toward the lower-logged categories (Sleep, Care) to balance engagement across all tabs.
+
+**Goal Calibration** (CD3)
+
+Every 28 days, surface a prompt: *"It's been a month — want to review your goals?"* If the user opens Profile and updates any goal value, award +30 XP "Goal Calibration" bonus. Track `gam.lastGoalCalibration` date.
+
+**Polish pass**
+
+- Confetti burst on PR breaks (use a lightweight canvas confetti lib or CSS animation — no heavy dependency)
+- Level-up overlay: add the level-specific flavour message (*"You've become a Nurturer — consistency is your superpower."*)
+- Trophy Wall: add category tabs (All / Consistency / Nutrition / Movement / Sleep / Care / Special / Hidden)
+- HUD: add a thin XP progress bar under the level title
+- Daily challenges: surface them on the main dashboard (outside Profile), as a collapsible card on the Fuel tab
+
+---
+
+### Phase 2 exit criteria
+
+Full gamification system live with all 8 core drives activated:
+- Gem Shop functional with all 5 rewards
+- 30+ standard badges + 5 Easter Eggs
+- Goal Streaks per category
+- Personal Records visible in Profile
+- Weekly Report Card auto-surfaces every Sunday
+- HealThee Mate acknowledges milestones in chat
+- All 6 penalty mechanics live with safeguards (Chill Mode, Good Enough framing, backdating)
+- Challenge pools expanded; Boosted Picks available
+- Goal Calibration prompt every 28 days
+
+---
+
+## 14. Feature Suggestions for Future Consideration
+
+These ideas emerged during Phase 1 development and are not yet in the roadmap. None are urgent, but each is worth revisiting as the user base grows.
+
+### Visibility improvements
+
+- **Daily challenges on the dashboard** — The biggest UX gap post-Phase 1: challenges live only in the Profile modal. Moving them to a collapsible card on the Fuel tab (or a persistent widget on the dashboard) would dramatically increase engagement. Already flagged for Phase 2 Week 12 polish.
+- **Streak counter on the main screen** — The streak is stored and maintained but only visible in the Profile HUD. A small flame badge next to the date picker would surface the streak without requiring a modal open.
+
+### Engagement depth
+
+- **Themed weeks** — Occasional special-event weeks (e.g., "Hydration Week" where water logging earns double XP, or "Sleep Month" in October). Entirely cosmetic on the data side — just a `theme` flag that tweaks XP multipliers for a category.
+- **Personal bests as daily context** — Surface the user's personal best for today's category ("Your best day was 14,200 steps — you're at 8,000 so far") to create organic motivation without a formal challenge mechanic.
+- **Challenge difficulty tiers** — Easy / Medium / Hard variants of each challenge. Easy challenges award less XP but count toward Bonus Burst. Lets the user calibrate their own bar without the system judging.
+- **Streak recovery grace extension** — Allow the user to "repair" a broken streak once every 90 days by logging a double-entry day (all 4 tabs twice). Expensive but not impossible — prevents long-term disengagement from a single missed day after a 60+ day run.
+
+### Architecture & scalability
+
+- **Multi-user support** — The current data model is per-UID in Firestore, which is inherently multi-user. The gamification module is already initialised per-UID. Adding a second user is a sign-up/onboarding flow change, not a data model change.
+- **Framework migration path** — When/if HealThee grows to a team-developed product, migrate to a framework (React/Svelte/Solid). The gamification module (`core.js`, `store.js`) is pure logic with no DOM coupling — it ports cleanly to any framework without rewriting. The `ui.js` layer would be rewritten as components; `index.js` would become a store hook.
+- **Weekly Report Card as a server-side function** — Currently planned as a client-side summary. If HealThee ever adds email delivery, the report card could move to a Cloud Function that reads Firestore and sends a formatted email or push notification. The data shape is already Firestore-native.
+
+---
+
+## 15. Technical Notes (for future developers)
+
+### How XP awarding works (idempotency)
+
+`HTGam.onDaySaved(dayData, dateKey)` is called every time the user saves any data. To avoid awarding XP multiple times for the same action, the module maintains a **signature cache** per date:
+
+```
+sigCache[dateKey] = { meals: N, sleepLogged: bool, stepEntries: N, ... }
+```
+
+Each save computes the current signature, diffs it against the cached one, and only awards XP for the delta. The cache is in-memory (lost on page reload) — meaning a hard reload could re-award XP for the first save of a session. This is acceptable since `dayData` usually only changes incrementally within a session. Phase 2 could persist `sigCache` to Firestore if this becomes a concern.
+
+### Module API surface
+
+```js
+// Initialise (called once after Firebase auth + profile load)
+await HTGam.init({ firebaseDb, uid, enabled })
+
+// Called on every saveDay() — the only required integration point
+await HTGam.onDaySaved(dayData, dateKey)
+
+// Toggle gamified mode on/off (called by setGameMode in health.html)
+HTGam.setEnabled(bool)
+
+// Render UI into mount elements
+HTGam.renderHud(el)
+HTGam.renderTrophyWall(el)
+HTGam.renderDailyChallenges(el, dateKey)
+
+// Complete a daily challenge (called when user taps a challenge)
+await HTGam.completeDailyChallenge(challengeId, dateKey)
+
+// Read state (for debugging / testing)
+HTGam.getState()
+```
+
+### Testing strategy
+
+- **Unit tests** (`npm test`): pure logic in Node — no browser, no Firebase. Run in milliseconds. Cover all edge cases.
+- **E2E tests** (`npx playwright test`): real Chromium, real ES module loading, real DOM. Cover: module loads, API surface, end-to-end `onDaySaved` flow, Trophy Wall rendering.
+- **To run all tests:** `npm run test:all`
+
+### Adding a new badge
+
+1. Add the badge definition to `BADGES` in `core.js` with an `id`, `cat`, `name`, and `test(ctx)` predicate.
+2. Add the badge icon to `BADGE_ICONS` in `ui.js`.
+3. Ensure the `ctx` object passed to `evaluateBadges()` in `applyDaySave` includes whatever field the predicate needs.
+4. Add a unit test in `tests/unit/core.test.js`.
+
+### Adding a new XP action
+
+1. Add the XP value to `XP_REWARDS` in `core.js`.
+2. Add the delta computation to `diffSignatures()` in `index.js`.
+3. Add the field to `computeDaySignature()` so it's tracked in the sig cache.
+4. Update the unit tests in `index.test.js`.
+
+---
+
+*Last updated: May 2026 — Phase 1 shipped. Phase 2 roadmap defined.*
