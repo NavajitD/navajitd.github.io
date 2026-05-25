@@ -1,0 +1,49 @@
+{
+  "hosting": [
+    {
+      "site": "numo",
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "firestore.rules",
+        "MEMORY_ROADMAP.md",
+        "functions/**",
+        ".git/**",
+        "node_modules/**",
+        "*.pdf"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "site": "numo-3984a",
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "firestore.rules",
+        "MEMORY_ROADMAP.md",
+        "functions/**",
+        ".git/**",
+        "node_modules/**",
+        "*.pdf"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs22"
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

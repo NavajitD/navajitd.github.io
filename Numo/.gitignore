@@ -1,0 +1,6 @@
+functions/node_modules/
+functions/.env
+*.pdf
+.DS_Store
+firebase-debug.log
+.firebase/
