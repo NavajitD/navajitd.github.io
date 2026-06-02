@@ -61,8 +61,10 @@
         .btn-row{display:flex;gap:.75rem;margin-top:1.5rem;flex-wrap:wrap}
 
         /* ─── Preview ─── */
-        .preview-box{border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-top:1rem;max-height:300px;overflow-y:auto;font-size:.875rem;line-height:1.7;color:var(--text)}
+        .preview-box{border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-top:1rem;max-height:480px;overflow-y:auto;font-size:.875rem;line-height:1.7;color:var(--text)}
         .preview-box *{font-family:inherit}
+        .preview-box[contenteditable="true"]{cursor:text}
+        .preview-box[contenteditable="true"]:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);outline:none}
         .preview-label{font-size:.8125rem;font-weight:600;color:var(--muted);margin-bottom:.5rem}
 
         /* ─── Post List ─── */
@@ -152,8 +154,8 @@
         </div>
 
         <div id="previewSection" style="display:none">
-            <div class="preview-label">Content preview</div>
-            <div class="preview-box" id="htmlPreview"></div>
+            <div class="preview-label">Content <span style="font-weight:400">(click below to edit directly)</span></div>
+            <div class="preview-box" id="htmlPreview" contenteditable="true"></div>
             <div style="font-size:.8125rem;color:var(--muted);margin-top:.5rem" id="readTimeDisplay"></div>
         </div>
 
@@ -336,8 +338,13 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     const successEl = document.getElementById('uploadSuccess');
     const errorEl = document.getElementById('uploadError');
 
+    // Capture any inline edits made directly in the editable content preview.
+    if (document.getElementById('previewSection').style.display !== 'none') {
+        convertedHtml = document.getElementById('htmlPreview').innerHTML.trim();
+    }
+
     if (!title) { showAlert(errorEl, 'Title is required.'); return; }
-    if (!convertedHtml) { showAlert(errorEl, 'No content — upload a .docx file first.'); return; }
+    if (!convertedHtml) { showAlert(errorEl, 'No content — upload a .docx/.md file or type some content first.'); return; }
 
     const btnText = document.getElementById('submitBtnText');
     btnText.innerHTML = '<span class="spinner"></span> Publishing…';
@@ -387,6 +394,7 @@ function clearForm() {
     document.getElementById('postExcerpt').value = '';
     document.getElementById('postAuthor').value = 'Navajit D';
     document.getElementById('fileStatus').textContent = '';
+    document.getElementById('htmlPreview').innerHTML = '';
     document.getElementById('previewSection').style.display = 'none';
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('fileInput').value = '';
