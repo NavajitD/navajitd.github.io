@@ -591,6 +591,36 @@
             </details>
         </div>
 
+        <div class="project-item" id="aria">
+            <h3 class="project-title">
+                <a href="https://talktoaria.web.app" target="_blank" rel="noopener">Aria</a>
+                <span class="project-status status-active">Live</span>
+            </h3>
+            <div class="project-meta">Pipecat · Deepgram · Sarvam · Vobiz · Cloud Run · Firestore · 2026</div>
+            <p class="project-description">Experience a voice agent calling you (a parent) after your child's Demo class at Vedantu, gauging your interest and reasoning through objections to close a sale. Pick a parent persona, enter your phone, and Aria calls you in Hinglish to roleplay — watch its intent classification, objection plays, and next-step decisions in real time. Pipecat pipeline, Deepgram Nova-3 STT + Sarvam Bulbul v3 TTS, key-rotating LLM pool (Groq → Cerebras → Gemini), Vobiz telephony.</p>
+            <div class="project-links">
+                <a href="https://talktoaria.web.app" target="_blank" rel="noopener">Launch</a>
+                <a href="https://github.com/NavajitD/sales-conversion-agent" target="_blank" rel="noopener">Git Repo</a>
+            </div>
+            <details class="project-instructions">
+                <summary>How to Use</summary>
+                <div class="instructions-body">
+                    <strong>Try the live demo</strong>
+                    <ol>
+                        <li>Open <a href="https://talktoaria.web.app" target="_blank" rel="noopener">talktoaria.web.app</a> on a device with a working phone number you can answer</li>
+                        <li>Pick one of five parent personas (Sharma + Aarav + JEE, Reddy + Pranavi + JEE Crash, Iyer + Diya + NEET, etc.)</li>
+                        <li>Enter your phone in E.164 format (e.g. <code>+9198XXXXXXXX</code>)</li>
+                        <li>Click <strong>Call me</strong>. Pick up — Aria will greet you in Hindi and start the conversation</li>
+                        <li>Roleplay the parent. Try a soft objection ("PW sasta hai"), a stall ("sochna padega"), or a hard no ("interest nahi") — see how the agent's reasoning panel responds in real time</li>
+                    </ol>
+                    <strong>Rate limit</strong>
+                    <p>Each phone number can trigger up to 5 demo calls per hour (per build-cost discipline). The dashboard shows your remaining quota; the call button locks at 0.</p>
+                    <strong>What's under the hood</strong>
+                    <p>FastAPI + Pipecat on Cloud Run · Firestore for CRM + call logs · Deepgram Nova-3 STT + Sarvam Bulbul v3 TTS · OpenAI-compatible LLM proxy with key rotation across Groq, Cerebras, Gemini · Firebase Hosting rewrites for REST · direct Cloud Run WebSocket for media + reasoning panel. Source on GitHub.</p>
+                </div>
+            </details>
+        </div>
+
         <div class="project-item" id="health-tracker">
             <h3 class="project-title">
                 <a href="/Projects/HealThee/health.html">HealThee</a>
