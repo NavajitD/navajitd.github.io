@@ -2577,6 +2577,11 @@
         };
 
         let _ragIndex = null;
+        // Per-category payment frequency, recency-decayed. Built in the same pass as
+        // the RAG index so suggestion lookup is O(1) and there is no extra walk over
+        // allExpenses — index build remains the only O(n) work, no matter the volume.
+        // Shape: { [category]: { methods: Map<paymentMethod, weight>, topMethod, topWeight } }
+        let _categoryPaymentStats = null;
 
         function ragTokenize(text) {
             const s = (text || '').toString().toLowerCase().normalize('NFKC');
@@ -2596,6 +2601,9 @@
         function buildRagIndex() {
             const docs = [];
             const df = new Map();
+            const payStats = {};
+            const now = Date.now();
+            const halfLife = RAG_CONFIG.recencyHalfLifeDays;
             for (const e of allExpenses) {
                 if (!e.expenseName || !e.category) continue;
                 const tokens = ragTokenize(e.expenseName);
@@ -2613,8 +2621,67 @@
                     norm: Math.sqrt(tokens.length),
                     corrected: !!e.manuallyCategorized,
                 });
+                if (e.paymentMethod) {
+                    let w = 1;
+                    if (e.date) {
+                        const dt = e.date instanceof Date ? e.date : new Date(e.date);
+                        const ageDays = Math.max(0, (now - dt.getTime()) / 86400000);
+                        w = Math.exp(-ageDays / halfLife);
+                    }
+                    if (e.manuallyCategorized) w *= RAG_CONFIG.correctionBoost;
+                    let bucket = payStats[e.category];
+                    if (!bucket) {
+                        bucket = { methods: new Map(), topMethod: null, topWeight: 0 };
+                        payStats[e.category] = bucket;
+                    }
+                    const next = (bucket.methods.get(e.paymentMethod) || 0) + w;
+                    bucket.methods.set(e.paymentMethod, next);
+                    if (next > bucket.topWeight) {
+                        bucket.topMethod = e.paymentMethod;
+                        bucket.topWeight = next;
+                    }
+                }
             }
             _ragIndex = { docs, df };
+            _categoryPaymentStats = payStats;
+        }
+
+        // O(1) lookup against the precomputed map.
+        // Returns { method, card } or null. `method` is the value to set in the
+        // #expPayment select; `card` is the credit-card name when applicable.
+        function suggestPaymentForCategory(category) {
+            if (!category || !_categoryPaymentStats) return null;
+            const bucket = _categoryPaymentStats[category];
+            if (!bucket || !bucket.topMethod) return null;
+            const top = bucket.topMethod;
+            const m = /^cc\s*-\s*(.+)$/i.exec(top);
+            if (m) return { method: 'Credit card', card: m[1].trim() };
+            return { method: top, card: null };
+        }
+
+        // Tracks whether the user has manually touched the payment field in this
+        // form session. If true, category-driven suggestions stop overriding it.
+        let _paymentUserSet = false;
+
+        function applyPaymentSuggestion(opts) {
+            const force = !!(opts && opts.force);
+            if (!force && _paymentUserSet) return;
+            const paySelect = document.getElementById('expPayment');
+            const catSelect = document.getElementById('expCategory');
+            if (!paySelect || !catSelect) return;
+            const sug = suggestPaymentForCategory(catSelect.value);
+            if (!sug) return;
+            const opt = Array.from(paySelect.options).find(o => o.value === sug.method);
+            if (!opt) return;
+            paySelect.value = sug.method;
+            if (sug.card) {
+                const radio = document.querySelector(`input[name="cardType"][value="${sug.card}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    saveLastSelectedCard(sug.card);
+                }
+            }
+            updateBillingInfo();
         }
 
         function ragRetrieve(query, k) {
@@ -3074,7 +3141,9 @@
             document.getElementById('expDate').value = getLastUsedDate() || todayStr;
 
             document.getElementById('expPayment').addEventListener('change', updateBillingInfo);
+            document.getElementById('expPayment').addEventListener('change', () => { _paymentUserSet = true; });
             document.getElementById('expDate').addEventListener('change', updateBillingInfo);
+            document.getElementById('expCategory').addEventListener('change', () => applyPaymentSuggestion());
             updateBillingInfo();
 
             document.getElementById('editExpPayment').addEventListener('change', updateEditBillingInfo);
@@ -3086,7 +3155,10 @@
                 autoTimer = setTimeout(() => {
                     const m = autoCategory(this.value);
                     lastAutoSuggestedCategory = m;
-                    if (m) document.getElementById('expCategory').value = m;
+                    if (m) {
+                        document.getElementById('expCategory').value = m;
+                        applyPaymentSuggestion();
+                    }
                 }, 150);
             });
 
@@ -3259,6 +3331,7 @@
         function resetForm() {
             document.getElementById('expName').value = '';
             lastAutoSuggestedCategory = null;
+            _paymentUserSet = false;
             document.getElementById('expAmount').value = '';
             document.getElementById('expCategory').selectedIndex = 0;
             const today = new Date();
@@ -3274,6 +3347,7 @@
                 if (first) first.checked = true;
             }
             toggleShared();
+            applyPaymentSuggestion();
             updateBillingInfo();
         }
         function toggleShared() {
@@ -3910,6 +3984,9 @@ OTHER RULES:
                     const opt = Array.from(sel.options).find(o => o.value.toLowerCase() === raw.toLowerCase());
                     if (opt) sel.value = opt.value;
                 }
+                _paymentUserSet = true;
+            } else if (parsed.category) {
+                applyPaymentSuggestion();
             }
             updateBillingInfo();
         }
