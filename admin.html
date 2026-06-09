@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Admin — Navajit D</title>
+    <title>Admin — Navajit D</title>
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -15,7 +15,7 @@
             --success: #16a34a; --font: "Inconsolata", monospace;
         }
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:var(--font);color:var(--text);background:var(--bg);min-height:100vh;padding:2rem 1.5rem;max-width:52rem;margin:0 auto}
+        body{font-family:var(--font);color:var(--text);background:var(--bg);min-height:100vh;padding:2rem 1.5rem;max-width:58rem;margin:0 auto}
 
         /* ─── Login Screen ─── */
         #loginScreen{display:flex;align-items:center;justify-content:center;min-height:80vh}
@@ -40,7 +40,7 @@
         /* ─── Forms ─── */
         label{display:block;font-size:.8125rem;font-weight:600;margin-bottom:.375rem;color:var(--muted)}
         input[type=text],input[type=date],input[type=email],input[type=password],textarea,select{width:100%;padding:.625rem .75rem;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.9375rem;color:var(--text);background:var(--bg);transition:border-color .2s;outline:none}
-        input:focus,textarea:focus{border-color:var(--accent)}
+        input:focus,textarea:focus,select:focus{border-color:var(--accent)}
         textarea{resize:vertical;min-height:5rem}
         .form-row{margin-bottom:1.25rem}
         .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
@@ -86,6 +86,25 @@
         .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
         .spinner-dark{border-color:rgba(0,0,0,.15);border-top-color:var(--accent)}
         @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* ─── Metrics ─── */
+        .mx-bar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end;margin-bottom:1.5rem}
+        .mx-field{display:flex;flex-direction:column;gap:.25rem}
+        .mx-field label{margin-bottom:0}
+        .mx-field select{width:auto;min-width:8rem;padding:.4rem .6rem;font-size:.8125rem}
+        .mx-status{font-size:.75rem;color:var(--muted);margin-left:auto;align-self:center}
+        .mx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(10rem,1fr));gap:.75rem;margin-bottom:2rem}
+        .mx-card{border:1px solid var(--border);border-radius:8px;padding:1rem}
+        .mx-card .v{font-size:1.5rem;font-weight:700;line-height:1.1}
+        .mx-card .l{font-size:.75rem;color:var(--muted);margin-top:.35rem}
+        .mx-card .s{font-size:.7rem;color:var(--accent);margin-top:.25rem}
+        .mx-section-title{font-size:.9375rem;font-weight:700;margin:1.5rem 0 .75rem}
+        table.mx-table{width:100%;border-collapse:collapse;font-size:.8125rem}
+        table.mx-table th,table.mx-table td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--border)}
+        table.mx-table th{color:var(--muted);font-weight:600;white-space:nowrap}
+        table.mx-table td.num,table.mx-table th.num{text-align:right;font-variant-numeric:tabular-nums}
+        .mx-empty{padding:1.5rem;color:var(--muted);text-align:center;font-size:.8125rem}
+        .mx-note{font-size:.75rem;color:var(--muted);margin-top:.5rem;line-height:1.5}
     </style>
 </head>
 <body>
@@ -93,7 +112,7 @@
 <!-- ─── Login Screen ─────────────────────────────────────────────────────── -->
 <div id="loginScreen">
     <div class="login-box">
-        <h2>Blog Admin</h2>
+        <h2>Admin</h2>
         <p>Sign in with your Google account to continue.</p>
         <div class="alert alert-error" id="loginError"></div>
         <button class="btn btn-google" id="loginBtn">
@@ -106,7 +125,7 @@
 <!-- ─── Admin App ─────────────────────────────────────────────────────────── -->
 <div id="adminApp" style="display:none">
     <div class="admin-header">
-        <h1>Blog Admin</h1>
+        <h1>Admin</h1>
         <div class="user-badge">
             <span id="userEmail"></span>
             <button class="btn btn-secondary btn-sm" id="signOutBtn">Sign out</button>
@@ -114,12 +133,51 @@
     </div>
 
     <div class="tabs">
-        <button class="tab active" data-tab="upload">Upload Post</button>
+        <button class="tab active" data-tab="metrics">Metrics</button>
+        <button class="tab" data-tab="upload">Upload Post</button>
         <button class="tab" data-tab="posts">All Posts</button>
     </div>
 
+    <!-- ─── Metrics Tab ─── -->
+    <div class="tab-panel active" id="tabMetrics">
+        <div class="alert alert-error" id="mxError"></div>
+        <div class="mx-bar">
+            <div class="mx-field">
+                <label for="mxWindow">Window</label>
+                <select id="mxWindow">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                    <option value="all">All time</option>
+                </select>
+            </div>
+            <div class="mx-field">
+                <label for="mxOs">OS</label>
+                <select id="mxOs"><option value="">All</option></select>
+            </div>
+            <div class="mx-field">
+                <label for="mxDevice">Device</label>
+                <select id="mxDevice"><option value="">All</option></select>
+            </div>
+            <div class="mx-field">
+                <label for="mxBrowser">Browser</label>
+                <select id="mxBrowser"><option value="">All</option></select>
+            </div>
+            <div class="mx-field">
+                <label for="mxCountry">Country</label>
+                <select id="mxCountry"><option value="">All</option></select>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="mxRefresh">Refresh</button>
+            <span class="mx-status" id="mxStatus"></span>
+        </div>
+
+        <div id="mxBody">
+            <div class="mx-empty"><div class="spinner spinner-dark" style="margin:0 auto .75rem"></div>Loading metrics…</div>
+        </div>
+    </div>
+
     <!-- ─── Upload Tab ─── -->
-    <div class="tab-panel active" id="tabUpload">
+    <div class="tab-panel" id="tabUpload">
         <div class="alert alert-success" id="uploadSuccess"></div>
         <div class="alert alert-error" id="uploadError"></div>
 
@@ -165,6 +223,7 @@
             </button>
             <button class="btn btn-secondary" id="clearBtn">Clear</button>
         </div>
+        <div class="mx-note">After publishing, run <strong>Rebuild blog index</strong> (GitHub Actions) or <code>npm run build:blog</code> so the static blog list picks up the change.</div>
     </div>
 
     <!-- ─── Posts Tab ─── -->
@@ -221,6 +280,7 @@ auth.onAuthStateChanged(user => {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminApp').style.display = 'block';
         document.getElementById('userEmail').textContent = user.email;
+        loadMetrics();   // default tab
         loadPosts();
     } else {
         if (user) { auth.signOut(); showAlert(document.getElementById('loginError'), 'Access restricted to ' + ALLOWED_EMAIL); }
@@ -253,6 +313,7 @@ document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.add('active');
         document.getElementById('tab' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
         if (tab.dataset.tab === 'posts') loadPosts();
+        if (tab.dataset.tab === 'metrics' && !mxLoaded) loadMetrics();
     });
 });
 
@@ -260,8 +321,162 @@ document.querySelectorAll('.tab').forEach(tab => {
 function showAlert(el, msg) { el.textContent = msg; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 6000); }
 function readTime(text) { return Math.max(1, Math.round(text.split(/\s+/).filter(Boolean).length / 200)) + ' min read'; }
 function todayISO() { return new Date().toISOString().slice(0, 10); }
-function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
 function fmtBytes(b) { return b > 1e6 ? (b/1e6).toFixed(1) + ' MB' : Math.round(b/1024) + ' KB'; }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  METRICS
+// ════════════════════════════════════════════════════════════════════════════
+let mxRaw = [];          // raw events in the current window (in-memory cache)
+let mxLoaded = false;
+let mxPostTitles = {};   // id -> title (from posts.json)
+
+const mxWindowSel  = document.getElementById('mxWindow');
+const mxOsSel      = document.getElementById('mxOs');
+const mxDeviceSel  = document.getElementById('mxDevice');
+const mxBrowserSel = document.getElementById('mxBrowser');
+const mxCountrySel = document.getElementById('mxCountry');
+
+document.getElementById('mxRefresh').addEventListener('click', () => loadMetrics(true));
+mxWindowSel.addEventListener('change', () => loadMetrics(true));     // window changes the query → refetch
+[mxOsSel, mxDeviceSel, mxBrowserSel, mxCountrySel].forEach(s => s.addEventListener('change', renderMetrics)); // client-side
+
+function pct(arr, p) {
+    if (!arr.length) return 0;
+    const s = arr.slice().sort((a, b) => a - b);
+    const rank = Math.ceil((p / 100) * s.length);
+    return s[Math.min(s.length, Math.max(1, rank)) - 1];
+}
+function fmtDur(ms) {
+    if (!ms || ms < 0) return '0s';
+    const sec = Math.round(ms / 1000);
+    if (sec < 60) return sec + 's';
+    const m = Math.floor(sec / 60), r = sec % 60;
+    return m + 'm' + (r ? ' ' + r + 's' : '');
+}
+function setOptions(sel, values) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All</option>' + values.map(v => `<option value="${escHtml(v)}">${escHtml(v)}</option>`).join('');
+    if (values.includes(cur)) sel.value = cur;
+}
+function distinct(events, key) {
+    return Array.from(new Set(events.map(e => e[key]).filter(Boolean))).sort();
+}
+
+async function loadMetrics(force) {
+    if (mxLoaded && !force) return;
+    const bodyEl = document.getElementById('mxBody');
+    document.getElementById('mxError').classList.remove('show');
+    bodyEl.innerHTML = '<div class="mx-empty"><div class="spinner spinner-dark" style="margin:0 auto .75rem"></div>Loading metrics…</div>';
+    document.getElementById('mxStatus').textContent = '';
+
+    // Load post titles once (best-effort) for nicer labels.
+    if (!Object.keys(mxPostTitles).length) {
+        try {
+            const r = await fetch('/posts.json', { cache: 'no-cache' });
+            if (r.ok) { (await r.json()).posts.forEach(p => { mxPostTitles[p.id] = p.title; }); }
+        } catch (e) {}
+    }
+
+    try {
+        let q = db.collection('analytics_events');
+        const win = mxWindowSel.value;
+        if (win !== 'all') {
+            const cutoff = new Date(Date.now() - parseInt(win, 10) * 86400000).toISOString();
+            q = q.where('ts', '>=', cutoff);
+        }
+        // Bound the read so the admin tab stays fast regardless of total volume.
+        const snap = await q.orderBy('ts', 'desc').limit(50000).get();
+        mxRaw = snap.docs.map(d => d.data());
+        mxLoaded = true;
+
+        // Populate segment filters from the full loaded set.
+        setOptions(mxOsSel, distinct(mxRaw, 'os'));
+        setOptions(mxDeviceSel, distinct(mxRaw, 'device'));
+        setOptions(mxBrowserSel, distinct(mxRaw, 'browser'));
+        setOptions(mxCountrySel, distinct(mxRaw, 'country'));
+
+        renderMetrics();
+    } catch (e) {
+        bodyEl.innerHTML = '';
+        showAlert(document.getElementById('mxError'), 'Failed to load metrics: ' + e.message);
+    }
+}
+
+function applyFilters() {
+    const os = mxOsSel.value, dev = mxDeviceSel.value, br = mxBrowserSel.value, c = mxCountrySel.value;
+    return mxRaw.filter(e =>
+        (!os || e.os === os) && (!dev || e.device === dev) &&
+        (!br || e.browser === br) && (!c || e.country === c));
+}
+
+function renderMetrics() {
+    if (!mxLoaded) return;
+    const ev = applyFilters();
+    const byType = t => ev.filter(e => e.type === t);
+    const u = es => new Set(es.map(e => e.vid)).size;             // unique individuals
+    const pv = byType('page_view');
+    const pvPage = pg => pv.filter(e => e.page === pg);
+
+    const downloads = u(byType('resume_download'));
+    const leads = u(byType('resume_email_lead'));
+
+    const cards = [
+        { v: u(pv), l: 'Site visitors', s: pv.length + ' views' },
+        { v: u(pvPage('projects')), l: 'Projects page' },
+        { v: u(byType('experience_click')), l: 'Experience clicks' },
+        { v: u(byType('resume_view')), l: 'Résumé views' },
+        { v: downloads, l: 'Résumé downloads', s: leads + ' left email' },
+        { v: u(pvPage('blog_list')), l: 'Blog list views' },
+    ];
+
+    // CTA breakdown (projects page)
+    const ctaMap = {};
+    byType('cta_click').forEach(e => {
+        const key = (e.project || '?') + ' ‹ ' + (e.label || '?');
+        const c = ctaMap[key] || (ctaMap[key] = { project: e.project || '?', label: e.label || '?', clickers: new Set(), total: 0 });
+        c.clickers.add(e.vid); c.total++;
+    });
+    const ctas = Object.values(ctaMap).map(c => ({ project: c.project, label: c.label, clickers: c.clickers.size, total: c.total }))
+        .sort((a, b) => b.clickers - a.clickers);
+
+    // Per-post engagement
+    const postMap = {};
+    const P = id => postMap[id] || (postMap[id] = { openers: new Set(), reads: new Set(), dwell: [] });
+    pvPage('blog_post').forEach(e => { if (e.postId) P(e.postId).openers.add(e.vid); });
+    byType('post_read_end').forEach(e => { if (e.postId) P(e.postId).reads.add(e.vid); });
+    byType('post_dwell').forEach(e => { if (e.postId && typeof e.ms === 'number') P(e.postId).dwell.push(e.ms); });
+    const posts = Object.entries(postMap).map(([id, p]) => ({
+        id, title: mxPostTitles[id] || id,
+        opens: p.openers.size, reads: p.reads.size,
+        completion: p.openers.size ? Math.round(100 * p.reads.size / p.openers.size) : 0,
+        p50: pct(p.dwell, 50), p90: pct(p.dwell, 90), p99: pct(p.dwell, 99), n: p.dwell.length
+    })).sort((a, b) => b.opens - a.opens);
+
+    // ── Render ──
+    let html = '<div class="mx-cards">' + cards.map(c =>
+        `<div class="mx-card"><div class="v">${c.v.toLocaleString('en-IN')}</div><div class="l">${c.l}</div>${c.s ? `<div class="s">${c.s}</div>` : ''}</div>`
+    ).join('') + '</div>';
+
+    html += '<div class="mx-section-title">CTA clicks — Projects page</div>';
+    html += ctas.length
+        ? '<table class="mx-table"><thead><tr><th>Project</th><th>CTA</th><th class="num">Individuals</th><th class="num">Total clicks</th></tr></thead><tbody>'
+            + ctas.map(c => `<tr><td>${escHtml(c.project)}</td><td>${escHtml(c.label)}</td><td class="num">${c.clickers}</td><td class="num">${c.total}</td></tr>`).join('')
+            + '</tbody></table>'
+        : '<div class="mx-empty">No CTA clicks in this range.</div>';
+
+    html += '<div class="mx-section-title">Blog posts — opens, completion & time on page</div>';
+    html += posts.length
+        ? '<table class="mx-table"><thead><tr><th>Post</th><th class="num">Opens</th><th class="num">Read to end</th><th class="num">Completion</th><th class="num">p50</th><th class="num">p90</th><th class="num">p99</th></tr></thead><tbody>'
+            + posts.map(p => `<tr><td>${escHtml(p.title)}</td><td class="num">${p.opens}</td><td class="num">${p.reads}</td><td class="num">${p.completion}%</td><td class="num">${fmtDur(p.p50)}</td><td class="num">${fmtDur(p.p90)}</td><td class="num">${fmtDur(p.p99)}</td></tr>`).join('')
+            + '</tbody></table>'
+            + '<div class="mx-note">Completion = unique readers who hit the end ÷ unique openers. p50/p90/p99 are percentiles of active time on the page (foreground only).</div>'
+        : '<div class="mx-empty">No blog-post activity in this range.</div>';
+
+    document.getElementById('mxBody').innerHTML = html;
+    document.getElementById('mxStatus').textContent =
+        `${ev.length.toLocaleString('en-IN')} events · loaded ${new Date().toLocaleTimeString('en-IN')}`;
+}
 
 // ─── Blog: File Drop & Upload ─────────────────────────────────────────────────
 let convertedHtml = '';

@@ -1,0 +1,35 @@
+name: Rebuild blog index
+
+# Regenerates posts.json (the static blog list read by blog.html) from Firestore.
+# Run it from the Actions tab after publishing a post, or let the schedule pick it
+# up. It only commits when the index actually changed.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *' # every 6 hours
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build posts.json
+        run: node scripts/build-blog-index.mjs
+      - name: Commit if changed
+        run: |
+          if ! git diff --quiet -- posts.json; then
+            git config user.name "blog-index-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add posts.json
+            git commit -m "chore: rebuild blog index [skip ci]"
+            git push
+          else
+            echo "posts.json unchanged — nothing to commit."
+          fi

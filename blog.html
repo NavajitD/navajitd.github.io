@@ -6,8 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
     <title>Blog - Navajit D</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script defer src="/analytics.js"></script>
     <style>
         :root {
             --text-color: #0a1f00; --bg-color: #fff; --accent-color: #2563eb;
@@ -99,22 +98,15 @@
     </footer>
 
 <script>
-// ─── Firebase Config (Numo) ───────────────────────────────────────────────────
-const firebaseConfig = {
-    apiKey: "AIzaSyCuJBqQWKpbhj3FEYpg_p_nhbjTEFg8Lt4",
-    authDomain: "numo-3984a.firebaseapp.com",
-    projectId: "numo-3984a",
-    storageBucket: "numo-3984a.firebasestorage.app",
-    messagingSenderId: "952036501569",
-    appId: "1:952036501569:web:c5776da3fe8eb0c249fec0"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-
 // ─── Constants ────────────────────────────────────────────────────────────────
+// The post list is served as a prebuilt static file (posts.json), regenerated on
+// publish by scripts/build-blog-index.mjs + a GitHub Action. No Firebase SDK is
+// loaded here, so the list renders almost instantly. Firestore REST is only a
+// silent fallback if posts.json is ever missing.
 const POSTS_PER_BATCH = 5;
 const LIST_CACHE_TTL = 30 * 60 * 1000; // 30 min
+const POSTS_JSON_URL = '/posts.json';
+const FIRESTORE_REST = 'https://firestore.googleapis.com/v1/projects/numo-3984a/databases/(default)/documents/posts?key=AIzaSyCuJBqQWKpbhj3FEYpg_p_nhbjTEFg8Lt4&pageSize=300';
 
 let allPosts = [], renderedCount = 0, isLoadingMore = false;
 
@@ -145,22 +137,48 @@ function setCachedList(posts) {
     try { localStorage.setItem('blog_list', JSON.stringify({ posts, ts: Date.now() })); } catch(e) {}
 }
 
-// ─── Fetch Post List from Firestore ──────────────────────────────────────────
+// ─── Fetch Post List (static JSON first, REST fallback) ───────────────────────
+function normalize(posts) {
+    return posts.map(p => ({
+        id: p.id,
+        title: p.title || 'Untitled',
+        date: p.date || new Date().toISOString(),
+        excerpt: p.excerpt || '',
+        readTime: p.readTime || ''
+    })).sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+// Fallback only: parse Firestore REST typed values into the same shape.
+function fromRest(documents) {
+    const v = f => f ? (f.stringValue ?? f.timestampValue ?? f.integerValue ?? '') : '';
+    return (documents || []).map(doc => {
+        const f = doc.fields || {};
+        return {
+            id: doc.name.split('/').pop(),
+            title: v(f.title),
+            date: v(f.date) ? new Date(v(f.date)).toISOString() : new Date().toISOString(),
+            excerpt: v(f.excerpt),
+            readTime: v(f.readTime)
+        };
+    });
+}
+
 async function fetchPostList() {
     const cached = getCachedList();
     if (cached) return cached;
-    const snapshot = await db.collection('posts').orderBy('date', 'desc').get();
-    const posts = snapshot.docs.map(doc => {
-        const d = doc.data();
-        const dateVal = d.date?.toDate ? d.date.toDate().toISOString() : (d.date || new Date().toISOString());
-        return {
-            id: doc.id,
-            title: d.title || 'Untitled',
-            date: dateVal,
-            excerpt: d.excerpt || '',
-            readTime: d.readTime || ''
-        };
-    });
+    let posts;
+    try {
+        const res = await fetch(POSTS_JSON_URL, { cache: 'no-cache' });
+        if (!res.ok) throw new Error('posts.json ' + res.status);
+        const data = await res.json();
+        posts = normalize(data.posts || []);
+        if (!posts.length) throw new Error('empty index');
+    } catch (e) {
+        const res = await fetch(FIRESTORE_REST);
+        if (!res.ok) throw new Error('Firestore REST ' + res.status);
+        const data = await res.json();
+        posts = normalize(fromRest(data.documents));
+    }
     setCachedList(posts);
     return posts;
 }

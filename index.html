@@ -9,6 +9,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
     
     <title>Navajit D - By design</title>
+    <script defer src="/analytics.js"></script>
     <style>
         /* Base Styles */
         :root {
@@ -126,7 +127,33 @@
         [data-theme="colorful"] .experience-title { color: var(--accent-color); }
         .experience-meta { font-size: 0.875rem; color: var(--muted-color); margin-bottom: 0.75rem; }
         [data-theme="colorful"] .experience-meta { color: var(--secondary-color); }
-        
+
+        /* Résumé */
+        .resume-block { margin-top: 2.5rem; }
+        .resume-cta { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .resume-btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.5rem 1rem; font-size: 0.9375rem; font-family: var(--font-sans);
+            color: var(--text-color); background: var(--bg-color);
+            border: 1px solid var(--border-color); border-radius: 6px;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .resume-btn:hover { border-color: var(--accent-color); color: var(--accent-color); text-decoration: none; }
+        .resume-btn-primary { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
+        .resume-btn-primary:hover { color: #fff; opacity: 0.9; }
+        .resume-lead { margin-top: 1.25rem; }
+        .resume-lead label { display: block; font-size: 0.875rem; color: var(--muted-color); margin-bottom: 0.5rem; }
+        .resume-lead-row { display: flex; gap: 0.5rem; max-width: 26rem; }
+        .resume-lead input {
+            flex: 1; padding: 0.5rem 0.75rem; font-family: var(--font-sans); font-size: 0.9375rem;
+            color: var(--text-color); background: var(--bg-color);
+            border: 1px solid var(--border-color); border-radius: 6px; outline: none; transition: border-color 0.2s ease;
+        }
+        .resume-lead input:focus { border-color: var(--accent-color); }
+        .resume-lead-msg { font-size: 0.8125rem; color: var(--success-color); margin-top: 0.5rem; min-height: 1rem; }
+        .resume-lead-msg.error { color: #dc2626; }
+        @media (max-width: 640px) { .resume-lead-row { flex-direction: column; max-width: none; } }
+
         /* Footer */
         footer {
             margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color);
@@ -183,21 +210,40 @@
         <h2 class="section-title">Experience</h2>
         
         <div class="experience-item">
-            <h3 class="experience-title">Founding AI PM</h3>
-            <div class="experience-meta">Pine Labs, Bengaluru · 2025 – Present</div>
-            <p>Built email automation saving INR 1.6L/month and resolving 5,000 tickets automatically. Deployed VoiceBots deflecting 7,000 calls/month. Focused on ROI over hype—bridging ML engineering and business outcomes.</p>
+            <h3 class="experience-title">AI Product Manager</h3>
+            <div class="experience-meta">Pine Labs, Bengaluru · May 2025 – Present</div>
+            <p>Founding AI PM shipping production AI agents with ROI over hype — ₹1.6 Cr/year in cost optimisation across a 32-initiative roadmap. A 24×7 multilingual voice agent now authenticates and resolves 44% of incoming calls; email agents auto-triage 59% of inbound (and deflect 56% in Malaysia). Also built a multimodal chat agent with contextual memory that lifted self-serve adoption 15%.</p>
         </div>
-        
+
         <div class="experience-item">
-            <h3 class="experience-title">Product Manager, Pine Labs One</h3>
-            <div class="experience-meta">Pine Labs, Bengaluru · 2024 – 2025</div>
-            <p>Slashed P95 load times from 23s to 10s by driving a database migration. Improved retention 15% and hit 100k MAUs two months early. Built the case to pause features and fix stability first.</p>
+            <h3 class="experience-title">Product Owner, Pine Labs One (Platform & Growth)</h3>
+            <div class="experience-meta">Pine Labs, Bengaluru · Sep 2024 – May 2025</div>
+            <p>Grew the merchant super-app from 49k to 100k MAUs with OTP login (+18% activation), vernacular expansion, and seven 0-to-1 features. Launched a merchant referral engine that cut CAC by ₹6 Cr, and replaced a 19-tool support stack with 3 — dropping p95 report time 73% to 90s.</p>
         </div>
-        
+
         <div class="experience-item">
             <h3 class="experience-title">Associate Product Manager, Pine Labs One</h3>
-            <div class="experience-meta">Pine Labs, Bengaluru · 2023 – 2024</div>
-            <p>Deprecated legacy TRM platform and migrated 19 internal teams to OneAdmin. Aligned workflows across Support, Risk, and Onboarding into a single UI while shipping On-Demand Settlements.</p>
+            <div class="experience-meta">Pine Labs, Bengaluru · Jul 2023 – Sep 2024</div>
+            <p>Shipped sales lead collection in 2 days — 300+ high-quality leads/month at 77% conversion, a third of all digital sales. Added invoice, bill-payment, and gift-card cross-sells (₹0.24 Cr/year) and drove retention up 22.8% quarter-on-quarter through field verification, call-centre redirection, and latency fixes.</p>
+        </div>
+
+        <div class="resume-block">
+            <div class="resume-cta">
+                <a class="resume-btn resume-btn-primary" id="resumeView" href="/resume.pdf" target="_blank" rel="noopener">
+                    View résumé
+                </a>
+                <a class="resume-btn" id="resumeDownload" href="/resume.pdf" download="Navjit-Debnath-Resume.pdf">
+                    Download résumé
+                </a>
+            </div>
+            <form class="resume-lead" id="resumeLead" novalidate>
+                <label for="resumeEmail">Hiring or just curious? Leave your email and I'll keep you posted — optional.</label>
+                <div class="resume-lead-row">
+                    <input type="email" id="resumeEmail" placeholder="you@example.com" autocomplete="email" aria-label="Your email">
+                    <button type="submit" class="resume-btn" id="resumeLeadBtn">Send</button>
+                </div>
+                <div class="resume-lead-msg" id="resumeLeadMsg" role="status"></div>
+            </form>
         </div>
     </section>
     
@@ -236,6 +282,61 @@
             if (!localStorage.getItem('theme')) {
                 if (e.matches) body.setAttribute('data-theme', 'colorful');
                 else body.removeAttribute('data-theme');
+            }
+        });
+
+        // ─── Résumé: view / download tracking + optional email lead ───
+        const track = (t, x) => { try { window.nvTrack && window.nvTrack(t, x || {}); } catch (e) {} };
+        document.getElementById('resumeView')?.addEventListener('click', () => track('resume_view'));
+        document.getElementById('resumeDownload')?.addEventListener('click', () => track('resume_download'));
+
+        // Lead capture writes to the JobHunt Firestore project over REST (no SDK,
+        // so the homepage stays SDK-free). Download works regardless — email is optional.
+        const JOBHUNT_LEADS_URL =
+            'https://firestore.googleapis.com/v1/projects/jobhunt-a6558/databases/(default)/documents/resume_leads' +
+            '?key=AIzaSyC52XlfIU5NDUnyiX-A92D_Ur6ZCHVoNZI';
+
+        document.getElementById('resumeLead')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('resumeEmail');
+            const msg = document.getElementById('resumeLeadMsg');
+            const btn = document.getElementById('resumeLeadBtn');
+            const email = (input.value || '').trim();
+            msg.className = 'resume-lead-msg';
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                msg.textContent = 'Please enter a valid email.';
+                msg.classList.add('error');
+                return;
+            }
+            btn.disabled = true;
+            const original = btn.textContent;
+            btn.textContent = 'Sending…';
+            try {
+                const body = {
+                    fields: {
+                        email: { stringValue: email },
+                        source: { stringValue: 'navajitd.github.io/resume' },
+                        ts: { timestampValue: new Date().toISOString() },
+                        ua: { stringValue: navigator.userAgent.slice(0, 300) },
+                        ref: { stringValue: document.referrer || '' }
+                    }
+                };
+                const res = await fetch(JOBHUNT_LEADS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                track('resume_email_lead');
+                msg.textContent = "Thanks — I'll be in touch.";
+                input.value = '';
+                input.disabled = true;
+                btn.textContent = 'Sent ✓';
+            } catch (err) {
+                msg.textContent = 'Something went wrong — try again later.';
+                msg.classList.add('error');
+                btn.disabled = false;
+                btn.textContent = original;
             }
         });
     </script>
