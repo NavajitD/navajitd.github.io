@@ -937,6 +937,81 @@
             color: #fff;
         }
 
+        /* ─── Auto Insights ─── */
+        .insight-card {
+            margin-top: 2rem;
+            padding: 0.9rem 1rem;
+            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .insight-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-card-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .insight-refresh {
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            line-height: 1;
+            background: none;
+            border: none;
+            color: var(--muted-color);
+            cursor: pointer;
+            padding: 0.15rem 0.3rem;
+            border-radius: 4px;
+            transition: color 0.2s ease, transform 0.3s ease;
+        }
+
+        .insight-refresh:hover {
+            color: var(--accent-color);
+        }
+
+        .insight-refresh.spinning {
+            animation: spin 0.8s linear infinite;
+            color: var(--accent-color);
+        }
+
+        .insight-card-body {
+            font-size: 0.84rem;
+            line-height: 1.55;
+            color: var(--text-color);
+            white-space: pre-wrap;
+        }
+
+        .insight-card-body .insight-loading {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--muted-color);
+            font-size: 0.82rem;
+        }
+
+        .insight-card-body .insight-recs {
+            margin-top: 0.7rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .insight-card-body .insight-muted {
+            color: var(--muted-color);
+            font-size: 0.82rem;
+        }
+
         /* ─── Pinned Suggestions ─── */
         .suggestions-banner {
             margin-top: 0.5rem;
@@ -2275,8 +2350,8 @@
         <div id="section-analytics" class="section-content">
             <div class="analytics-section">
                 <div class="filter-row">
-                    <select id="filterMonth" onchange="refreshAnalytics()"></select>
-                    <select id="filterYear" onchange="refreshAnalytics()"></select>
+                    <select id="filterMonth" onchange="refreshAnalytics(); generateAutoInsight()"></select>
+                    <select id="filterYear" onchange="refreshAnalytics(); generateAutoInsight()"></select>
                 </div>
                 <div class="metrics-row" id="metricsRow"></div>
                 <div class="sub-tabs">
@@ -2294,18 +2369,27 @@
                     <div class="chart-container" style="max-height:320px;"><canvas id="chartThemes"></canvas></div>
                     <div class="theme-legend" id="themeLegend"></div>
                 </div>
+                <!-- ─── Auto Insights ─── -->
+                <div class="insight-card" id="autoInsightCard" style="display:none;">
+                    <div class="insight-card-head">
+                        <span class="insight-card-label">✦ Insights</span>
+                        <button class="insight-refresh" id="insightRefresh" onclick="generateAutoInsight(true)" title="Refresh insights">↻</button>
+                    </div>
+                    <div class="insight-card-body" id="autoInsightBody"></div>
+                </div>
+
                 <!-- ─── Chat Advisor ─── -->
                 <div class="chat-section">
                     <div class="chat-section-label">✦ Expense Advisor</div>
                     <div class="chat-quick-prompts">
                         <button class="chat-quick-btn"
-                            onclick="askAdvisor('Where am I overspending this month?')">Overspending?</button>
+                            onclick="askAdvisor('What stands out about my spending this month?')">What stands out?</button>
                         <button class="chat-quick-btn"
-                            onclick="askAdvisor('Compare my spending this month vs last month')">Month comparison</button>
+                            onclick="askAdvisor('What is my single biggest opportunity to save money? Be specific.')">Biggest savings</button>
                         <button class="chat-quick-btn"
-                            onclick="askAdvisor('Give me 3 specific suggestions to reduce my expenses')">Cut costs</button>
+                            onclick="askAdvisor('Compare my spending this month vs last month')">This month vs last</button>
                         <button class="chat-quick-btn"
-                            onclick="askAdvisor('Which categories have increased the most recently?')">Trending up</button>
+                            onclick="askAdvisor('Are there any unusual or unusually large expenses recently?')">Unusual spends?</button>
                     </div>
                     <div class="chat-messages" id="chatMessages"></div>
                     <div class="chat-input-row">
@@ -4365,6 +4449,7 @@ OTHER RULES:
             if (name === 'analytics') {
                 if (chartjsLoaded) refreshAnalytics();
                 else loadChartJS().then(() => refreshAnalytics());
+                generateAutoInsight();
             }
             if (name === 'logs') renderRecent();
         }
@@ -4911,7 +4996,9 @@ Rules:
 - Be specific with numbers from the data, not generic advice.
 - The expense data includes pre-computed totals, daily averages, and transaction counts for each category. ALWAYS use these pre-computed numbers directly — never attempt your own arithmetic. If the user asks for an average or total, quote the number from the data as-is.
 - Keep responses under 150 words.
-- When suggesting changes, be actionable and reference specific categories/amounts.
+- When suggesting changes, be actionable and reference specific categories/amounts. Every recommendation must name a specific category and a concrete, quantified target — never give generic advice like "spend less" or "make a budget".
+- Lead with the single biggest savings opportunity (the discretionary category with the most room to cut), then add at most two more.
+- Treat fixed/essential categories (Rent/Maintenance, Insurance, Electricity, Internet, Phone, Medical expenses) as non-discretionary — do NOT recommend cutting them; focus cuts on discretionary spending (e.g. Eating out, Party, Liquor, Entertainment, Shopping).
 - If suggesting a spending target, frame it as: "Try to keep [category] under ₹X this month"
 - Use plain text, no markdown. Use line breaks for readability.
 - "Active days" means days where the user was actually tracking expenses (consecutive gaps of 3+ days without any expense are excluded). Always use active days for daily averages, not calendar days.
@@ -4974,6 +5061,130 @@ Rules:
 
             container.appendChild(msg);
             container.scrollTop = container.scrollHeight;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           AUTO INSIGHTS — proactive digest on Analytics open
+           ═══════════════════════════════════════════════════ */
+        const AUTO_INSIGHT_MIN_TXNS = 5;
+        let autoInsightInFlight = false;
+
+        function insightLangName() {
+            const code = (VOICE_LANGS[currentVoiceLangIdx] || {}).code || 'en-IN';
+            if (code.startsWith('hi')) return 'Hindi';
+            if (code.startsWith('bn')) return 'Bengali';
+            return 'English';
+        }
+
+        // Signature changes only when something material changes (period, txn
+        // count, total) so we don't burn an LLM call every time the tab toggles.
+        function autoInsightSignature() {
+            const data = getFilteredData();
+            const total = data.reduce((s, e) => s + e.amount, 0);
+            const period = document.getElementById('filterMonth').value + '-' + document.getElementById('filterYear').value;
+            return `${period}|${data.length}|${Math.round(total)}`;
+        }
+
+        function getAutoInsightCache() {
+            try { return JSON.parse(localStorage.getItem('autoInsightCache') || 'null'); } catch { return null; }
+        }
+
+        function isSameCalendarDay(ts) {
+            if (!ts) return false;
+            const a = new Date(ts), b = new Date();
+            return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+        }
+
+        function renderAutoInsight(text, suggestions) {
+            const body = document.getElementById('autoInsightBody');
+            if (!body) return;
+            body.textContent = text;
+            if (suggestions && suggestions.length) {
+                const recs = document.createElement('div');
+                recs.className = 'insight-recs';
+                suggestions.forEach(s => {
+                    const btn = document.createElement('button');
+                    btn.className = 'pin-suggestion-btn';
+                    btn.textContent = '📌 Pin: ' + (s.length > 50 ? s.substring(0, 50) + '…' : s);
+                    btn.onclick = () => {
+                        pinSuggestion(s);
+                        btn.textContent = '✓ Pinned';
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                    };
+                    recs.appendChild(btn);
+                });
+                body.appendChild(recs);
+            }
+        }
+
+        async function generateAutoInsight(force = false) {
+            const card = document.getElementById('autoInsightCard');
+            const body = document.getElementById('autoInsightBody');
+            if (!card || !body) return;
+
+            const data = getFilteredData();
+            // Too little data to say anything meaningful — keep the card hidden.
+            if (data.length < AUTO_INSIGHT_MIN_TXNS) { card.style.display = 'none'; return; }
+            card.style.display = 'block';
+
+            const lang = insightLangName();
+            const cacheKey = autoInsightSignature() + '|' + lang;
+            const cache = getAutoInsightCache();
+
+            // Serve cached digest instantly when nothing material changed today.
+            if (!force && cache && cache.key === cacheKey && isSameCalendarDay(cache.ts)) {
+                renderAutoInsight(cache.text, cache.suggestions || []);
+                return;
+            }
+
+            if (autoInsightInFlight) return;
+
+            if (!navigator.onLine) {
+                if (cache && cache.text) renderAutoInsight(cache.text, cache.suggestions || []);
+                else body.innerHTML = '<div class="insight-muted">Connect to the internet to see fresh insights.</div>';
+                return;
+            }
+
+            autoInsightInFlight = true;
+            const refreshBtn = document.getElementById('insightRefresh');
+            if (refreshBtn) refreshBtn.classList.add('spinning');
+            body.innerHTML = '<div class="insight-loading"><span class="spinner" style="border:2px solid var(--border-color);border-top-color:var(--accent-color);margin-right:0;"></span>Analyzing your spending…</div>';
+
+            try {
+                const summary = buildExpenseSummary('full overview comparing this month vs last month with spending trends, themes and recent transactions');
+                const systemPrompt = `You are a proactive personal finance advisor for an Indian user. Currency is INR (₹).
+Produce a brief, glanceable spending digest:
+- 2 to 4 short insight lines about what stands out THIS period — the largest categories, the most notable change vs the previous period, and the spending pace/projection. Prefix each line with "• ".
+- Use specific numbers from the provided data; never do your own arithmetic — quote the pre-computed totals, daily averages and transaction counts as-is.
+- Treat fixed/essential categories (Rent/Maintenance, Insurance, Electricity, Internet, Phone) as non-discretionary; never recommend cutting them.
+Rules:
+- Plain text, no markdown headers. Keep the whole reply under 130 words.
+- Write your entire reply in ${lang}.${lang === 'English' ? ' Use only the Latin alphabet — no Bengali or Devanagari script.' : ''}
+- End with the exact line [SUGGESTIONS] followed by 2-3 specific, quantified, actionable recommendations, each on its own line prefixed with "• ". Each must name a category and a concrete target, e.g. "Try to keep Eating out under ₹4,000 this month".`;
+
+                const prompt = `Here is my expense data:\n\n${summary}\n\nGive me my proactive spending digest now.`;
+                const reply = await callExpenseLLM(prompt, systemPrompt, false);
+
+                const parts = reply.split('[SUGGESTIONS]');
+                const text = parts[0].trim();
+                let suggestions = [];
+                if (parts.length > 1) {
+                    suggestions = parts[1].trim().split('\n')
+                        .map(s => s.replace(/^[•\-\*]\s*/, '').trim())
+                        .filter(s => s.length > 0);
+                }
+
+                renderAutoInsight(text, suggestions);
+                localStorage.setItem('autoInsightCache', JSON.stringify({ key: cacheKey, text, suggestions, ts: Date.now() }));
+            } catch (err) {
+                console.error('[AutoInsight]', err);
+                if (cache && cache.text) renderAutoInsight(cache.text, cache.suggestions || []);
+                else body.innerHTML = '<div class="insight-muted">Couldn\'t generate insights right now. Tap ↻ to retry.</div>';
+            } finally {
+                autoInsightInFlight = false;
+                if (refreshBtn) refreshBtn.classList.remove('spinning');
+            }
         }
 
         /* ═══════════════════════════════════════════════════
