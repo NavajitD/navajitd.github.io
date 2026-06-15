@@ -105,6 +105,21 @@
         table.mx-table td.num,table.mx-table th.num{text-align:right;font-variant-numeric:tabular-nums}
         .mx-empty{padding:1.5rem;color:var(--muted);text-align:center;font-size:.8125rem}
         .mx-note{font-size:.75rem;color:var(--muted);margin-top:.5rem;line-height:1.5}
+
+        /* ─── Recipe images & size meter ─── */
+        .drop-zone.sm{padding:1.5rem}
+        .img-grid{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.75rem}
+        .img-thumb{position:relative;width:5.5rem;height:5.5rem;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg-subtle)}
+        .img-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+        .img-thumb button{position:absolute;top:2px;right:2px;width:1.25rem;height:1.25rem;padding:0;border:none;border-radius:4px;background:rgba(0,0,0,.6);color:#fff;cursor:pointer;font-size:.7rem;line-height:1;display:flex;align-items:center;justify-content:center}
+        .img-thumb button:hover{background:var(--danger)}
+        .img-thumb.hero::after{content:"HERO";position:absolute;bottom:0;left:0;right:0;font-size:.55rem;font-weight:700;letter-spacing:.06em;text-align:center;background:var(--accent);color:#fff}
+        .size-meter{font-size:.75rem;color:var(--muted);margin-top:1rem}
+        .size-meter .bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:.4rem;max-width:24rem}
+        .size-meter .bar i{display:block;height:100%;width:0;background:var(--success);transition:width .2s,background .2s}
+        .size-meter.warn .bar i{background:#d97706}
+        .size-meter.over{color:var(--danger);font-weight:600}
+        .size-meter.over .bar i{background:var(--danger)}
     </style>
 </head>
 <body>
@@ -136,6 +151,8 @@
         <button class="tab active" data-tab="metrics">Metrics</button>
         <button class="tab" data-tab="upload">Upload Post</button>
         <button class="tab" data-tab="posts">All Posts</button>
+        <button class="tab" data-tab="recipeUpload">Upload Recipe</button>
+        <button class="tab" data-tab="recipes">All Recipes</button>
     </div>
 
     <!-- ─── Metrics Tab ─── -->
@@ -235,6 +252,117 @@
             </div>
         </div>
     </div>
+
+    <!-- ─── Upload Recipe Tab ─── -->
+    <div class="tab-panel" id="tabRecipeUpload">
+        <div class="alert alert-success" id="rcSuccess"></div>
+        <div class="alert alert-error" id="rcError"></div>
+
+        <div class="form-grid">
+            <div class="form-row">
+                <label for="rcTitle">Title</label>
+                <input type="text" id="rcTitle" placeholder="Recipe name">
+            </div>
+            <div class="form-row">
+                <label for="rcDate">Date</label>
+                <input type="date" id="rcDate">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="rcDescription">Description <span style="font-weight:400">(shown on the card & detail)</span></label>
+            <textarea id="rcDescription" rows="3" placeholder="A line or two about the dish…"></textarea>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-row">
+                <label for="rcCuisine">Cuisine</label>
+                <input type="text" id="rcCuisine" placeholder="e.g. Bengali, Italian">
+            </div>
+            <div class="form-row">
+                <label for="rcDifficulty">Difficulty</label>
+                <select id="rcDifficulty">
+                    <option value="">—</option>
+                    <option>Easy</option>
+                    <option>Medium</option>
+                    <option>Hard</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-row">
+                <label for="rcPrep">Prep time</label>
+                <input type="text" id="rcPrep" placeholder="e.g. 15 min">
+            </div>
+            <div class="form-row">
+                <label for="rcCook">Cook time</label>
+                <input type="text" id="rcCook" placeholder="e.g. 30 min">
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-row">
+                <label for="rcServings">Servings</label>
+                <input type="text" id="rcServings" placeholder="e.g. 4">
+            </div>
+            <div class="form-row">
+                <label for="rcTags">Tags <span style="font-weight:400">(comma-separated)</span></label>
+                <input type="text" id="rcTags" placeholder="vegetarian, quick, spicy">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="rcIngredients">Ingredients <span style="font-weight:400">(one per line)</span></label>
+            <textarea id="rcIngredients" rows="6" placeholder="2 cups basmati rice&#10;1 tsp salt&#10;3 tbsp ghee"></textarea>
+        </div>
+
+        <div class="form-row">
+            <label for="rcSteps">Method <span style="font-weight:400">(one step per line)</span></label>
+            <textarea id="rcSteps" rows="8" placeholder="Rinse the rice until the water runs clear&#10;Bring 4 cups of water to a boil…"></textarea>
+        </div>
+
+        <div class="form-row">
+            <label>Hero image <span style="font-weight:400">(main photo)</span></label>
+            <div class="drop-zone sm" id="rcHeroZone">
+                <input type="file" id="rcHeroInput" accept="image/*">
+                <strong>Drop the main photo</strong>
+                <span>or click to browse</span>
+            </div>
+            <div class="img-grid" id="rcHeroPreview"></div>
+        </div>
+
+        <div class="form-row">
+            <label>Gallery images <span style="font-weight:400">(optional, multiple)</span></label>
+            <div class="drop-zone sm" id="rcGalleryZone">
+                <input type="file" id="rcGalleryInput" accept="image/*" multiple>
+                <strong>Drop step / extra photos</strong>
+                <span>or click to browse</span>
+            </div>
+            <div class="img-grid" id="rcGalleryPreview"></div>
+        </div>
+
+        <div class="size-meter" id="rcSizeMeter">
+            Payload: <span id="rcSizeText">0 KB</span> of ~1 MB Firestore limit
+            <div class="bar"><i id="rcSizeBar" style="width:0%"></i></div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" id="rcSubmitBtn"><span id="rcSubmitText">Publish recipe</span></button>
+            <button class="btn btn-secondary" id="rcClearBtn">Clear</button>
+        </div>
+        <div class="mx-note">Images are compressed in your browser and stored inline with the recipe (no separate storage needed). Keep the total under ~1 MB — one hero plus a few gallery shots is fine. Recipes appear on <code>/recipes.html</code> right away; no rebuild step.</div>
+    </div>
+
+    <!-- ─── All Recipes Tab ─── -->
+    <div class="tab-panel" id="tabRecipes">
+        <div class="alert alert-error" id="rcListError"></div>
+        <div id="recipeList">
+            <div style="text-align:center;padding:3rem;color:var(--muted)">
+                <div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading recipes…
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -313,6 +441,7 @@ document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.add('active');
         document.getElementById('tab' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
         if (tab.dataset.tab === 'posts') loadPosts();
+        if (tab.dataset.tab === 'recipes') loadRecipes();
         if (tab.dataset.tab === 'metrics' && !mxLoaded) loadMetrics();
     });
 });
@@ -386,8 +515,21 @@ async function loadMetrics(force) {
             q = q.where('ts', '>=', cutoff);
         }
         // Bound the read so the admin tab stays fast regardless of total volume.
-        const snap = await q.orderBy('ts', 'desc').limit(50000).get();
-        mxRaw = snap.docs.map(d => d.data());
+        // Firestore caps a single query's limit at 10000, so page through with a
+        // cursor up to an overall ceiling rather than asking for 50000 at once.
+        const PAGE = 10000, MAX_EVENTS = 50000;
+        const baseQ = q.orderBy('ts', 'desc');
+        mxRaw = [];
+        let cursor = null;
+        while (mxRaw.length < MAX_EVENTS) {
+            let pageQ = baseQ.limit(PAGE);
+            if (cursor) pageQ = pageQ.startAfter(cursor);
+            const snap = await pageQ.get();
+            if (snap.empty) break;
+            mxRaw.push(...snap.docs.map(d => d.data()));
+            cursor = snap.docs[snap.docs.length - 1];
+            if (snap.docs.length < PAGE) break;   // last page
+        }
         mxLoaded = true;
 
         // Populate segment filters from the full loaded set.
@@ -685,6 +827,227 @@ async function loadPosts() {
         });
     } catch(e) {
         showAlert(document.getElementById('listError'), 'Failed to load posts: ' + e.message);
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  RECIPES
+// ════════════════════════════════════════════════════════════════════════════
+const FIRESTORE_DOC_LIMIT = 1048487; // hard cap per Firestore document
+let rcHero = '';        // hero image as compressed data URL
+let rcGallery = [];     // gallery images as compressed data URLs
+let rcEditId = null;
+
+// Resize + re-encode an image client-side so it fits inline in a Firestore doc.
+function compressImage(file, maxDim, quality) {
+    return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith('image/')) { reject(new Error('not an image')); return; }
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            let w = img.naturalWidth, h = img.naturalHeight;
+            if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+            else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(c.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('could not decode image')); };
+        img.src = url;
+    });
+}
+
+function wireDropZone(zone, input, onFiles) {
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('over'); onFiles(e.dataTransfer.files); });
+    input.addEventListener('change', () => onFiles(input.files));
+}
+
+wireDropZone(document.getElementById('rcHeroZone'), document.getElementById('rcHeroInput'), async files => {
+    if (!files || !files[0]) return;
+    try { rcHero = await compressImage(files[0], 1280, 0.78); renderRcImages(); }
+    catch (e) { showAlert(document.getElementById('rcError'), 'Hero image failed: ' + e.message); }
+});
+wireDropZone(document.getElementById('rcGalleryZone'), document.getElementById('rcGalleryInput'), async files => {
+    for (const f of Array.from(files || [])) {
+        try { rcGallery.push(await compressImage(f, 1000, 0.72)); }
+        catch (e) { showAlert(document.getElementById('rcError'), 'Image failed: ' + e.message); }
+    }
+    renderRcImages();
+});
+
+function renderRcImages() {
+    const heroEl = document.getElementById('rcHeroPreview');
+    heroEl.innerHTML = rcHero
+        ? `<div class="img-thumb hero"><img src="${rcHero}" alt=""><button type="button" title="Remove">✕</button></div>` : '';
+    const galEl = document.getElementById('rcGalleryPreview');
+    galEl.innerHTML = rcGallery.map((src, i) =>
+        `<div class="img-thumb"><img src="${src}" alt=""><button type="button" data-i="${i}" title="Remove">✕</button></div>`).join('');
+    heroEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { rcHero = ''; renderRcImages(); }));
+    galEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { rcGallery.splice(+b.dataset.i, 1); renderRcImages(); }));
+    updateRcSize();
+}
+
+function rcPayloadBytes() {
+    const text = ['rcTitle','rcDescription','rcCuisine','rcPrep','rcCook','rcServings','rcTags','rcIngredients','rcSteps']
+        .reduce((n, id) => n + (document.getElementById(id).value || '').length, 0);
+    return rcHero.length + rcGallery.reduce((s, x) => s + x.length, 0) + text + 512;
+}
+function updateRcSize() {
+    const bytes = rcPayloadBytes();
+    const pct = Math.min(100, Math.round(bytes / FIRESTORE_DOC_LIMIT * 100));
+    const m = document.getElementById('rcSizeMeter');
+    document.getElementById('rcSizeText').textContent = fmtBytes(bytes);
+    document.getElementById('rcSizeBar').style.width = pct + '%';
+    m.classList.toggle('warn', pct >= 75 && pct < 92);
+    m.classList.toggle('over', pct >= 92);
+}
+['rcTitle','rcDescription','rcCuisine','rcPrep','rcCook','rcServings','rcTags','rcIngredients','rcSteps']
+    .forEach(id => document.getElementById(id).addEventListener('input', updateRcSize));
+
+document.getElementById('rcSubmitBtn').addEventListener('click', async () => {
+    const title = document.getElementById('rcTitle').value.trim();
+    const errorEl = document.getElementById('rcError');
+    const successEl = document.getElementById('rcSuccess');
+    if (!title) { showAlert(errorEl, 'Title is required.'); return; }
+
+    const bytes = rcPayloadBytes();
+    if (bytes > FIRESTORE_DOC_LIMIT - 8192) {
+        showAlert(errorEl, 'Too large (' + fmtBytes(bytes) + '). Remove or shrink images — a recipe is capped at ~1 MB.');
+        return;
+    }
+
+    const lines = id => document.getElementById(id).value.split('\n').map(s => s.trim()).filter(Boolean);
+    const dateStr = document.getElementById('rcDate').value;
+    const data = {
+        title,
+        description: document.getElementById('rcDescription').value.trim(),
+        cuisine: document.getElementById('rcCuisine').value.trim(),
+        difficulty: document.getElementById('rcDifficulty').value,
+        prepTime: document.getElementById('rcPrep').value.trim(),
+        cookTime: document.getElementById('rcCook').value.trim(),
+        servings: document.getElementById('rcServings').value.trim(),
+        tags: document.getElementById('rcTags').value.split(',').map(s => s.trim()).filter(Boolean),
+        ingredients: lines('rcIngredients'),
+        steps: lines('rcSteps'),
+        heroImage: rcHero,
+        images: rcGallery,
+        author: 'Navajit D',
+        date: dateStr ? firebase.firestore.Timestamp.fromDate(new Date(dateStr)) : firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const btn = document.getElementById('rcSubmitBtn');
+    const txt = document.getElementById('rcSubmitText');
+    btn.disabled = true;
+    txt.innerHTML = '<span class="spinner"></span> Saving…';
+    try {
+        if (rcEditId) {
+            await db.collection('recipes').doc(rcEditId).update(data);
+            showAlert(successEl, 'Recipe updated.');
+        } else {
+            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            const ref = await db.collection('recipes').add(data);
+            showAlert(successEl, 'Recipe published! ID: ' + ref.id);
+        }
+        clearRecipeForm();
+    } catch (e) {
+        showAlert(errorEl, 'Failed: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        txt.textContent = rcEditId ? 'Update recipe' : 'Publish recipe';
+    }
+});
+
+document.getElementById('rcClearBtn').addEventListener('click', clearRecipeForm);
+
+function clearRecipeForm() {
+    rcHero = ''; rcGallery = []; rcEditId = null;
+    ['rcTitle','rcDate','rcDescription','rcCuisine','rcPrep','rcCook','rcServings','rcTags','rcIngredients','rcSteps']
+        .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('rcDifficulty').value = '';
+    document.getElementById('rcHeroInput').value = '';
+    document.getElementById('rcGalleryInput').value = '';
+    document.getElementById('rcSubmitText').textContent = 'Publish recipe';
+    renderRcImages();
+}
+
+async function loadRecipes() {
+    const listEl = document.getElementById('recipeList');
+    listEl.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading…</div>';
+    try {
+        const snap = await db.collection('recipes').orderBy('date', 'desc').get();
+        if (snap.empty) { listEl.innerHTML = '<div style="padding:2rem;color:var(--muted);text-align:center">No recipes yet.</div>'; return; }
+
+        listEl.innerHTML = '';
+        snap.docs.forEach(doc => {
+            const d = doc.data();
+            const dateVal = d.date?.toDate ? d.date.toDate() : new Date(d.date);
+            const fmtD = dateVal.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
+            const thumb = d.heroImage ? `<img src="${d.heroImage}" alt="" style="width:3rem;height:3rem;object-fit:cover;border-radius:6px;flex-shrink:0">` : '';
+            const bits = [fmtD, d.cuisine, d.difficulty, (d.ingredients||[]).length + ' ingredients', (d.steps||[]).length + ' steps'].filter(Boolean);
+            const item = document.createElement('div');
+            item.className = 'post-item';
+            item.innerHTML = `
+                <div style="display:flex;gap:.75rem;align-items:flex-start">
+                    ${thumb}
+                    <div>
+                        <div class="post-item-title">${escHtml(d.title || 'Untitled')}</div>
+                        <div class="post-item-meta">${escHtml(bits.join(' · '))}</div>
+                    </div>
+                </div>
+                <div class="post-item-actions">
+                    <button class="btn btn-secondary btn-sm" data-id="${doc.id}" data-action="edit">Edit</button>
+                    <button class="btn btn-danger btn-sm" data-id="${doc.id}" data-action="delete">Delete</button>
+                </div>`;
+            listEl.appendChild(item);
+        });
+
+        listEl.querySelectorAll('[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('Delete this recipe? This cannot be undone.')) return;
+                try { await db.collection('recipes').doc(btn.dataset.id).delete(); loadRecipes(); }
+                catch (e) { showAlert(document.getElementById('rcListError'), 'Delete failed: ' + e.message); }
+            });
+        });
+
+        listEl.querySelectorAll('[data-action="edit"]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const snap = await db.collection('recipes').doc(btn.dataset.id).get();
+                if (!snap.exists) return;
+                const d = snap.data();
+                const dateVal = d.date?.toDate ? d.date.toDate() : new Date(d.date);
+
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.querySelector('[data-tab="recipeUpload"]').classList.add('active');
+                document.getElementById('tabRecipeUpload').classList.add('active');
+
+                document.getElementById('rcTitle').value = d.title || '';
+                document.getElementById('rcDate').value = dateVal.toISOString().slice(0, 10);
+                document.getElementById('rcDescription').value = d.description || '';
+                document.getElementById('rcCuisine').value = d.cuisine || '';
+                document.getElementById('rcDifficulty').value = d.difficulty || '';
+                document.getElementById('rcPrep').value = d.prepTime || '';
+                document.getElementById('rcCook').value = d.cookTime || '';
+                document.getElementById('rcServings').value = d.servings || '';
+                document.getElementById('rcTags').value = (d.tags || []).join(', ');
+                document.getElementById('rcIngredients').value = (d.ingredients || []).join('\n');
+                document.getElementById('rcSteps').value = (d.steps || []).join('\n');
+                rcHero = d.heroImage || '';
+                rcGallery = Array.isArray(d.images) ? d.images.slice() : [];
+                rcEditId = btn.dataset.id;
+                document.getElementById('rcSubmitText').textContent = 'Update recipe';
+                renderRcImages();
+                window.scrollTo(0, 0);
+            });
+        });
+    } catch (e) {
+        showAlert(document.getElementById('rcListError'), 'Failed to load recipes: ' + e.message);
     }
 }
 
