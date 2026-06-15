@@ -2987,7 +2987,7 @@
       appId: "1:343148263862:web:7b104ed9f00c5d74296917"
     };
 
-    const MAX_USERS = 5;
+    const MAX_USERS = 25;
     const HEIGHT_CM = 162;
 
     // Small wrapper to ensure initialization happens after defer scripts load
@@ -3597,7 +3597,7 @@ Based on this, recommend:
 
 Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,"recomposeMusclePct":30,"exerciseGoal":5}`;
 
-          const result = await fetchLLM(prompt, 'You are a concise health advisor. Return only the JSON object requested, no explanation.', 'cerebras', 'qwen-3-32b', true);
+          const result = await fetchLLM(prompt, 'You are a concise health advisor. Return only the JSON object requested, no explanation.', 'groq', 'llama-3.3-70b-versatile', true);
           if (result.weightGoal) obData.weightGoal = result.weightGoal;
           if (result.weightGoalRate) obData.weightGoalRate = Math.round(result.weightGoalRate * 10) / 10;
           if (result.gainRate) obData.gainRate = Math.round(result.gainRate * 10) / 10;
@@ -4257,7 +4257,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             toast("Estimating kcal...");
             const sys = `You estimate calories burned for exercises. The user weighs ${dayData.body?.weight || 70}kg. Provide a realistic, conservative estimate without exaggerating (e.g. walking is only ~3-4 kcal/min). Reply ONLY with a JSON object containing a single key "kcal". Example: {"kcal": 150}`;
             const prompt = `Exercise: ${t}`;
-            const est = await fetchLLM(prompt, sys, 'cerebras', 'qwen-3-32b');
+            const est = await fetchLLM(prompt, sys, 'groq', 'llama-3.3-70b-versatile');
             k = est.kcal || 0;
             toast("Estimated " + k + " kcal", "success");
           } catch (e) {
@@ -4339,7 +4339,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           const sys = `You are a nutrition estimator. Estimate fiber (g) and micronutrients for the given food and macros. Currency INR. Reply ONLY with a valid JSON object matching this structure EXACTLY:
 {"fiber": number, "micros": { "vitamin_a_ug": number, "vitamin_d_ug": number, "vitamin_k": number, "vitamin_b6": number, "vitamin_b12": number, "vitamin_c_mg": number, "calcium_mg": number, "iron_mg": number, "magnesium_mg": number, "sodium_mg": number, "potassium_mg": number, "zinc_mg": number }}`;
           const prompt = `Food: ${data.name} ${data.desc}. Macros: ${data.cal}kcal, ${data.protein}g protein, ${data.carbs}g carbs, ${data.fat}g fat.`;
-          const est = await fetchLLM(prompt, sys, 'cerebras', 'qwen-3-32b');
+          const est = await fetchLLM(prompt, sys, 'groq', 'llama-3.3-70b-versatile');
           finalData.fiber = est.fiber || 0;
           finalData.micros = est.micros || {};
           toast("Added with estimated micros", "success");
@@ -4574,7 +4574,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                 btn.textContent = "Reading label...";
                 const labelSys = `You are a nutrition label OCR expert. Extract the exact macro values from the nutrition label in this image. Also extract the serving size shown on the label. Reply ONLY with this JSON: {"name":string,"servingSize":string,"servingSizeG":number,"cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number,"micros":{"vitamin_a_ug":number,"vitamin_d_ug":number,"vitamin_k":number,"vitamin_b6":number,"vitamin_b12":number,"vitamin_c_mg":number,"calcium_mg":number,"iron_mg":number,"magnesium_mg":number,"sodium_mg":number,"potassium_mg":number,"zinc_mg":number}}`;
                 const labelPmt = `Extract ALL nutrition values exactly as shown on this label. Include the serving size. Do not estimate — read the exact printed values.`;
-                const raw = await fetchVisionLLM(labelPmt, labelSys, currentFoodPhotoBase64, 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free');
+                const raw = await fetchVisionLLM(labelPmt, labelSys, currentFoodPhotoBase64, 'groq', 'meta-llama/llama-4-scout-17b-16e-instruct');
                 // Portion scaling
                 let scaleFactor = 1;
                 if (userPortion && raw.servingSizeG > 0) {
@@ -4604,7 +4604,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                 // Call 1: identify items + weights
                 const itemsSys = `You are a food recognition expert. Identify every distinct food item visible in this image and estimate its weight in grams. Reply ONLY with JSON: {"items":[{"name":string,"weightG":number}]}`;
                 const itemsPmt = `List every food item you can see in this image with an estimated weight in grams.`;
-                const itemsRes = await fetchVisionLLM(itemsPmt, itemsSys, currentFoodPhotoBase64, 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free');
+                const itemsRes = await fetchVisionLLM(itemsPmt, itemsSys, currentFoodPhotoBase64, 'groq', 'meta-llama/llama-4-scout-17b-16e-instruct');
                 const items = itemsRes?.items || [];
 
                 let totalMacros = { cal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, micros: {} };
@@ -4613,7 +4613,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                   // Call 2: macros per 100g for each item
                   const macroSys = `You are a nutrition database. For each food item in the list, provide macros per 100g. Reply ONLY with JSON: {"items":[{"name":string,"cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}]}`;
                   const macroPmt = `Provide macros per 100g for each of these foods: ${items.map(it => it.name).join(', ')}`;
-                  const macroRes = await fetchLLM(macroPmt, macroSys, 'cerebras', 'qwen-3-32b');
+                  const macroRes = await fetchLLM(macroPmt, macroSys, 'groq', 'llama-3.3-70b-versatile');
                   const macroItems = macroRes?.items || [];
                   // Sum up totals: macros × (weight / 100)
                   items.forEach(it => {
@@ -4632,7 +4632,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                   totalMacros.fiber = Math.round(totalMacros.fiber * 10) / 10;
                   // Micros via a single extra LLM call
                   try {
-                    const microRes = await fetchLLM(`Meal: ${n || items.map(it => `${it.name} ${it.weightG}g`).join(', ')}. Macros: ${totalMacros.cal}kcal P:${totalMacros.protein}g`, `Estimate micronutrients for this meal. Reply ONLY with JSON: {"micros":{"vitamin_a_ug":number,"vitamin_d_ug":number,"vitamin_k":number,"vitamin_b6":number,"vitamin_b12":number,"vitamin_c_mg":number,"calcium_mg":number,"iron_mg":number,"magnesium_mg":number,"sodium_mg":number,"potassium_mg":number,"zinc_mg":number}}`, 'cerebras', 'qwen-3-32b');
+                    const microRes = await fetchLLM(`Meal: ${n || items.map(it => `${it.name} ${it.weightG}g`).join(', ')}. Macros: ${totalMacros.cal}kcal P:${totalMacros.protein}g`, `Estimate micronutrients for this meal. Reply ONLY with JSON: {"micros":{"vitamin_a_ug":number,"vitamin_d_ug":number,"vitamin_k":number,"vitamin_b6":number,"vitamin_b12":number,"vitamin_c_mg":number,"calcium_mg":number,"iron_mg":number,"magnesium_mg":number,"sodium_mg":number,"potassium_mg":number,"zinc_mg":number}}`, 'groq', 'llama-3.3-70b-versatile');
                     totalMacros.micros = microRes?.micros || {};
                   } catch (_) { }
                 }
@@ -4651,7 +4651,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
               if (!n && !desc) throw new Error("Image analysis unavailable. Please add a food name.");
               btn.textContent = "Estimating (text)...";
               const fbPrompt = `Food: ${n || 'Food from photo'} ${desc}. Assume 1 standard Indian serving.`;
-              const est = await fetchLLM(fbPrompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros and micros. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen-3-32b');
+              const est = await fetchLLM(fbPrompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros and micros. Reply ONLY with JSON: ${sysFull}`, 'groq', 'llama-3.3-70b-versatile');
               finalData = { ...finalData, ...est, name: n || 'Food from photo', desc: desc || 'From photo', meal, estimated: true };
               toast("Added (text estimate – image analysis unavailable)", "warn");
             }
@@ -4670,9 +4670,9 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             } else {
               // Free-form description — fall back to LLM as before
               const sysMix = `You are a recipe/food nutrition analyzer for Indian foods. Given ingredients or a dish description, estimate the TOTAL macros and micronutrients for the entire prepared dish (1 standard Indian serving). All values must be realistic and non-zero where applicable. Reply ONLY with JSON: ${sysFull}`;
-              est = await fetchLLM(`Recipe/Ingredients:\n${desc}${n ? '\nDish name: ' + n : ''}`, sysMix, 'cerebras', 'qwen-3-32b');
+              est = await fetchLLM(`Recipe/Ingredients:\n${desc}${n ? '\nDish name: ' + n : ''}`, sysMix, 'groq', 'llama-3.3-70b-versatile');
               if (isAllZero(est)) {
-                est = await fetchLLM(`Estimate nutrition for: ${n || 'Recipe'} (${desc}).`, `You are a nutrition estimator for Indian foods. You MUST provide realistic non-zero values. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen-3-32b');
+                est = await fetchLLM(`Estimate nutrition for: ${n || 'Recipe'} (${desc}).`, `You are a nutrition estimator for Indian foods. You MUST provide realistic non-zero values. Reply ONLY with JSON: ${sysFull}`, 'groq', 'llama-3.3-70b-versatile');
               }
               if (n) est.name = n;
               toast("Added Recipe", "success");
@@ -4686,12 +4686,12 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             finalData.protein = p; finalData.carbs = cb; finalData.fat = f; finalData.fiber = fb;
             const prompt = `Food: ${n} ${desc}. Macros: ${finalData.cal}kcal, P:${p}g, C:${cb}g, F:${f}g, Fib:${fb}g.`;
             const sysMicros = `You are a nutrition estimator for Indian foods. You MUST estimate realistic non-zero micronutrients based on the food name and macros. Reply ONLY with JSON: ${sysBase}`;
-            let est = await fetchLLM(prompt, sysMicros, 'cerebras', 'qwen-3-32b');
+            let est = await fetchLLM(prompt, sysMicros, 'groq', 'llama-3.3-70b-versatile');
 
             const isMicrosZero = Object.values(est?.micros || {}).every(v => num0(v) === 0);
             if (isMicrosZero) {
               console.warn('Micros estimation returned all zeros, retrying...');
-              est = await fetchLLM(`Estimate ONLY detailed micronutrients for: ${n} (${desc}). You MUST provide realistic non-zero values.`, sysMicros, 'cerebras', 'qwen-3-32b');
+              est = await fetchLLM(`Estimate ONLY detailed micronutrients for: ${n} (${desc}). You MUST provide realistic non-zero values.`, sysMicros, 'groq', 'llama-3.3-70b-versatile');
               console.log('Micros retry:', JSON.stringify(est));
             }
 
@@ -4702,14 +4702,14 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           } else {
             // ── Pipeline 3: Two-stage LLM validation ─────────────────────
             const prompt = `Food: ${n} ${desc}. Assume 1 standard Indian serving size. Include all macros (protein, carbs, fat) — carbs should account for any sauce, gravy, onions, spices, or starchy components.`;
-            let est = await fetchLLM(prompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros (cal, protein, carbs, fat), fiber, and micronutrients for a standard serving. Carbs must include starchy components, sauces, and gravies. All values must be realistic and non-zero where applicable. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen-3-32b');
+            let est = await fetchLLM(prompt, `You are a nutrition estimator for Indian foods. Estimate ALL macros (cal, protein, carbs, fat), fiber, and micronutrients for a standard serving. Carbs must include starchy components, sauces, and gravies. All values must be realistic and non-zero where applicable. Reply ONLY with JSON: ${sysFull}`, 'groq', 'llama-3.3-70b-versatile');
             console.log('Food LLM Stage 1:', JSON.stringify(est));
             // Stage 2: validation pass
             if (!isAllZero(est)) {
               try {
                 btn.textContent = "Validating...";
                 const valPrompt = `I estimated nutrition for "${n || desc}": ${est.cal}kcal, protein:${est.protein}g, carbs:${est.carbs}g, fat:${est.fat}g, fiber:${est.fiber}g. Does this look accurate for a typical Indian serving? If any value is clearly wrong (e.g. zero carbs for a rice dish, unrealistically high protein), correct it. Otherwise return the same values unchanged.`;
-                const validated = await fetchLLM(valPrompt, `You are a nutrition fact-checker for Indian foods. Validate or correct the given estimate. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen-3-32b');
+                const validated = await fetchLLM(valPrompt, `You are a nutrition fact-checker for Indian foods. Validate or correct the given estimate. Reply ONLY with JSON: ${sysFull}`, 'groq', 'llama-3.3-70b-versatile');
                 console.log('Food LLM Stage 2 (validated):', JSON.stringify(validated));
                 if (!isAllZero(validated)) est = validated;
               } catch (valErr) {
@@ -4717,7 +4717,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
               }
             } else {
               console.warn('Food estimation returned all zeros, retrying...');
-              est = await fetchLLM(`Estimate detailed nutrition for 1 serving of ${n}. Must include realistic cal, protein, carbs, and fat values.`, `You are a nutrition database. Provide realistic non-zero nutrition values. Reply ONLY with JSON: ${sysFull}`, 'cerebras', 'qwen-3-32b');
+              est = await fetchLLM(`Estimate detailed nutrition for 1 serving of ${n}. Must include realistic cal, protein, carbs, and fat values.`, `You are a nutrition database. Provide realistic non-zero nutrition values. Reply ONLY with JSON: ${sysFull}`, 'groq', 'llama-3.3-70b-versatile');
             }
             finalData = { ...finalData, ...est, name: n, desc: desc, meal: meal, estimated: true };
             toast("Added (AI estimated + validated)", "success");
@@ -5569,7 +5569,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             const llmRes = await fetchLLM(
               `Estimate the combined total nutrition for these ingredients: ${unknownList}`,
               `You are a nutrition estimator. Reply ONLY with JSON: {"cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}`,
-              'cerebras', 'qwen-3-32b'
+              'groq', 'llama-3.3-70b-versatile'
             );
             llmMacros = llmRes || llmMacros;
           } catch (_) { }
@@ -5587,7 +5587,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           const mRes = await fetchLLM(
             `Dish: ${dishName || 'Recipe'}, ingredients: ${lines.join(', ')}. Total: ${tot.cal}kcal P:${tot.protein}g`,
             `Estimate micronutrients. Reply ONLY with JSON: ${sysBase}`,
-            'cerebras', 'qwen-3-32b'
+            'groq', 'llama-3.3-70b-versatile'
           );
           micros = mRes?.micros || {};
         } catch (_) { }
@@ -5596,7 +5596,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
       }
 
       // LLM Fetch Utility using Numo Cloud Function Proxy
-      window.fetchLLM = async function (prompt, system, provider = 'cerebras', model = 'qwen-3-32b', isJson = true, retry = true) {
+      window.fetchLLM = async function (prompt, system, provider = 'groq', model = 'llama-3.3-70b-versatile', isJson = true, retry = true) {
         const url = 'https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM';
 
         const body = { prompt, system, provider, model, isJson };
@@ -5626,24 +5626,24 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           }
           return content;
         } catch (e) {
-          // Fall back to Groq on Cerebras availability errors (model not found, 503, 429, etc.)
+          // Fall back to a smaller Groq model on availability errors (model not found, 503, 429, etc.)
           const msg = e.message || '';
-          const isAvailabilityError = retry && provider === 'cerebras' && (
+          const isAvailabilityError = retry && provider === 'groq' && model !== 'llama-3.1-8b-instant' && (
             msg.includes('model_not_found') || msg.includes('does not exist') ||
             msg.includes('503') || msg.includes('502') || msg.includes('429') || msg.includes('404') ||
             msg.includes('not_found_error') || msg.includes('overloaded') ||
             msg.includes('unavailable') || msg.includes('capacity')
           );
           if (isAvailabilityError) {
-            console.warn('Cerebras unavailable, falling back to Groq:', msg);
-            return await window.fetchLLM(prompt, system, 'groq', 'llama-3.3-70b-versatile', isJson, false);
+            console.warn('Primary Groq model unavailable, falling back to llama-3.1-8b-instant:', msg);
+            return await window.fetchLLM(prompt, system, 'groq', 'llama-3.1-8b-instant', isJson, false);
           }
           throw e;
         }
       }
 
       // LLM Vision Fetch Utility — all providers routed through cloud function (keys stored as secrets)
-      window.fetchVisionLLM = async function (prompt, system, base64Image, provider = 'openrouter', model = 'qwen/qwen2.5-vl-72b-instruct:free', isJson = true) {
+      window.fetchVisionLLM = async function (prompt, system, base64Image, provider = 'groq', model = 'meta-llama/llama-4-scout-17b-16e-instruct', isJson = true) {
         const res = await fetch('https://us-central1-numo-3984a.cloudfunctions.net/healtheeLLM', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -6040,8 +6040,8 @@ Do NOT output JSON. Output regular conversational text only.`;
 
         try {
           const reply = await (hasImage
-            ? fetchVisionLLM(prompt, sys, imageToSend, 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free', false)
-            : fetchLLM(prompt, sys, 'cerebras', 'qwen-3-32b', false));
+            ? fetchVisionLLM(prompt, sys, imageToSend, 'groq', 'meta-llama/llama-4-scout-17b-16e-instruct', false)
+            : fetchLLM(prompt, sys, 'groq', 'llama-3.3-70b-versatile', false));
           const cleanReply = reply.trim()
             .replace(/\*\*(.*?)\*\*/gs, '$1').replace(/\*(.*?)\*/gs, '$1').replace(/_(.*?)_/gs, '$1')
             .replace(/^#{1,6}\s+/gm, '').replace(/^[-*]\s+/gm, '');
@@ -6358,7 +6358,7 @@ Rules:
 - For body metrics: weight in kg, bodyFat in %, waist/shoulders in cm.
 - Omit categories with no data (use empty arrays, null, or 0).
 - Current IST hour: ${getISTHour()}`;
-        return fetchLLM(`User said: "${text}"`, sys, 'cerebras', 'qwen-3-32b', true);
+        return fetchLLM(`User said: "${text}"`, sys, 'groq', 'llama-3.3-70b-versatile', true);
       }
 
       async function autoParseVlog(text) {
@@ -6643,7 +6643,7 @@ Rules:
         const mealGuess = inferMealFromTime();
         const extractSys = `You are a food intake extractor. The user said they ate something. Extract the food and estimate macros for a standard Indian serving size. Reply ONLY with valid JSON: {"food":{"name":string,"meal":"${mealGuess}","cal":number,"protein":number,"carbs":number,"fat":number,"fiber":number}} or {"food":null} if no specific food is mentioned.`;
         try {
-          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'cerebras', 'qwen-3-32b', true);
+          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'groq', 'llama-3.3-70b-versatile', true);
           if (!raw?.food?.name) return null;
           const f = raw.food;
           addFood({
@@ -6663,7 +6663,7 @@ Rules:
         if (!/\b(water|drink|drank|drunk|hydrat|glass(?:es)?|bottle|litre|liter|ml)\b/i.test(userMsg)) return null;
         const extractSys = `You are a water intake extractor. The user may have mentioned drinking water. Extract the amount in ml. Reply ONLY with valid JSON: {"ml":number} or {"ml":null} if no water amount is mentioned. Conversions: 1 glass = 250ml, 1 bottle = 750ml, 1 litre/liter = 1000ml, 1 cup = 200ml.`;
         try {
-          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'cerebras', 'qwen-3-32b', true);
+          const raw = await fetchLLM(`User message: "${userMsg}"`, extractSys, 'groq', 'llama-3.3-70b-versatile', true);
           if (!raw?.ml) return null;
           addWater(Math.round(raw.ml));
           return Math.round(raw.ml);
@@ -6788,7 +6788,7 @@ Rules:
 {"name":string,"date":string,"time":string,"location":string,"duration":string,"description":string,"startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD"}
 - startDate/endDate in YYYY-MM-DD (use current year if not shown; single-day event: endDate=startDate)
 - If no event found, return {"name":null}`,
-              eventImages[i], 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free', true
+              eventImages[i], 'groq', 'meta-llama/llama-4-scout-17b-16e-instruct', true
             );
             if (basic?.name) {
               found.push({ event: { ...basic, bookingRequired: false, bookingInfo: '', links: '', id: genId('evt'), addedAt: new Date().toISOString() }, img: eventImages[i] });
@@ -6820,7 +6820,7 @@ Rules:
 - bookingRequired: true if ANY booking/registration step is needed
 - bookingInfo: specific instructions or fee amount (empty string if none)
 - links: any URL, QR reference, or @handle visible (empty string if none)`,
-              found[i].img, 'openrouter', 'qwen/qwen2.5-vl-72b-instruct:free', true
+              found[i].img, 'groq', 'meta-llama/llama-4-scout-17b-16e-instruct', true
             );
             if (booking) {
               found[i].event.bookingRequired = booking.bookingRequired || false;
@@ -6850,7 +6850,7 @@ Rules:
           const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
           const planReply = await fetchLLM(
             `Today is ${today}. Events: ${JSON.stringify(newEvents.map(e => ({ name: e.name, date: e.date, time: e.time, location: e.location })))}. Suggest a brief weekend plan in 2-3 sentences.`,
-            'You are HealThee Mate. Plain text only, no markdown, no bullet points. Max 100 words.', 'cerebras', 'qwen-3-32b', false
+            'You are HealThee Mate. Plain text only, no markdown, no bullet points. Max 100 words.', 'groq', 'llama-3.3-70b-versatile', false
           );
           appendChat('assistant', strip(planReply));
         } catch (e) { console.warn('Weekend plan failed:', e); }
@@ -6862,7 +6862,7 @@ Rules:
           try {
             const remReply = await fetchLLM(
               `These events need advance booking: ${JSON.stringify(bookingEvents.map(e => ({ name: e.name, date: e.date, bookingInfo: e.bookingInfo, links: e.links })))}. Write a short, urgent reminder for each. Plain text only, max 80 words total.`,
-              'You are HealThee Mate. Plain text only, no markdown. Be direct and actionable.', 'cerebras', 'qwen-3-32b', false
+              'You are HealThee Mate. Plain text only, no markdown. Be direct and actionable.', 'groq', 'llama-3.3-70b-versatile', false
             );
             appendChat('assistant', 'Booking reminders: ' + strip(remReply));
           } catch (e) { console.warn('Booking reminders failed:', e); }
