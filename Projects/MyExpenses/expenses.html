@@ -2522,7 +2522,7 @@
         const DEFAULT_THEMES = {
             'Cost of living': ['Bike', 'Public transport', 'Groceries', 'Household supplies', 'Rent/Maintenance', 'Furniture', 'Services', 'Electricity', 'Internet', 'Insurance', 'Medical expenses', 'Gas', 'Phone'],
             'Going out': ['Auto/Cab', 'Eating out', 'Party', 'Cinema', 'Entertainment', 'Liquor', 'Travel', 'Games/Sports'],
-            'Incidentals': ['Education', 'Gift', 'Investment', 'Flights', 'Clothes']
+            'Incidentals': ['Education', 'Gift', 'Investment', 'Flights', 'Clothes', 'Miscellaneous']
         };
 
         function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
@@ -2581,10 +2581,24 @@
             'Gas': ['gas', 'cylinder', 'lpg', 'indane', 'bharat gas', 'hp gas'],
         };
 
+        // Whole-word keyword match (Unicode-aware, cached) so short keywords like
+        // 'bar', 'gas', 'bus' or 'more' don't fire inside 'barber', 'vegas',
+        // 'business' or 'moreover'. Works for Latin and Indic scripts alike.
+        const _kwRegexCache = new Map();
+        function keywordRegex(kw) {
+            let re = _kwRegexCache.get(kw);
+            if (!re) {
+                const esc = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                re = new RegExp(`(?:^|[^\\p{L}\\p{N}])${esc}(?:[^\\p{L}\\p{N}]|$)`, 'iu');
+                _kwRegexCache.set(kw, re);
+            }
+            return re;
+        }
+
         function autoCategory(name) {
             const lower = name.toLowerCase();
             for (const [cat, kws] of Object.entries(effectiveCategoryKeywords)) {
-                if (kws.some(kw => lower.includes(kw))) return cat;
+                if (kws.some(kw => keywordRegex(kw).test(lower))) return cat;
             }
             return ragCategoryVote(name);
         }
@@ -3950,10 +3964,18 @@ OTHER RULES:
 
         // Counts distinct amount-like tokens (Arabic + Devanagari + Bengali numerals)
         // Used to route multi-expense inputs to the stronger 70B model on first try.
+        // Map Devanagari (०-९) and Bengali (০-৯) digits to ASCII so amount
+        // parsing works for vernacular input.
+        function indicDigitsToAscii(s) {
+            return s
+                .replace(/[०-९]/g, d => String(d.charCodeAt(0) - 0x0966))
+                .replace(/[০-৯]/g, d => String(d.charCodeAt(0) - 0x09E6));
+        }
+
         function countAmountMentions(text) {
             if (!text) return 0;
             const matches = text.match(/[0-9०-९০-৯]+(?:[.,][0-9०-९০-৯]+)?/g) || [];
-            return matches.filter(m => parseInt(m.replace(/\D/g, ''), 10) >= 5).length;
+            return matches.filter(m => parseInt(indicDigitsToAscii(m).replace(/\D/g, ''), 10) >= 5).length;
         }
 
         async function callGeminiParseText(text) {
