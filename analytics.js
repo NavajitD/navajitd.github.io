@@ -16,8 +16,8 @@
 (function () {
   'use strict';
 
-  var PROJECT = 'numo-3984a';
-  var API_KEY = 'AIzaSyCuJBqQWKpbhj3FEYpg_p_nhbjTEFg8Lt4';
+  var PROJECT = 'recipes-7dc22';
+  var API_KEY = 'AIzaSyCM8XiZ9tLn7jtVNcx0D6iZwYOGXBOLdjU';
   var EVENTS_URL =
     'https://firestore.googleapis.com/v1/projects/' + PROJECT +
     '/databases/(default)/documents/analytics_events?key=' + API_KEY;
@@ -115,7 +115,8 @@
     (p === '/' || p === '' || p.endsWith('/index.html')) ? 'home' :
     p.endsWith('/projects.html') ? 'projects' :
     p.endsWith('/blog.html') ? 'blog_list' :
-    p.endsWith('/blog-post.html') ? 'blog_post' : 'other';
+    p.endsWith('/blog-post.html') ? 'blog_post' :
+    p.endsWith('/recipes.html') ? 'recipes' : 'other';
 
   // ── Read-till-end + active-dwell tracking for a blog post ──
   function setupPostTracking(postId) {

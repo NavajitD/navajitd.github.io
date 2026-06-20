@@ -3,3 +3,9 @@ test-results/
 playwright-report/
 playwright/.cache/
 .DS_Store
+
+# Firebase service-account keys — NEVER commit
+*serviceAccount*.json
+*service-account*.json
+*-sa.json
+secrets/

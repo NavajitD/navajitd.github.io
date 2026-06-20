@@ -9,9 +9,11 @@
     "test:e2e": "playwright test",
     "test:all": "npm run test && npm run test:e2e",
     "serve": "python3 -m http.server 8765",
-    "build:blog": "node scripts/build-blog-index.mjs"
+    "build:blog": "node scripts/build-blog-index.mjs",
+    "migrate:firestore": "node scripts/migrate-firestore.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "^1.60.0"
+    "@playwright/test": "^1.60.0",
+    "firebase-admin": "^14.0.0"
   }
 }

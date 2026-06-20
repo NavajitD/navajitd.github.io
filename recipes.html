@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
+    <title>Recipes // Navajit D</title>
+    <script defer src="/analytics.js"></script>
+    <style>
+        /* ════════════════════════════════════════════════════════════════
+           CYBERCORE THEME — always-dark, neon, CRT. Self-contained page.
+           ════════════════════════════════════════════════════════════════ */
+        :root {
+            --bg: #05070a;
+            --panel: #0a0f15;
+            --panel-2: #0d141c;
+            --text: #cfe9f2;
+            --muted: #6f8a99;
+            --cyan: #2ef2ff;
+            --cyan-dim: rgba(46,242,255,.35);
+            --magenta: #ff3df0;
+            --magenta-dim: rgba(255,61,240,.35);
+            --green: #4dff9e;
+            --amber: #ffcf3d;
+            --border: rgba(46,242,255,.22);
+            --font: "Inconsolata", monospace;
+            --font-display: "Orbitron", "Inconsolata", monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; }
+        body {
+            font-family: var(--font);
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.65;
+            min-height: 100vh;
+            max-width: 60rem;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* faint grid + radial glow backdrop */
+        body::before {
+            content: "";
+            position: fixed; inset: 0; z-index: -2;
+            background:
+                radial-gradient(900px 500px at 12% -8%, rgba(46,242,255,.10), transparent 60%),
+                radial-gradient(800px 520px at 100% 0%, rgba(255,61,240,.08), transparent 55%),
+                linear-gradient(rgba(46,242,255,.035) 1px, transparent 1px) 0 0 / 100% 38px,
+                linear-gradient(90deg, rgba(46,242,255,.035) 1px, transparent 1px) 0 0 / 38px 100%,
+                var(--bg);
+        }
+        /* CRT scanlines + subtle flicker */
+        body::after {
+            content: "";
+            position: fixed; inset: 0; z-index: 50; pointer-events: none;
+            background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.18) 2px 3px);
+            mix-blend-mode: multiply;
+            animation: flicker 6s infinite steps(60);
+            opacity: .55;
+        }
+        @keyframes flicker { 0%,100%{opacity:.5} 3%{opacity:.42} 6%{opacity:.55} 9%{opacity:.46} 50%{opacity:.5} }
+        @media (prefers-reduced-motion: reduce) { body::after { animation: none; } }
+
+        a { color: var(--cyan); text-decoration: none; transition: color .2s, text-shadow .2s; }
+        a:hover { color: #fff; text-shadow: 0 0 8px var(--cyan); }
+
+        /* ─── Header ─── */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .logo { font-family: var(--font-display); font-weight: 700; font-size: 1rem; letter-spacing: .04em; }
+        .logo a { color: var(--text); }
+        .logo a:hover { color: var(--cyan); text-shadow: 0 0 10px var(--cyan-dim); }
+        nav ul { display: flex; gap: 1.4rem; list-style: none; }
+        nav a { color: var(--muted); font-size: .9375rem; letter-spacing: .03em; text-transform: lowercase; }
+        nav a:hover { color: var(--cyan); }
+        nav a.current { color: var(--magenta); text-shadow: 0 0 10px var(--magenta-dim); }
+
+        /* ─── Page header ─── */
+        .page-header { margin-bottom: 2.5rem; }
+        .kicker { font-size: .75rem; letter-spacing: .35em; text-transform: uppercase; color: var(--muted); margin-bottom: .65rem; }
+        .kicker .blink { color: var(--green); animation: blink 1.1s steps(1) infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .page-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.2rem, 7vw, 3.6rem);
+            font-weight: 800;
+            line-height: 1.02;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            background: linear-gradient(92deg, var(--cyan), #b388ff 45%, var(--magenta));
+            background-size: 220% auto;
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+            animation: gradient-shift 8s ease infinite;
+            position: relative;
+            width: max-content; max-width: 100%;
+        }
+        @keyframes gradient-shift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        /* glitch echoes */
+        .page-title[data-text]::before,
+        .page-title[data-text]::after {
+            content: attr(data-text);
+            position: absolute; inset: 0;
+            -webkit-text-fill-color: initial; background: none;
+            clip-path: inset(0 0 0 0);
+            opacity: .55; pointer-events: none;
+        }
+        .page-title[data-text]::before { color: var(--magenta); animation: glitch-a 3.4s infinite steps(2); }
+        .page-title[data-text]::after  { color: var(--cyan);    animation: glitch-b 2.7s infinite steps(2); }
+        @keyframes glitch-a { 0%,92%,100%{transform:translate(0,0);clip-path:inset(0 0 100% 0)} 93%{transform:translate(-2px,1px);clip-path:inset(0 0 40% 0)} 96%{transform:translate(2px,-1px);clip-path:inset(60% 0 0 0)} }
+        @keyframes glitch-b { 0%,90%,100%{transform:translate(0,0);clip-path:inset(0 0 100% 0)} 91%{transform:translate(2px,-1px);clip-path:inset(0 0 55% 0)} 95%{transform:translate(-2px,1px);clip-path:inset(45% 0 0 0)} }
+        @media (prefers-reduced-motion: reduce) { .page-title::before, .page-title::after { display: none; } .page-title { animation: none; } }
+        .page-description { color: var(--muted); margin-top: 1rem; max-width: 40rem; font-size: 1rem; }
+
+        /* ─── Filter bar ─── */
+        .filter-bar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 2rem; }
+        .chip-filter {
+            font-family: var(--font); font-size: .8125rem; letter-spacing: .04em;
+            color: var(--muted); background: var(--panel); border: 1px solid var(--border);
+            padding: .35rem .8rem; border-radius: 2px; cursor: pointer; transition: all .15s;
+            text-transform: lowercase;
+        }
+        .chip-filter:hover { color: var(--cyan); border-color: var(--cyan-dim); }
+        .chip-filter.active { color: var(--bg); background: var(--cyan); border-color: var(--cyan); font-weight: 600; box-shadow: 0 0 14px var(--cyan-dim); }
+
+        /* ─── Grid ─── */
+        .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.25rem; }
+        .recipe-card {
+            position: relative; cursor: pointer;
+            background: linear-gradient(160deg, var(--panel-2), var(--panel));
+            border: 1px solid var(--border);
+            clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+            transition: transform .18s, box-shadow .18s, border-color .18s;
+            overflow: hidden;
+        }
+        .recipe-card:hover { transform: translateY(-3px); border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan-dim), 0 8px 30px rgba(46,242,255,.12); }
+        /* corner brackets */
+        .recipe-card::before, .recipe-card::after {
+            content: ""; position: absolute; width: 14px; height: 14px; pointer-events: none; z-index: 3; transition: border-color .18s;
+        }
+        .recipe-card::before { top: 7px; left: 7px; border-top: 2px solid var(--cyan-dim); border-left: 2px solid var(--cyan-dim); }
+        .recipe-card::after { bottom: 7px; right: 7px; border-bottom: 2px solid var(--cyan-dim); border-right: 2px solid var(--cyan-dim); }
+        .recipe-card:hover::before, .recipe-card:hover::after { border-color: var(--magenta); }
+
+        .card-media { position: relative; aspect-ratio: 16 / 10; background: #060a0e; overflow: hidden; }
+        .card-media img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1.05) contrast(1.03); transition: transform .35s; }
+        .recipe-card:hover .card-media img { transform: scale(1.05); }
+        .card-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(5,7,10,.85)); }
+        .card-noimg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--cyan-dim); }
+        .card-noimg svg { width: 46px; height: 46px; opacity: .5; }
+        .card-difficulty {
+            position: absolute; top: .55rem; right: .55rem; z-index: 2;
+            font-size: .65rem; letter-spacing: .12em; text-transform: uppercase;
+            padding: .2rem .5rem; border-radius: 2px; background: rgba(5,7,10,.8); border: 1px solid var(--border); color: var(--cyan);
+        }
+        .card-body { padding: .9rem 1rem 1.1rem; position: relative; z-index: 2; }
+        .card-title { font-family: var(--font-display); font-size: 1.02rem; font-weight: 600; line-height: 1.25; margin-bottom: .5rem; color: var(--text); }
+        .recipe-card:hover .card-title { color: #fff; }
+        .card-meta { display: flex; flex-wrap: wrap; gap: .4rem .9rem; font-size: .75rem; color: var(--muted); }
+        .card-meta span { display: inline-flex; align-items: center; gap: .3rem; }
+        .card-meta svg { width: 12px; height: 12px; stroke: var(--cyan); fill: none; stroke-width: 1.6; opacity: .8; }
+        .card-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .7rem; }
+        .tag { font-size: .65rem; letter-spacing: .05em; color: var(--magenta); border: 1px solid var(--magenta-dim); padding: .12rem .45rem; border-radius: 2px; text-transform: lowercase; }
+
+        /* ─── States ─── */
+        .state { grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; color: var(--muted); }
+        .state .spinner { width: 26px; height: 26px; border: 2px solid var(--border); border-top-color: var(--cyan); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .state code { display: block; margin-top: .75rem; font-size: .8125rem; color: var(--magenta); word-break: break-all; }
+
+        /* ─── Modal ─── */
+        .modal-backdrop {
+            position: fixed; inset: 0; z-index: 100; display: none;
+            background: rgba(2,4,7,.82); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            padding: 2rem 1rem; overflow-y: auto;
+        }
+        .modal-backdrop.open { display: block; }
+        .modal {
+            max-width: 46rem; margin: 1rem auto; background: linear-gradient(160deg, var(--panel-2), var(--panel));
+            border: 1px solid var(--cyan-dim); box-shadow: 0 0 0 1px rgba(46,242,255,.15), 0 20px 70px rgba(0,0,0,.6);
+            clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+            position: relative; animation: modal-in .25s ease;
+        }
+        @keyframes modal-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+        .modal-hero { position: relative; aspect-ratio: 16 / 8; background: #060a0e; overflow: hidden; }
+        .modal-hero img { width: 100%; height: 100%; object-fit: cover; }
+        .modal-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, var(--panel)); }
+        .modal-close {
+            position: absolute; top: .75rem; right: .75rem; z-index: 5;
+            width: 2.2rem; height: 2.2rem; display: flex; align-items: center; justify-content: center;
+            background: rgba(5,7,10,.78); border: 1px solid var(--border); color: var(--cyan);
+            font-size: 1.1rem; cursor: pointer; border-radius: 2px; transition: all .15s; font-family: var(--font);
+        }
+        .modal-close:hover { color: var(--magenta); border-color: var(--magenta); box-shadow: 0 0 12px var(--magenta-dim); }
+        .modal-content { padding: 1.5rem 1.75rem 2rem; }
+        .modal-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; line-height: 1.15; margin-bottom: .65rem; color: #fff; }
+        .modal-meta { display: flex; flex-wrap: wrap; gap: .5rem .9rem; font-size: .8125rem; color: var(--muted); margin-bottom: 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--border); }
+        .modal-meta span { display: inline-flex; align-items: center; gap: .35rem; }
+        .modal-meta svg { width: 13px; height: 13px; stroke: var(--cyan); fill: none; stroke-width: 1.6; }
+        .modal-meta b { color: var(--text); font-weight: 600; }
+        .modal-desc { color: var(--text); margin-bottom: 1.5rem; font-size: .95rem; }
+        .modal-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.5rem; }
+        .section-h { font-family: var(--font-display); font-size: .9rem; letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); margin: 1.75rem 0 .9rem; display: flex; align-items: center; gap: .6rem; }
+        .section-h::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--cyan-dim), transparent); }
+        ul.ingredients { list-style: none; display: grid; gap: .5rem; }
+        ul.ingredients li { display: flex; gap: .65rem; align-items: flex-start; font-size: .95rem; padding: .5rem .75rem; background: var(--panel-2); border-left: 2px solid var(--cyan-dim); }
+        ul.ingredients li::before { content: "▸"; color: var(--cyan); flex-shrink: 0; }
+        ol.steps { list-style: none; counter-reset: step; display: grid; gap: .9rem; }
+        ol.steps li { counter-increment: step; display: grid; grid-template-columns: 2rem 1fr; gap: .85rem; align-items: start; font-size: .95rem; line-height: 1.6; }
+        ol.steps li::before {
+            content: counter(step, decimal-leading-zero); font-family: var(--font-display); font-size: .8rem; font-weight: 700;
+            color: var(--magenta); border: 1px solid var(--magenta-dim); width: 2rem; height: 2rem;
+            display: flex; align-items: center; justify-content: center; border-radius: 2px; background: var(--panel-2);
+        }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: .6rem; }
+        .gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--border); border-radius: 2px; cursor: zoom-in; transition: border-color .15s, transform .15s; }
+        .gallery img:hover { border-color: var(--cyan); transform: scale(1.02); }
+
+        /* ─── Footer ─── */
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); font-size: .8125rem; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+        .footer-links { display: flex; gap: 1.4rem; }
+        .footer-links a { color: var(--muted); }
+        .footer-links a:hover { color: var(--cyan); }
+
+        @media (max-width: 640px) {
+            body { padding: 2rem 1rem 1.5rem; }
+            header { flex-direction: column; gap: 1rem; align-items: flex-start; }
+            nav ul { gap: 1rem; flex-wrap: wrap; }
+            .recipe-grid { grid-template-columns: 1fr 1fr; gap: .8rem; }
+            .modal-content { padding: 1.25rem 1.1rem 1.75rem; }
+            .modal-title { font-size: 1.4rem; }
+            footer { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+        @media (max-width: 400px) { .recipe-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <div class="logo"><a href="/">Navajit D</a></div>
+        </div>
+        <nav><ul>
+            <li><a href="/projects.html">projects</a></li>
+            <li><a href="/blog.html">blog</a></li>
+            <li><a href="/#experience">experience</a></li>
+            <li><a href="/recipes.html" class="current">recipes</a></li>
+        </ul></nav>
+    </header>
+
+    <div class="page-header">
+        <div class="kicker">// kitchen.exe <span class="blink">_</span></div>
+        <h1 class="page-title" data-text="RECIPES">RECIPES</h1>
+        <p class="page-description">Field notes from the kitchen — things I cook, decoded into ingredients and steps. Tap a card to load the full build.</p>
+    </div>
+
+    <div class="filter-bar" id="filterBar"></div>
+
+    <div class="recipe-grid" id="recipeGrid">
+        <div class="state" id="loadingState"><div class="spinner"></div><div>Decrypting recipes…</div></div>
+    </div>
+
+    <!-- ─── Modal ─── -->
+    <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal" id="modal"></div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="https://github.com/navajitd">GitHub</a>
+            <a href="https://linkedin.com/in/navjit-debnath-34b1b5191">LinkedIn</a>
+            <a href="https://instagram.com/nav.jit">Instagram</a>
+            <a href="https://twitter.com/solitary_nav">Twitter</a>
+            <a href="mailto:navjitdebnath5@gmail.com">Email</a>
+        </div>
+        <div>© 2025 Navajit D</div>
+    </footer>
+
+<script>
+// ─── Constants ────────────────────────────────────────────────────────────────
+// Recipes render from the public `recipes` Firestore collection over REST — no
+// Firebase SDK loaded here, so the page stays fast. (Same pattern as blog.html.)
+const FIRESTORE_REST =
+    'https://firestore.googleapis.com/v1/projects/recipes-7dc22/databases/(default)/documents/recipes' +
+    '?key=AIzaSyCM8XiZ9tLn7jtVNcx0D6iZwYOGXBOLdjU&pageSize=300';
+const CACHE_KEY = 'recipes_cache_v1';
+const CACHE_TTL = 30 * 60 * 1000; // 30 min
+
+let allRecipes = [];
+let activeTag = '';
+
+// ─── Firestore REST value unwrapping ───────────────────────────────────────────
+function val(f) {
+    if (f == null) return '';
+    if (f.stringValue !== undefined) return f.stringValue;
+    if (f.timestampValue !== undefined) return f.timestampValue;
+    if (f.integerValue !== undefined) return Number(f.integerValue);
+    if (f.doubleValue !== undefined) return f.doubleValue;
+    if (f.booleanValue !== undefined) return f.booleanValue;
+    if (f.arrayValue !== undefined) return (f.arrayValue.values || []).map(val);
+    if (f.nullValue !== undefined) return '';
+    return '';
+}
+function arr(f) { const v = val(f); return Array.isArray(v) ? v.filter(x => x != null && String(x).trim() !== '') : (v ? [v] : []); }
+
+function unwrap(doc) {
+    const f = doc.fields || {};
+    const id = doc.name.split('/').pop();
+    const rawDate = val(f.date) || val(f.createdAt);
+    return {
+        id,
+        title: val(f.title) || 'Untitled',
+        description: val(f.description) || '',
+        author: val(f.author) || 'Navajit D',
+        date: rawDate ? new Date(rawDate).toISOString() : new Date().toISOString(),
+        cuisine: val(f.cuisine) || '',
+        difficulty: val(f.difficulty) || '',
+        prepTime: val(f.prepTime) || '',
+        cookTime: val(f.cookTime) || '',
+        servings: val(f.servings) || '',
+        tags: arr(f.tags),
+        ingredients: arr(f.ingredients),
+        steps: arr(f.steps),
+        heroImage: val(f.heroImage) || '',
+        images: arr(f.images),
+    };
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+const ICON = {
+    clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    fire: '<svg viewBox="0 0 24 24"><path d="M12 3c1 3-2 4-2 7a4 4 0 0 0 8 0c0-3-2-4-2-7-1 2-3 2-2-0z"/><path d="M8 14a4 4 0 0 0 8 0"/></svg>',
+    plate: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>',
+    chef: '<svg viewBox="0 0 24 24"><path d="M6 13a4 4 0 1 1 1.5-7.7 4 4 0 0 1 9 0A4 4 0 1 1 18 13z"/><path d="M7 13v6h10v-6"/></svg>',
+};
+
+// ─── Load ────────────────────────────────────────────────────────────────────
+function getCache() {
+    try { const p = JSON.parse(localStorage.getItem(CACHE_KEY)); return (p && Date.now() - p.ts < CACHE_TTL) ? p.recipes : null; } catch (e) { return null; }
+}
+function setCache(recipes) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), recipes })); } catch (e) {} }
+
+async function load() {
+    const cached = getCache();
+    if (cached && cached.length) { allRecipes = cached; render(); }
+    try {
+        const res = await fetch(FIRESTORE_REST, { cache: 'no-cache' });
+        if (!res.ok) throw new Error('Firestore ' + res.status);
+        const data = await res.json();
+        allRecipes = (data.documents || []).map(unwrap)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        setCache(allRecipes);
+        render();
+    } catch (e) {
+        if (!allRecipes.length) showError(e.message);
+    }
+}
+
+function showError(msg) {
+    document.getElementById('recipeGrid').innerHTML =
+        '<div class="state" style="color:var(--magenta)">⚠ Failed to load recipes.<code>' + esc(msg) + '</code></div>';
+}
+
+// ─── Render ────────────────────────────────────────────────────────────────────
+function render() {
+    const grid = document.getElementById('recipeGrid');
+    const filtered = activeTag ? allRecipes.filter(r => r.tags.includes(activeTag) || r.cuisine === activeTag) : allRecipes;
+
+    renderFilters();
+
+    if (!allRecipes.length) {
+        grid.innerHTML = '<div class="state">No recipes yet. The kitchen is offline — check back soon.</div>';
+        return;
+    }
+    if (!filtered.length) {
+        grid.innerHTML = '<div class="state">No recipes tagged “' + esc(activeTag) + '”.</div>';
+        return;
+    }
+
+    grid.innerHTML = filtered.map((r, i) => {
+        const idx = allRecipes.indexOf(r);
+        const media = r.heroImage
+            ? `<img src="${esc(r.heroImage)}" alt="${esc(r.title)}" loading="lazy">`
+            : `<div class="card-noimg">${ICON.chef}</div>`;
+        const meta = [
+            (r.prepTime || r.cookTime) ? `<span>${ICON.clock}${esc([r.prepTime, r.cookTime].filter(Boolean).join(' + '))}</span>` : '',
+            r.servings ? `<span>${ICON.plate}${esc(r.servings)}</span>` : '',
+        ].filter(Boolean).join('');
+        const tags = (r.cuisine ? [r.cuisine] : []).concat(r.tags).slice(0, 3)
+            .map(t => `<span class="tag">${esc(t)}</span>`).join('');
+        return `
+            <article class="recipe-card" data-idx="${idx}" tabindex="0" role="button" aria-label="Open recipe: ${esc(r.title)}">
+                <div class="card-media">
+                    ${media}
+                    ${r.difficulty ? `<span class="card-difficulty">${esc(r.difficulty)}</span>` : ''}
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title">${esc(r.title)}</h2>
+                    ${meta ? `<div class="card-meta">${meta}</div>` : ''}
+                    ${tags ? `<div class="card-tags">${tags}</div>` : ''}
+                </div>
+            </article>`;
+    }).join('');
+
+    grid.querySelectorAll('.recipe-card').forEach(card => {
+        const open = () => openModal(allRecipes[+card.dataset.idx]);
+        card.addEventListener('click', open);
+        card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+    });
+}
+
+function renderFilters() {
+    const bar = document.getElementById('filterBar');
+    const tagSet = new Set();
+    allRecipes.forEach(r => { if (r.cuisine) tagSet.add(r.cuisine); r.tags.forEach(t => tagSet.add(t)); });
+    const tags = Array.from(tagSet).sort();
+    if (!tags.length) { bar.innerHTML = ''; return; }
+    bar.innerHTML = [`<button class="chip-filter ${activeTag ? '' : 'active'}" data-tag="">all</button>`]
+        .concat(tags.map(t => `<button class="chip-filter ${activeTag === t ? 'active' : ''}" data-tag="${esc(t)}">${esc(t)}</button>`))
+        .join('');
+    bar.querySelectorAll('.chip-filter').forEach(b => b.addEventListener('click', () => { activeTag = b.dataset.tag; render(); }));
+}
+
+// ─── Modal ─────────────────────────────────────────────────────────────────────
+const backdrop = document.getElementById('modalBackdrop');
+const modal = document.getElementById('modal');
+
+function openModal(r) {
+    const hero = r.heroImage
+        ? `<div class="modal-hero"><img src="${esc(r.heroImage)}" alt="${esc(r.title)}"></div>`
+        : '';
+    const meta = [
+        r.prepTime ? `<span>${ICON.clock}Prep <b>${esc(r.prepTime)}</b></span>` : '',
+        r.cookTime ? `<span>${ICON.fire}Cook <b>${esc(r.cookTime)}</b></span>` : '',
+        r.servings ? `<span>${ICON.plate}Serves <b>${esc(r.servings)}</b></span>` : '',
+        r.difficulty ? `<span>${ICON.chef}<b>${esc(r.difficulty)}</b></span>` : '',
+    ].filter(Boolean).join('');
+    const tags = (r.cuisine ? [r.cuisine] : []).concat(r.tags)
+        .map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    const ingredients = r.ingredients.length
+        ? `<div class="section-h">Ingredients</div><ul class="ingredients">${r.ingredients.map(i => `<li>${esc(i)}</li>`).join('')}</ul>` : '';
+    const steps = r.steps.length
+        ? `<div class="section-h">Method</div><ol class="steps">${r.steps.map(s => `<li><div>${esc(s)}</div></li>`).join('')}</ol>` : '';
+    const gallery = r.images.length
+        ? `<div class="section-h">Gallery</div><div class="gallery">${r.images.map(src => `<img src="${esc(src)}" alt="" loading="lazy">`).join('')}</div>` : '';
+
+    modal.innerHTML = `
+        <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+        ${hero}
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">${esc(r.title)}</h2>
+            ${meta ? `<div class="modal-meta">${meta}</div>` : ''}
+            ${r.description ? `<p class="modal-desc">${esc(r.description)}</p>` : ''}
+            ${tags ? `<div class="modal-tags">${tags}</div>` : ''}
+            ${ingredients}
+            ${steps}
+            ${gallery}
+        </div>`;
+
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    modal.querySelectorAll('.gallery img').forEach(img => img.addEventListener('click', () => window.open(img.src, '_blank')));
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    backdrop.scrollTop = 0;
+    try { window.nvTrack && window.nvTrack('recipe_open', { recipeId: r.id, title: r.title }); } catch (e) {}
+}
+
+function closeModal() { backdrop.classList.remove('open'); document.body.style.overflow = ''; }
+backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal(); });
+
+load();
+</script>
+</body>
+</html>

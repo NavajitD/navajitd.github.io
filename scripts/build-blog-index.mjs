@@ -13,8 +13,8 @@ import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const PROJECT = 'numo-3984a';
-const API_KEY = 'AIzaSyCuJBqQWKpbhj3FEYpg_p_nhbjTEFg8Lt4';
+const PROJECT = 'recipes-7dc22';
+const API_KEY = 'AIzaSyCM8XiZ9tLn7jtVNcx0D6iZwYOGXBOLdjU';
 const COLLECTION = 'posts';
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'posts.json');
 
