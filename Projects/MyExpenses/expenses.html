@@ -2482,7 +2482,6 @@
         /* ═══════════════════════════════════════════════════
            VERNACULAR — Bengali / Hindi support
            ═══════════════════════════════════════════════════ */
-        const HF_INDIC_MODEL = 'ai4bharat/Airavata';
 
         const VOICE_LANGS = [
             { code: 'en-IN', label: 'EN' },
@@ -3993,15 +3992,15 @@ OTHER RULES:
             // Routing: use the strong 70B model on first try for
             //   (a) Indic / code-mixed input (8B is weak at Hindi/Bengali), and
             //   (b) multi-expense utterances (8B tends to collapse to one item).
-            // Everyone else starts on fast Cerebras 8B and falls back to 70B on failure.
+            // Everyone else starts on fast Groq 8B (llama-3.1-8b-instant) and falls back to 70B on failure.
             let useStrongFirst = false;
-            let useHuggingFace = false;
+            let useIndic = false;
             let effectiveSystem = system;
             if (!base64Image && isJson) {
                 const langInfo = detectLanguageWithConfidence(prompt);
                 const amountCount = countAmountMentions(prompt);
                 if (langInfo.lang === 'indic') {
-                    useHuggingFace = true;
+                    useIndic = true;
                     effectiveSystem = system + '\n\nIMPORTANT: The input is in an Indian language (Hindi/Bengali) or code-mixed with English. Always return JSON field values in English.';
                 } else if (amountCount >= 2) {
                     useStrongFirst = true;
@@ -4012,15 +4011,15 @@ OTHER RULES:
             if (base64Image) {
                 provider = 'groq';
                 model = 'meta-llama/llama-4-scout-17b-16e-instruct';
-            } else if (useHuggingFace) {
-                provider = 'huggingface';
-                model = HF_INDIC_MODEL;
+            } else if (useIndic) {
+                provider = 'cerebras';
+                model = 'qwen-3-32b';
             } else if (useStrongFirst || !retry) {
                 provider = 'groq';
                 model = 'llama-3.3-70b-versatile';
             } else {
-                provider = 'cerebras';
-                model = 'llama3.1-8b';
+                provider = 'groq';
+                model = 'llama-3.1-8b-instant';
             }
 
             const res = await fetch(EXPENSES_LLM_URL, {
