@@ -4012,8 +4012,11 @@ OTHER RULES:
                 provider = 'groq';
                 model = 'meta-llama/llama-4-scout-17b-16e-instruct';
             } else if (useIndic) {
+                // Indic/code-mixed → Cerebras GPT-OSS-120B: large, fast, free-tier, and a
+                // currently-live Cerebras model (their qwen-3-32b was deprecated 2026-02).
+                // Falls over to Groq 70B automatically if Cerebras is unavailable.
                 provider = 'cerebras';
-                model = 'qwen-3-32b';
+                model = 'gpt-oss-120b';
             } else if (useStrongFirst || !retry) {
                 provider = 'groq';
                 model = 'llama-3.3-70b-versatile';
