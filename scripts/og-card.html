@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!-- Source for og-image.png. Rendered to PNG by scripts/render-og.mjs. Not deployed as a page. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; }
+  body {
+    font-family: "Inconsolata", monospace;
+    color: #0a1f00;
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+  }
+  /* soft brand glow, bottom-right */
+  .glow {
+    position: absolute;
+    width: 760px; height: 760px;
+    right: -240px; bottom: -300px;
+    background: radial-gradient(circle at center,
+      rgba(37,99,235,0.10) 0%,
+      rgba(22,163,74,0.10) 38%,
+      rgba(234,88,12,0.10) 64%,
+      rgba(255,255,255,0) 72%);
+    filter: blur(8px);
+  }
+  .frame {
+    position: relative;
+    height: 100%;
+    padding: 72px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .mark {
+    width: 76px; height: 76px; border-radius: 16px;
+    background: linear-gradient(135deg, #2563eb 0%, #16a34a 50%, #ea580c 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 44px; font-weight: 500; line-height: 1;
+  }
+  .url { font-size: 24px; font-weight: 500; color: #6b7280; letter-spacing: 0.5px; }
+  .name { font-size: 104px; font-weight: 700; line-height: 1.02; letter-spacing: -2px; }
+  .role {
+    font-size: 50px; font-weight: 600; margin-top: 14px;
+    background: linear-gradient(90deg, #2563eb 0%, #16a34a 55%, #ea580c 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    width: fit-content;
+  }
+  .org { font-size: 30px; font-weight: 500; color: #374151; margin-top: 18px; }
+  .tagline { font-size: 28px; font-weight: 400; color: #6b7280; margin-top: 8px; }
+  .bar {
+    height: 8px; border-radius: 4px; margin-top: 4px;
+    background: linear-gradient(90deg, #2563eb 0%, #16a34a 50%, #ea580c 100%);
+  }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="frame">
+    <div class="top">
+      <div class="mark">N</div>
+      <div class="url">navajitd.github.io</div>
+    </div>
+    <div class="mid">
+      <div class="name">Navajit&nbsp;D</div>
+      <div class="role">AI Product Manager</div>
+      <div class="org">FinTech &middot; Bengaluru</div>
+      <div class="tagline">Production AI agents with ROI over hype.</div>
+    </div>
+    <div class="bar"></div>
+  </div>
+</body>
+</html>

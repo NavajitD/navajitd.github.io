@@ -1,0 +1,8 @@
+# navajitd.github.io
+# All crawlers welcome, including AI answer engines (GPTBot, ClaudeBot,
+# PerplexityBot, Google-Extended) — they're covered by the wildcard below.
+User-agent: *
+Allow: /
+Disallow: /admin.html
+
+Sitemap: https://navajitd.github.io/sitemap.xml

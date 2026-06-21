@@ -1,0 +1,17 @@
+# Navajit D
+
+> AI Product Manager at Pine Labs (Bengaluru). Engineer-turned-PM shipping production AI agents — voice, email, and multimodal chat — with measurable ROI over hype. Also writes essays and builds side projects.
+
+## Pages
+- [Home](https://navajitd.github.io/): Profile, experience, and contact.
+- [Projects](https://navajitd.github.io/projects.html): Personal builds — Vidur, Aria, HealThee, MyExpenses, Numo, Letter Hunt, and a WhatsApp Scheduler.
+- [Blog](https://navajitd.github.io/blog.html): Essays on building AI products and personal projects.
+- [Recipes](https://navajitd.github.io/recipes.html): Field notes from the kitchen.
+
+## Writing
+- [Evals before Features: What Building a Hinglish Voice Agent Taught Me about AI Product Roadmaps](https://navajitd.github.io/blog-post.html?id=0cdHWExSKMxsEwd63rtT)
+
+## Contact
+- GitHub: https://github.com/navajitd
+- LinkedIn: https://linkedin.com/in/navjit-debnath-34b1b5191
+- X/Twitter: https://twitter.com/solitary_nav
