@@ -115,6 +115,8 @@
     (p === '/' || p === '' || p.endsWith('/index.html')) ? 'home' :
     p.endsWith('/projects.html') ? 'projects' :
     p.endsWith('/blog.html') ? 'blog_list' :
+    // Prerendered posts live at /blog/<slug>.html; the dynamic shell at /blog-post.html.
+    (p.indexOf('/blog/') === 0 && p.endsWith('.html')) ? 'blog_post' :
     p.endsWith('/blog-post.html') ? 'blog_post' :
     p.endsWith('/recipes.html') ? 'recipes' : 'other';
 
@@ -148,7 +150,9 @@
     ensureGeo(); // kick off geo lookup early, off the render path
 
     var extra = {};
-    if (PAGE === 'blog_post') extra.postId = new URLSearchParams(location.search).get('id') || '';
+    // postId comes from ?id= on the dynamic shell, or window.__nvPostReadyId on a
+    // prerendered static page (set inline in the page head).
+    if (PAGE === 'blog_post') extra.postId = new URLSearchParams(location.search).get('id') || window.__nvPostReadyId || '';
     track('page_view', extra);
 
     // Project-page CTA clicks (captured via delegation — no markup changes needed)

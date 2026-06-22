@@ -167,6 +167,7 @@ function setCachedList(posts) {
 function normalize(posts) {
     return posts.map(p => ({
         id: p.id,
+        slug: p.slug || '',
         title: p.title || 'Untitled',
         date: p.date || new Date().toISOString(),
         excerpt: p.excerpt || '',
@@ -213,7 +214,9 @@ async function fetchPostList() {
 function renderCard(post) {
     const card = document.createElement('a');
     card.className = 'blog-card';
-    card.href = `/blog-post.html?id=${post.id}`;
+    // Prefer the prerendered static page; fall back to the dynamic shell for any
+    // post not yet built (slug missing from posts.json).
+    card.href = post.slug ? `/blog/${post.slug}.html` : `/blog-post.html?id=${post.id}`;
     card.innerHTML = `
         <div class="blog-card-date">${fmtDate(post.date)}</div>
         <div class="blog-card-title">${esc(post.title)}</div>

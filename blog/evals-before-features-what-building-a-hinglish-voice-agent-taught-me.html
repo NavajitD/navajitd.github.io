@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
+    <title>Evals before Features: What Building a Hinglish Voice Agent Taught Me about AI Product Roadmaps — Navajit D</title>
+
+    <!-- SEO -->
+    <meta name="description" content="A month ago, my former colleague Kaustubh and I won a voice AI buildathon by popular vote. Last weekend, he called to defend our title.">
+    <meta name="author" content="Navajit D">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="canonical" href="https://navajitd.github.io/blog/evals-before-features-what-building-a-hinglish-voice-agent-taught-me.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Navajit D">
+    <meta property="og:title" content="Evals before Features: What Building a Hinglish Voice Agent Taught Me about AI Product Roadmaps">
+    <meta property="og:description" content="A month ago, my former colleague Kaustubh and I won a voice AI buildathon by popular vote. Last weekend, he called to defend our title.">
+    <meta property="og:url" content="https://navajitd.github.io/blog/evals-before-features-what-building-a-hinglish-voice-agent-taught-me.html">
+    <meta property="og:image" content="https://navajitd.github.io/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Navajit D — AI Product Manager">
+    <meta property="article:published_time" content="2026-06-02T00:00:00.000Z">
+    <meta property="article:modified_time" content="2026-06-02T03:28:26.044Z">
+    <meta property="article:author" content="Navajit D">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@solitary_nav">
+    <meta name="twitter:creator" content="@solitary_nav">
+    <meta name="twitter:title" content="Evals before Features: What Building a Hinglish Voice Agent Taught Me about AI Product Roadmaps">
+    <meta name="twitter:description" content="A month ago, my former colleague Kaustubh and I won a voice AI buildathon by popular vote. Last weekend, he called to defend our title.">
+    <meta name="twitter:image" content="https://navajitd.github.io/og-image.png">
+
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Evals before Features: What Building a Hinglish Voice Agent Taught Me about AI Product Roadmaps",
+  "description": "A month ago, my former colleague Kaustubh and I won a voice AI buildathon by popular vote. Last weekend, he called to defend our title.",
+  "datePublished": "2026-06-02T00:00:00.000Z",
+  "dateModified": "2026-06-02T03:28:26.044Z",
+  "author": {
+    "@type": "Person",
+    "name": "Navajit D",
+    "url": "https://navajitd.github.io/"
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Navajit D",
+    "url": "https://navajitd.github.io/"
+  },
+  "image": "https://navajitd.github.io/og-image.png",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://navajitd.github.io/blog/evals-before-features-what-building-a-hinglish-voice-agent-taught-me.html"
+  },
+  "url": "https://navajitd.github.io/blog/evals-before-features-what-building-a-hinglish-voice-agent-taught-me.html"
+}
+    </script>
+    <script defer src="/analytics.js"></script>
+    <style>
+        :root {
+            --text: #1a1a1a; --text-secondary: #525252; --bg: #fff; --bg-subtle: #fafafa;
+            --accent: #2563eb; --border: #e5e7eb; --muted: #6b7280;
+            --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+            --font-mono: "Inconsolata", monospace;
+            --reading-width: 680px;
+        }
+        *{box-sizing:border-box;margin:0;padding:0} html{font-size:18px;scroll-behavior:smooth}
+        body{font-family:var(--font-serif);color:var(--text);background:var(--bg);line-height:1.8;-webkit-font-smoothing:antialiased}
+
+        /* ─── Top Bar ────────────────────────────────── */
+        .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:box-shadow .2s}
+        .topbar.scrolled{box-shadow:0 1px 8px rgba(0,0,0,.06)}
+        .topbar-inner{max-width:var(--reading-width);margin:0 auto;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+        .topbar-back{font-family:var(--font-mono);font-size:.8125rem;color:var(--text-secondary);text-decoration:none;display:flex;align-items:center;gap:.375rem;transition:color .2s}
+        .topbar-back:hover{color:var(--accent);text-decoration:none}
+        .topbar-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+        .topbar-home{font-family:var(--font-mono);font-size:.8125rem;font-weight:600;color:var(--text);text-decoration:none}
+        .topbar-home:hover{color:var(--accent);text-decoration:none}
+
+        /* ─── Article ────────────────────────────────── */
+        .article-container{max-width:var(--reading-width);margin:0 auto;padding:0 1.5rem}
+        .article-header{padding:3.5rem 0 2rem;border-bottom:1px solid var(--border);margin-bottom:2.5rem}
+        .article-title{font-family:var(--font-serif);font-size:2.25rem;font-weight:700;line-height:1.25;letter-spacing:-.02em;margin-bottom:1rem}
+        .article-meta{font-family:var(--font-mono);font-size:.8125rem;color:var(--text-secondary);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+        .article-meta-divider{width:3px;height:3px;border-radius:50%;background:var(--text-secondary);opacity:.5}
+        .article-author{font-weight:600;color:var(--text)}
+        .article-body{padding-bottom:3rem}
+
+        /* Reset Google Docs inline styles */
+        .article-body *{font-family:inherit !important;background-color:transparent !important}
+        .article-body p{margin-bottom:1.5rem;font-size:1rem;line-height:1.8}
+        .article-body h1{font-size:1.75rem;font-weight:700;margin:2.5rem 0 1rem;line-height:1.3;letter-spacing:-.01em}
+        .article-body h2{font-size:1.4rem;font-weight:700;margin:2.25rem 0 .875rem;line-height:1.35}
+        .article-body h3{font-size:1.15rem;font-weight:600;margin:2rem 0 .75rem;line-height:1.4}
+        .article-body h4,.article-body h5,.article-body h6{font-size:1rem;font-weight:600;margin:1.75rem 0 .625rem}
+        .article-body a{color:var(--accent);text-decoration:underline;text-decoration-color:rgba(37,99,235,.3);text-underline-offset:2px;transition:text-decoration-color .2s}
+        .article-body a:hover{text-decoration-color:var(--accent)}
+        .article-body strong,.article-body b{font-weight:700}
+        .article-body em,.article-body i{font-style:italic}
+        .article-body ul,.article-body ol{margin:0 0 1.5rem 1.5rem;line-height:1.8}
+        .article-body li{margin-bottom:.375rem} .article-body li p{margin-bottom:.375rem}
+        .article-body blockquote{border-left:3px solid var(--accent);padding:.25rem 0 .25rem 1.25rem;margin:1.75rem 0;color:var(--text-secondary);font-style:italic}
+        .article-body blockquote p{margin-bottom:.5rem} .article-body blockquote p:last-child{margin-bottom:0}
+        .article-body img{max-width:100%;height:auto;border-radius:6px;margin:1.5rem 0;display:block}
+        .article-body table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.9375rem}
+        .article-body th,.article-body td{border:1px solid var(--border);padding:.625rem .875rem;text-align:left;line-height:1.5}
+        .article-body th{background:var(--bg-subtle);font-weight:600}
+        .article-body tr:hover td{background:rgba(0,0,0,.015)}
+        .article-body code{font-family:var(--font-mono);font-size:.875em;background:var(--bg-subtle);padding:.15rem .4rem;border-radius:3px;border:1px solid var(--border)}
+        .article-body pre{background:var(--bg-subtle);border:1px solid var(--border);border-radius:6px;padding:1rem 1.25rem;overflow-x:auto;margin:1.5rem 0;font-family:var(--font-mono);font-size:.85rem;line-height:1.6}
+        .article-body pre code{background:none;border:none;padding:0}
+        .article-body hr{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
+        .article-body span>img{display:block;margin:1.5rem auto}
+
+        /* ─── Footer (matches site nav) ──────────────── */
+        .post-footer{max-width:var(--reading-width);margin:0 auto;padding:2rem 1.5rem 3rem;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:.875rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+        .footer-links{display:flex;gap:1.5rem}
+        .footer-links a{color:var(--muted);text-decoration:none} .footer-links a:hover{color:var(--accent)}
+
+        /* ─── States ─────────────────────────────────── */
+        .loading-article{max-width:var(--reading-width);margin:0 auto;padding:4rem 1.5rem;text-align:center;font-family:var(--font-mono);color:var(--text-secondary);font-size:.875rem}
+        .loading-article .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        @media(max-width:640px){html{font-size:17px}.article-header{padding:2.5rem 0 1.5rem}.article-title{font-size:1.75rem}.article-container{padding:0 1rem}.topbar-inner{padding:.625rem 1rem}.post-footer{padding:2rem 1rem;flex-direction:column;gap:1rem;text-align:center}}
+    </style>
+</head>
+<body>
+    <div class="topbar" id="topbar">
+        <div class="topbar-inner">
+            <a href="/blog.html" class="topbar-back">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> All posts
+            </a>
+            <a href="/" class="topbar-home">Home</a>
+        </div>
+    </div>
+
+    <article class="article-container">
+        <header class="article-header">
+            <h1 class="article-title">Evals before Features: What Building a Hinglish Voice Agent Taught Me about AI Product Roadmaps</h1>
+            <div class="article-meta">
+                <span class="article-author">Navajit D</span>
+                <span class="article-meta-divider"></span>
+                <span>2 June 2026</span>
+                <span class="article-meta-divider"></span>
+                <span>9 min read</span>
+            </div>
+        </header>
+        <div class="article-body"><p>A month ago, my former colleague <a href="https://www.linkedin.com/in/kaustubh-dixit/">Kaustubh</a> and I won a voice AI buildathon by popular vote. Last weekend, he called to defend our title.</p><p>Out of six problem statements from the <a href="https://www.linkedin.com/company/vedantu/">Vedantu</a> team, we picked Post-Demo Conversion — the most complex one. The brief: build a voice agent that calls parents within 2–4 hours of a free demo class, gauges their child's experience, handles real-time objections (price, child feedback, decision loops), drives toward enrollment, and escalates to a human counselor when needed. I proposed extending the scope: capture structured sentiment and objection data from every call to feed CRM intelligence and agent self-improvement.</p><p>We called it Aria. She's a Hinglish voice AI who acts like a senior education counselor. <a href="https://talktoaria.web.app">Try her here</a>.</p><p>This post is not an architecture tutorial. It's the part architecture tutorials don't cover.</p><h2><a id="_kpxva61ds6qu"></a>Building the stack under pressure</h2><p>Constraints showed up at every layer, even for a one-shot demo.</p><p>For STT, we needed accurate transcription, voice-activity detection, and noise cancellation — without paying ElevenLabs. Deepgram was the answer: best quality, generous free tier. For TTS, Sarvam has by far the most generous free tier and near-state-of-the-art Hindi voice quality. Telephony is typically the second-most-expensive component, but the Vedantu team covered it with a ₹1,000 credit from Vobiz.</p><p>The LLM layer was where it got interesting. We weren't paying OpenAI. So I proposed building a key-rotating proxy: the three of us — Kaustubh, <a href="https://www.linkedin.com/in/neelam-topno-80a4b6104/">Neelam</a>, and I — each got Cerebras and Groq API keys, and the proxy rotated through them, failing over on quota errors mid-stream. The bot talks plain OpenAI Chat Completions to a local /llm endpoint, so swapping providers is a config change, not a code change. That flexibility turned out to matter.</p><p>None of us have been full-time engineers in the last two years. We built everything with Claude Code. The right way to use it: cover your requirements exhaustively in the first prompt, and it only comes back for clarifications. Front-load the thinking or you spend the session giving feedback and burning context.</p><h2><a id="_hq4atz7wpggs"></a>The part that actually takes the day</h2><p>Claude can scaffold a working voice agent in under half an hour — if you've procured all the API keys on time. A counselor agent that opens with context, classifies parent intent, runs an objection play, and closes: we had that framework within twenty minutes.</p><p>I had the prompt. I had the persona. I had the conversation flow.</p><p>But the hard parts — the ones that determine whether your demo lands or your user hangs up — don't announce themselves:</p><ul><li>What happens when the LLM key rate-limits mid-call?</li><li>What happens when STT mishears a Hindi "हाँ" as an Odia "ହଁ"?</li><li>What happens when the parent says "अच्छा ठीक है" and the bot keeps talking instead of listening?</li><li>What happens when the model drifts on the child's name by turn 7 of a 15-minute call?</li></ul><p>None of these are features. All of them are the existence of the product. Every one I had to discover the hard way, ship a fix, and add to my mental model of what AI shipping actually means.</p><p>The lesson I'd write on a stone tablet: <strong>for an AI product, the roadmap is evals → guardrails → fallbacks → telemetry → then features.</strong> PMs who run that order build differently from PMs who don't.</p><h2><a id="_sq4dsawk1eo"></a>Specs become accuracy thresholds</h2><p>In traditional software, a spec looks like: <em>When the user clicks Submit, validate the form, write the row to the database, navigate to /confirmation.</em> Deterministic in, deterministic out.</p><p>For Aria, the closest equivalent looked like:</p><p>"After each parent turn, classify intent as one of {positive, soft_no, ambiguous, hard_no} with confidence ≥ 0.7. If hard_no with confidence ≥ 0.8, respect it on the first signal — exit warmly, capture one reason if tone permits. If soft_no, identify the primary objection (price, comparison, child_experience, spouse, timing, trust, logistics) and route to the matching play. Maximum 3 objection cycles before offering a senior-counselor callback."</p><p>That's not a fixed-rule spec. It's an accuracy threshold, a fallback definition, and a state machine simultaneously. And you don't know whether it works until you have an eval.</p><p>Aria's eval runs a set of Hinglish conversation states — take a price objection as an example — across providers, measuring response speed and quality on every turn. The quality judgment is still human; the speed comparison is mechanical.</p><p>What the eval revealed mattered more than the rankings. It showed where the spec was underspecified. "Route to the matching objection play" sounds precise until you run the calls and watch the model classify "I need to discuss with my husband" as a logistics issue one time and a trust signal the next. The eval doesn't fix the ambiguity — but it makes the ambiguity visible, and visible is where product work starts.</p><p>We ended up with Groq llama-4-scout as the primary model — fastest, zero errors across test calls — dropping Cerebras when we found its models couldn't disable reasoning mode (on a voice agent, that means TTS reads the model's inner monologue aloud to the caller). Voice is unforgiving: a small per-turn latency handicap compounds across a 15-minute call. You can't roadmap features until you've benchmarked the substrate.</p><h2><a id="_yaal0g79gbr9"></a>Three things learned the hard way</h2><p><strong>Latency doesn't come from where you expect.</strong> End-to-end from speech-end to first audio ran 0.95–1.35 seconds. Deepgram STT accounted for ~450ms; the LLM only ~100ms. TTS time-to-first-byte dominated the rest. One fix delivered disproportionate return: on an outbound call, the <em>agent</em> initiated it — so the agent should speak first. We had a 3-second "wait for the parent to say hello" timeout before TTS synthesis started. Removing it dropped dead air from ~5 seconds to 1–2. We also fire a throwaway single-token LLM completion the instant a call starts — the ~2-second TTS greeting hides the cold TLS handshake, so the parent's first reply lands as fast as any subsequent turn.</p><p><strong>The language layer is its own product spec.</strong> Romanized Hindi ("Namaste, kaise hain") causes Sarvam to mispronounce everything. The model must emit Devanagari ("नमस्ते, कैसे हैं"); English brand names stay in Latin script. This is a hard, per-turn prompt rule, not a suggestion. Relatedly: a stray Odia or Tamil word from the transcriber that contradicts the flow is almost certainly a code-mix artifact, not the parent switching languages or registering a refusal. Tell the model to ignore it, not classify a hard_no. And backchannels — "अच्छा," "हाँ," "हम्म" mid-sentence — are encouragement, not interruptions. A minimum-words strategy (3+ words to interrupt while the agent is speaking; 1 when silent) keeps Aria from flinching at every nod.</p><p><strong>"Connected" does not mean "working."</strong> ElevenLabs' Realtime WebSocket opened fine, then the server closed it within 0.5 seconds — quota exceeded. Pipecat's reconnect loop hid the failure: the bot spoke into a closed pipe; the parent heard silence. Our fallback only triggered on initialization failure, so it never engaged. Lesson: a health check that verifies only "the socket opened" is a lie. Watch for early server-side closes. Make fallbacks trigger on runtime failure, not just construction failure.</p><h2><a id="_a1f88ubg2feu"></a>Memory is not the same as history</h2><p>Pipecat keeps the full LLM context — every user message, every assistant reply — for the duration of the call. A 128k-token model can hold a 30-turn conversation a hundred times over. You'd assume the model can recall anything it said earlier.</p><p>It can. And it still drifts.</p><p>By turn 8, the model occasionally called the child "Arav" instead of "Aarav." By turn 11, it re-pitched an offer it had already made at turn 4. By turn 12, it re-ran a price question it had already asked. The history was there. The model just didn't reliably ground on it.</p><p>The fix: a structured CallMemory dataclass that sits on top of the LLM history, tracking objections already handled, whether the price offer was stated, the parent's exact name spelling from the CRM, any promises made. At the start of each turn, that block is rendered to text and prepended to the system prompt as ground truth. A few hundred bytes of extra context per turn. It eliminates roughly two-thirds of the drift.</p><p>The general principle: <strong>cheap and authoritative on top of expensive and probabilistic.</strong> If you can pin a fact deterministically, pin it. Don't ask the model to remember it.</p><h2><a id="_ty6lgupjea0s"></a>Infrastructure decisions are product decisions</h2><p>Building Aria surfaced a class of non-functional requirements I hadn't needed to think about in traditional product work — requirements that don't appear in any design doc template because they only exist when the system is probabilistic and real-time.</p><p><strong>Per-turn response latency</strong> — not just "is it fast" but whether each extra millisecond compounds into a broken conversation across 30 turns (long-lived WebSockets on Cloud Run; pre-warmed proxy connections). <strong>Mid-call provider resilience</strong> — graceful degradation when a quota runs out <em>during</em> a call, not just at startup (key-rotating proxy with runtime failover; health checks that catch server-side closes, not just connection opens). <strong>Call-level state persistence</strong> — facts the system must track reliably, independent of model attention (Firestore for call records, since Cloud Run filesystems don't persist between instances). <strong>Secret hygiene at runtime</strong> — API keys that rotate without redeployment and don't leak into logs (Secret Manager, IAM-scoped service account — 12 stack traces before the IAM grant was right).</p><p>None of these were in the original brief. All of them had a user-facing consequence. In probabilistic, real-time systems, the line between an NFR and a product decision is mostly fictional.</p><h2><a id="_kx39ktg5faph"></a>What this build taught me about the role</h2><p>A non-AI PM ships features. An AI PM ships features <em>plus</em> the fallback when the feature is wrong, <em>plus</em> the eval that proves it's right more often than yesterday, <em>plus</em> the telemetry that catches it drifting, <em>plus</em> the runbook for when the provider changes its rate limits at 2am.</p><p>The job is closer to building reliable spacecraft than building deterministic websites. Which is funny, because I trained for the spacecraft part first.</p><p>Aria is not a finished product. The demo is rate-limited to 3 calls per phone for cost reasons; there's a real list of unshipped work tracked in FUTURE.md. But it places real phone calls, runs an LLM you can actually hear, and I unlearned and relearned more about shipping AI products in a weekend building this than I could in ten AI PM webinars.</p><p><a href="https://talktoaria.web.app">Try Aria here</a>. <a href="https://github.com/NavajitD/sales-conversion-agent">Read the code</a>. Tell me what I got wrong.</p><p><em>I'm a Product Manager at Pine Labs, building AI agents for one of India's largest merchant-commerce platforms. My </em><a href="https://linkedin.com/in/navjit-debnath-34b1b5191"><em>LinkedIn</em></a><em> is open.</em></p><p><strong>Disclaimer:</strong> Nothing built, demoed, or referenced in this post uses any privileged information from Vedantu or any other organisation.</p></div>
+    </article>
+    <!-- read-till-end sentinel (observed by analytics.js) -->
+    <div id="articleEnd" style="height:1px"></div>
+
+    <footer class="post-footer" style="display:flex">
+        <div class="footer-links">
+            <a href="https://github.com/navajitd">GitHub</a>
+            <a href="https://linkedin.com/in/navjit-debnath-34b1b5191">LinkedIn</a>
+            <a href="https://instagram.com/nav.jit">Instagram</a>
+            <a href="https://twitter.com/solitary_nav">Twitter</a>
+            <a href="mailto:navjitdebnath5@gmail.com">Email</a>
+        </div>
+        <div>© 2025 Navajit D</div>
+    </footer>
+
+    <script>
+      window.__nvPostReadyId = "0cdHWExSKMxsEwd63rtT";
+      (function () {
+        var t = document.getElementById('topbar');
+        addEventListener('scroll', function () { t.classList.toggle('scrolled', scrollY > 8); }, { passive: true });
+      })();
+    </script>
+</body>
+</html>

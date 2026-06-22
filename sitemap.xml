@@ -2,26 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://navajitd.github.io/</loc>
-    <lastmod>2026-06-22</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://navajitd.github.io/projects.html</loc>
-    <lastmod>2026-06-22</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://navajitd.github.io/blog.html</loc>
-    <lastmod>2026-06-02</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://navajitd.github.io/recipes.html</loc>
-    <lastmod>2026-06-22</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://navajitd.github.io/blog-post.html?id=0cdHWExSKMxsEwd63rtT</loc>
+    <loc>https://navajitd.github.io/blog/evals-before-features-what-building-a-hinglish-voice-agent-taught-me.html</loc>
     <lastmod>2026-06-02</lastmod>
     <priority>0.7</priority>
   </url>

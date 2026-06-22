@@ -20,16 +20,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Build posts.json + sitemap.xml
+      - name: Build index, post pages, recipes, sitemap
         run: node scripts/build-blog-index.mjs
       - name: Commit if changed
         run: |
-          if ! git diff --quiet -- posts.json sitemap.xml; then
-            git config user.name "blog-index-bot"
-            git config user.email "actions@users.noreply.github.com"
-            git add posts.json sitemap.xml
-            git commit -m "chore: rebuild blog index + sitemap [skip ci]"
-            git push
+          git config user.name "blog-index-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add posts.json sitemap.xml blog recipes.html
+          if git diff --cached --quiet; then
+            echo "nothing changed — nothing to commit."
           else
-            echo "posts.json / sitemap.xml unchanged — nothing to commit."
+            git commit -m "chore: rebuild blog index, pages + sitemap [skip ci]"
+            git push
           fi

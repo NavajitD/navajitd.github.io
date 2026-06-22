@@ -223,7 +223,26 @@ function showError(msg) {
     document.getElementById('loadingState').innerHTML = `<div style="color:#dc2626">${msg}</div><div style="margin-top:1rem"><a href="/blog.html" style="color:var(--accent);font-family:var(--font-mono);font-size:.8125rem">← Back to blog</a></div>`;
 }
 
-loadPost(getFileId());
+// Back-compat: old /blog-post.html?id=<id> links now redirect to the prerendered
+// static page /blog/<slug>.html. If the post isn't in posts.json yet (just
+// published, not built), fall through to rendering it live from Firestore.
+async function redirectToStatic(id) {
+    if (!id) return false;
+    try {
+        const res = await fetch('/posts.json', { cache: 'no-cache' });
+        if (!res.ok) return false;
+        const { posts } = await res.json();
+        const p = (posts || []).find((x) => x.id === id);
+        if (p && p.slug) { location.replace('/blog/' + p.slug + '.html'); return true; }
+    } catch (e) {}
+    return false;
+}
+
+(async () => {
+    const id = getFileId();
+    if (await redirectToStatic(id)) return;
+    loadPost(id);
+})();
 </script>
 
 </body>
