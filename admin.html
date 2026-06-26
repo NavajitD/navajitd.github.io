@@ -94,7 +94,10 @@
         .mx-field select{width:auto;min-width:8rem;padding:.4rem .6rem;font-size:.8125rem}
         .mx-status{font-size:.75rem;color:var(--muted);margin-left:auto;align-self:center}
         .mx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(10rem,1fr));gap:.75rem;margin-bottom:2rem}
-        .mx-card{border:1px solid var(--border);border-radius:8px;padding:1rem}
+        .mx-card{border:1px solid var(--border);border-radius:8px;padding:1rem;cursor:pointer;user-select:none;transition:border-color .15s,box-shadow .15s,background .15s}
+        .mx-card:hover{border-color:var(--accent)}
+        .mx-card:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(37,99,235,.25)}
+        .mx-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);background:rgba(37,99,235,.04)}
         .mx-card .v{font-size:1.5rem;font-weight:700;line-height:1.1}
         .mx-card .l{font-size:.75rem;color:var(--muted);margin-top:.35rem}
         .mx-card .s{font-size:.7rem;color:var(--accent);margin-top:.25rem}
@@ -577,17 +580,15 @@ function renderMetrics() {
     const pv = byType('page_view');
     const pvPage = pg => pv.filter(e => e.page === pg);
 
-    const downloads = u(byType('resume_download'));
     const leads = u(byType('resume_email_lead'));
 
-    const cards = [
-        { v: u(pv), l: 'Site visitors', s: pv.length + ' views' },
-        { v: u(pvPage('projects')), l: 'Projects page' },
-        { v: u(byType('experience_click')), l: 'Experience clicks' },
-        { v: u(byType('resume_view')), l: 'Résumé views' },
-        { v: downloads, l: 'Résumé downloads', s: leads + ' left email' },
-        { v: u(pvPage('blog_list')), l: 'Blog list views' },
-    ];
+    // Cards are clickable: selecting one re-plots the trend chart for that metric.
+    const cards = MX_CARDS.map(def => ({
+        key: def.key, l: def.label,
+        v: u(ev.filter(def.match)),
+        s: def.key === 'visitors' ? pv.length + ' views'
+         : def.key === 'resumeDl' ? leads + ' left email' : ''
+    }));
 
     // CTA breakdown (projects page)
     const ctaMap = {};
@@ -615,7 +616,7 @@ function renderMetrics() {
     // ── Render ──
     let html = '<div class="mx-trend" id="mxTrend"></div>';
     html += '<div class="mx-cards">' + cards.map(c =>
-        `<div class="mx-card"><div class="v">${c.v.toLocaleString('en-IN')}</div><div class="l">${c.l}</div>${c.s ? `<div class="s">${c.s}</div>` : ''}</div>`
+        `<div class="mx-card${c.key === mxCardSel ? ' selected' : ''}" data-card="${c.key}" role="button" tabindex="0" aria-pressed="${c.key === mxCardSel}"><div class="v">${c.v.toLocaleString('en-IN')}</div><div class="l">${c.l}</div>${c.s ? `<div class="s">${c.s}</div>` : ''}</div>`
     ).join('') + '</div>';
 
     html += '<div class="mx-section-title">CTA clicks — Projects page</div>';
@@ -635,12 +636,41 @@ function renderMetrics() {
 
     document.getElementById('mxBody').innerHTML = html;
     renderTrend();
+
+    // Clicking a card toggles it as the trend chart's metric (re-click to clear).
+    document.querySelectorAll('.mx-card[data-card]').forEach(card => {
+        const toggle = () => {
+            const k = card.dataset.card;
+            mxCardSel = (mxCardSel === k) ? null : k;
+            document.querySelectorAll('.mx-card[data-card]').forEach(c => {
+                const on = c.dataset.card === mxCardSel;
+                c.classList.toggle('selected', on);
+                c.setAttribute('aria-pressed', on);
+            });
+            renderTrend();
+        };
+        card.addEventListener('click', toggle);
+        card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    });
+
     document.getElementById('mxStatus').textContent =
         `${ev.length.toLocaleString('en-IN')} events · loaded ${new Date().toLocaleTimeString('en-IN')}`;
 }
 
 // ─── Visitor trends (daily / weekly / monthly) ─────────────────────────────────
 let mxTrend = 'daily';
+let mxCardSel = null;   // selected metric-card key (null = default Site-visitors trend)
+
+// Each card maps to the event predicate that defines its metric, so the same
+// definition drives both the card's number and the trend chart it plots.
+const MX_CARDS = [
+    { key: 'visitors',   label: 'Site visitors',     match: e => e.type === 'page_view' },
+    { key: 'projects',   label: 'Projects page',     match: e => e.type === 'page_view' && e.page === 'projects' },
+    { key: 'experience', label: 'Experience clicks', match: e => e.type === 'experience_click' },
+    { key: 'resumeView', label: 'Résumé views',      match: e => e.type === 'resume_view' },
+    { key: 'resumeDl',   label: 'Résumé downloads',  match: e => e.type === 'resume_download' },
+    { key: 'blogList',   label: 'Blog list views',   match: e => e.type === 'page_view' && e.page === 'blog_list' },
+];
 
 function mxLocalYMD(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function mxStartOfWeek(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; } // Monday
@@ -674,11 +704,11 @@ function mxNiceAxis(maxV) {
 }
 
 // Bucket page_view events into a continuous time series of unique visitors.
-function buildTrend(events, gran) {
-    const pv = events.filter(e => e.type === 'page_view' && e.ts);
+function buildTrend(events, gran, match) {
+    const sel = events.filter(e => match(e) && e.ts);
     const map = new Map();   // key -> { start, visitors:Set, views }
     let minD = null, maxD = null;
-    pv.forEach(e => {
+    sel.forEach(e => {
         const d = new Date(e.ts);
         if (isNaN(d)) return;
         if (!minD || d < minD) minD = d;
@@ -731,7 +761,7 @@ function trendSvg(buckets) {
 
     let dots = '';
     if (n <= 45) dots = buckets.map((b, i) =>
-        `<circle class="dot" cx="${x(i).toFixed(1)}" cy="${y(b.visitors).toFixed(1)}" r="3"><title>${escHtml(b.label)}: ${b.visitors} visitor${b.visitors === 1 ? '' : 's'} · ${b.views} view${b.views === 1 ? '' : 's'}</title></circle>`).join('');
+        `<circle class="dot" cx="${x(i).toFixed(1)}" cy="${y(b.visitors).toFixed(1)}" r="3"><title>${escHtml(b.label)}: ${b.visitors} unique · ${b.views} total</title></circle>`).join('');
 
     return `<svg class="mx-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Visitor trend chart">`
         + grid + `<path class="area" d="${area}"/><path class="line" d="${line}"/>` + dots + yl + xt + '</svg>';
@@ -740,14 +770,18 @@ function trendSvg(buckets) {
 function renderTrend() {
     const wrap = document.getElementById('mxTrend');
     if (!wrap) return;
-    const buckets = buildTrend(applyFilters(), mxTrend);
+    const def = MX_CARDS.find(c => c.key === mxCardSel) || MX_CARDS[0];   // default: Site visitors
+    const buckets = buildTrend(applyFilters(), mxTrend, def.match);
     const toggle = ['daily', 'weekly', 'monthly'].map(g =>
         `<button data-gran="${g}" class="${g === mxTrend ? 'active' : ''}">${g[0].toUpperCase() + g.slice(1)}</button>`).join('');
-    const head = `<div class="mx-trend-head"><div class="mx-section-title">Visitor trends</div><div class="mx-toggle">${toggle}</div></div>`;
+    const title = mxCardSel ? escHtml(def.label) + ' — trend' : 'Visitor trends';
+    const head = `<div class="mx-trend-head"><div class="mx-section-title">${title}</div><div class="mx-toggle">${toggle}</div></div>`;
     const unit = mxTrend === 'daily' ? 'day' : mxTrend === 'weekly' ? 'week' : 'month';
+    const noun = mxCardSel ? 'individuals' : 'visitors';
+    const hint = mxCardSel ? ` Filtered to ‹${escHtml(def.label)}› — click the card again to reset.` : '';
     wrap.innerHTML = head + (buckets.length
-        ? trendSvg(buckets) + `<div class="mx-note">Unique visitors per ${unit}. Hover a point for exact counts.</div>`
-        : '<div class="mx-empty">No visits in this range.</div>');
+        ? trendSvg(buckets) + `<div class="mx-note">Unique ${noun} per ${unit}. Hover a point for exact counts.${hint}</div>`
+        : '<div class="mx-empty">No activity in this range.</div>');
     wrap.querySelectorAll('.mx-toggle button').forEach(b =>
         b.addEventListener('click', () => { mxTrend = b.dataset.gran; renderTrend(); }));
 }
