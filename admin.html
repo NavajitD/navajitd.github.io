@@ -662,11 +662,15 @@ function mxBucketLabel(d, gran) {
         ? d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })
         : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
-function mxNiceCeil(v) {
-    if (v <= 5) return 5;
-    const pow = Math.pow(10, Math.floor(Math.log10(v)));
-    for (const m of [1, 2, 5, 10]) if (pow * m >= v) return pow * m;
-    return pow * 10;
+// Pick an integer tick step so gridlines land on whole values (visitor counts
+// are integers) and the axis top is a multiple of that step.
+function mxNiceAxis(maxV) {
+    maxV = Math.max(1, maxV);
+    const rawStep = maxV / 4;
+    const pow = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    let step = [1, 2, 5, 10].map(m => m * pow).find(c => c >= rawStep) || 10 * pow;
+    step = Math.max(1, Math.ceil(step));            // whole-number steps only
+    return { yMax: Math.ceil(maxV / step) * step, step };
 }
 
 // Bucket page_view events into a continuous time series of unique visitors.
@@ -702,16 +706,16 @@ function trendSvg(buckets) {
     const W = 820, H = 260, padL = 42, padR = 16, padT = 16, padB = 30;
     const innerW = W - padL - padR, innerH = H - padT - padB;
     const n = buckets.length;
-    const yMax = mxNiceCeil(Math.max(...buckets.map(b => b.visitors), 1));
+    const { yMax, step: yStep } = mxNiceAxis(Math.max(...buckets.map(b => b.visitors), 1));
     const x = i => padL + (n <= 1 ? innerW / 2 : innerW * i / (n - 1));
     const y = v => padT + innerH - (v / yMax) * innerH;
     const base = padT + innerH;
 
     let grid = '', yl = '';
-    for (let g = 0; g <= 4; g++) {
-        const yy = padT + innerH * g / 4;
+    for (let val = 0; val <= yMax; val += yStep) {
+        const yy = y(val);
         grid += `<line class="grid" x1="${padL}" y1="${yy.toFixed(1)}" x2="${W - padR}" y2="${yy.toFixed(1)}"/>`;
-        yl   += `<text class="axis-text" x="${padL - 6}" y="${(yy + 3).toFixed(1)}" text-anchor="end">${Math.round(yMax * (4 - g) / 4)}</text>`;
+        yl   += `<text class="axis-text" x="${padL - 6}" y="${(yy + 3).toFixed(1)}" text-anchor="end">${val}</text>`;
     }
 
     const pts = buckets.map((b, i) => [x(i), y(b.visitors)]);
