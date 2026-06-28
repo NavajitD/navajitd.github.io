@@ -556,7 +556,9 @@ async function loadMetrics(force) {
         setOptions(mxOsSel, distinct(mxRaw, 'os'));
         setOptions(mxDeviceSel, distinct(mxRaw, 'device'));
         setOptions(mxBrowserSel, distinct(mxRaw, 'browser'));
-        setOptions(mxCountrySel, distinct(mxRaw, 'country'));
+        const countries = distinct(mxRaw, 'country');
+        if (mxRaw.some(e => !e.country)) countries.push('NA');   // bucket for events with no geo
+        setOptions(mxCountrySel, countries);
 
         renderMetrics();
     } catch (e) {
@@ -569,7 +571,8 @@ function applyFilters() {
     const os = mxOsSel.value, dev = mxDeviceSel.value, br = mxBrowserSel.value, c = mxCountrySel.value;
     return mxRaw.filter(e =>
         (!os || e.os === os) && (!dev || e.device === dev) &&
-        (!br || e.browser === br) && (!c || e.country === c));
+        (!br || e.browser === br) &&
+        (!c || (c === 'NA' ? !e.country : e.country === c)));   // NA = events with no geo
 }
 
 function renderMetrics() {

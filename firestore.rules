@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // The one Google account allowed to manage all content.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'navjitdebnath5@gmail.com';
+    }
+
+    // Blog posts — anyone can read; only the admin can create/edit/delete.
+    match /posts/{postId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Recipes — anyone can read; only the admin can create/edit/delete.
+    match /recipes/{recipeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Analytics — site visitors can log an event (no auth); only the admin can
+    // read the dashboard or backfill geo onto existing events (e.g. resolving
+    // country from a stored IP). Visitors can never edit, and nothing is deletable.
+    match /analytics_events/{eventId} {
+      allow create: if true;
+      allow read:   if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // Anything not listed above is denied to everyone.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

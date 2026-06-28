@@ -6,8 +6,10 @@
      • All work is deferred to after `load` and run inside requestIdleCallback.
      • Writes use `fetch(..., { keepalive:true })` so they never block the page and
        still complete during tab-close / navigation (the read-end + dwell events).
-     • Geo is fetched once per session from a free, no-key IP API, off the render
-       path; events sent before it resolves simply omit geo.
+     • Geo + IP are fetched once per session from free, no-key IP APIs (several,
+       tried in parallel as fallbacks), off the render path; events sent before it
+       resolves simply omit geo. The IP is recorded so country can be backfilled
+       later for events the live lookup couldn't geolocate (e.g. blocked APIs).
 
    Everything is filterable in the admin Metrics tab by os / device / browser /
    geography. The cost that "grows with traffic" is purely on the admin read side
@@ -51,28 +53,62 @@
   }
   var UA = parseUA();
 
-  // ── Geo: cached once per session, fetched off the render path ──
+  // ── Geo + IP: cached once per session, fetched off the render path ──
   function cachedGeo() {
     try { var c = sessionStorage.getItem('nv_geo'); return c ? JSON.parse(c) : null; } catch (e) { return null; }
   }
+
+  // Free, no-key, CORS+HTTPS providers. Each maps its response to a normalized
+  // { country, cc, city, region, ip } (any field may be missing). They're tried in
+  // parallel so a single blocked/rate-limited endpoint doesn't cost us the geo, and
+  // ipify is an IP-only last resort so we can still log the address for backfill.
+  var GEO_PROVIDERS = [
+    { url: 'https://ipwho.is/?fields=success,ip,country,country_code,city,region',
+      map: function (d) { return (d && d.success !== false && d.country)
+        ? { country: d.country, cc: d.country_code, city: d.city, region: d.region, ip: d.ip } : { ip: d && d.ip }; } },
+    { url: 'https://get.geojs.io/v1/ip/geo.json',
+      map: function (d) { return d ? { country: d.country, cc: d.country_code, city: d.city, region: d.region, ip: d.ip } : null; } },
+    { url: 'https://ipapi.co/json/',
+      map: function (d) { return (d && !d.error) ? { country: d.country_name, cc: d.country_code, city: d.city, region: d.region, ip: d.ip } : { ip: d && d.ip }; } },
+    { url: 'https://freeipapi.com/api/json',
+      map: function (d) { return d ? { country: d.countryName, cc: d.countryCode, city: d.cityName, region: d.regionName, ip: d.ipAddress } : null; } },
+    { url: 'https://api.ipify.org?format=json',
+      map: function (d) { return (d && d.ip) ? { ip: d.ip } : null; } }
+  ];
+
+  function fetchJSON(url, ms) {
+    return new Promise(function (resolve) {
+      var done = false;
+      var t = setTimeout(function () { if (!done) { done = true; resolve(null); } }, ms);
+      fetch(url, { mode: 'cors' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { if (done) return; done = true; clearTimeout(t); resolve(d); })
+        .catch(function () { if (done) return; done = true; clearTimeout(t); resolve(null); });
+    });
+  }
+
   var geoPromise = null;
   function ensureGeo() {
     if (geoPromise) return geoPromise;
     var c = cachedGeo();
     if (c) { geoPromise = Promise.resolve(c); return geoPromise; }
     geoPromise = new Promise(function (resolve) {
-      var done = false;
-      var t = setTimeout(function () { if (!done) { done = true; resolve(null); } }, 2500);
-      fetch('https://ipwho.is/?fields=success,country,country_code,city,region')
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-          if (done) return; done = true; clearTimeout(t);
-          var geo = (d && d.success !== false && d.country)
-            ? { country: d.country, cc: d.country_code, city: d.city, region: d.region } : null;
-          if (geo) { try { sessionStorage.setItem('nv_geo', JSON.stringify(geo)); } catch (e) {} }
-          resolve(geo);
-        })
-        .catch(function () { if (done) return; done = true; clearTimeout(t); resolve(null); });
+      var settled = false, ip = '', pending = GEO_PROVIDERS.length;
+      function finish(g) {
+        if (settled) return; settled = true; clearTimeout(deadline);
+        var res = g || (ip ? { ip: ip } : null);
+        if (res) { try { sessionStorage.setItem('nv_geo', JSON.stringify(res)); } catch (e) {} }
+        resolve(res);
+      }
+      var deadline = setTimeout(function () { finish(null); }, 2500);  // hard cap on the wait
+      GEO_PROVIDERS.forEach(function (prov) {
+        fetchJSON(prov.url, 2500).then(function (d) {
+          var g = d ? prov.map(d) : null;
+          if (g && g.ip && !ip) ip = g.ip;               // remember the first IP we see
+          if (g && g.country) { if (!g.ip && ip) g.ip = ip; finish(g); return; }  // first geo wins
+          if (--pending === 0) finish(null);             // all failed → fall back to IP-only
+        });
+      });
     });
     return geoPromise;
   }
@@ -92,7 +128,10 @@
       os: UA.os, device: UA.device, browser: UA.browser
     };
     try { ev.ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) {}
-    if (geo) { ev.country = geo.country; ev.cc = geo.cc; ev.city = geo.city; ev.region = geo.region; }
+    if (geo) {
+      if (geo.country) { ev.country = geo.country; ev.cc = geo.cc; ev.city = geo.city; ev.region = geo.region; }
+      if (geo.ip) ev.ip = geo.ip;   // logged for backfill even when country lookup failed
+    }
     if (extra) for (var k in extra) ev[k] = extra[k];
     var fields = {};
     for (var f in ev) if (ev[f] !== undefined && ev[f] !== null && ev[f] !== '') fields[f] = fsVal(ev[f]);
