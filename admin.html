@@ -93,6 +93,8 @@
         .mx-field label{margin-bottom:0}
         .mx-field select{width:auto;min-width:8rem;padding:.4rem .6rem;font-size:.8125rem}
         .mx-status{font-size:.75rem;color:var(--muted);margin-left:auto;align-self:center}
+        .mx-maint{display:flex;align-items:center;gap:.75rem;margin:0 0 1.5rem;flex-wrap:wrap}
+        .mx-maint .mx-status{margin-left:0}
         .mx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(10rem,1fr));gap:.75rem;margin-bottom:2rem}
         .mx-card{border:1px solid var(--border);border-radius:8px;padding:1rem;cursor:pointer;user-select:none;transition:border-color .15s,box-shadow .15s,background .15s}
         .mx-card:hover{border-color:var(--accent)}
@@ -206,6 +208,11 @@
             </div>
             <button class="btn btn-secondary btn-sm" id="mxRefresh">Refresh</button>
             <span class="mx-status" id="mxStatus"></span>
+        </div>
+
+        <div class="mx-maint">
+            <button class="btn btn-secondary btn-sm" id="mxBackfill" title="Resolve country from the logged IP for past events that have no geo">Backfill missing geo</button>
+            <span class="mx-status" id="mxBackfillStatus"></span>
         </div>
 
         <div id="mxBody">
@@ -788,6 +795,108 @@ function renderTrend() {
     wrap.querySelectorAll('.mx-toggle button').forEach(b =>
         b.addEventListener('click', () => { mxTrend = b.dataset.gran; renderTrend(); }));
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  GEO BACKFILL — resolve country for past events that logged an IP but no geo
+// ════════════════════════════════════════════════════════════════════════════
+// Looks up specific IPs (not the caller's) over HTTPS+CORS with no API key:
+//   • geojs.io supports comma-separated batch lookups → primary, few requests
+//   • ipwho.is / ipapi.co per-IP fallbacks for anything geojs can't resolve
+async function lookupIPs(ips, onProgress) {
+    const out = new Map();   // ip -> { country, cc, city, region }
+
+    // Primary: geojs batch — many IPs per request.
+    for (let i = 0; i < ips.length; i += 50) {
+        const chunk = ips.slice(i, i + 50);
+        try {
+            const r = await fetch('https://get.geojs.io/v1/ip/geo.json?ip=' + chunk.map(encodeURIComponent).join(','));
+            if (r.ok) {
+                const data = await r.json();
+                (Array.isArray(data) ? data : [data]).forEach(d => {
+                    if (d && d.ip && d.country)
+                        out.set(d.ip, { country: d.country, cc: d.country_code, city: d.city, region: d.region });
+                });
+            }
+        } catch (e) {}
+        if (onProgress) onProgress(Math.min(ips.length, i + 50), ips.length);
+    }
+
+    // Fallback per-IP for any the batch couldn't resolve.
+    for (const ip of ips) {
+        if (out.has(ip)) continue;
+        let g = null;
+        try {
+            const r = await fetch('https://ipwho.is/' + encodeURIComponent(ip) + '?fields=success,country,country_code,city,region');
+            if (r.ok) { const d = await r.json(); if (d && d.success !== false && d.country) g = { country: d.country, cc: d.country_code, city: d.city, region: d.region }; }
+        } catch (e) {}
+        if (!g) {
+            try {
+                const r = await fetch('https://ipapi.co/' + encodeURIComponent(ip) + '/json/');
+                if (r.ok) { const d = await r.json(); if (d && !d.error && d.country_name) g = { country: d.country_name, cc: d.country_code, city: d.city, region: d.region }; }
+            } catch (e) {}
+        }
+        if (g) out.set(ip, g);
+        await new Promise(res => setTimeout(res, 250));   // be polite to the free fallbacks
+    }
+    return out;
+}
+
+async function runBackfill() {
+    const btn = document.getElementById('mxBackfill');
+    const status = document.getElementById('mxBackfillStatus');
+    btn.disabled = true;
+    status.textContent = 'Scanning events…';
+    try {
+        // 1. Page through all events; collect those with an IP but no country.
+        const targets = [];          // { id, ip }
+        const ipSet = new Set();
+        const PAGE = 10000;
+        const baseQ = db.collection('analytics_events').orderBy('ts', 'desc');
+        let cursor = null;
+        while (true) {
+            let pageQ = baseQ.limit(PAGE);
+            if (cursor) pageQ = pageQ.startAfter(cursor);
+            const snap = await pageQ.get();
+            if (snap.empty) break;
+            snap.docs.forEach(doc => {
+                const d = doc.data();
+                if (d.ip && !d.country) { targets.push({ id: doc.id, ip: d.ip }); ipSet.add(d.ip); }
+            });
+            cursor = snap.docs[snap.docs.length - 1];
+            if (snap.docs.length < PAGE) break;
+        }
+        if (!targets.length) { status.textContent = 'Nothing to backfill — every event with an IP already has a country.'; return; }
+
+        // 2. Resolve each unique IP → country.
+        status.textContent = `Resolving ${ipSet.size} unique IP(s)…`;
+        const geo = await lookupIPs(Array.from(ipSet),
+            (done, total) => { status.textContent = `Resolving IPs… ${done}/${total}`; });
+
+        // 3. Write country onto each matching event (batched, ≤450 ops/commit).
+        let written = 0, batch = db.batch(), ops = 0;
+        for (const t of targets) {
+            const g = geo.get(t.ip);
+            if (!g) continue;
+            const upd = { country: g.country, geoBackfilled: true };
+            if (g.cc) upd.cc = g.cc;
+            if (g.city) upd.city = g.city;
+            if (g.region) upd.region = g.region;
+            batch.update(db.collection('analytics_events').doc(t.id), upd);
+            written++; ops++;
+            if (ops === 450) { await batch.commit(); batch = db.batch(); ops = 0; }
+        }
+        if (ops) await batch.commit();
+
+        const unresolved = targets.length - written;
+        status.textContent = `Backfilled ${written} event(s) from ${geo.size} IP(s).` + (unresolved ? ` ${unresolved} still unresolved.` : '');
+        mxLoaded = false; loadMetrics(true);   // reload so the new countries appear in the filter & chart
+    } catch (e) {
+        status.textContent = 'Backfill failed: ' + e.message;
+    } finally {
+        btn.disabled = false;
+    }
+}
+document.getElementById('mxBackfill').addEventListener('click', runBackfill);
 
 // ─── Blog: File Drop & Upload ─────────────────────────────────────────────────
 let convertedHtml = '';
