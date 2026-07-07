@@ -15,7 +15,7 @@
     <title>Projects — Navajit D</title>
 
     <!-- SEO -->
-    <meta name="description" content="Personal projects by Navajit D — voice AI agents, an LLM proxy, browser extensions, and generative art. Built with Pipecat, Firebase, p5.js, and more.">
+    <meta name="description" content="Projects by Navajit D: Vidur (AI website redesign extension), Aria (AI voice sales agent), HealThee (free AI health tracker), MyExpenses, Numo, Letter Hunt, and WhatsApp Scheduler. Built with Pipecat, Firebase, p5.js, and more.">
     <meta name="author" content="Navajit D">
     <meta name="theme-color" content="#2563eb">
     <link rel="canonical" href="https://navajitd.github.io/projects.html">
@@ -24,7 +24,7 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Navajit D">
     <meta property="og:title" content="Projects — Navajit D">
-    <meta property="og:description" content="Personal projects by Navajit D — voice AI agents, an LLM proxy, browser extensions, and generative art.">
+    <meta property="og:description" content="Vidur, Aria, HealThee, MyExpenses, Numo, Letter Hunt & WhatsApp Scheduler — AI voice agents, browser extensions, health and finance trackers by Navajit D.">
     <meta property="og:url" content="https://navajitd.github.io/projects.html">
     <meta property="og:image" content="https://navajitd.github.io/og-image.png">
     <meta property="og:image:width" content="1200">
@@ -36,8 +36,148 @@
     <meta name="twitter:site" content="@solitary_nav">
     <meta name="twitter:creator" content="@solitary_nav">
     <meta name="twitter:title" content="Projects — Navajit D">
-    <meta name="twitter:description" content="Personal projects by Navajit D — voice AI agents, an LLM proxy, browser extensions, and generative art.">
+    <meta name="twitter:description" content="Vidur, Aria, HealThee, MyExpenses, Numo, Letter Hunt & WhatsApp Scheduler — AI voice agents, browser extensions, health and finance trackers by Navajit D.">
     <meta name="twitter:image" content="https://navajitd.github.io/og-image.png">
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Person",
+                "@id": "https://navajitd.github.io/#navajit",
+                "name": "Navajit D",
+                "url": "https://navajitd.github.io/",
+                "jobTitle": "AI Product Manager",
+                "sameAs": [
+                    "https://github.com/navajitd",
+                    "https://linkedin.com/in/navjit-debnath-34b1b5191",
+                    "https://twitter.com/solitary_nav"
+                ]
+            },
+            {
+                "@type": "CollectionPage",
+                "@id": "https://navajitd.github.io/projects.html",
+                "url": "https://navajitd.github.io/projects.html",
+                "name": "Projects — Navajit D",
+                "description": "AI voice agents, browser extensions, health and finance trackers, and generative art built by Navajit D.",
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "breadcrumb": {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://navajitd.github.io/" },
+                        { "@type": "ListItem", "position": 2, "name": "Projects", "item": "https://navajitd.github.io/projects.html" }
+                    ]
+                },
+                "mainEntity": {
+                    "@type": "ItemList",
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "item": { "@id": "https://navajitd.github.io/projects.html#vidur" } },
+                        { "@type": "ListItem", "position": 2, "item": { "@id": "https://navajitd.github.io/projects.html#aria" } },
+                        { "@type": "ListItem", "position": 3, "item": { "@id": "https://navajitd.github.io/projects.html#health-tracker" } },
+                        { "@type": "ListItem", "position": 4, "item": { "@id": "https://navajitd.github.io/projects.html#myexpenses" } },
+                        { "@type": "ListItem", "position": 5, "item": { "@id": "https://navajitd.github.io/projects.html#numo" } },
+                        { "@type": "ListItem", "position": 6, "item": { "@id": "https://navajitd.github.io/projects.html#letter-hunt" } },
+                        { "@type": "ListItem", "position": 7, "item": { "@id": "https://navajitd.github.io/projects.html#whatsapp-scheduler" } }
+                    ]
+                }
+            },
+            {
+                "@type": "SoftwareApplication",
+                "@id": "https://navajitd.github.io/projects.html#vidur",
+                "name": "Vidur",
+                "url": "https://github.com/NavajitD/Vidur",
+                "downloadUrl": "https://github.com/NavajitD/Vidur/releases/latest/download/vidur.zip",
+                "applicationCategory": "BrowserApplication",
+                "operatingSystem": "Chrome 91+, Edge 91+, Brave, Firefox 101+",
+                "description": "Free, open-source browser extension that visually redesigns any website with AI while leaving the content intact. Describe the look you want, optionally point to a reference site, and the redesign persists across visits. Bring-your-own-key — API keys never leave your device.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "isAccessibleForFree": true,
+                "datePublished": "2026"
+            },
+            {
+                "@type": "WebApplication",
+                "@id": "https://navajitd.github.io/projects.html#aria",
+                "name": "Aria",
+                "url": "https://talktoaria.web.app",
+                "applicationCategory": "BusinessApplication",
+                "operatingSystem": "Any (web browser + phone)",
+                "description": "AI voice sales agent that phones you in Hinglish to roleplay a post-demo-class sales call, handling objections and closing in real time. Built with Pipecat, Deepgram Nova-3 STT, Sarvam Bulbul v3 TTS, and Vobiz telephony on Google Cloud Run.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "isAccessibleForFree": true,
+                "datePublished": "2026"
+            },
+            {
+                "@type": "WebApplication",
+                "@id": "https://navajitd.github.io/projects.html#health-tracker",
+                "name": "HealThee",
+                "url": "https://navajitd.github.io/Projects/HealThee/health.html",
+                "applicationCategory": "HealthApplication",
+                "operatingSystem": "Any (web browser, installable PWA)",
+                "description": "Free AI health tracker and HealthifyMe Plus alternative: daily calorie, macro, and micronutrient tracking with AI insights, adaptive meal plans, water and weight logging, exercise and sleep tracking, and weekly/monthly trend dashboards.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "isAccessibleForFree": true,
+                "datePublished": "2026"
+            },
+            {
+                "@type": "WebApplication",
+                "@id": "https://navajitd.github.io/projects.html#myexpenses",
+                "name": "MyExpenses",
+                "url": "https://navajitd.github.io/Projects/MyExpenses/expenses.html",
+                "applicationCategory": "FinanceApplication",
+                "operatingSystem": "Any (web browser)",
+                "description": "Free AI expense tracker with automated categorization, budget tracking, spending pattern visualization, and financial habit insights. Dark mode interface with secure Google sign-in.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "isAccessibleForFree": true,
+                "datePublished": "2025"
+            },
+            {
+                "@type": "WebApplication",
+                "@id": "https://navajitd.github.io/projects.html#numo",
+                "name": "Numo",
+                "url": "https://numo.web.app",
+                "applicationCategory": "LifestyleApplication",
+                "operatingSystem": "Any (web browser)",
+                "description": "AI numerology guide that answers life questions with personalised numerology insights, built in collaboration with Mystics Mentor.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "isAccessibleForFree": true,
+                "datePublished": "2026"
+            },
+            {
+                "@type": "WebApplication",
+                "@id": "https://navajitd.github.io/projects.html#letter-hunt",
+                "name": "Letter Hunt",
+                "url": "https://navajitd.github.io/Projects/Sketches/letter-hunt.html",
+                "applicationCategory": "GameApplication",
+                "operatingSystem": "Any (web browser)",
+                "description": "Free interactive browser game built with p5.js: hunt for letters hidden in street photography from Bengaluru and discover the fruit waiting at the end.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "isAccessibleForFree": true,
+                "datePublished": "2025"
+            },
+            {
+                "@type": "WebApplication",
+                "@id": "https://navajitd.github.io/projects.html#whatsapp-scheduler",
+                "name": "WhatsApp Scheduler",
+                "url": "https://navajitd.github.io/Projects/whatsapp-scheduler.html",
+                "applicationCategory": "UtilitiesApplication",
+                "operatingSystem": "Any (web browser)",
+                "description": "Tool to schedule WhatsApp messages like emails, with recurring schedules, QR-code WhatsApp linking, and a dashboard to manage scheduled messages. Built with Node.js and the WhatsApp Web API. Currently inactive.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "isAccessibleForFree": true,
+                "datePublished": "2025"
+            }
+        ]
+    }
+    </script>
 
     <style>
         :root {
@@ -574,14 +714,16 @@
     <section id="projects">
 
         <div class="project-item" id="vidur">
-            <h3 class="project-title">
+            <h2 class="project-title">
                 <a href="https://github.com/NavajitD/Vidur" target="_blank" rel="noopener">Vidur</a>
                 <span class="project-status status-active">Live</span>
-            </h3>
+            </h2>
             <div class="project-meta">Browser Extension · Manifest V3 · 2026</div>
-            <p class="project-description">Visual redesign of any website with AI — leaving the content intact. Describe
-                the look you want and optionally, point to a reference site, and Vidur will redesign it on the fly.
-                Designs persist across visits. Works on a bring-your-own-key model (keys never leave your device).</p>
+            <p class="project-description">Vidur is a free, open-source browser extension that visually redesigns any
+                website with AI — leaving the content intact. Describe the look you want and optionally point to a
+                reference site, and Vidur restyles the page on the fly. Designs persist across visits. Works on a
+                bring-your-own-key model (API keys never leave your device). Runs on Chrome, Edge, Brave, and
+                Firefox.</p>
             <div class="project-links">
                 <a href="https://github.com/NavajitD/Vidur/releases/latest/download/vidur.zip" class="download-cta"
                     download>↓ Download</a>
@@ -619,12 +761,17 @@
         </div>
 
         <div class="project-item" id="aria">
-            <h3 class="project-title">
+            <h2 class="project-title">
                 <a href="https://talktoaria.web.app" target="_blank" rel="noopener">Aria</a>
                 <span class="project-status status-active">Live</span>
-            </h3>
+            </h2>
             <div class="project-meta">Pipecat · Deepgram · Sarvam · Vobiz · Cloud Run · Firestore · 2026</div>
-            <p class="project-description">Experience a voice agent calling you (a parent) after your child's Demo class at Vedantu, gauging your interest and reasoning through objections to close a sale. Pick a parent persona, enter your phone, and Aria calls you in Hinglish to roleplay — watch its intent classification, objection plays, and next-step decisions in real time. Pipecat pipeline, Deepgram Nova-3 STT + Sarvam Bulbul v3 TTS, key-rotating LLM pool (Groq → Cerebras → Gemini), Vobiz telephony.</p>
+            <p class="project-description">Aria is an AI voice sales agent that calls your phone and roleplays a
+                post-demo-class sales conversation in Hinglish — you play a parent after your child's demo class at
+                Vedantu, and Aria gauges interest, reasons through objections, and works to close the sale. Pick a
+                parent persona, enter your phone, and watch its intent classification, objection plays, and next-step
+                decisions in real time. Pipecat pipeline, Deepgram Nova-3 STT + Sarvam Bulbul v3 TTS, key-rotating LLM
+                pool (Groq → Cerebras → Gemini), Vobiz telephony.</p>
             <div class="project-links">
                 <a href="https://talktoaria.web.app" target="_blank" rel="noopener">Launch</a>
                 <a href="https://github.com/NavajitD/sales-conversion-agent" target="_blank" rel="noopener">Git Repo</a>
@@ -649,15 +796,16 @@
         </div>
 
         <div class="project-item" id="health-tracker">
-            <h3 class="project-title">
+            <h2 class="project-title">
                 <a href="/Projects/HealThee/health.html">HealThee</a>
                 <span class="project-status status-active">Active</span>
-            </h3>
+            </h2>
             <div class="project-meta">Firebase, Firestore, Groq, Cerebras · 2026</div>
-            <p class="project-description">A better HealthifyMe Plus - optimised for me, and forever free. A full-stack
-                personal health dashboard with daily calorie, macro, and micronutrient tracking, with AI insights.
-                Includes adaptive meal plan, water intake and weight logging, exercise tracking and sleep monitoring.
-                With trend analysis, weekly/monthly dashboards, and access controlled by Google Auth.</p>
+            <p class="project-description">HealThee is a free AI health tracker — a HealthifyMe Plus alternative,
+                optimised for me and forever free. A full-stack personal health dashboard with daily calorie, macro,
+                and micronutrient tracking, plus AI insights. Includes an adaptive meal plan, water intake and weight
+                logging, exercise tracking and sleep monitoring, with trend analysis, weekly/monthly dashboards, and
+                access controlled by Google Auth. Installable as a PWA.</p>
             <div class="project-links">
                 <a href="/Projects/HealThee/health.html">Launch</a>
                 <!--<a href="/blog.html#latest" id="healthBlogCta" data-target-title="Death of SaaS and Other Clickbaits"> Read more </a>-->
@@ -691,42 +839,45 @@
             </details>
         </div>
 
-        <div class="project-item">
-            <h3 class="project-title">
+        <div class="project-item" id="myexpenses">
+            <h2 class="project-title">
                 <a href="/Projects/MyExpenses/expenses.html">MyExpenses</a>
                 <span class="project-status status-active">Live</span>
-            </h3>
+            </h2>
             <div class="project-meta">Firebase, Firestore, Cerebras · 2025-26</div>
-            <p class="project-description">Smart expense management with AI-powered insights and budget tracking.
-                Features automated categorization, spending pattern visualization, and financial habit optimization.
-                Includes a beautiful dark mode interface and secure Google authentication.</p>
+            <p class="project-description">MyExpenses is a free AI expense tracker with smart budget tracking and
+                AI-powered spending insights. Features automated expense categorization, spending pattern
+                visualization, and financial habit optimization. Includes a beautiful dark mode interface and secure
+                Google authentication.</p>
             <div class="project-links">
                 <a href="/Projects/MyExpenses/expenses.html">Launch</a>
             </div>
         </div>
 
-        <div class="project-item">
-            <h3 class="project-title">
+        <div class="project-item" id="numo">
+            <h2 class="project-title">
                 <a href="https://numo.web.app" target="_blank" rel="noopener">Numo</a>
                 <span class="project-status status-active">Active</span>
-            </h3>
+            </h2>
             <div class="project-meta">Firebase, Firestore, Cerebras · 2026</div>
-            <p class="project-description">A Guide to your life queries with the profound insights of numerology. Built
-                in collaboration with <a href="https://mysticsmentor.com/">Mystics Mentor</a>. </p>
+            <p class="project-description">Numo is an AI numerology guide that answers your life queries with the
+                profound insights of numerology. Built in collaboration with <a
+                    href="https://mysticsmentor.com/">Mystics Mentor</a>.</p>
             <div class="project-links">
                 <a href="https://numo.web.app" target="_blank" rel="noopener">Launch</a>
             </div>
         </div>
 
-        <div class="project-item">
-            <h3 class="project-title">
+        <div class="project-item" id="letter-hunt">
+            <h2 class="project-title">
                 <a href="/Projects/Sketches/letter-hunt.html">Letter Hunt</a>
                 <span class="project-status status-active">Live</span>
-            </h3>
+            </h2>
             <div class="project-meta">p5.js · 2025</div>
-            <p class="project-description">An interactive visual game where you hunt for letters hidden in street
-                photography from Bengaluru. Click on letters to progress through images and discover what fruit you'll
-                find at the end. A playful experiment combining code and urban exploration.</p>
+            <p class="project-description">Letter Hunt is a free interactive browser game where you hunt for letters
+                hidden in street photography from Bengaluru. Click on letters to progress through images and discover
+                what fruit you'll find at the end. A playful p5.js experiment combining code and urban
+                exploration.</p>
             <div class="project-links">
                 <a href="/Projects/Sketches/letter-hunt.html">Launch</a>
             </div>
@@ -734,15 +885,15 @@
 
 
 
-        <div class="project-item">
-            <h3 class="project-title">
+        <div class="project-item" id="whatsapp-scheduler">
+            <h2 class="project-title">
                 <a href="/Projects/whatsapp-scheduler.html">WhatsApp Scheduler</a>
                 <span class="project-status status-wip">Inactive</span>
-            </h3>
+            </h2>
             <div class="project-meta">Node.js, WhatsApp Web API, Railway · 2025</div>
-            <p class="project-description">Schedule WhatsApp messages like emails. Set up messages to be sent at the
-                perfect time with support for recurring schedules. Connect your WhatsApp via QR code and manage all
-                scheduled messages from a clean dashboard.</p>
+            <p class="project-description">WhatsApp Scheduler is a tool to schedule WhatsApp messages like emails. Set
+                up messages to be sent at the perfect time with support for recurring schedules. Connect your WhatsApp
+                via QR code and manage all scheduled messages from a clean dashboard.</p>
             <div class="project-links">
                 <a href="/Projects/whatsapp-scheduler.html">Launch</a>
             </div>

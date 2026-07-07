@@ -8,6 +8,15 @@
 - [Blog](https://navajitd.github.io/blog.html): Essays on building AI products and personal projects.
 - [Recipes](https://navajitd.github.io/recipes.html): Field notes from the kitchen.
 
+## Projects
+- [Vidur](https://navajitd.github.io/projects.html#vidur): Free, open-source browser extension (Chrome/Edge/Brave/Firefox) that visually redesigns any website with AI while leaving content intact; bring-your-own-key, designs persist across visits.
+- [Aria](https://talktoaria.web.app): AI voice sales agent that phones you and roleplays a Hinglish post-demo-class sales call — intent classification, objection handling, and next-step decisions shown in real time. Pipecat, Deepgram Nova-3, Sarvam Bulbul v3, Cloud Run.
+- [HealThee](https://navajitd.github.io/Projects/HealThee/health.html): Free AI health tracker (HealthifyMe Plus alternative) — calorie/macro/micronutrient tracking, adaptive meal plans, exercise, sleep, and trend dashboards; installable PWA.
+- [MyExpenses](https://navajitd.github.io/Projects/MyExpenses/expenses.html): Free AI expense tracker with automated categorization, budget tracking, and spending-pattern insights.
+- [Numo](https://numo.web.app): AI numerology guide answering life queries, built with Mystics Mentor.
+- [Letter Hunt](https://navajitd.github.io/Projects/Sketches/letter-hunt.html): Free p5.js browser game — find letters hidden in Bengaluru street photography.
+- [WhatsApp Scheduler](https://navajitd.github.io/Projects/whatsapp-scheduler.html): Schedule WhatsApp messages like emails, with recurring schedules (Node.js; currently inactive).
+
 ## Writing
 - [Evals before Features: What Building a Hinglish Voice Agent Taught Me about AI Product Roadmaps](https://navajitd.github.io/blog-post.html?id=0cdHWExSKMxsEwd63rtT)
 
