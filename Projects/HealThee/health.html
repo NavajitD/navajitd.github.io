@@ -629,6 +629,56 @@
       color: var(--muted)
     }
 
+    /* Equipment-mode segmented toggle */
+    .equip-seg {
+      display: flex;
+      gap: 2px;
+      background: var(--ring-track);
+      border-radius: 8px;
+      padding: 2px;
+      margin-bottom: .5rem
+    }
+
+    .equip-seg button {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: .66rem;
+      font-weight: 600;
+      padding: .35rem .2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap
+    }
+
+    .equip-seg button.on {
+      background: var(--card);
+      color: var(--accent);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .15)
+    }
+
+    /* Exercise how-to info icon */
+    .ex-info {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0 0 0 .3rem;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      opacity: .55;
+      transition: opacity .15s
+    }
+
+    .ex-info:hover {
+      opacity: 1;
+      color: var(--accent)
+    }
+
     /* Supplement Items */
     .supp-item {
       display: flex;
@@ -3066,78 +3116,103 @@
         0: { name: "Social 5K + Long Mobility", exercises: ["5 min walk warm-up", "5K run (conversational pace)", "5 min walk cool-down", "Hamstring stretch 60s/side", "Hip flexor stretch 60s/side", "Calf stretch 45s/side", "Thoracic spine mobility 5 min"] }
       };
 
+      // Batch-cook meal plan: 2 cook sessions/week (Sun + Wed), everything else is
+      // blender / microwave / air-fryer only. Dishes repeat 2-4× so you cook once, eat many.
       const MEAL_PLAN = {
         1: {
           label: "Mon", tag: "Upper Push", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake", desc: "Whey+creatine+oats+banana+PB+milk", cal: 550, protein: 42, carbs: 60, fat: 18, fiber: 7 },
-            { meal: "Mid-Morning", name: "Apple + Walnuts", desc: "1 apple + 10 walnuts", cal: 180, protein: 4, carbs: 22, fat: 10, fiber: 4 },
-            { meal: "Lunch", name: "Chicken + Rice + Sabzi + Curd", desc: "Office tiffin: 150g chicken, 1 cup rice, sabzi, curd", cal: 560, protein: 40, carbs: 52, fat: 16, fiber: 4 },
-            { meal: "Afternoon", name: "Greek Yogurt + Honey", desc: "1 cup Greek yogurt with honey", cal: 160, protein: 15, carbs: 20, fat: 3, fiber: 0 },
-            { meal: "Dinner", name: "Air Fryer Fish + Dal + Salad", desc: "150g fish, 1 katori dal, side salad", cal: 420, protein: 35, carbs: 30, fat: 14, fiber: 6 },
+            { meal: "Breakfast", name: "Post-Workout Shake", desc: "Blender only: whey+creatine+oats+banana+PB+milk", cal: 550, protein: 42, carbs: 60, fat: 18, fiber: 7 },
+            { meal: "Mid-Morning", name: "Apple + Almonds", desc: "1 apple + 10 almonds — zero prep", cal: 170, protein: 4, carbs: 22, fat: 8, fiber: 4 },
+            { meal: "Lunch", name: "Chicken Curry + Rice + Curd", desc: "Sun-batch tiffin: 150g chicken curry, 1 cup rice, curd — just microwave", cal: 560, protein: 40, carbs: 52, fat: 16, fiber: 4 },
+            { meal: "Afternoon", name: "Greek Yogurt + Honey", desc: "1 cup Greek yogurt with honey — zero prep", cal: 160, protein: 15, carbs: 20, fat: 3, fiber: 0 },
+            { meal: "Dinner", name: "Dal + Rice + 2 Boiled Eggs", desc: "Sun-batch dal + rice, eggs pre-boiled — zero cooking, zero dishes", cal: 480, protein: 26, carbs: 52, fat: 14, fiber: 7 },
             { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
           ]
         },
         2: {
           label: "Tue", tag: "Lower Squat", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake (Big)", desc: "Whey+creatine+oats+banana+PB+milk+dates", cal: 650, protein: 45, carbs: 72, fat: 20, fiber: 8 },
-            { meal: "Mid-Morning", name: "Banana + Peanut Butter", desc: "1 banana + 1 tbsp PB", cal: 195, protein: 5, carbs: 30, fat: 8, fiber: 3 },
-            { meal: "Lunch", name: "3 Rotis + Paneer Curry + Curd", desc: "Whole-wheat rotis, 100g paneer curry, curd", cal: 560, protein: 30, carbs: 55, fat: 22, fiber: 5 },
-            { meal: "Afternoon", name: "Whey in Milk", desc: "1 scoop whey in 200ml milk", cal: 185, protein: 28, carbs: 12, fat: 4, fiber: 0 },
-            { meal: "Dinner", name: "Khichdi + Dal + Salad", desc: "1 cup khichdi, 1 cup dal, cucumber salad", cal: 380, protein: 16, carbs: 55, fat: 8, fiber: 7 },
+            { meal: "Breakfast", name: "Post-Workout Shake (Big)", desc: "Blender only: shake + 2 dates for squat day", cal: 650, protein: 45, carbs: 72, fat: 20, fiber: 8 },
+            { meal: "Mid-Morning", name: "Banana + Peanut Butter", desc: "1 banana + 1 tbsp PB — zero prep", cal: 195, protein: 5, carbs: 30, fat: 8, fiber: 3 },
+            { meal: "Lunch", name: "Chicken Curry + Rice + Curd", desc: "Sun-batch tiffin: same as Mon — just microwave", cal: 560, protein: 40, carbs: 52, fat: 16, fiber: 4 },
+            { meal: "Afternoon", name: "Whey in Milk", desc: "1 scoop whey shaken in 200ml milk", cal: 185, protein: 28, carbs: 12, fat: 4, fiber: 0 },
+            { meal: "Dinner", name: "Air-Fryer Fish + Dal + Salad", desc: "One tray: 150g fish 12 min in air fryer; reheat Sun-batch dal; cucumber", cal: 420, protein: 35, carbs: 30, fat: 14, fiber: 6 },
             { meal: "Before Bed", name: "Warm Milk + Turmeric", desc: "1 cup milk with turmeric", cal: 100, protein: 6, carbs: 10, fat: 4, fiber: 0 }
           ]
         },
         3: {
           label: "Wed", tag: "Recovery", meals: [
-            { meal: "Breakfast", name: "Masala Oats + Egg", desc: "40g oats + 1 boiled egg + coffee", cal: 340, protein: 18, carbs: 42, fat: 11, fiber: 6 },
-            { meal: "Mid-Morning", name: "Guava + Seeds", desc: "1 guava + pumpkin seeds", cal: 130, protein: 5, carbs: 18, fat: 5, fiber: 5 },
-            { meal: "Lunch", name: "Egg Sandwiches", desc: "2 multigrain sandwiches, 2 eggs, lettuce", cal: 460, protein: 26, carbs: 42, fat: 16, fiber: 5 },
-            { meal: "Afternoon", name: "Buttermilk", desc: "1 glass buttermilk", cal: 50, protein: 3, carbs: 5, fat: 1, fiber: 0 },
-            { meal: "Dinner", name: "Soup + Veggies + Paneer", desc: "Tomato soup, sautéed veggies, 50g paneer", cal: 310, protein: 18, carbs: 25, fat: 14, fiber: 5 },
-            { meal: "Before Bed", name: "Chamomile Tea", desc: "Relax and reflect", cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0 }
+            { meal: "Breakfast", name: "Masala Oats + 2 Boiled Eggs", desc: "Microwave oats + veggies; eggs pre-boiled Sunday", cal: 420, protein: 24, carbs: 44, fat: 16, fiber: 6 },
+            { meal: "Mid-Morning", name: "Seasonal Fruit + Seeds", desc: "1 guava/orange + pumpkin seeds — zero prep", cal: 130, protein: 5, carbs: 18, fat: 5, fiber: 5 },
+            { meal: "Lunch", name: "Chicken Curry + Rice + Curd", desc: "Last Sun-batch portion — just microwave", cal: 560, protein: 40, carbs: 52, fat: 16, fiber: 4 },
+            { meal: "Afternoon", name: "Whey in Water", desc: "1 scoop whey — fast protein, zero prep", cal: 120, protein: 25, carbs: 2, fat: 1, fiber: 0 },
+            { meal: "Dinner", name: "Khichdi + Curd (cook 2×)", desc: "One-pot pressure cooker; make 2 portions — tomorrow's dinner done. Wed-batch cooks alongside", cal: 420, protein: 18, carbs: 58, fat: 10, fiber: 8 },
+            { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
           ]
         },
         4: {
           label: "Thu", tag: "Upper Pull", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake", desc: "Whey+creatine+oats+banana+PB+milk", cal: 550, protein: 42, carbs: 60, fat: 18, fiber: 7 },
-            { meal: "Mid-Morning", name: "Orange + Almonds", desc: "1 orange + 10 almonds", cal: 160, protein: 5, carbs: 20, fat: 8, fiber: 4 },
-            { meal: "Lunch", name: "3 Rotis + Chicken Curry + Okra + Curd", desc: "3 rotis, 100g chicken curry, okra sabzi, curd", cal: 570, protein: 35, carbs: 55, fat: 18, fiber: 5 },
-            { meal: "Afternoon", name: "2 Boiled Eggs", desc: "Protein snack", cal: 156, protein: 12, carbs: 1, fat: 10, fiber: 0 },
-            { meal: "Dinner", name: "Pasta + Chicken", desc: "1.5 cups pasta, 100g chicken, tomato sauce, spinach", cal: 520, protein: 30, carbs: 60, fat: 16, fiber: 6 },
+            { meal: "Breakfast", name: "Post-Workout Shake", desc: "Blender only: whey+creatine+oats+banana+PB+milk", cal: 550, protein: 42, carbs: 60, fat: 18, fiber: 7 },
+            { meal: "Mid-Morning", name: "Orange + Almonds", desc: "1 orange + 10 almonds — zero prep", cal: 160, protein: 5, carbs: 20, fat: 8, fiber: 4 },
+            { meal: "Lunch", name: "Paneer Bhurji + Rice + Curd", desc: "Wed-batch tiffin: 100g bhurji, rice, curd — just microwave", cal: 580, protein: 32, carbs: 55, fat: 22, fiber: 6 },
+            { meal: "Afternoon", name: "Whey in Milk", desc: "1 scoop whey shaken in 200ml milk", cal: 185, protein: 28, carbs: 12, fat: 4, fiber: 0 },
+            { meal: "Dinner", name: "Khichdi + 2 Boiled Eggs", desc: "Reheat yesterday's khichdi; eggs pre-boiled — zero cooking", cal: 490, protein: 24, carbs: 50, fat: 18, fiber: 7 },
             { meal: "Before Bed", name: "Milk + Ashwagandha", desc: "200ml milk, optional ashwagandha", cal: 100, protein: 6, carbs: 10, fat: 4, fiber: 0 }
           ]
         },
         5: {
           label: "Fri", tag: "Lower Hinge", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake (Big)", desc: "Whey+creatine+oats+banana+PB+milk+dates", cal: 650, protein: 45, carbs: 72, fat: 20, fiber: 8 },
-            { meal: "Mid-Morning", name: "Apple + Peanuts", desc: "1 apple + 10 peanuts", cal: 165, protein: 5, carbs: 22, fat: 7, fiber: 4 },
-            { meal: "Lunch", name: "Buddha Bowl (Quinoa+Tofu)", desc: "1 cup quinoa, 100g tofu, veggies, almonds", cal: 520, protein: 28, carbs: 55, fat: 20, fiber: 8 },
-            { meal: "Afternoon", name: "Whey in Water", desc: "1 scoop whey — fast protein", cal: 120, protein: 25, carbs: 2, fat: 1, fiber: 0 },
-            { meal: "Dinner", name: "Brown Rice + Stir-Fried Chicken", desc: "1 cup brown rice, 150g chicken stir-fry, greens", cal: 510, protein: 35, carbs: 55, fat: 14, fiber: 5 },
+            { meal: "Breakfast", name: "Post-Workout Shake (Big)", desc: "Blender only: shake + 2 dates for hinge day", cal: 650, protein: 45, carbs: 72, fat: 20, fiber: 8 },
+            { meal: "Mid-Morning", name: "Apple + Walnuts", desc: "1 apple + 10 walnuts — zero prep", cal: 180, protein: 4, carbs: 22, fat: 10, fiber: 4 },
+            { meal: "Lunch", name: "Paneer Bhurji + Rice + Curd", desc: "Wed-batch tiffin: same as Thu — just microwave", cal: 580, protein: 32, carbs: 55, fat: 22, fiber: 6 },
+            { meal: "Afternoon", name: "Whey in Water", desc: "1 scoop whey — fast protein, zero prep", cal: 120, protein: 25, carbs: 2, fat: 1, fiber: 0 },
+            { meal: "Dinner", name: "Air-Fryer Chicken + Rajma + Salad", desc: "Marinate 5 min, air-fry 150g chicken 18 min; reheat Wed-batch rajma", cal: 510, protein: 40, carbs: 38, fat: 16, fiber: 8 },
             { meal: "Before Bed", name: "Golden Milk / Yogurt", desc: "Turmeric milk or low-fat yogurt", cal: 100, protein: 6, carbs: 10, fat: 4, fiber: 0 }
           ]
         },
         6: {
           label: "Sat", tag: "Pump / Rest", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake", desc: "Whey+creatine+oats+banana+PB+milk", cal: 550, protein: 42, carbs: 60, fat: 18, fiber: 7 },
-            { meal: "Mid-Morning", name: "Papaya + Seeds", desc: "1 bowl fruit + mixed seeds", cal: 140, protein: 4, carbs: 25, fat: 4, fiber: 4 },
-            { meal: "Lunch", name: "3 Rotis + Paneer Bhurji + Dal + Curd", desc: "Rotis, 100g paneer bhurji, dal, curd", cal: 580, protein: 32, carbs: 55, fat: 22, fiber: 6 },
-            { meal: "Afternoon", name: "Protein Bar / Chana", desc: "1 protein bar or roasted chickpeas", cal: 150, protein: 10, carbs: 18, fat: 5, fiber: 4 },
-            { meal: "Dinner", name: "2 Rotis + Egg Omelet + Dal", desc: "2 rotis, 3-egg omelet with spinach, dal", cal: 470, protein: 32, carbs: 42, fat: 16, fiber: 6 },
+            { meal: "Breakfast", name: "Post-Workout Shake", desc: "Blender only: whey+creatine+oats+banana+PB+milk", cal: 550, protein: 42, carbs: 60, fat: 18, fiber: 7 },
+            { meal: "Mid-Morning", name: "Papaya + Seeds", desc: "1 bowl fruit + mixed seeds — zero prep", cal: 140, protein: 4, carbs: 25, fat: 4, fiber: 4 },
+            { meal: "Lunch", name: "Rajma + Rice + Curd", desc: "Wed-batch rajma + rice, curd — just microwave", cal: 520, protein: 22, carbs: 70, fat: 12, fiber: 10 },
+            { meal: "Afternoon", name: "Whey in Milk", desc: "1 scoop whey shaken in 200ml milk", cal: 185, protein: 28, carbs: 12, fat: 4, fiber: 0 },
+            { meal: "Dinner", name: "Egg Fried Rice (one pan)", desc: "3 eggs + batch rice + peas + soy — 10 min, one pan total", cal: 480, protein: 24, carbs: 50, fat: 18, fiber: 4 },
             { meal: "Before Bed", name: "Milk + Casein", desc: "200ml milk with casein for overnight recovery", cal: 150, protein: 18, carbs: 12, fat: 5, fiber: 0 }
           ]
         },
         0: {
-          label: "Sun", tag: "5K + Mobility", meals: [
-            { meal: "Breakfast", name: "Masala Oats + Boiled Egg", desc: "40g oats, veggies, egg + coffee", cal: 340, protein: 18, carbs: 42, fat: 11, fiber: 6 },
-            { meal: "Mid-Morning", name: "Banana + Flaxseeds", desc: "1 banana + 1 tbsp roasted flax", cal: 145, protein: 3, carbs: 28, fat: 4, fiber: 5 },
-            { meal: "Lunch", name: "Chicken Biryani + Raita", desc: "1 cup chicken biryani + yogurt raita", cal: 520, protein: 30, carbs: 60, fat: 16, fiber: 4 },
-            { meal: "Afternoon", name: "Greek Yogurt + Honey", desc: "1 cup Greek yogurt with honey", cal: 160, protein: 15, carbs: 20, fat: 3, fiber: 0 },
-            { meal: "Dinner", name: "Veg Pulao + Rajma + Salad", desc: "1.5 cups pulao, rajma curry, beetroot salad", cal: 480, protein: 18, carbs: 70, fat: 12, fiber: 9 },
-            { meal: "Before Bed", name: "Chamomile Tea", desc: "Wind down", cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0 }
+          label: "Sun", tag: "5K + Prep Day", meals: [
+            { meal: "Breakfast", name: "Masala Oats + 2 Boiled Eggs", desc: "Microwave oats + veggies + eggs, post-5K", cal: 420, protein: 24, carbs: 44, fat: 16, fiber: 6 },
+            { meal: "Mid-Morning", name: "Banana + Peanut Butter", desc: "1 banana + 1 tbsp PB — zero prep", cal: 195, protein: 5, carbs: 30, fat: 8, fiber: 3 },
+            { meal: "Lunch", name: "Chicken Biryani Bowl + Raita", desc: "First serving of Sun-batch: chicken curry folded into fresh rice + raita", cal: 520, protein: 30, carbs: 60, fat: 16, fiber: 4 },
+            { meal: "Afternoon", name: "Whey in Milk", desc: "1 scoop whey shaken in 200ml milk", cal: 185, protein: 28, carbs: 12, fat: 4, fiber: 0 },
+            { meal: "Dinner", name: "Dal + Rice + Salad", desc: "Fresh Sun-batch dal + rice + cucumber/beetroot salad", cal: 400, protein: 16, carbs: 60, fat: 8, fiber: 9 },
+            { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
           ]
         }
       };
+
+      // Weekly batch-prep guide shown in the meal-plan modal
+      const PREP_GUIDE = [
+        {
+          title: "Sunday · ~75 min (after 5K)", items: [
+            "Rice cooker: 4-5 cups rice → fridge boxes (keeps 4 days)",
+            "Pressure cooker: chicken curry 650-700g → 4 boxes (Sun L, Mon-Wed L)",
+            "Same cooker, 2nd round: big dal pot → 3 boxes (Sun-Tue D)",
+            "Boil 8 eggs alongside (snacks + breakfasts all week)",
+            "Soak rajma overnight-style for Wednesday",
+            "Utensils used: rice cooker + pressure cooker + 1 ladle"
+          ]
+        },
+        {
+          title: "Wednesday · ~45 min (with dinner)", items: [
+            "Khichdi ×2 portions — one pot (Wed + Thu dinner)",
+            "Paneer bhurji ×2 — one pan (Thu + Fri lunch)",
+            "Pressure-cook soaked rajma ×2 (Fri dinner + Sat lunch)",
+            "Top up rice if running low",
+            "Rest of the week: blender, microwave & air fryer only"
+          ]
+        }
+      ];
 
       const DELIGHTS = [
         { id: "walking", icon: "footprints", name: "Walking Around" },
@@ -3262,8 +3337,229 @@
         // Female plan exercises
         "Hip Thrust 4×8-12": 55, "Bulgarian Split Squat 3×10-12/side": 50, "Cable Kickbacks 3×12-15/side": 25, "Incline DB Press 3×8-12": 45, "Seated Cable Row 3×10-12": 40, "Shoulder Press 3×8-12": 40, "Lat Pulldown 3×10-12": 40, "Lateral Raise 3×12-15": 25, "Tricep Rope Pressdown 2×12-15": 15, "Bicep Curls 2×10-15": 15, "Pigeon pose 60s/side": 5, "Cat-cow × 10": 5, "Back Squat/Goblet Squat 4×6-10": 75, "Walking Lunges 3×12/side": 45, "Leg Extension 3×12-15": 25, "Hip Abduction 3×15-20": 20, "Seated Calf Raise 3×12-15": 20, "Push-ups 3×8-15": 20, "Single-Arm DB Row 3×10-12/side": 40, "Arnold Press 3×10-12": 40, "Cable Woodchop 3×10/side": 25, "Plank Hold 3×30-45s": 15, "Dead Bug 3×10/side": 12, "Banded Hip Thrust 3×15-20": 35, "Sumo Deadlift 3×10-12": 50, "Step-ups 3×12/side": 35, "Cable Pull-through 3×12-15": 25, "20 min moderate cardio (elliptical/cycling)": 160, "Full body foam roll 5 min": 10,
         // NB plan exercises
-        "Shoulder Press 3×8-12": 40, "Cable Fly 2×12-15": 20, "Back Squat/Goblet Squat 4×6-10": 75, "Walking Lunges 3×12/side": 45, "Hip Thrust 3×10-12": 45, "Ab Wheel/Cable Crunch 3×10-15": 25, "Cable Row 3×12-15": 25, "Bodyweight Squats 3×15": 15, "Push-ups 3×10-15": 20, "Trap Bar Deadlift 3×4-8": 70, "Bulgarian Split Squat 3×10-12/side": 50, "Hip Thrust 3×10-12": 45, "Leg Extension 2×12-15": 25, "Farmer's Carries 3×30-45s": 20, "Pigeon pose 60s/side": 5, "Full body foam roll 3 min": 6, "Shoulder wall slides 10 reps": 3, "Standing Calf Raises 3×12-15": 20
+        "Shoulder Press 3×8-12": 40, "Cable Fly 2×12-15": 20, "Back Squat/Goblet Squat 4×6-10": 75, "Walking Lunges 3×12/side": 45, "Hip Thrust 3×10-12": 45, "Ab Wheel/Cable Crunch 3×10-15": 25, "Cable Row 3×12-15": 25, "Bodyweight Squats 3×15": 15, "Push-ups 3×10-15": 20, "Trap Bar Deadlift 3×4-8": 70, "Bulgarian Split Squat 3×10-12/side": 50, "Hip Thrust 3×10-12": 45, "Leg Extension 2×12-15": 25, "Farmer's Carries 3×30-45s": 20, "Pigeon pose 60s/side": 5, "Full body foam roll 3 min": 6, "Shoulder wall slides 10 reps": 3, "Standing Calf Raises 3×12-15": 20,
+        // Labels used in plans that were previously missing from this map
+        "Face Pulls 3×12-20": 25, "Lateral Raise 4×12-20": 30, "Lateral Raise 3×12-20": 25, "Tricep Rope Pressdown 3×10-15": 20, "Leg Curl 3×10-15": 30, "Hammer Curls 2×10-15": 15, "Romanian Deadlift 3×8-12": 55
       };
+
+      /* ═══════════════════════════════════════════════════
+         EQUIPMENT VARIANTS — each standard exercise can swap to a
+         no-equipment or alternative-machine version. Checks are stored
+         per variant label; kcal is credited for whichever variant was
+         actually done, so switching modes never double-counts.
+         ═══════════════════════════════════════════════════ */
+      const EQUIP_MODES = [["none", "No equipment"], ["std", "Standard"], ["alt", "Alternative"]];
+      const EXERCISE_VARIANTS = {
+        // Upper push
+        "Incline DB Press 4×6-10": { none: ["Decline Push-ups 4×8-15", 35], alt: ["Machine Chest Press 4×6-10", 55] },
+        "Incline DB Press 3×8-12": { none: ["Decline Push-ups 3×8-15", 30], alt: ["Machine Chest Press 3×8-12", 40] },
+        "Flat Press 3×8-12": { none: ["Push-ups 3×failure", 30], alt: ["Machine Chest Press 3×8-12", 45] },
+        "Seated OHP 3×6-10": { none: ["Pike Push-ups 3×6-12", 30], alt: ["Machine Shoulder Press 3×6-10", 40] },
+        "Shoulder Press 3×8-12": { none: ["Pike Push-ups 3×6-10", 28], alt: ["Machine Shoulder Press 3×8-12", 38] },
+        "Arnold Press 3×10-12": { none: ["Pike Push-ups 3×6-10", 28], alt: ["Machine Shoulder Press 3×10-12", 38] },
+        "Cable/Pec-Deck Fly 2-3×12-15": { none: ["Wide Push-ups 2×12-20", 20], alt: ["DB Fly 3×12-15", 25] },
+        "Cable Fly 3×12-15": { none: ["Wide Push-ups 3×12-20", 20], alt: ["DB Fly 3×12-15", 25] },
+        "Cable Fly 2×12-15": { none: ["Wide Push-ups 2×12-20", 15], alt: ["DB Fly 2×12-15", 20] },
+        "Lateral Raise (cable) 4×12-20": { none: ["Lateral Raise (bottles/backpack) 4×15-25", 20], alt: ["Lateral Raise (DB) 4×12-20", 30] },
+        "Lateral Raise 5×12-20": { none: ["Lateral Raise (bottles/backpack) 5×15-25", 20], alt: ["Lateral Raise (cable) 5×12-20", 30] },
+        "Lateral Raise 4×12-20": { none: ["Lateral Raise (bottles/backpack) 4×15-25", 20], alt: ["Lateral Raise (cable) 4×12-20", 30] },
+        "Lateral Raise 3×12-20": { none: ["Lateral Raise (bottles/backpack) 3×15-25", 15], alt: ["Lateral Raise (cable) 3×12-20", 25] },
+        "Lateral Raise 3×12-15": { none: ["Lateral Raise (bottles/backpack) 3×15-20", 15], alt: ["Lateral Raise (cable) 3×12-15", 25] },
+        "Triceps Rope Pressdown 3×10-15": { none: ["Bench Dips 3×10-15", 20], alt: ["Overhead DB Extension 3×10-15", 20] },
+        "Tricep Rope Pressdown 3×10-15": { none: ["Bench Dips 3×10-15", 20], alt: ["Overhead DB Extension 3×10-15", 20] },
+        "Tricep Rope Pressdown 2×12-15": { none: ["Bench Dips 2×12-15", 14], alt: ["Overhead DB Extension 2×12-15", 15] },
+        "Rope Pushdown 3×12-15": { none: ["Bench Dips 3×12-15", 18], alt: ["Overhead DB Extension 3×12-15", 20] },
+        // Upper pull
+        "Pull-ups/Lat Pulldown 4×6-12": { none: ["Doorframe Towel Row 4×8-12", 35], alt: ["Assisted Pull-ups 4×6-12", 50] },
+        "Lat Pulldown 3×10-12": { none: ["Doorframe Towel Row 3×10-12", 28], alt: ["Assisted Pull-ups 3×6-10", 38] },
+        "Chest-Supported Row 3×8-12": { none: ["Inverted Row (table) 3×8-12", 35], alt: ["Single-Arm DB Row 3×8-12/side", 45] },
+        "Seated Cable Row 3×10-15": { none: ["Backpack Row 3×12-15", 30], alt: ["Machine Row 3×10-15", 40] },
+        "Seated Cable Row 3×10-12": { none: ["Inverted Row (table) 3×8-12", 30], alt: ["Machine Row 3×10-12", 40] },
+        "Cable Row 3×12-15": { none: ["Inverted Row (table) 3×10-12", 28], alt: ["Machine Row 3×12-15", 25] },
+        "Single-Arm DB Row 3×10-12/side": { none: ["Inverted Row (table) 3×8-12", 30], alt: ["Seated Cable Row 3×10-12", 40] },
+        "Rear Delt Fly 3×12-20": { none: ["Reverse Snow Angels 3×12-15", 15], alt: ["Reverse Pec-Deck 3×12-20", 25] },
+        "Face Pulls 2×12-20": { none: ["Prone Y-W-T Raises 2×10", 12], alt: ["Reverse Pec-Deck 2×12-20", 20] },
+        "Face Pulls 3×12-20": { none: ["Prone Y-W-T Raises 3×10", 15], alt: ["Reverse Pec-Deck 3×12-20", 25] },
+        "Barbell/DB Curls 3×8-12": { none: ["Curls (backpack) 3×10-15", 18], alt: ["Curls (cable) 3×10-15", 25] },
+        "Bicep Curls 2×10-15": { none: ["Curls (backpack) 2×12-15", 10], alt: ["Curls (cable) 2×10-15", 15] },
+        "Incline Curls 3×10-15": { none: ["Curls (backpack) 3×12-15", 12], alt: ["Curls (cable) 3×12-15", 20] },
+        "Hammer Curls 2-3×10-15": { none: ["Hammer Curls (backpack) 2×12-15", 12], alt: ["Hammer Curls (rope cable) 2-3×10-15", 20] },
+        "Hammer Curls 2×10-15": { none: ["Hammer Curls (backpack) 2×12-15", 12], alt: ["Hammer Curls (rope cable) 2×10-15", 15] },
+        // Squat pattern
+        "Back Squat/Hack Squat 4×5-8": { none: ["Tempo + Jump Squats 4×12-15", 55], alt: ["Goblet Squat (heavy) 4×8-10", 65] },
+        "Back Squat/Goblet Squat 4×6-10": { none: ["Tempo + Jump Squats 4×12-15", 50], alt: ["Leg Press 4×8-12", 65] },
+        "Leg Press 3×10-15": { none: ["Bulgarian Split Squat (BW) 3×12-15/side", 45], alt: ["Goblet Squat 3×10-15", 50] },
+        "Leg Extension 2×12-15": { none: ["Wall Sit 2×30-45s", 20], alt: ["Goblet Squat (slow) 2×12-15", 25] },
+        "Leg Extension 3×12-15": { none: ["Wall Sit 3×30-45s", 18], alt: ["Goblet Squat (slow) 3×12-15", 25] },
+        "Bulgarian Split Squat 3×8-12/side": { none: ["Bulgarian Split Squat (BW) 3×12-15/side", 40], alt: ["Walking Lunges (DB) 3×10-12/side", 45] },
+        "Bulgarian Split Squat 3×10-12/side": { none: ["Bulgarian Split Squat (BW) 3×12-15/side", 40], alt: ["Walking Lunges (DB) 3×10-12/side", 45] },
+        "Walking Lunges 3×12/side": { none: ["Walking Lunges (BW) 3×15/side", 35], alt: ["Split Squats (DB) 3×10-12/side", 40] },
+        // Hinge pattern
+        "Romanian Deadlift 3×6-10": { none: ["Single-Leg Hip Hinge 3×10-12/side", 35], alt: ["DB RDL 3×8-12", 55] },
+        "Romanian Deadlift 3×8-12": { none: ["Single-Leg Hip Hinge 3×10-12/side", 30], alt: ["DB RDL 3×10-12", 50] },
+        "Trap Bar/RDL Heavy 3-4×4-8": { none: ["Single-Leg RDL (slow) 3×8-10/side", 40], alt: ["Barbell RDL / Rack Pull 3-4×5-8", 70] },
+        "Trap Bar Deadlift 3×4-8": { none: ["Single-Leg RDL (slow) 3×8-10/side", 40], alt: ["Barbell RDL / Rack Pull 3×5-8", 65] },
+        "Sumo Deadlift 3×10-12": { none: ["Tempo Sumo Squat 3×15", 30], alt: ["DB Sumo Deadlift 3×10-12", 45] },
+        "Cable Pull-through 3×12-15": { none: ["Glute Bridge (pause) 3×15", 20], alt: ["DB RDL (light) 3×12-15", 25] },
+        // Glutes
+        "Hip Thrust 3×8-12": { none: ["Single-Leg Glute Bridge 3×12-15/side", 30], alt: ["Glute Bridge (barbell) 3×10-12", 40] },
+        "Hip Thrust 3×10-12": { none: ["Single-Leg Glute Bridge 3×12-15/side", 30], alt: ["Glute Bridge (barbell) 3×10-12", 40] },
+        "Hip Thrust 4×8-12": { none: ["Single-Leg Glute Bridge 4×12-15/side", 35], alt: ["Glute Bridge (barbell) 4×10-12", 50] },
+        "Banded Hip Thrust 3×15-20": { none: ["Single-Leg Glute Bridge 3×15/side", 30], alt: ["Hip Thrust (DB) 3×12-15", 40] },
+        "Hip Abduction 3×15-20": { none: ["Side-Lying Leg Raises 3×15-20/side", 15], alt: ["Banded Lateral Walks 3×15 steps", 18] },
+        // Hamstrings / calves
+        "Lying Leg Curl 3×10-15": { none: ["Sliding Leg Curl 3×6-10", 25], alt: ["Seated Leg Curl 3×10-15", 30] },
+        "Leg Curl 3×10-15": { none: ["Sliding Leg Curl 3×6-10", 25], alt: ["Seated Leg Curl 3×10-15", 30] },
+        "Standing Calf Raises 4×8-12": { none: ["Single-Leg Calf Raise (stair) 4×12-15/side", 25], alt: ["Calf Press (leg press) 4×10-15", 25] },
+        "Standing Calf Raises 3×12-15": { none: ["Single-Leg Calf Raise (stair) 3×15/side", 18], alt: ["Calf Press (leg press) 3×12-15", 20] },
+        "Calves 4×10-15": { none: ["Single-Leg Calf Raise (stair) 4×15/side", 20], alt: ["Calf Press (leg press) 4×10-15", 25] },
+        "Seated Calf Raise 3×10-15": { none: ["Bent-Knee Calf Raise 3×15-20", 15], alt: ["Standing Calf Raises (DB) 3×12-15", 20] },
+        "Seated Calf Raise 3×12-15": { none: ["Bent-Knee Calf Raise 3×15-20", 15], alt: ["Standing Calf Raises (DB) 3×12-15", 20] },
+        // Core / carries
+        "Hanging Knee Raises 3×10-15": { none: ["Lying Leg Raises 3×12-15", 15], alt: ["Captain's Chair Knee Raise 3×10-15", 20] },
+        "Ab Wheel/Cable Crunch 3×8-15": { none: ["Crunches + Mountain Climbers 3×15-20", 20], alt: ["Weighted Crunches (plate) 3×10-15", 25] },
+        "Cable Woodchop 3×10/side": { none: ["Standing Trunk Rotations 3×15/side", 15], alt: ["Russian Twists (plate) 3×12/side", 20] },
+        "Farmer's Carries 3×30-45s (optional)": { none: ["Farmer's Carries (backpack) 3×30-45s", 15], alt: ["Farmer's Carries (DB) 3×30-45s", 20] },
+        "Farmer's Carries 3×30-45s": { none: ["Farmer's Carries (backpack) 3×30-45s", 15], alt: ["Farmer's Carries (DB) 3×30-45s", 20] }
+      };
+
+      /* Offline how-to cues per movement (shown via the ⓘ icon; works with no network).
+         Keyed by base movement name — set/rep counts and trailing "(...)" modifiers are stripped before lookup. */
+      const EXERCISE_TIPS = {
+        "Incline DB Press": ["Bench at 30°, dumbbells over upper chest, feet planted flat.", "Lower slowly until DBs reach chest level, elbows ~45° from torso.", "Press up and slightly back toward your eyes; squeeze at top without clanging.", "Avoid: flaring elbows straight out or bouncing weight off the chest."],
+        "Flat Press": ["Lie flat, shoulder blades pinched back and down, slight arch, feet planted.", "Lower the bar/DBs to mid-chest with control (2s down).", "Press up over the shoulders, keeping wrists stacked over elbows.", "Avoid: lifting hips off the bench or half-reps."],
+        "Machine Chest Press": ["Set seat so handles line up with mid-chest; shoulder blades back into the pad.", "Press to almost-locked elbows, pause a beat, return slowly.", "Keep chest proud — don't let shoulders roll forward at the stretch.", "Avoid: slamming the stack or shortening the range."],
+        "Seated OHP": ["Sit tall, back against pad, DBs/bar at shoulder height, forearms vertical.", "Press straight overhead until arms lock out by your ears.", "Lower under control to chin/shoulder level each rep.", "Avoid: over-arching the lower back — brace your core."],
+        "Arnold Press": ["Start with DBs at shoulders, palms facing you.", "Rotate palms outward as you press overhead in one smooth arc.", "Reverse the rotation on the way down; keep core tight.", "Avoid: rushing the rotation — it's one continuous movement."],
+        "Cable/Pec-Deck Fly": ["Set handles/pads at chest height; slight bend in elbows throughout.", "Hug a barrel: bring hands together in a wide arc, squeeze chest 1s.", "Open only until you feel a chest stretch — not shoulder strain.", "Avoid: turning it into a press by bending elbows more as you tire."],
+        "DB Fly": ["Lie on a flat/incline bench, DBs above chest, slight elbow bend.", "Lower in a wide arc until you feel a deep chest stretch.", "Bring DBs together over the chest like hugging a tree.", "Avoid: going too deep or too heavy — this is a stretch-and-squeeze move."],
+        "Push-ups": ["Hands under shoulders, body one straight line from head to heels.", "Lower chest to just above the floor, elbows ~45° from torso.", "Push the floor away and squeeze glutes throughout.", "Avoid: sagging hips or flaring elbows out at 90°."],
+        "Wide Push-ups": ["Hands ~1.5× shoulder width, fingers slightly out.", "Lower until chest nearly touches; feel the stretch across the chest.", "Press up without letting hips sag.", "Avoid: shallow reps — full range is the point."],
+        "Decline Push-ups": ["Feet on a bench/step, hands under shoulders on the floor.", "Lower until forehead nearly touches; body stays rigid.", "Targets upper chest — same line as an incline press.", "Avoid: piking hips up; keep one straight line."],
+        "Pike Push-ups": ["From push-up position, walk feet in and lift hips high into an inverted V.", "Bend elbows to lower the crown of your head toward the floor.", "Press back up — this mimics an overhead press.", "Avoid: bending knees or shifting weight back as you press."],
+        "Lateral Raise": ["Stand tall, slight elbow bend, weights (DBs, cables, or filled bottles) at sides.", "Raise out to the side until elbows reach shoulder height, pinkies slightly up.", "Lower 2× slower than you lift.", "Avoid: shrugging traps or swinging with momentum — go lighter instead."],
+        "Rear Delt Fly": ["Hinge at hips ~45°, flat back, slight elbow bend.", "Raise arms out wide, leading with elbows, squeeze rear shoulders.", "Pause 1s at the top of each rep.", "Avoid: standing upright and turning it into a shrug or row."],
+        "Reverse Pec-Deck": ["Face the pad, arms forward on the handles at shoulder height.", "Sweep arms back in a wide arc, squeezing shoulder blades together.", "Control the return — don't let the stack yank you.", "Avoid: bending elbows to press instead of fly."],
+        "Reverse Snow Angels": ["Lie face-down, arms by your sides, thumbs up.", "Lift chest slightly and sweep arms overhead like a snow angel.", "Keep arms hovering off the floor the whole set.", "Avoid: rushing — 3s per sweep."],
+        "Prone Y-W-T Raises": ["Lie face-down; make a Y, then W, then T shape with your arms.", "Lift arms off the floor at each position, thumbs pointing up, hold 2s.", "Squeeze shoulder blades down and together.", "Avoid: cranking the neck up — keep your gaze at the floor."],
+        "Face Pulls": ["Set rope at upper-chest height; grab with thumbs pointing back.", "Pull toward your forehead, elbows high and wide.", "Finish with a slight external rotation — knuckles by your ears.", "Avoid: leaning back and rowing to the chest."],
+        "Triceps Rope Pressdown": ["Elbows pinned to your sides, rope at chest height.", "Press down until arms lock, splitting the rope ends apart at the bottom.", "Only forearms move; 1s squeeze at lockout.", "Avoid: letting elbows drift forward or using body weight."],
+        "Bench Dips": ["Hands on a bench/chair edge behind you, legs extended forward.", "Lower until upper arms are parallel to the floor, elbows pointing straight back.", "Press up through your palms, chest tall.", "Avoid: shoulders shrugging to ears or dipping too deep."],
+        "Overhead DB Extension": ["Hold one DB with both hands overhead, elbows by your ears.", "Lower the DB behind your head until forearms touch biceps.", "Extend back up without moving the upper arms.", "Avoid: flaring elbows wide — keep them pointing forward."],
+        "Barbell/DB Curls": ["Stand tall, elbows pinned to your ribs.", "Curl to shoulder height, squeeze 1s, lower for a slow 3-count.", "Full extension at the bottom every rep.", "Avoid: swinging hips or lifting elbows to cheat the weight up."],
+        "Hammer Curls": ["Neutral grip (palms facing each other), elbows at your sides.", "Curl straight up, keeping the thumb-side leading.", "Slow negatives build the forearm and brachialis.", "Avoid: rocking the torso for momentum."],
+        "Pull-ups/Lat Pulldown": ["Grip slightly wider than shoulders; start from a dead hang / full stretch.", "Drive elbows down toward your back pockets; chin over bar or bar to upper chest.", "Lower with a 2-3s negative — that's half the exercise.", "Avoid: half range, kipping, or leaning way back on pulldowns."],
+        "Assisted Pull-ups": ["Set assist weight so you fail around the target reps.", "Same cues as pull-ups: dead hang start, elbows to back pockets.", "Reduce assistance a little each week.", "Avoid: kneeing off the pad for momentum."],
+        "Doorframe Towel Row": ["Loop a towel around a doorframe handle/post, lean back with straight arms.", "Row your chest to your hands, squeezing shoulder blades.", "Walk feet forward for harder, back for easier.", "Avoid: bending at the hips — body stays a straight plank."],
+        "Inverted Row": ["Lie under a sturdy table/bar, grab the edge, body straight, heels on floor.", "Pull chest to the edge, squeezing shoulder blades together.", "Elevate feet to make it harder.", "Avoid: hips sagging — squeeze glutes the whole set."],
+        "Chest-Supported Row": ["Chest on an incline bench/pad, arms hanging with DBs.", "Row elbows back and up, squeezing shoulder blades 1s at top.", "Chest stays glued to the pad — no cheating possible.", "Avoid: shrugging; pull with the mid-back, not the traps."],
+        "Seated Cable Row": ["Sit tall, knees soft, grab the handle with a flat back.", "Pull to your belly button, elbows tight, chest proud.", "Let the weight stretch your lats forward between reps — without rounding your back.", "Avoid: heaving backward with the lower back."],
+        "Machine Row": ["Chest against the pad, arms fully extended to start.", "Drive elbows straight back, squeeze shoulder blades 1s.", "Return slowly to a full stretch.", "Avoid: pulling with biceps — think 'elbows to the wall behind you'."],
+        "Backpack Row": ["Load a backpack with books; hinge forward, flat back, pack in both hands.", "Row to your lower ribs, elbows tight to the body.", "Pause 1s at the top of each rep.", "Avoid: rounding the spine — hinge from the hips."],
+        "Single-Arm DB Row": ["One knee and hand on the bench, flat back, DB hanging straight down.", "Row the DB to your hip (not your armpit), elbow tight.", "Full stretch at the bottom without rotating open.", "Avoid: twisting the torso to heave the weight up."],
+        "Back Squat/Hack Squat": ["Bar on upper traps (or shoulders on hack pads), feet shoulder-width, toes slightly out.", "Brace, then sit down between your heels — knees track over toes.", "Hit at least parallel; drive up through the whole foot.", "Avoid: knees caving in or heels lifting — elevate heels if mobility is tight."],
+        "Goblet Squat": ["Hold one DB/kettlebell vertically against your chest, elbows down.", "Squat between your heels, elbows tracking inside the knees.", "Chest stays tall throughout; stand up by pushing the floor away.", "Avoid: letting the weight pull you forward onto your toes."],
+        "Tempo + Jump Squats": ["Alternate: 3s-down slow squat, then an explosive jump squat, and repeat.", "Land soft — toes first, knees bent, straight into the next rep.", "Bodyweight only; the tempo makes it hard.", "Avoid: stiff-leg landings or cutting depth as you tire."],
+        "Bodyweight Squats": ["Feet shoulder-width, arms forward for balance.", "Sit hips back and down to at least parallel, chest up.", "Push through the whole foot to stand tall.", "Avoid: knees collapsing inward."],
+        "Leg Press": ["Feet shoulder-width, mid-platform; back and hips glued to the pad.", "Lower until knees near your chest — without your lower back rolling up.", "Press through the whole foot; don't lock knees hard at the top.", "Avoid: short bouncy reps or letting hips lift off the seat."],
+        "Wall Sit": ["Back flat on a wall, thighs parallel to the floor, knees at 90°.", "Weight through the heels, hands off the thighs.", "Breathe steadily and hold the time.", "Avoid: sliding up as it burns — set your height and keep it."],
+        "Romanian Deadlift": ["Soft knees, bar/DBs against your thighs, shoulders back.", "Push hips straight back; slide the weight down your legs.", "Stop at a strong hamstring stretch (~mid-shin), then drive hips forward.", "Avoid: rounding the back or bending knees into a squat."],
+        "DB RDL": ["DBs in front of thighs, soft knees, flat back.", "Hips travel back, DBs stay skimming the legs.", "Squeeze glutes to stand — don't yank with the back.", "Avoid: looking up hard; keep a neutral neck."],
+        "Single-Leg Hip Hinge": ["Stand on one leg, soft knee, arms forward for balance.", "Hinge at the hip; rear leg extends straight back as a counterweight.", "Torso and rear leg form one line; feel the standing hamstring.", "Avoid: rotating hips open — keep them square to the floor."],
+        "Single-Leg RDL": ["Same as the hip hinge, holding weight (or slow bodyweight) on the standing side.", "3s down, feel the hamstring stretch, 1s up.", "Tap the floor lightly for balance if needed.", "Avoid: rushing — slow is the whole point."],
+        "Barbell RDL / Rack Pull": ["Set the bar at knee height in a rack (or use RDL from the floor of the thighs).", "Hinge, grip, flat back, lats tight — drag the bar up the thighs.", "Finish tall with glutes squeezed; no lean-back.", "Avoid: jerking the bar off the pins or rounding over."],
+        "Trap Bar Deadlift": ["Stand mid-bar, feet hip-width; grip handles, hips back, chest up.", "Push the floor away — hips and shoulders rise together.", "Lock out tall, then lower with control along the same path.", "Avoid: letting hips shoot up first or slamming reps."],
+        "Sumo Deadlift": ["Wide stance, toes out ~30°, grip inside the knees.", "Knees track over toes; chest up, back flat.", "Drive the floor apart with your feet and stand tall.", "Avoid: hips rising before the chest."],
+        "Tempo Sumo Squat": ["Wide stance, toes out, hands at chest.", "3s down, 1s pause at the bottom, drive up.", "Feel the inner thighs and glutes.", "Avoid: heels lifting — sit between the heels."],
+        "Bulgarian Split Squat": ["Rear foot on a bench/chair, front foot ~2ft forward.", "Drop the back knee straight down until the front thigh is parallel.", "Front knee tracks over the toes; torso slightly forward for glutes.", "Avoid: bouncing off the back leg or a too-short stance."],
+        "Split Squats": ["Long lunge stance, feet planted (no stepping).", "Lower the back knee to just above the floor, front heel heavy.", "Drive up through the front foot.", "Avoid: pushing off the back toes."],
+        "Walking Lunges": ["Step forward into a lunge, back knee just above the floor.", "Push through the front heel to step through into the next lunge.", "Torso tall, core braced; add DBs to progress.", "Avoid: short choppy steps — knee should make a 90° angle."],
+        "Leg Extension": ["Ankles behind the pad, knees aligned with the machine's pivot.", "Extend to full lockout and squeeze the quads 1s.", "Lower slowly — 2-3s negative.", "Avoid: kicking the weight up with momentum."],
+        "Sliding Leg Curl": ["Lie on your back, heels on a towel/sliders on a smooth floor, hips bridged.", "Slide heels away until legs are nearly straight — hips stay up.", "Drag heels back toward your glutes.", "Avoid: dropping hips as legs extend; that's the hard part to fight."],
+        "Lying Leg Curl": ["Pad just above the heels, hips pressed into the bench.", "Curl heels to glutes, squeeze 1s at the top.", "Lower for a slow 3-count to full stretch.", "Avoid: hips popping up — that steals the hamstring work."],
+        "Seated Leg Curl": ["Back flat on pad, lap pad snug, legs extended.", "Curl heels down and under; squeeze hamstrings hard.", "Slow return to full stretch.", "Avoid: sliding forward in the seat as you curl."],
+        "Nordic Curl Negatives": ["Anchor ankles (partner/bench), kneel tall, hips extended.", "Lower your torso forward as slowly as possible, hamstrings fighting.", "Catch yourself with hands and push back up.", "Avoid: breaking at the hips — body stays a straight line."],
+        "Hip Thrust": ["Upper back on a bench, feet planted so shins are vertical at the top.", "Drive through heels; squeeze glutes to full hip lockout.", "Chin tucked, ribs down — posterior pelvic tilt at the top, hold 1s.", "Avoid: arching the lower back or pushing through the toes."],
+        "Glute Bridge": ["Lie on the floor, heels close to glutes.", "Drive hips up, squeeze glutes 1-2s at the top.", "Lower with control; don't rest at the bottom.", "Avoid: pushing through the lower back — think 'tuck and lift'."],
+        "Single-Leg Glute Bridge": ["Bridge position, one leg extended straight or knee hugged to chest.", "Drive up through the planted heel; hips stay level.", "Pause 1s at the top of every rep.", "Avoid: the free-side hip dropping — that's the cheat."],
+        "Cable Pull-through": ["Face away from a low cable, rope between your legs.", "Hinge forward letting the rope pull through, then snap hips forward.", "Squeeze glutes at lockout; arms are just hooks.", "Avoid: squatting it — this is a hinge."],
+        "Hip Abduction": ["Sit tall in the machine, pads outside the knees.", "Push knees apart with control, pause at the widest point.", "Resist the pads on the way back in.", "Avoid: rocking the torso to move more weight."],
+        "Side-Lying Leg Raises": ["Lie on your side, body straight, top leg extended.", "Lift the top leg 45°, toes pointing slightly down.", "2s up, pause, 3s down — no swinging.", "Avoid: rolling the hips backward to lift higher."],
+        "Banded Lateral Walks": ["Band above knees, quarter-squat stance, chest up.", "Step sideways leading with the knee — keep tension in the band.", "Feet never come closer than hip-width.", "Avoid: standing tall between steps."],
+        "Standing Calf Raises": ["Balls of feet on the edge, heels hanging free.", "Full stretch at the bottom (2s), then rise to your tiptoes and squeeze 1s.", "Straight knees to bias the gastrocs.", "Avoid: bouncing out of the stretch."],
+        "Single-Leg Calf Raise": ["One foot on a stair edge, hand on the rail for balance only.", "Deep 2s stretch at the bottom, powerful rise, 1s squeeze at top.", "Do all reps on one side, then switch.", "Avoid: using the rail to pull yourself up."],
+        "Calf Press": ["On the leg press: balls of feet on the platform's bottom edge, legs extended.", "Let heels drop back for a deep stretch, then press to full point.", "Keep knees almost straight throughout.", "Avoid: rushing — 2s stretch, 1s squeeze every rep."],
+        "Seated Calf Raise": ["Knees under the pads, balls of feet on the platform.", "Deep heel drop, then press up onto the toes.", "Bent knees bias the soleus — this one grows with high reps.", "Avoid: partial bouncy reps."],
+        "Bent-Knee Calf Raise": ["Stand in a quarter-squat, hands on a wall/chair.", "Keeping knees bent, raise onto your toes and squeeze.", "Slow lower with a full heel drop.", "Avoid: straightening the legs — stay bent to hit the soleus."],
+        "Hanging Knee Raises": ["Dead hang from a bar, shoulders active (pulled slightly down).", "Curl knees to your chest by tilting the pelvis up.", "Lower slowly without swinging.", "Avoid: kipping — reset the swing between reps if needed."],
+        "Captain's Chair Knee Raise": ["Forearms on the pads, back against the rest.", "Lift knees toward chest, tilting the pelvis up at the top.", "3s lower, no swinging.", "Avoid: just lifting the thighs — the pelvis tilt is the ab work."],
+        "Lying Leg Raises": ["Lie flat, hands under the hips for support.", "Raise straight legs to vertical, lower slowly to just above the floor.", "Press the lower back into the floor the entire time.", "Avoid: arching the lower back as legs descend — bend knees if needed."],
+        "Ab Wheel/Cable Crunch": ["Ab wheel: kneel and roll out only as far as your core can hold. Cable: kneel facing away or under the stack, rope at your ears.", "Crunch by flexing the spine — bring ribs to hips, exhale hard.", "Slow return, keeping tension.", "Avoid: hinging at the hips instead of flexing the spine."],
+        "Weighted Crunches": ["Hold a plate on your chest, knees bent, feet flat.", "Curl ribs toward hips, exhale at the top, 1s squeeze.", "Lower slowly — shoulder blades touch, head doesn't rest.", "Avoid: yanking the neck with your hands."],
+        "Crunches + Mountain Climbers": ["Superset: 15-20 slow crunches, straight into 20 mountain climbers.", "Crunch: ribs to hips, exhale hard. Climbers: hips low, knees drive fast.", "Rest 45s between rounds.", "Avoid: letting hips pike up during climbers."],
+        "Cable Woodchop": ["Cable at high (or low) setting; stand side-on, arms extended.", "Rotate through the torso pulling the handle across your body.", "Hips and eyes follow the hands; core stays braced.", "Avoid: arms doing the work — the rotation comes from your trunk."],
+        "Standing Trunk Rotations": ["Stand tall, arms at chest height, band or bodyweight.", "Rotate the torso side to side slowly, hips mostly still.", "Exhale at the end of each rotation.", "Avoid: whipping — control every degree."],
+        "Russian Twists": ["Sit, lean back ~45°, plate at your chest, heels lightly down.", "Rotate the plate side to side, chest tall.", "Slower = harder; touch the plate to the floor each side.", "Avoid: rounding the lower back or just waving your arms."],
+        "Plank Hold": ["Forearms down, elbows under shoulders, body one straight line.", "Squeeze glutes, tuck ribs, push the floor away with forearms.", "Breathe — don't hold your breath.", "Avoid: hips sagging or piking; stop the set when form breaks."],
+        "Dead Bug": ["Lie on your back, arms up, knees over hips at 90°.", "Lower opposite arm and leg toward the floor, exhaling.", "Lower back stays pressed into the floor the whole rep.", "Avoid: letting the back arch — shorten the range if it does."],
+        "Farmer's Carries": ["Heavy weight in each hand (DBs, or a loaded backpack in one hand).", "Walk tall and slow — shoulders back, ribs down, grip crushed.", "Breathe behind a braced core.", "Avoid: leaning or shrugging; the carry is a moving plank."],
+        "Curls": ["Elbows pinned to your sides — only the forearm moves.", "Curl to shoulder height, squeeze 1s, 3s negative.", "Full stretch at the bottom every rep.", "Avoid: swinging or shortening the range as you tire."],
+        // Mobility / recovery day
+        "Couch stretch": ["Rear knee against a wall/couch, shin vertical, front foot forward.", "Squeeze the rear glute and tuck hips under — feel the hip flexor stretch.", "Stay tall; breathe into it for the full time.", "Avoid: over-arching the lower back to fake depth."],
+        "Deep squat hold": ["Sink into your deepest squat, heels down, elbows prying knees out.", "Keep the chest up and breathe slowly.", "Shift gently side to side to open the hips.", "Avoid: bouncing; hold and breathe."],
+        "Thoracic openers": ["On all fours, hand behind head.", "Rotate the elbow down toward the opposite wrist, then open to the ceiling.", "Follow the elbow with your eyes.", "Avoid: rotating from the lower back — motion is upper-back only."],
+        "Hamstring floss": ["Lie on your back, hug one thigh vertical.", "Slowly straighten and re-bend the knee, flexing the foot.", "10 controlled reps per side.", "Avoid: yanking the leg straight — it's a glide, not a stretch fight."],
+        "Shoulder wall slides": ["Back, head and arms against a wall in a 'W'.", "Slide arms up to a 'Y' keeping wrists and elbows on the wall.", "Ribs stay down — don't arch off the wall.", "Avoid: shrugging as the arms rise."],
+        "Pigeon pose": ["Front shin angled on the floor, rear leg extended straight back.", "Square the hips, fold forward over the front leg.", "Breathe into the glute stretch for the full time.", "Avoid: collapsing onto the front hip — keep hips level."],
+        "Cat-cow": ["On all fours, hands under shoulders, knees under hips.", "Inhale: drop belly, lift chest and tailbone (cow).", "Exhale: round the spine up, tuck chin and tail (cat).", "Avoid: rushing — move one vertebra at a time."],
+        "5K run (conversational pace)": ["You should be able to speak full sentences the whole way.", "Short, quick steps (~170-180/min), land under your hips.", "Relax shoulders and hands; look ahead, not down.", "Avoid: starting too fast — negative-split the second half."]
+      };
+      // Aliases: variants that share cues with a canonical entry
+      [["Lat Pulldown", "Pull-ups/Lat Pulldown"], ["Cable Row", "Seated Cable Row"], ["Leg Curl", "Lying Leg Curl"], ["Calves", "Standing Calf Raises"], ["Tricep Rope Pressdown", "Triceps Rope Pressdown"], ["Rope Pushdown", "Triceps Rope Pressdown"], ["Bicep Curls", "Curls"], ["Incline Curls", "Curls"], ["Barbell/DB Curls", "Curls"], ["DB RDL", "Romanian Deadlift"], ["DB Sumo Deadlift", "Sumo Deadlift"], ["Trap Bar/RDL Heavy", "Trap Bar Deadlift"], ["Back Squat/Goblet Squat", "Back Squat/Hack Squat"], ["Banded Hip Thrust", "Hip Thrust"], ["Shoulder Press", "Seated OHP"], ["Machine Shoulder Press", "Seated OHP"], ["Cable Fly", "Cable/Pec-Deck Fly"], ["Backpack Row", "Single-Arm DB Row"]].forEach(([a, b]) => { if (!EXERCISE_TIPS[a] && EXERCISE_TIPS[b]) EXERCISE_TIPS[a] = EXERCISE_TIPS[b]; });
+
+      // Strip set/rep counts and trailing modifiers to get the base movement name
+      window.exBase = function (label) {
+        return String(label)
+          .replace(/\s+\d[\d.\-]*\s*×.*$/, "")
+          .replace(/\s*×\s*\d.*$/, "")
+          .replace(/\s*\(optional\)\s*$/i, "")
+          .replace(/\s+\d+(-\d+)?\s*(s|s\/side|\/side|reps|steps|min)$/i, "")
+          .trim();
+      }
+      // Find offline cues for a label: exact base first, then base minus trailing "(...)"
+      window.exTip = function (label) {
+        const b = exBase(label);
+        if (EXERCISE_TIPS[b]) return { name: b, tip: EXERCISE_TIPS[b] };
+        const b2 = b.replace(/\s*\([^)]*\)\s*$/, "").trim();
+        if (EXERCISE_TIPS[b2]) return { name: b2, tip: EXERCISE_TIPS[b2] };
+        return null;
+      }
+
+      window.getEquipMode = function () { const m = localStorage.getItem('HT_equipMode'); return (m === 'none' || m === 'alt') ? m : 'std'; }
+      window.setEquipMode = function (m) { localStorage.setItem('HT_equipMode', m); render(); }
+      // Resolve the label+kcal for a slot in a given mode
+      window.exVariant = function (std, mode) {
+        const v = EXERCISE_VARIANTS[std];
+        if (mode === 'std' || !v || !v[mode]) return { label: std, kcal: EXERCISE_KCAL[std] || 30 };
+        return { label: v[mode][0], kcal: v[mode][1] };
+      }
+      // All labels a slot can be logged under (std + its variants)
+      window.exSlotLabels = function (std) {
+        const v = EXERCISE_VARIANTS[std] || {};
+        return [std, v.none && v.none[0], v.alt && v.alt[0]].filter(Boolean);
+      }
+      // Which variant of this slot (if any) is checked today
+      window.exDoneLabel = function (std) {
+        return exSlotLabels(std).find(l => lwwGet(dayData.exerciseChecks, l)) || null;
+      }
+      // kcal credit for a checked label belonging to a slot
+      window.exKcalOf = function (label, std) {
+        if (label === std) return EXERCISE_KCAL[std] || 30;
+        const v = EXERCISE_VARIANTS[std] || {};
+        if (v.none && v.none[0] === label) return v.none[1];
+        if (v.alt && v.alt[0] === label) return v.alt[1];
+        return EXERCISE_KCAL[label] || 30;
+      }
 
       const MICROS = [
         { key: "vitamin_a_ug", label: "Vit A", unit: "µg", target: 900 },
@@ -3303,7 +3599,9 @@
       window.todayStr = function () { return localDateStr(); }
       window.dow = function (d) { return new Date(d + "T12:00:00").getDay(); }
       window.fmtDate = function (d) { return new Date(d + "T12:00:00").toLocaleDateString("en-IN", { weekday: "short", month: "short", day: "numeric" }); }
-      window.esc = function (s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+      // Regex escape (no DOM node per call); also escapes quotes so values are safe inside HTML attributes
+      const _escRe = /[&<>"']/g, _escMap = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+      window.esc = function (s) { return s == null ? "" : String(s).replace(_escRe, c => _escMap[c]); }
       window.num0 = function (x) { const n = +x; return (isFinite(n) && n >= 0) ? n : 0; }
       window.genId = function (p = "id") { return `${p}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`; }
       window.clamp = function (n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
@@ -3361,11 +3659,12 @@
         const customItems = activeItems(dayData.customExercises);
         const customNeat = customItems.filter(x => x.isNeat).reduce((s, x) => s + num0(x.kcal), 0);
         const customEx = customItems.filter(x => !x.isNeat).reduce((s, x) => s + num0(x.kcal), 0);
-        // Exercise kcal from checked workout items
+        // Exercise kcal from checked workout items — at most one variant per slot
+        // counts, using that variant's own kcal, so equipment-mode switches reconcile
         let exKcal = 0;
         const d = dow(selectedDate);
         const wo = getWorkoutPlan()[d];
-        if (wo) wo.exercises.forEach(ex => { if (lwwGet(dayData.exerciseChecks, ex)) exKcal += (EXERCISE_KCAL[ex] || 30); });
+        if (wo) wo.exercises.forEach(std => { const dl = exDoneLabel(std); if (dl) exKcal += exKcalOf(dl, std); });
         (getWarmupPlan()[d] || []).forEach(ex => { if (lwwGet(dayData.warmupChecks, ex.id)) exKcal += num0(ex.kcal); });
         (getCooldownPlan()[d] || []).forEach(ex => { if (lwwGet(dayData.cooldownChecks, ex.id)) exKcal += num0(ex.kcal); });
         PELVIC_EXERCISES.forEach(ex => { if (lwwGet(dayData.pelvicChecks, ex.id)) exKcal += num0(ex.kcal); });
@@ -4168,6 +4467,16 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         selectedDate = localDateStr(d); loadDay();
       }
 
+      // Debug/E2E hook: drive closure state without auth (harmless in production)
+      window.__htSetState = function (opts = {}) {
+        if (opts.date) selectedDate = opts.date;
+        if (opts.tab) currentTab = opts.tab;
+        if (opts.freshDay) dayData = emptyDay();
+        if (opts.profile !== undefined) userProfile = opts.profile;
+        render();
+      }
+      window.__htDay = function () { return dayData; }
+
       window.switchTab = function (tab) {
         currentTab = tab;
         document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.tab === tab));
@@ -4207,6 +4516,38 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
       window.toggleExercise = function (label) {
         dayData.exerciseChecks = lwwToggle(dayData.exerciseChecks, label);
         touch(); saveDay(); render();
+      }
+      // Toggle a workout slot by index: unchecking clears every variant of the slot;
+      // checking marks the currently selected equipment mode's variant
+      window.toggleExerciseSlot = function (i) {
+        const wo = getWorkoutPlan()[dow(selectedDate)];
+        const std = wo && wo.exercises[i];
+        if (!std) return;
+        const doneLabel = exDoneLabel(std);
+        if (doneLabel) {
+          exSlotLabels(std).forEach(l => { if (lwwGet(dayData.exerciseChecks, l)) dayData.exerciseChecks = lwwSet(dayData.exerciseChecks, l, false); });
+        } else {
+          dayData.exerciseChecks = lwwSet(dayData.exerciseChecks, exVariant(std, getEquipMode()).label, true);
+        }
+        touch(); saveDay(); render();
+      }
+      // Offline form-cue popup for a workout slot (ⓘ icon)
+      window.showExTip = function (i) {
+        const e = (window._moveEx || [])[i];
+        if (!e) return;
+        const t = exTip(e.display) || exTip(e.std);
+        if (!t) return;
+        const body = t.tip.map(line => {
+          const warn = /^avoid/i.test(line);
+          return `<div style="display:flex;gap:.45rem;font-size:.76rem;line-height:1.5;margin-bottom:.45rem;${warn ? 'color:var(--warn)' : ''}">
+            <span style="flex-shrink:0;margin-top:1px">${warn ? licon('alert-triangle', 13) : licon('check', 13)}</span><span>${esc(line)}</span></div>`;
+        }).join("");
+        const c = document.getElementById("modalContainer");
+        c.innerHTML = `<div class="modal-overlay"><div class="modal">
+          <div class="modal-head"><div class="modal-title">${esc(t.name)}</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+          <div class="modal-body"><div style="font-size:.66rem;color:var(--muted);margin-bottom:.6rem">${esc(e.display)} · form guide (works offline)</div>${body}</div></div></div>`;
+        c.querySelector(".modal-overlay")?.addEventListener("click", ev => { if (ev.target.classList.contains("modal-overlay")) closeModal(); });
+        refreshIcons();
       }
       window.toggleCheck = function (kind, id) {
         dayData[kind] = lwwToggle(dayData[kind], id);
@@ -4318,12 +4659,20 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           <div class="plan-meal-name">${m.name}</div>
           <div class="plan-meal-desc">${m.desc}</div>
           <div class="plan-meal-macros"><span>${m.cal} kcal</span><span>P:${m.protein}g</span><span>C:${m.carbs}g</span><span>F:${m.fat}g</span></div>
-          <div style="display:none" data-food='${JSON.stringify(m)}'></div>
+          <div style="display:none" data-food='${esc(JSON.stringify(m))}'></div>
         </div>`;
         }).join("");
+        const prepHtml = PREP_GUIDE.map(s => `
+          <div style="margin-bottom:.5rem"><div style="font-size:.68rem;font-weight:600;color:var(--accent);margin-bottom:.2rem">${s.title}</div>
+          ${s.items.map(i => `<div style="font-size:.66rem;color:var(--muted);line-height:1.5;padding-left:.7rem;position:relative"><span style="position:absolute;left:0">·</span>${i}</div>`).join("")}</div>`).join("");
         return `<div class="modal-overlay"><div class="modal">
         <div class="modal-head"><div class="modal-title">${plan.label} · ${plan.tag}</div><button class="modal-close" onclick="closeModal()">✕</button></div>
-        <div class="modal-body">${items}<button class="btn-primary" style="width:100%;margin-top:.5rem" onclick="addAllPlan()">Add all remaining</button></div></div></div>`;
+        <div class="modal-body">
+        <details style="margin-bottom:.6rem;border:1px solid var(--border);border-radius:6px;padding:.5rem .7rem">
+          <summary style="font-size:.7rem;font-weight:600;cursor:pointer;color:var(--text)">🍳 Weekly batch-prep guide <span style="color:var(--muted);font-weight:400">(cook 2×, eat all week)</span></summary>
+          <div style="margin-top:.5rem">${prepHtml}</div>
+        </details>
+        ${items}<button class="btn-primary" style="width:100%;margin-top:.5rem" onclick="addAllPlan()">Add all remaining</button></div></div></div>`;
       }
       window.addFromPlan = async function (el) {
         const data = JSON.parse(el.querySelector("[data-food]").dataset.food);
@@ -5124,10 +5473,20 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           return `<div class="check-item" onclick="toggleCheck('warmupChecks','${t.id}')"><input type="checkbox" ${on ? "checked" : ""}><span style="${on ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.label)}</span></div>`;
         }).join("");
 
-        // Workout checklist
-        const workoutHtml = workout ? workout.exercises.map(ex => {
-          const done = lwwGet(dayData.exerciseChecks, ex);
-          return `<div class="check-item" onclick="toggleExercise('${esc(ex)}')"><input type="checkbox" ${done ? "checked" : ""}><span style="${done ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(ex)}</span></div>`;
+        // Workout checklist — equipment-mode aware; a completed slot shows the
+        // variant that was actually done, whatever mode is selected now
+        const equipMode = getEquipMode();
+        const hasVariants = workout && workout.exercises.some(ex => EXERCISE_VARIANTS[ex]);
+        window._moveEx = [];
+        const equipSeg = hasVariants ? `<div class="equip-seg">${EQUIP_MODES.map(([k, lbl]) =>
+          `<button class="${equipMode === k ? 'on' : ''}" onclick="setEquipMode('${k}')">${lbl}</button>`).join("")}</div>` : "";
+        const workoutHtml = workout ? workout.exercises.map((std, i) => {
+          const doneLabel = exDoneLabel(std);
+          const display = doneLabel || exVariant(std, equipMode).label;
+          const done = !!doneLabel;
+          const tip = exTip(display) || exTip(std);
+          window._moveEx[i] = { std, display };
+          return `<div class="check-item" onclick="toggleExerciseSlot(${i})"><input type="checkbox" ${done ? "checked" : ""}><span style="${done ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(display)}</span>${tip ? `<button class="ex-info" onclick="event.stopPropagation();showExTip(${i})" aria-label="How to do this exercise">${licon('info', 14)}</button>` : ''}</div>`;
         }).join("") : `<div class="empty-state"><div class="empty-icon">${licon('coffee', 24)}</div>Rest and recover</div>`;
 
         // Cooldown checklist
@@ -5173,7 +5532,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         <div class="card">
           <details class="move-section" data-key="workout" ${so('workout') ? 'open' : ''} ontoggle="${sToggle}">
             <summary>${licon('dumbbell')} ${workout ? esc(workout.name) : 'Rest Day'}</summary>
-            <div class="section-body">${workoutHtml}</div>
+            <div class="section-body">${equipSeg}${workoutHtml}</div>
           </details>
         </div>
         <div class="card">
