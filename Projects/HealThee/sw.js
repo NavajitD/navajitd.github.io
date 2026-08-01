@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healthee-v6';
+const CACHE_NAME = 'healthee-v7';
 const STATIC_ASSETS = [
   './health.html',
   './manifest.json',
