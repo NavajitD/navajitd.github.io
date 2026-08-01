@@ -192,6 +192,18 @@ export const DAILY_CHALLENGE_POOL = Object.freeze([
   { id: 'c5', cat: 'care',  label: 'Spend 2 minutes on a breathing exercise' },
 ]);
 
+// Auto-evaluated challenges: predicate over the nutrition ctx passed from
+// health.html (htGamContext()). Day-outcome challenges (n3, n5) are gated on
+// end-of-day so they can't complete at 9 AM. Absent ids stay manual-only.
+export const DAILY_AUTO_EVAL = Object.freeze({
+  n1: ctx => ctx.firstMealHour != null && ctx.firstMealHour < 10,
+  n2: ctx => ((ctx.mealProtein && ctx.mealProtein.Lunch) || 0) >= 30,
+  n3: ctx => (ctx.nowHour >= 21 || ctx.isPast) && ctx.totals.cal > 0 && Math.abs(ctx.totals.cal - ctx.targets.cal) <= 100,
+  n5: ctx => (ctx.nowHour >= 21 || ctx.isPast) && ctx.snackCount === 0 && ctx.totals.cal > 0,
+  m1: ctx => ctx.steps >= 8000,
+  s2: ctx => ctx.sleepHours >= 7.5,
+});
+
 // Deterministic 32-bit hash; same dateKey produces the same 3 challenges.
 function hash32(str) {
   let h = 2166136261 >>> 0;

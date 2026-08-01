@@ -3078,6 +3078,11 @@
 
       const MEAL_ICONS = { "Breakfast": "coffee", "Mid-Morning": "apple", "Lunch": "sun", "Afternoon": "coffee", "Dinner": "sunset", "Before Bed": "moon", "Snack": "cookie" };
 
+      // Clock hour (IST) by which each plan slot is normally finished — sits inside
+      // the inferMealFromTime() buckets so the two never disagree. Drives pacing.
+      const MEAL_CLOCK = { "Breakfast": 8.5, "Mid-Morning": 11, "Lunch": 13.5, "Afternoon": 16.5, "Dinner": 20, "Before Bed": 22 };
+      const DAY_START_HOUR = 7; // nothing expected before this
+
       const SUPPLEMENTS = [
         { id: "creatine", name: "Creatine (3–5g)", freq: "daily", icon: "zap", micros: {} },
         { id: "vitd", name: "Vitamin D (600-800 IU)", freq: "daily", icon: "sun", micros: { "vitamin_d_ug": 20 } },
@@ -3086,6 +3091,28 @@
         { id: "vitc", name: "Vitamin C", freq: "daily", icon: "citrus", micros: { "vitamin_c_mg": 500 } },
         { id: "ashwagandha", name: "Ashwagandha", freq: "daily", icon: "leaf", micros: {} },
         { id: "collagen", name: "Collagen peptides (8g)", freq: "daily", icon: "dna", protein: 7, micros: {} }
+      ];
+
+      // One-tap rescue foods for the "I'm hungry" flow. tier 'free' = high-volume
+      // <65 kcal; tier 'protein' = protein/fiber-dense. Logged via addFood as-is.
+      const RESCUE_FOODS = [
+        { id: 'rf_cucumber', name: 'Cucumber, salt + lemon', desc: '1 whole, ~200g', cal: 30, protein: 1, carbs: 7, fat: 0, fiber: 1.5, tier: 'free', icon: 'salad' },
+        { id: 'rf_tomato', name: 'Tomatoes, salted', desc: '2 medium', cal: 36, protein: 2, carbs: 8, fat: 0, fiber: 2.4, tier: 'free', icon: 'salad' },
+        { id: 'rf_carrot', name: 'Carrot sticks', desc: '100g', cal: 41, protein: 1, carbs: 10, fat: 0, fiber: 2.8, tier: 'free', icon: 'carrot' },
+        { id: 'rf_blackcof', name: 'Black coffee, no sugar', desc: '1 cup', cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0, tier: 'free', icon: 'coffee' },
+        { id: 'rf_greentea', name: 'Green tea', desc: '1 cup', cal: 2, protein: 0, carbs: 0, fat: 0, fiber: 0, tier: 'free', icon: 'coffee' },
+        { id: 'rf_chaas', name: 'Chaas / buttermilk', desc: '200ml, salted', cal: 40, protein: 3, carbs: 4, fat: 1.5, fiber: 0, tier: 'free', icon: 'milk' },
+        { id: 'rf_soup', name: 'Clear veg soup', desc: '300ml', cal: 60, protein: 2, carbs: 10, fat: 1, fiber: 2, tier: 'free', icon: 'soup' },
+        { id: 'rf_eggwhite', name: 'Boiled egg whites ×3', desc: '3 whites', cal: 51, protein: 11, carbs: 1, fat: 0, fiber: 0, tier: 'protein', icon: 'egg' },
+        { id: 'rf_guava', name: 'Guava', desc: '1 medium', cal: 70, protein: 2.6, carbs: 14, fat: 1, fiber: 5.4, tier: 'protein', icon: 'apple' },
+        { id: 'rf_egg', name: 'Boiled egg', desc: '1 whole', cal: 78, protein: 6, carbs: 1, fat: 5, fiber: 0, tier: 'protein', icon: 'egg' },
+        { id: 'rf_paneer', name: 'Paneer cubes, low-fat', desc: '50g raw', cal: 88, protein: 10, carbs: 2, fat: 4.5, fiber: 0, tier: 'protein', icon: 'square' },
+        { id: 'rf_greek', name: 'Thick / hung curd', desc: '150g', cal: 90, protein: 9, carbs: 6, fat: 3, fiber: 0, tier: 'protein', icon: 'milk' },
+        { id: 'rf_curd', name: 'Curd (dahi)', desc: '150g toned', cal: 90, protein: 5, carbs: 7, fat: 4, fiber: 0, tier: 'protein', icon: 'milk' },
+        { id: 'rf_apple', name: 'Apple', desc: '1 medium', cal: 95, protein: 0.5, carbs: 25, fat: 0.3, fiber: 4.4, tier: 'protein', icon: 'apple' },
+        { id: 'rf_sprouts', name: 'Sprouts chaat', desc: '100g moong', cal: 105, protein: 7, carbs: 19, fat: 0.5, fiber: 7, tier: 'protein', icon: 'sprout' },
+        { id: 'rf_chana', name: 'Roasted chana', desc: '30g', cal: 110, protein: 6, carbs: 18, fat: 2, fiber: 5, tier: 'protein', icon: 'bean' },
+        { id: 'rf_whey', name: 'Whey in water', desc: '1 scoop', cal: 120, protein: 24, carbs: 2, fat: 1.5, fiber: 0, tier: 'protein', icon: 'cup-soda' }
       ];
 
       const SKINCARE_TASKS = [
@@ -3116,77 +3143,80 @@
         0: { name: "Social 5K + Long Mobility", exercises: ["5 min walk warm-up", "5K run (conversational pace)", "5 min walk cool-down", "Hamstring stretch 60s/side", "Hip flexor stretch 60s/side", "Calf stretch 45s/side", "Thoracic spine mobility 5 min"] }
       };
 
-      // Batch-cook meal plan: 2 cook sessions/week (Sun + Wed), everything else is
-      // blender / microwave / air-fryer only. Dishes repeat 2-4× so you cook once, eat many.
+      // Batch-cook meal plan, satiety-tuned: 2 cook sessions/week (Sun + Wed),
+      // everything else is a pan/microwave/air-fryer job. Dishes repeat 2-4×.
+      // Liquid calories are minimised (chewed food holds hunger better), every
+      // dinner opens with a salad/soup starter, fiber lands 31-38g. Daily totals
+      // hit the calorie target exactly: 2050 training / 1850 rest.
       const MEAL_PLAN = {
         1: {
           label: "Mon", tag: "Upper Push", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake", desc: "Blender only: whey+creatine+oats+banana+PB+milk", cal: 550, protein: 42, carbs: 60, fat: 18, fiber: 7 },
-            { meal: "Mid-Morning", name: "Apple + Almonds", desc: "1 apple + 10 almonds — zero prep", cal: 170, protein: 4, carbs: 22, fat: 8, fiber: 4 },
-            { meal: "Lunch", name: "Chicken Curry + Rice + Curd", desc: "Sun-batch tiffin: 150g chicken curry, 1 cup rice, curd — just microwave", cal: 560, protein: 40, carbs: 52, fat: 16, fiber: 4 },
-            { meal: "Afternoon", name: "Greek Yogurt + Honey", desc: "1 cup Greek yogurt with honey — zero prep", cal: 160, protein: 15, carbs: 20, fat: 3, fiber: 0 },
-            { meal: "Dinner", name: "Dal + Rice + 2 Boiled Eggs", desc: "Sun-batch dal + rice, eggs pre-boiled — zero cooking, zero dishes", cal: 480, protein: 26, carbs: 52, fat: 14, fiber: 7 },
-            { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
+            { meal: "Breakfast", name: "Egg Bhurji + Veg Oats", desc: "One pan, 8 min: 3-egg bhurji + microwave veg oats", cal: 460, protein: 34, carbs: 36, fat: 19, fiber: 7 },
+            { meal: "Mid-Morning", name: "Guava + Roasted Chana", desc: "1 guava + 30g roasted chana — zero prep", cal: 180, protein: 9, carbs: 32, fat: 3, fiber: 8 },
+            { meal: "Lunch", name: "Chicken Curry + Rice + Big Salad + Curd", desc: "Sun-batch tiffin: 150g chicken curry, ¾ cup rice, salad box, curd", cal: 560, protein: 40, carbs: 57, fat: 17, fiber: 7 },
+            { meal: "Afternoon", name: "Sprouts Chaat + Chaas", desc: "Sun-batch sprouts box + chaas — zero prep", cal: 200, protein: 15, carbs: 22, fat: 4, fiber: 6 },
+            { meal: "Dinner", name: "Salad First → Dal + Rice + 2 Eggs", desc: "Start: salad plate + 300ml water. Then Sun-batch dal + rice + 2 pre-boiled eggs", cal: 500, protein: 30, carbs: 56, fat: 17, fiber: 9 },
+            { meal: "Before Bed", name: "Thick Curd", desc: "250g thick curd, spooned — slow overnight protein", cal: 150, protein: 16, carbs: 11, fat: 5, fiber: 0 }
           ]
         },
         2: {
           label: "Tue", tag: "Lower Squat", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake (Big)", desc: "Blender only: shake + 2 dates for squat day", cal: 650, protein: 45, carbs: 72, fat: 20, fiber: 8 },
-            { meal: "Mid-Morning", name: "Banana + Peanut Butter", desc: "1 banana + 1 tbsp PB — zero prep", cal: 195, protein: 5, carbs: 30, fat: 8, fiber: 3 },
-            { meal: "Lunch", name: "Chicken Curry + Rice + Curd", desc: "Sun-batch tiffin: same as Mon — just microwave", cal: 560, protein: 40, carbs: 52, fat: 16, fiber: 4 },
-            { meal: "Afternoon", name: "Whey in Milk", desc: "1 scoop whey shaken in 200ml milk", cal: 185, protein: 28, carbs: 12, fat: 4, fiber: 0 },
-            { meal: "Dinner", name: "Air-Fryer Fish + Dal + Salad", desc: "One tray: 150g fish 12 min in air fryer; reheat Sun-batch dal; cucumber", cal: 420, protein: 35, carbs: 30, fat: 14, fiber: 6 },
-            { meal: "Before Bed", name: "Warm Milk + Turmeric", desc: "1 cup milk with turmeric", cal: 100, protein: 6, carbs: 10, fat: 4, fiber: 0 }
+            { meal: "Breakfast", name: "Paneer Chilla ×2 + Banana + Whey", desc: "One pan: 2 chillas; banana; 1 scoop whey in water (squat day)", cal: 540, protein: 47, carbs: 54, fat: 14, fiber: 7 },
+            { meal: "Mid-Morning", name: "Apple + Roasted Chana", desc: "1 apple + 30g roasted chana — zero prep", cal: 200, protein: 8, carbs: 36, fat: 3, fiber: 8 },
+            { meal: "Lunch", name: "Chicken Curry + Rice + Big Salad + Curd", desc: "Sun-batch tiffin: same as Mon — just microwave", cal: 560, protein: 40, carbs: 57, fat: 17, fiber: 7 },
+            { meal: "Afternoon", name: "Curd Bowl + Seeds + Cucumber", desc: "Curd + 1 tbsp mixed seeds + cucumber sticks — zero prep", cal: 200, protein: 13, carbs: 16, fat: 9, fiber: 4 },
+            { meal: "Dinner", name: "Salad First → Air-Fryer Fish + Dal", desc: "Start: salad + 300ml water. Fish 12 min one tray; reheat Sun-batch dal", cal: 420, protein: 42, carbs: 33, fat: 12, fiber: 10 },
+            { meal: "Before Bed", name: "Thick Curd", desc: "200g thick curd", cal: 130, protein: 13, carbs: 9, fat: 4, fiber: 0 }
           ]
         },
         3: {
           label: "Wed", tag: "Recovery", meals: [
-            { meal: "Breakfast", name: "Masala Oats + 2 Boiled Eggs", desc: "Microwave oats + veggies; eggs pre-boiled Sunday", cal: 420, protein: 24, carbs: 44, fat: 16, fiber: 6 },
-            { meal: "Mid-Morning", name: "Seasonal Fruit + Seeds", desc: "1 guava/orange + pumpkin seeds — zero prep", cal: 130, protein: 5, carbs: 18, fat: 5, fiber: 5 },
-            { meal: "Lunch", name: "Chicken Curry + Rice + Curd", desc: "Last Sun-batch portion — just microwave", cal: 560, protein: 40, carbs: 52, fat: 16, fiber: 4 },
-            { meal: "Afternoon", name: "Whey in Water", desc: "1 scoop whey — fast protein, zero prep", cal: 120, protein: 25, carbs: 2, fat: 1, fiber: 0 },
-            { meal: "Dinner", name: "Khichdi + Curd (cook 2×)", desc: "One-pot pressure cooker; make 2 portions — tomorrow's dinner done. Wed-batch cooks alongside", cal: 420, protein: 18, carbs: 58, fat: 10, fiber: 8 },
+            { meal: "Breakfast", name: "Masala Oats + 3 Boiled Eggs", desc: "Microwave oats + veggies; eggs pre-boiled Sunday", cal: 450, protein: 28, carbs: 42, fat: 18, fiber: 7 },
+            { meal: "Mid-Morning", name: "Guava + Roasted Chana", desc: "1 guava + 30g roasted chana — zero prep", cal: 170, protein: 9, carbs: 30, fat: 3, fiber: 8 },
+            { meal: "Lunch", name: "Chicken Curry + Rice + Big Salad + Curd", desc: "Last Sun-batch chicken portion — just microwave", cal: 540, protein: 40, carbs: 54, fat: 16, fiber: 7 },
+            { meal: "Afternoon", name: "Paneer Cubes + Cucumber + Chaas", desc: "50g paneer cubes + cucumber + chaas — zero prep", cal: 200, protein: 19, carbs: 9, fat: 10, fiber: 2 },
+            { meal: "Dinner", name: "Soup First → Khichdi + Curd (cook 2×)", desc: "Start: fresh veg soup. One-pot khichdi ×2 (Thu dinner done); Wed-batch cooks alongside", cal: 340, protein: 17, carbs: 45, fat: 9, fiber: 7 },
             { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
           ]
         },
         4: {
           label: "Thu", tag: "Upper Pull", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake", desc: "Blender only: whey+creatine+oats+banana+PB+milk", cal: 550, protein: 42, carbs: 60, fat: 18, fiber: 7 },
-            { meal: "Mid-Morning", name: "Orange + Almonds", desc: "1 orange + 10 almonds — zero prep", cal: 160, protein: 5, carbs: 20, fat: 8, fiber: 4 },
-            { meal: "Lunch", name: "Paneer Bhurji + Rice + Curd", desc: "Wed-batch tiffin: 100g bhurji, rice, curd — just microwave", cal: 580, protein: 32, carbs: 55, fat: 22, fiber: 6 },
-            { meal: "Afternoon", name: "Whey in Milk", desc: "1 scoop whey shaken in 200ml milk", cal: 185, protein: 28, carbs: 12, fat: 4, fiber: 0 },
-            { meal: "Dinner", name: "Khichdi + 2 Boiled Eggs", desc: "Reheat yesterday's khichdi; eggs pre-boiled — zero cooking", cal: 490, protein: 24, carbs: 50, fat: 18, fiber: 7 },
-            { meal: "Before Bed", name: "Milk + Ashwagandha", desc: "200ml milk, optional ashwagandha", cal: 100, protein: 6, carbs: 10, fat: 4, fiber: 0 }
+            { meal: "Breakfast", name: "Egg Bhurji + Veg Oats", desc: "One pan, 8 min: 3-egg bhurji + microwave veg oats", cal: 460, protein: 34, carbs: 36, fat: 19, fiber: 7 },
+            { meal: "Mid-Morning", name: "Orange + Roasted Chana", desc: "1 orange + 30g roasted chana — zero prep", cal: 175, protein: 8, carbs: 32, fat: 3, fiber: 8 },
+            { meal: "Lunch", name: "Paneer Bhurji + Rice + Big Salad + Curd", desc: "Wed-batch tiffin: 100g bhurji, rice, salad box, curd", cal: 560, protein: 34, carbs: 52, fat: 22, fiber: 8 },
+            { meal: "Afternoon", name: "Sprouts Chaat + Chaas", desc: "Wed-batch sprouts box + chaas — zero prep", cal: 200, protein: 15, carbs: 22, fat: 4, fiber: 6 },
+            { meal: "Dinner", name: "Salad First → Khichdi + 2 Eggs", desc: "Start: salad + 300ml water. Reheat khichdi + 2 pre-boiled eggs — zero cooking", cal: 505, protein: 28, carbs: 52, fat: 19, fiber: 8 },
+            { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
           ]
         },
         5: {
           label: "Fri", tag: "Lower Hinge", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake (Big)", desc: "Blender only: shake + 2 dates for hinge day", cal: 650, protein: 45, carbs: 72, fat: 20, fiber: 8 },
-            { meal: "Mid-Morning", name: "Apple + Walnuts", desc: "1 apple + 10 walnuts — zero prep", cal: 180, protein: 4, carbs: 22, fat: 10, fiber: 4 },
-            { meal: "Lunch", name: "Paneer Bhurji + Rice + Curd", desc: "Wed-batch tiffin: same as Thu — just microwave", cal: 580, protein: 32, carbs: 55, fat: 22, fiber: 6 },
-            { meal: "Afternoon", name: "Whey in Water", desc: "1 scoop whey — fast protein, zero prep", cal: 120, protein: 25, carbs: 2, fat: 1, fiber: 0 },
-            { meal: "Dinner", name: "Air-Fryer Chicken + Rajma + Salad", desc: "Marinate 5 min, air-fry 150g chicken 18 min; reheat Wed-batch rajma", cal: 510, protein: 40, carbs: 38, fat: 16, fiber: 8 },
-            { meal: "Before Bed", name: "Golden Milk / Yogurt", desc: "Turmeric milk or low-fat yogurt", cal: 100, protein: 6, carbs: 10, fat: 4, fiber: 0 }
+            { meal: "Breakfast", name: "Paneer Chilla ×2 + Banana + Whey", desc: "One pan: 2 chillas; banana; whey in water (hinge day)", cal: 540, protein: 47, carbs: 54, fat: 14, fiber: 7 },
+            { meal: "Mid-Morning", name: "Apple + Roasted Chana", desc: "1 apple + 30g roasted chana — zero prep", cal: 200, protein: 8, carbs: 36, fat: 3, fiber: 8 },
+            { meal: "Lunch", name: "Paneer Bhurji + Rice + Big Salad + Curd", desc: "Wed-batch tiffin: same as Thu — just microwave", cal: 545, protein: 34, carbs: 50, fat: 22, fiber: 8 },
+            { meal: "Afternoon", name: "Curd Bowl + Seeds + Cucumber", desc: "Curd + seeds + cucumber sticks — zero prep", cal: 185, protein: 12, carbs: 14, fat: 9, fiber: 4 },
+            { meal: "Dinner", name: "Salad First → Air-Fryer Chicken + Rajma", desc: "Start: salad + 300ml water. Air-fry 150g chicken 18 min; reheat Wed-batch rajma", cal: 450, protein: 42, carbs: 38, fat: 12, fiber: 11 },
+            { meal: "Before Bed", name: "Thick Curd", desc: "200g thick curd", cal: 130, protein: 13, carbs: 9, fat: 4, fiber: 0 }
           ]
         },
         6: {
           label: "Sat", tag: "Pump / Rest", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake", desc: "Blender only: whey+creatine+oats+banana+PB+milk", cal: 550, protein: 42, carbs: 60, fat: 18, fiber: 7 },
-            { meal: "Mid-Morning", name: "Papaya + Seeds", desc: "1 bowl fruit + mixed seeds — zero prep", cal: 140, protein: 4, carbs: 25, fat: 4, fiber: 4 },
-            { meal: "Lunch", name: "Rajma + Rice + Curd", desc: "Wed-batch rajma + rice, curd — just microwave", cal: 520, protein: 22, carbs: 70, fat: 12, fiber: 10 },
-            { meal: "Afternoon", name: "Whey in Milk", desc: "1 scoop whey shaken in 200ml milk", cal: 185, protein: 28, carbs: 12, fat: 4, fiber: 0 },
-            { meal: "Dinner", name: "Egg Fried Rice (one pan)", desc: "3 eggs + batch rice + peas + soy — 10 min, one pan total", cal: 480, protein: 24, carbs: 50, fat: 18, fiber: 4 },
-            { meal: "Before Bed", name: "Milk + Casein", desc: "200ml milk with casein for overnight recovery", cal: 150, protein: 18, carbs: 12, fat: 5, fiber: 0 }
+            { meal: "Breakfast", name: "Egg Bhurji + Veg Oats", desc: "One pan: 2-egg bhurji + veg oats (lighter — rest day)", cal: 400, protein: 29, carbs: 30, fat: 17, fiber: 6 },
+            { meal: "Mid-Morning", name: "Papaya + Roasted Chana", desc: "Papaya bowl + 30g roasted chana — zero prep", cal: 170, protein: 9, carbs: 30, fat: 3, fiber: 7 },
+            { meal: "Lunch", name: "Rajma + Rice + Big Salad + Curd + Egg", desc: "Wed-batch rajma + rice + salad box + curd + 1 boiled egg", cal: 520, protein: 28, carbs: 62, fat: 14, fiber: 13 },
+            { meal: "Afternoon", name: "Sprouts Chaat + Boiled Egg", desc: "Sprouts box + 1 pre-boiled egg — zero prep", cal: 200, protein: 18, carbs: 20, fat: 6, fiber: 6 },
+            { meal: "Dinner", name: "Salad First → Egg & Paneer Fried Rice", desc: "Start: salad. One pan 10 min: 3 eggs + 50g paneer + batch rice + peas", cal: 410, protein: 29, carbs: 40, fat: 16, fiber: 5 },
+            { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
           ]
         },
         0: {
           label: "Sun", tag: "5K + Prep Day", meals: [
-            { meal: "Breakfast", name: "Masala Oats + 2 Boiled Eggs", desc: "Microwave oats + veggies + eggs, post-5K", cal: 420, protein: 24, carbs: 44, fat: 16, fiber: 6 },
-            { meal: "Mid-Morning", name: "Banana + Peanut Butter", desc: "1 banana + 1 tbsp PB — zero prep", cal: 195, protein: 5, carbs: 30, fat: 8, fiber: 3 },
-            { meal: "Lunch", name: "Chicken Biryani Bowl + Raita", desc: "First serving of Sun-batch: chicken curry folded into fresh rice + raita", cal: 520, protein: 30, carbs: 60, fat: 16, fiber: 4 },
-            { meal: "Afternoon", name: "Whey in Milk", desc: "1 scoop whey shaken in 200ml milk", cal: 185, protein: 28, carbs: 12, fat: 4, fiber: 0 },
-            { meal: "Dinner", name: "Dal + Rice + Salad", desc: "Fresh Sun-batch dal + rice + cucumber/beetroot salad", cal: 400, protein: 16, carbs: 60, fat: 8, fiber: 9 },
-            { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
+            { meal: "Breakfast", name: "Post-5K Oats + 3 Eggs + Curd", desc: "Microwave oats + 3 boiled eggs + curd, after the run", cal: 440, protein: 27, carbs: 36, fat: 20, fiber: 6 },
+            { meal: "Mid-Morning", name: "Banana + Roasted Chana", desc: "1 banana + 30g roasted chana — zero prep", cal: 170, protein: 7, carbs: 34, fat: 2, fiber: 7 },
+            { meal: "Lunch", name: "Chicken Biryani Bowl + Raita + Salad", desc: "First Sun-batch serving: chicken folded into fresh rice + raita + salad", cal: 530, protein: 38, carbs: 52, fat: 17, fiber: 8 },
+            { meal: "Afternoon", name: "Sprouts Chaat + Egg Whites", desc: "Fresh sprouts box + 3 boiled egg whites — zero prep", cal: 200, protein: 19, carbs: 20, fat: 5, fiber: 6 },
+            { meal: "Dinner", name: "Soup First → Dal + Rice + 2 Eggs", desc: "Start: fresh veg soup (pot is out). Sun-batch dal + rice + 2 eggs", cal: 350, protein: 19, carbs: 44, fat: 10, fiber: 9 },
+            { meal: "Before Bed", name: "Casein + Curd", desc: "Casein in 150g curd — overnight protein", cal: 160, protein: 27, carbs: 8, fat: 3, fiber: 0 }
           ]
         }
       };
@@ -3194,22 +3224,25 @@
       // Weekly batch-prep guide shown in the meal-plan modal
       const PREP_GUIDE = [
         {
-          title: "Sunday · ~75 min (after 5K)", items: [
+          title: "Sunday · ~85 min (after 5K)", items: [
             "Rice cooker: 4-5 cups rice → fridge boxes (keeps 4 days)",
             "Pressure cooker: chicken curry 650-700g → 4 boxes (Sun L, Mon-Wed L)",
-            "Same cooker, 2nd round: big dal pot → 3 boxes (Sun-Tue D)",
-            "Boil 8 eggs alongside (snacks + breakfasts all week)",
-            "Soak rajma overnight-style for Wednesday",
+            "Same cooker, 2nd round: big dal pot → 3 boxes (Sun/Mon/Tue dinners)",
+            "Boil 10 eggs alongside (breakfasts + snacks)",
+            "Salad kit: cucumber + carrot + beetroot sticks, onion + tomato box (keeps 3 days)",
+            "Rinse + 3-min boil 300g sprouts → snack boxes; clear veg soup for tonight",
+            "Soak rajma for Wednesday",
             "Utensils used: rice cooker + pressure cooker + 1 ladle"
           ]
         },
         {
-          title: "Wednesday · ~45 min (with dinner)", items: [
-            "Khichdi ×2 portions — one pot (Wed + Thu dinner)",
+          title: "Wednesday · ~55 min (with dinner)", items: [
+            "Khichdi ×2 portions — one pot (Wed + Thu dinner); veg soup for tonight alongside",
             "Paneer bhurji ×2 — one pan (Thu + Fri lunch)",
             "Pressure-cook soaked rajma ×2 (Fri dinner + Sat lunch)",
-            "Top up rice if running low",
-            "Rest of the week: blender, microwave & air fryer only"
+            "Boil 6 eggs · top up salad kit + sprouts · top up rice if low",
+            "New fiber level — if bloated the first week, add the dinner starters from day 4",
+            "Rest of the week: pan, microwave, air fryer — and the salad box"
           ]
         }
       ];
@@ -3610,6 +3643,7 @@
       window.emptyDay = function () {
         return {
           foods: [], waterLogs: [], stepLogs: [], customExercises: [],
+          hungerLogs: [],
           supplementChecks: {}, exerciseChecks: {}, skincareChecks: {}, haircareChecks: {},
           pelvicChecks: {}, flexChecks: {}, delightChecks: {}, warmupChecks: {}, cooldownChecks: {},
           sleep: { bedtime: "", wakeup: "", hours: 0 },
@@ -3625,10 +3659,161 @@
       window.lwwSet = function (m, k, v) { m = (m && typeof m === "object") ? m : {}; m[k] = { v: !!v, ts: Date.now() }; return m; }
       window.lwwToggle = function (m, k) { return lwwSet(m, k, !lwwGet(m, k)); }
 
-      window.getCalTarget = function () {
-        const w = getWorkoutPlan()[dow(selectedDate)];
+      // Ease-in ramp: pure function of the date, so historical adherence is
+      // always scored against the target that applied then. 1 = no ramp.
+      window.rampFactorFor = function (dateKey) {
+        const r = (userProfile || {}).calRamp;
+        if (!r || !r.start) return 1;
+        const el = Math.floor((new Date(dateKey + "T12:00:00") - new Date(r.start + "T12:00:00")) / 86400000);
+        const total = r.days || 14, startPct = r.startPct || 1.18;
+        if (el < 0 || el >= total) return 1;
+        const steps = Math.max(1, Math.ceil(total / 7));
+        return +(startPct - (startPct - 1) * (Math.floor(el / 7) / steps)).toFixed(4);
+      }
+
+      window.getCalTargetFor = function (dateKey) {
+        const w = getWorkoutPlan()[dow(dateKey)];
         const isRest = !w || w.name.toLowerCase().includes("recovery") || w.name.toLowerCase().includes("mobility") || w.name.toLowerCase().includes("rest");
-        return isRest ? TARGETS.calRest : TARGETS.calTraining;
+        const base = isRest ? TARGETS.calRest : TARGETS.calTraining;
+        return Math.round(base * rampFactorFor(dateKey) / 10) * 10;
+      }
+
+      window.getCalTarget = function () { return getCalTargetFor(selectedDate); }
+
+      /* ─── Calorie pacing: expected-by-now curve derived from MEAL_PLAN ─── */
+      // Piecewise-linear cumulative kcal by clock hour, rescaled onto the
+      // (possibly ramped) target so pacing and the ring always agree.
+      window.getPaceCurve = function (dateKey) {
+        const plan = MEAL_PLAN[dow(dateKey)];
+        if (!plan) return null;
+        const target = getCalTargetFor(dateKey);
+        const planTotal = plan.meals.reduce((s, m) => s + num0(m.cal), 0) || target;
+        const pts = [{ h: DAY_START_HOUR, cum: 0 }];
+        let cum = 0;
+        for (const m of plan.meals) {
+          cum += num0(m.cal);
+          const h = MEAL_CLOCK[m.meal];
+          if (h != null) pts.push({ h, cum: cum / planTotal * target });
+        }
+        return pts.sort((a, b) => a.h - b.h);
+      }
+
+      window.expectedByHour = function (pts, h) {
+        if (!pts || !pts.length) return 0;
+        if (h <= pts[0].h) return 0;
+        const last = pts[pts.length - 1];
+        if (h >= last.h) return last.cum;
+        for (let i = 1; i < pts.length; i++) {
+          if (h <= pts[i].h) {
+            const a = pts[i - 1], b = pts[i];
+            return a.cum + (b.cum - a.cum) * ((h - a.h) / ((b.h - a.h) || 1));
+          }
+        }
+        return last.cum;
+      }
+
+      // state: early (before breakfast) | none (nothing logged before noon) |
+      //        on | ahead | behind. Only shown for today.
+      window.getPaceState = function () {
+        if (selectedDate !== todayStr()) return { show: false };
+        const pts = getPaceCurve(selectedDate);
+        if (!pts || !dayData) return { show: false };
+        const h = getISTHourFloat();
+        const target = getCalTargetFor(selectedDate);
+        const expected = Math.round(expectedByHour(pts, h));
+        const actual = computeTotals(dayData).cal;
+        const band = Math.max(120, Math.round(target * 0.07));
+        const expectedPct = expected / target * 100;
+        if (h < MEAL_CLOCK["Breakfast"]) return { show: true, state: "early", expected, actual, target, band, expectedPct };
+        if (actual === 0 && h < 12) return { show: true, state: "none", expected, actual, target, band, expectedPct };
+        const delta = actual - expected;
+        const state = Math.abs(delta) <= band ? "on" : (delta > 0 ? "ahead" : "behind");
+        return { show: true, state, expected, actual, target, delta, band, expectedPct };
+      }
+
+      /* ─── Weekly rolling budget (Mon-anchored) ───
+         getWeekBudget() is synchronous + cache-only: renderFuel calls it on every
+         interaction, so no Firestore may ever run here. The cache is filled by
+         _wkPut (live day) and refreshWeekCache (one small 7-doc query, throttled).
+         POLICY: the ring target never moves. The bank only produces an advisory
+         "practical today" capped at ±200/day; unrepayable residue is forgiven. */
+      const HT_WK_KEY = 'HT_WK';
+      let _wkCache = null; // { uid, weekStart, builtAt, days: { 'YYYY-MM-DD': cal } }
+
+      window.weekStartOf = function (dateKey) {
+        const d = new Date(dateKey + "T12:00:00");
+        d.setDate(d.getDate() + (d.getDay() === 0 ? -6 : 1 - d.getDay()));
+        return localDateStr(d);
+      }
+      window.weekDatesOf = function (dateKey) {
+        const s = new Date(weekStartOf(dateKey) + "T12:00:00");
+        return Array.from({ length: 7 }, (_, i) => { const d = new Date(s); d.setDate(s.getDate() + i); return localDateStr(d); });
+      }
+
+      function _wkLoad() {
+        if (_wkCache) return _wkCache;
+        try { _wkCache = JSON.parse(localStorage.getItem(HT_WK_KEY) || 'null'); } catch (_) { _wkCache = null; }
+        return _wkCache;
+      }
+      function _wkSave() { try { localStorage.setItem(HT_WK_KEY, JSON.stringify(_wkCache)); } catch (_) { } }
+
+      // Sync, no network — called from saveDay/loadDay so the cache tracks edits.
+      window._wkPut = function (dateKey, cal) {
+        try {
+          const ws = weekStartOf(dateKey), uid = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.uid : null;
+          const c = _wkLoad();
+          if (!c || c.weekStart !== ws || c.uid !== uid) _wkCache = { uid, weekStart: ws, builtAt: 0, days: {} };
+          _wkCache.days[dateKey] = cal;
+          _wkSave();
+        } catch (_) { }
+      }
+
+      window.getWeekBudget = function (dateKey) {
+        const dk = dateKey || selectedDate || todayStr(), today = todayStr();
+        const dates = weekDatesOf(dk), c = _wkLoad();
+        const uid = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.uid : null;
+        const have = !!(c && c.weekStart === weekStartOf(dk) && c.uid === uid);
+        const liveCal = (typeof dayData !== 'undefined' && dayData) ? computeTotals(dayData).cal : 0;
+
+        const cells = dates.map(d => {
+          const target = getCalTargetFor(d);
+          let cal = null;
+          if (d === selectedDate) cal = liveCal;
+          else if (have && typeof c.days[d] === 'number') cal = c.days[d];
+          return { date: d, target, cal, isToday: d === today, isFuture: d > today };
+        });
+
+        let bank = 0, completed = 0, consumed = 0;
+        cells.forEach(x => {
+          if (x.cal != null && !x.isFuture) consumed += x.cal;
+          if (!x.isFuture && !x.isToday && x.cal != null) { bank += (x.target - x.cal); completed++; }
+        });
+        const daysLeft = Math.max(1, 7 - completed);
+        const adj = clamp(Math.round(bank / daysLeft), -200, 200);
+        const todayTarget = getCalTargetFor(today);
+        return {
+          ok: have || completed > 0, partial: !have,
+          cells, weekTarget: cells.reduce((s, x) => s + x.target, 0),
+          consumed, bank: Math.round(bank), completed, daysLeft,
+          adj, todayTarget, adjustedToday: todayTarget + adj,
+          carry: Math.round(bank - adj * daysLeft) // unrepayable at ±200/day — forgiven, informational only
+        };
+      }
+
+      window.refreshWeekCache = async function (force) {
+        if (typeof currentUser === 'undefined' || !currentUser || typeof db === 'undefined') return;
+        const ws = weekStartOf(todayStr()), c = _wkLoad();
+        if (!force && c && c.weekStart === ws && c.uid === currentUser.uid && Date.now() - (c.builtAt || 0) < 600000) return;
+        try {
+          const dates = weekDatesOf(todayStr()), days = {};
+          const snap = await db.collection("users").doc(currentUser.uid).collection("days")
+            .where(firebase.firestore.FieldPath.documentId(), ">=", dates[0])
+            .where(firebase.firestore.FieldPath.documentId(), "<=", dates[6]).get();
+          snap.docs.forEach(doc => { days[doc.id] = computeTotals({ ...emptyDay(), ...doc.data() }).cal; });
+          _wkCache = { uid: currentUser.uid, weekStart: ws, builtAt: Date.now(), days };
+          _wkSave();
+          if (typeof currentTab !== 'undefined' && currentTab === 'fuel') render();
+        } catch (e) { console.warn('week cache refresh failed (non-fatal)', e); }
       }
 
       window.computeTotals = function (d) {
@@ -3682,11 +3867,18 @@
       /* ═══════════════════════════════════════════════════
          SVG Ring
          ═══════════════════════════════════════════════════ */
-      window.svgRing = function (pct, size = 100, stroke = 7, color = "var(--accent)") {
+      // markPct (optional): draws a small tick on the track — used for "expected by now" pacing
+      window.svgRing = function (pct, size = 100, stroke = 7, color = "var(--accent)", markPct = null) {
         const r = (size - stroke) / 2, c = 2 * Math.PI * r;
         const offset = c - (Math.min(pct, 100) / 100) * c;
+        let mark = "";
+        if (markPct != null && markPct > 0 && markPct <= 100) {
+          const w = c * 0.018;
+          const mOff = c - (Math.min(markPct, 100) / 100) * c + w / 2;
+          mark = `<circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--muted)" stroke-width="${stroke + 3}" stroke-dasharray="${w} ${c - w}" stroke-dashoffset="${mOff}" opacity=".7"/>`;
+        }
         return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
-        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--ring-track)" stroke-width="${stroke}"/>
+        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--ring-track)" stroke-width="${stroke}"/>${mark}
         <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
           stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset .6s ease"/></svg>`;
       }
@@ -4199,6 +4391,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           const changed = silent ? JSON.stringify(fresh) !== JSON.stringify(dayData) : true;
           dayData = fresh;
           if (currentUser) _htWriteCache(currentUser.uid, selectedDate, dayData, null);
+          _wkPut(selectedDate, computeTotals(dayData).cal);
           if (!silent || changed) { recompute(); render(); }
         } catch (e) { console.error(e); if (!silent) { dayData = emptyDay(); render(); } }
       }
@@ -4208,13 +4401,35 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         touch(); recompute();
         // Optimistic cache write — immediately available on next app open
         if (currentUser) _htWriteCache(currentUser.uid, selectedDate, dayData, null);
+        _wkPut(selectedDate, computeTotals(dayData).cal);
         if (saveTimer) clearTimeout(saveTimer);
         saveTimer = setTimeout(async () => {
           try { await dayRef(selectedDate).set(dayData, { merge: true }); }
           catch (e) { console.error("Save failed", e); }
         }, 600);
         // Gamification hook — no-op when disabled or module not ready
-        try { window.HTGam && window.HTGam.onDaySaved(dayData, selectedDate); } catch (e) { /* never block save */ }
+        try { window.HTGam && window.HTGam.onDaySaved(dayData, selectedDate, htGamContext()); } catch (e) { /* never block save */ }
+      }
+
+      // Nutrition context for the gamification module (goal XP, auto-challenges).
+      window.htGamContext = function () {
+        try {
+          const t = computeTotals(dayData), calT = getCalTargetFor(selectedDate);
+          const foods = activeItems(dayData.foods);
+          const mealP = {};
+          foods.forEach(f => { mealP[f.meal] = (mealP[f.meal] || 0) + num0(f.protein); });
+          const hours = foods.map(f => new Date(f.addedAt).getHours()).filter(h => isFinite(h)).sort((a, b) => a - b);
+          return {
+            totals: t,
+            targets: { cal: calT, protein: TARGETS.protein, carbs: TARGETS.carbs, fat: TARGETS.fat },
+            mealProtein: mealP,
+            snackCount: foods.filter(f => f.meal === 'Snack').length,
+            steps: num0(dayData.steps), sleepHours: num0(dayData.sleep?.hours),
+            hungerCount: activeItems(dayData.hungerLogs || []).length,
+            firstMealHour: hours.length ? hours[0] : null,
+            nowHour: getISTHour(), isPast: selectedDate < todayStr()
+          };
+        } catch (_) { return null; }
       }
 
       /* ═══════════════════════════════════════════════════
@@ -4224,6 +4439,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         selectedDate = todayStr();
         await loadProfile();
         loadDay();
+        refreshWeekCache(); // fire-and-forget: fills the weekly-budget cache
         ensureEventsLoaded(); // pre-warm in background so modal opens instantly
         setupPullToRefresh();
         initNotifications();
@@ -4311,6 +4527,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           customSkincare: null, // null = use defaults (legacy), [] = user-defined list
           customHaircare: null, // null = use defaults (legacy), [] = user-defined list
           customSupplements: null, // null = use defaults (legacy), [] = user-defined list
+          calRamp: null, // { start:'YYYY-MM-DD', days:14, startPct:1.18 } — ease-in calorie ramp
           onboardingComplete: false,
           mode: 'vanilla' // vanilla or gamified
         };
@@ -4353,6 +4570,15 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         userProfile[field] = value;
         await db.collection("users").doc(currentUser.uid).set({ profile: userProfile }, { merge: true });
         _htWriteCache(currentUser.uid, selectedDate, null, userProfile);
+      };
+
+      // Ease-in ramp control (profile modal). days=0 turns it off.
+      window.startCalRamp = async function (days, startPct) {
+        if (!userProfile) return;
+        const val = days ? { start: todayStr(), days, startPct: startPct || 1.18 } : null;
+        try { await _saveProfileField('calRamp', val); } catch (e) { console.warn('ramp save failed', e); userProfile.calRamp = val; }
+        toast(val ? `Ease-in ramp on: ${days} days, starting ${getCalTargetFor(todayStr())} kcal today` : 'Ramp off — back to real targets');
+        openProfileModal(); render();
       };
 
       // ── Skincare CRUD ──
@@ -4473,12 +4699,21 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         if (opts.tab) currentTab = opts.tab;
         if (opts.freshDay) dayData = emptyDay();
         if (opts.profile !== undefined) userProfile = opts.profile;
+        if (opts.hungerLogs) dayData.hungerLogs = opts.hungerLogs;
+        if (opts.foods) dayData.foods = opts.foods;
+        if (opts.weekCache !== undefined) { _wkCache = opts.weekCache; _wkSave(); }
+        if (opts.ramp !== undefined) { userProfile = { ...(userProfile || getDefaultProfile()), calRamp: opts.ramp }; }
         render();
       }
       window.__htDay = function () { return dayData; }
+      // Read-only access to closure constants (tests/debugging only)
+      window.__htConst = function (name) {
+        return ({ MEAL_PLAN, PREP_GUIDE, RESCUE_FOODS, MEAL_CLOCK, DAY_START_HOUR, TARGETS, MICROS })[name];
+      }
 
       window.switchTab = function (tab) {
         currentTab = tab;
+        if (tab === 'fuel') refreshWeekCache(); // self-throttled, no await
         document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.tab === tab));
         document.body.className = document.body.className.replace(/\btab-\w+\b/g, '').trim();
         document.body.classList.add('tab-' + tab);
@@ -4549,6 +4784,196 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         c.querySelector(".modal-overlay")?.addEventListener("click", ev => { if (ev.target.classList.contains("modal-overlay")) closeModal(); });
         refreshIcons();
       }
+
+      // Weekly budget breakdown — opened from the pace chip. The ring target
+      // never moves; "practical today" is advisory, capped at ±200/day.
+      window.openWeekModal = function () {
+        const wb = getWeekBudget();
+        const usedPct = wb.weekTarget ? clamp(wb.consumed / wb.weekTarget * 100, 0, 100) : 0;
+        const over = wb.consumed > wb.weekTarget;
+        const dayNames = ["M", "T", "W", "T", "F", "S", "S"];
+        const cellsHtml = wb.cells.map((x, i) => {
+          let bg = "var(--ring-track)", label = "–";
+          if (x.cal != null && !x.isFuture && x.cal > 0) {
+            const d = x.cal - x.target, band = 0.10 * x.target;
+            bg = Math.abs(d) <= band ? "var(--success)" : (d > 0 ? "var(--danger)" : "var(--blue)");
+            label = String(x.cal);
+          }
+          return `<div style="flex:1;text-align:center">
+            <div style="height:26px;border-radius:5px;background:${bg};opacity:${x.cal != null && x.cal > 0 && !x.isFuture ? '.85' : '.35'};${x.isToday ? 'outline:2px solid var(--accent);outline-offset:1px' : ''}"></div>
+            <div style="font-size:.55rem;color:var(--muted);margin-top:.2rem">${dayNames[i]}</div>
+            <div style="font-size:.52rem;color:var(--muted)">${label}</div>
+          </div>`;
+        }).join("");
+        let copy;
+        if (wb.partial && wb.completed === 0) {
+          copy = "Week data unavailable offline — showing today only.";
+        } else if (wb.bank < -50) {
+          copy = `The week is ${-wb.bank} kcal over so far. Spread over ${wb.daysLeft} remaining day${wb.daysLeft > 1 ? 's' : ''} that's ${wb.adj}/day — your practical aim today is <b>${wb.adjustedToday}</b>. The ring still says ${wb.todayTarget}; one heavy day never lowers it by more than 200.`
+            + (wb.carry < -10 ? ` The remaining ${-wb.carry} is forgiven — next week starts clean.` : "");
+        } else if (wb.bank > 50) {
+          copy = `You're ${wb.bank} kcal under for the week — banked. Practical room today: <b>${wb.adjustedToday}</b>. No need to "make up" for it; under-eating isn't the goal.`;
+        } else {
+          copy = `The week is balanced. Today's aim: <b>${wb.todayTarget}</b>.`;
+        }
+        const c = document.getElementById("modalContainer");
+        c.innerHTML = `<div class="modal-overlay"><div class="modal">
+          <div class="modal-head"><div class="modal-title">This Week</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+          <div class="modal-body">
+            <div class="prog"><div class="prog-header"><span class="prog-label">Week used</span><span class="prog-val">${wb.consumed} / ${wb.weekTarget}</span></div>
+              <div class="prog-track"><div class="prog-fill" style="width:${usedPct}%;background:${over ? "var(--danger)" : "var(--success)"}"></div></div></div>
+            <div class="stats-row" style="margin:.6rem 0">
+              <div class="stat-box"><div class="stat-val" style="color:${wb.bank >= 0 ? "var(--success)" : "var(--danger)"}">${wb.bank >= 0 ? "+" : ""}${wb.bank}</div><div class="stat-label">bank</div></div>
+              <div class="stat-box"><div class="stat-val">${wb.adjustedToday}</div><div class="stat-label">practical today</div></div>
+              <div class="stat-box"><div class="stat-val">${wb.daysLeft}</div><div class="stat-label">days left</div></div>
+            </div>
+            <div style="display:flex;gap:.3rem;margin-bottom:.7rem">${cellsHtml}</div>
+            <div style="font-size:.72rem;line-height:1.55;color:var(--text)">${copy}</div>
+          </div></div></div>`;
+        c.querySelector(".modal-overlay")?.addEventListener("click", ev => { if (ev.target.classList.contains("modal-overlay")) closeModal(); });
+        refreshIcons();
+      }
+
+      /* ─── "I'm hungry" one-tap + rescue suggestions ─── */
+      window.hungerTier = function (remaining) {
+        if (remaining > 400) return 'plan';
+        if (remaining >= 150) return 'protein';
+        return 'volume'; // includes remaining < 0
+      }
+
+      // Next unlogged MEAL_PLAN meal whose clock slot isn't long past
+      window.nextPlannedMeal = function () {
+        const plan = MEAL_PLAN[dow(selectedDate)];
+        if (!plan) return null;
+        const logged = new Set(activeItems(dayData.foods).map(f => f.name + '|' + f.meal));
+        const h = getISTHourFloat();
+        const left = plan.meals.filter(m => !logged.has(m.name + '|' + m.meal));
+        if (!left.length) return null;
+        return left.find(m => (MEAL_CLOCK[m.meal] ?? 24) >= h - 1.5) || left[0];
+      }
+
+      window.rescueOptions = function (remaining, tier) {
+        if (tier === 'volume') return RESCUE_FOODS.filter(f => f.tier === 'free');
+        return RESCUE_FOODS
+          .filter(f => f.cal <= Math.max(60, remaining) && (f.protein >= 5 || f.fiber >= 4))
+          .sort((a, b) => ((b.protein + b.fiber) / b.cal) - ((a.protein + a.fiber) / a.cal))
+          .slice(0, 6);
+      }
+
+      let _hungerLastId = null;
+      window.logHunger = function (level) {
+        if (selectedDate !== todayStr()) { toast('Only for today'); return; }
+        const e = { id: genId('hg'), level: num0(level) || 2, ts: Date.now(), resolvedWith: '', deletedAt: '' };
+        dayData.hungerLogs = [...(dayData.hungerLogs || []), e];
+        _hungerLastId = e.id;
+        touch(); saveDay();
+        openHungerModal();
+      }
+      window.setHungerLevel = function (lvl) {
+        const l = (dayData.hungerLogs || []).find(x => x.id === _hungerLastId);
+        if (l) { l.level = lvl; touch(); saveDay(); openHungerModal(); }
+      }
+      window.removeHungerLog = function (id) {
+        dayData.hungerLogs = (dayData.hungerLogs || []).map(x => x.id === id ? { ...x, deletedAt: new Date().toISOString() } : x);
+        if (id === _hungerLastId) _hungerLastId = null;
+        touch(); saveDay(); render();
+        if (document.querySelector('#modalContainer .modal')) openHungerModal();
+      }
+      window.addRescueFood = function (id) {
+        const f = RESCUE_FOODS.find(x => x.id === id); if (!f) return;
+        const { tier, icon, id: _drop, ...food } = f;
+        addFood({ ...food, meal: inferMealFromTime(), micros: {}, fromRescue: true });
+        const l = (dayData.hungerLogs || []).find(x => x.id === _hungerLastId);
+        if (l && !l.resolvedWith) { l.resolvedWith = f.name; saveDay(); }
+        closeModal();
+      }
+      window.addPlannedNow = function () {
+        const m = nextPlannedMeal(); if (!m) return;
+        addFood({ ...m, fromPlan: true, micros: {} }); // keeps m.fiber
+        const l = (dayData.hungerLogs || []).find(x => x.id === _hungerLastId);
+        if (l && !l.resolvedWith) { l.resolvedWith = m.name; saveDay(); }
+        closeModal();
+      }
+      window.startHungerWait = function () {
+        let s = 15 * 60;
+        if (window._hgTimer) clearInterval(window._hgTimer);
+        const tick = () => {
+          const el = document.getElementById('hgWaitSpan');
+          if (!el) { clearInterval(window._hgTimer); window._hgTimer = null; return; }
+          if (s <= 0) {
+            el.textContent = '15 min done — still hungry? Pick from the list above.';
+            clearInterval(window._hgTimer); window._hgTimer = null; return;
+          }
+          el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' — a craving usually fades before this hits zero';
+          s--;
+        };
+        tick(); window._hgTimer = setInterval(tick, 1000);
+      }
+
+      window.openHungerModal = function () {
+        const t = computeTotals(dayData);
+        const target = getCalTarget();
+        const remaining = target - t.cal;
+        const tier = hungerTier(remaining);
+        const last = (dayData.hungerLogs || []).find(x => x.id === _hungerLastId);
+        const lvl = last ? last.level : 2;
+        const levelSeg = `<div class="equip-seg" style="margin-bottom:.7rem">${[[1, 'Peckish'], [2, 'Hungry'], [3, 'Ravenous']].map(([v, lbl]) =>
+          `<button class="${lvl === v ? 'on' : ''}" onclick="setHungerLevel(${v})">${lbl}</button>`).join('')}</div>`;
+        const head = remaining >= 0
+          ? `You have <b>${remaining} kcal</b> left today.`
+          : `You're <b>${-remaining} kcal</b> over today. Here's what's genuinely free —`;
+
+        let body = '';
+        if (tier === 'plan') {
+          const m = nextPlannedMeal();
+          body += m ? `<div style="font-size:.68rem;color:var(--muted);margin-bottom:.35rem">Plenty of room — eat your next planned meal:</div>
+            <div class="plan-item" onclick="addPlannedNow()">
+              <div><span class="plan-meal-tag">${esc(m.meal)}</span></div>
+              <div class="plan-meal-name">${esc(m.name)}</div>
+              <div class="plan-meal-desc">${esc(m.desc)}</div>
+              <div class="plan-meal-macros"><span>${m.cal} kcal</span><span>P:${m.protein}g</span><span>F:${m.fiber}g fiber</span></div>
+            </div>` : '';
+          const backups = rescueOptions(remaining, 'protein').slice(0, 3);
+          if (backups.length) body += `<div style="font-size:.68rem;color:var(--muted);margin:.5rem 0 .35rem">Or a quick bridge if the meal is far off:</div>`;
+          body += backups.map(f => _rescueRow(f)).join('');
+        } else if (tier === 'protein') {
+          body += `<div style="font-size:.68rem;color:var(--muted);margin-bottom:.35rem">Protein and fiber hold hunger longest per kcal:</div>`;
+          body += rescueOptions(remaining, tier).map(f => _rescueRow(f)).join('');
+        } else {
+          body += `<div style="font-size:.68rem;color:var(--muted);margin-bottom:.35rem">High-volume, near-free:</div>`;
+          body += rescueOptions(remaining, tier).map(f => _rescueRow(f)).join('');
+          body += `<div style="display:flex;gap:.4rem;margin-top:.6rem">
+            <button class="food-btn food-btn-primary" style="flex:1" onclick="addWater(250)">+ 250 ml water</button>
+            <button class="food-btn" style="flex:1" onclick="startHungerWait()">Wait 15 min</button>
+          </div>
+          <div id="hgWaitSpan" style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:.4rem"></div>`;
+        }
+
+        const todayLogs = activeItems(dayData.hungerLogs || []);
+        const logHtml = todayLogs.length ? `<div style="margin-top:.7rem;border-top:1px solid var(--border);padding-top:.5rem">
+          ${todayLogs.map(l => `<div class="log-item"><span style="color:var(--muted)">${new Date(l.ts).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
+            <span>${['', 'Peckish', 'Hungry', 'Ravenous'][l.level] || 'Hungry'}${l.resolvedWith ? ` <span style="color:var(--muted)">→ ${esc(l.resolvedWith)}</span>` : ''}</span>
+            <button class="log-del" onclick="removeHungerLog('${l.id}')">✕</button></div>`).join('')}</div>` : '';
+
+        const c = document.getElementById("modalContainer");
+        c.innerHTML = `<div class="modal-overlay"><div class="modal">
+          <div class="modal-head"><div class="modal-title">Hungry right now</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+          <div class="modal-body">
+            <div style="font-size:.76rem;margin-bottom:.6rem">${head}</div>
+            ${levelSeg}${body}${logHtml}
+          </div></div></div>`;
+        c.querySelector(".modal-overlay")?.addEventListener("click", ev => { if (ev.target.classList.contains("modal-overlay")) closeModal(); });
+        refreshIcons();
+      }
+      window._rescueRow = function (f) {
+        return `<div class="plan-item" style="display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem" onclick="addRescueFood('${f.id}')">
+          <span style="color:var(--accent);display:inline-flex">${licon(f.icon, 15)}</span>
+          <div style="flex:1;min-width:0"><div style="font-size:.74rem;font-weight:600">${esc(f.name)}</div>
+          <div style="font-size:.62rem;color:var(--muted)">${esc(f.desc)}</div></div>
+          <div style="font-size:.64rem;color:var(--muted);white-space:nowrap">${f.cal} kcal${f.protein >= 5 ? ` · ${f.protein}g P` : ''}${f.fiber >= 4 ? ` · ${f.fiber}g Fb` : ''}</div>
+        </div>`;
+      }
+
       window.toggleCheck = function (kind, id) {
         dayData[kind] = lwwToggle(dayData[kind], id);
         touch(); saveDay(); render();
@@ -4677,7 +5102,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
       window.addFromPlan = async function (el) {
         const data = JSON.parse(el.querySelector("[data-food]").dataset.food);
         closeModal();
-        let finalData = { ...data, fromPlan: true, fiber: 0, micros: {} };
+        let finalData = { ...data, fromPlan: true, fiber: num0(data.fiber), micros: {} };
         const btn = el;
         const oldContent = btn.innerHTML;
         btn.innerHTML = `<div style="text-align:center;font-size:.8rem;color:var(--muted)">Estimating micros...</div>`;
@@ -4689,11 +5114,11 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
 {"fiber": number, "micros": { "vitamin_a_ug": number, "vitamin_d_ug": number, "vitamin_k": number, "vitamin_b6": number, "vitamin_b12": number, "vitamin_c_mg": number, "calcium_mg": number, "iron_mg": number, "magnesium_mg": number, "sodium_mg": number, "potassium_mg": number, "zinc_mg": number }}`;
           const prompt = `Food: ${data.name} ${data.desc}. Macros: ${data.cal}kcal, ${data.protein}g protein, ${data.carbs}g carbs, ${data.fat}g fat.`;
           const est = await fetchLLM(prompt, sys, 'groq', 'llama-3.3-70b-versatile');
-          finalData.fiber = est.fiber || 0;
+          finalData.fiber = num0(est.fiber) || num0(data.fiber) || 0;
           finalData.micros = est.micros || {};
           toast("Added with estimated micros", "success");
         } catch (e) {
-          console.error("Micro estimation failed", e);
+          console.warn("Micro estimation failed", e);
           toast("Added without micros (No API Key or Error)", "warn");
         }
 
@@ -5172,6 +5597,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         p.customSkincare = prev.customSkincare;
         p.customHaircare = prev.customHaircare;
         p.customSupplements = prev.customSupplements;
+        p.calRamp = prev.calRamp || null; // set via the ramp seg control, not the form — must survive Save
         p.onboardingComplete = prev.onboardingComplete || true;
         p.mode = document.getElementById('modeToggle')?.dataset.mode || 'vanilla';
         return p;
@@ -5267,6 +5693,24 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             </div>
 
             <div class="profile-section">
+              <div class="profile-section-title">${licon('trending-down')} Ease-In Calorie Ramp</div>
+              <div style="font-size:.66rem;color:var(--muted);margin-bottom:.4rem">Coming back after eating freely? Start ~18% above target and step down weekly — avoids the restrict-binge whiplash.</div>
+              <div class="equip-seg">
+                <button class="${!p.calRamp ? 'on' : ''}" onclick="startCalRamp(0)">Off</button>
+                <button class="${p.calRamp && p.calRamp.days === 10 ? 'on' : ''}" onclick="startCalRamp(10, 1.15)">10 days</button>
+                <button class="${p.calRamp && p.calRamp.days === 14 ? 'on' : ''}" onclick="startCalRamp(14, 1.18)">14 days</button>
+              </div>
+              ${(() => {
+                if (!p.calRamp || !p.calRamp.start) return '';
+                const f = rampFactorFor(todayStr());
+                if (f <= 1) return `<div style="font-size:.66rem;color:var(--muted);margin-top:.35rem">Ramp finished — you're at your real target.</div>`;
+                const wk = Math.floor((new Date(todayStr() + "T12:00:00") - new Date(p.calRamp.start + "T12:00:00")) / 604800000) + 1;
+                const end = new Date(p.calRamp.start + "T12:00:00"); end.setDate(end.getDate() + (p.calRamp.days || 14));
+                return `<div style="font-size:.66rem;color:var(--warn);margin-top:.35rem">Active: week ${wk} · today ${getCalTargetFor(todayStr())} kcal · ends ${end.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</div>`;
+              })()}
+            </div>
+
+            <div class="profile-section">
               <div class="profile-section-title">${licon('gamepad-2')} App Mode</div>
               <div class="mode-toggle-wrap">
                 <div class="mode-toggle" id="modeToggle" data-mode="${p.mode || 'vanilla'}" onclick="
@@ -5344,6 +5788,8 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         const calTarget = getCalTarget();
         const calPct = (t.cal / calTarget) * 100;
         const remaining = calTarget - t.cal;
+        const pace = getPaceState();
+        const wb = getWeekBudget();
         const burned = dayData.calBurned || 0;
         const bmrEstimate = getBMR(dayData.body?.weight || parseFloat(localStorage.getItem("HT_LAST_WEIGHT")) || 57, dayData.body?.bodyFat || 15);
         const net = t.cal > 0 ? Math.round(t.cal - bmrEstimate - burned) : 0;
@@ -5382,12 +5828,30 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:var(--accent)"></div></div></div>`;
         }).join("");
 
+        // Pacing chip: leading indicator, informative never shaming
+        const paceMeta = {
+          early: { col: "var(--muted)", txt: t.cal > 0 ? `${remaining} kcal left — the day is wide open` : `Before breakfast — ${calTarget} to play with` },
+          none: { col: "var(--muted)", txt: `Nothing logged yet` },
+          on: { col: "var(--success)", txt: `On pace · ${pace.actual} of ~${pace.expected} by now` },
+          ahead: { col: "var(--warn)", txt: `${pace.delta} ahead of pace — go lighter from here` },
+          behind: { col: "var(--blue)", txt: `${-(pace.delta || 0)} behind pace — you have room` }
+        }[pace.state] || { col: "var(--muted)", txt: "" };
+        const wkTag = wb.ok && wb.completed > 0 ? `week ${wb.bank >= 0 ? "+" : ""}${wb.bank}` : "week";
+        const paceRow = pace.show ? `<div class="stats-row" style="margin-top:.5rem">
+          <div class="stat-box" style="text-align:left;display:flex;align-items:center;gap:.4rem;cursor:pointer" onclick="openWeekModal()">
+            <span style="color:${paceMeta.col};display:inline-flex">${licon('gauge', 13)}</span>
+            <span style="font-size:.72rem;font-weight:600">${paceMeta.txt}</span>
+            <span style="margin-left:auto;font-size:.6rem;color:var(--muted);display:inline-flex;align-items:center;gap:.1rem;white-space:nowrap">${wkTag} ${licon('chevron-right', 11)}</span>
+          </div></div>` : "";
+        const rampOn = rampFactorFor(selectedDate) > 1;
+        const rampWk = rampOn ? Math.floor((new Date(selectedDate + "T12:00:00") - new Date(userProfile.calRamp.start + "T12:00:00")) / 604800000) + 1 : 0;
+
         return `
         <div class="card">
           <div class="ring-wrap">
             <div class="ring-container" style="width:100px;height:100px">
-              ${svgRing(calPct, 100, 7, t.cal > calTarget ? "var(--danger)" : "var(--accent)")}
-              <div class="ring-center"><div class="ring-big">${t.cal}</div><div class="ring-small">/ ${calTarget}</div></div>
+              ${svgRing(calPct, 100, 7, t.cal > calTarget ? "var(--danger)" : "var(--accent)", pace.show ? pace.expectedPct : null)}
+              <div class="ring-center"><div class="ring-big">${t.cal}</div><div class="ring-small">/ ${calTarget}${rampOn ? `<br><span style="font-size:.55rem;color:var(--warn)">ease-in wk ${rampWk}</span>` : ""}</div></div>
             </div>
             <div class="ring-info">
               <div class="prog"><div class="prog-header"><span class="prog-label">Protein</span><span class="prog-val" style="color:var(--accent)">${t.protein}/${TARGETS.protein}g</span></div>
@@ -5402,6 +5866,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
                 <div style="width:${t.fat / totalMacro * 100}%;background:var(--orange);transition:width .5s"></div></div>
             </div>
           </div>
+          ${paceRow}
           <div class="stats-row">
             <div class="stat-box"><div class="stat-val" style="color:${remaining >= 0 ? "var(--success)" : "var(--danger)"}">${remaining}</div><div class="stat-label">kcal left</div></div>
             <div class="stat-box"><div class="stat-val">${(() => { const fiberGoal = Math.round(14 * calTarget / 1000); const fiberLeft = Math.max(0, Math.round((fiberGoal - t.fiber) * 10) / 10); return fiberLeft + 'g'; })()}</div><div class="stat-label">fiber left</div></div>
@@ -5416,6 +5881,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           <div class="food-actions">
             <button class="food-btn food-btn-primary" onclick="showModal('plan')">+ from plan</button>
             <button class="food-btn" onclick="showModal('custom')">+ custom</button>
+            ${selectedDate === todayStr() ? `<button class="food-btn" onclick="logHunger()" style="display:inline-flex;align-items:center;gap:.25rem">${licon('flame', 12)} I'm hungry</button>` : ''}
           </div>
           ${foodList}
         </div>
@@ -6068,6 +6534,9 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           const allDaysMap = {};
           snap.docs.forEach(doc => { allDaysMap[doc.id] = { ...emptyDay(), ...doc.data() }; });
 
+          // Opportunistically fill the weekly-budget cache — the data is already here
+          try { weekDatesOf(todayStr()).forEach(dk => { if (allDaysMap[dk] && dk !== selectedDate) _wkPut(dk, computeTotals(allDaysMap[dk]).cal); }); } catch (_) { }
+
           const getDayData = (dk) => {
             const dd = allDaysMap[dk] || emptyDay();
             const t = computeTotals(dd);
@@ -6079,13 +6548,22 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             })();
             const microsMet = MICROS.filter(m => (t.micros[m.key] || 0) >= m.target).length;
             const delightCount = DELIGHTS.filter(d => lwwGet(dd.delightChecks, d.id)).length;
+            // Adherence + hunger signals (additive; inert to existing charts)
+            const calTarget = getCalTargetFor(dk);
+            const proteinLunch = Math.round(activeItems(dd.foods || []).filter(f => f.meal === 'Lunch').reduce((s, f) => s + num0(f.protein), 0));
+            const hLogs = activeItems(dd.hungerLogs || []);
             return {
               date: dk, day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(dk + "T12:00:00").getDay()],
               cal: t.cal, protein: t.protein, fiber: t.fiber, water, sleep: num0(dd.sleep?.hours),
               weight: dd.body?.weight || null, bodyFat: dd.body?.bodyFat || null,
               waist: dd.body?.waist || null, shoulders: dd.body?.shoulders || null, hips: dd.body?.hips || null,
               skeletalMuscle: dd.body?.skeletalMuscle || null, visceralFat: dd.body?.visceralFat || null,
-              exCal, microsMet, delightCount
+              exCal, microsMet, delightCount,
+              calTarget, proteinLunch,
+              hungerCount: hLogs.length,
+              hungerHours: hLogs.map(h => new Date(num0(h.ts)).getHours()),
+              inBand: t.cal > 0 ? (Math.abs(t.cal - calTarget) <= 0.10 * calTarget) : null,
+              calDelta: t.cal > 0 ? t.cal - calTarget : null
             };
           };
 
@@ -6164,7 +6642,65 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           pDays.forEach(d => { d.netCal = d.cal > 0 ? Math.round(d.cal - currentBmr - d.exCal) : null; });
 
           // Aggregate to weekly averages for 30d/90d
-          const trendData = statsPeriod <= 7 ? pDays : aggregateWeekly(pDays);
+          const trendData = statsPeriod <= 7 ? pDays : aggregateWeekly(pDays, 'hungerCount');
+
+          // ── Adherence (±10% band — under-eating is a miss, not a win) ──
+          const aLogged = pDays.filter(d => d.cal > 0);
+          const aInBand = aLogged.filter(d => d.inBand).length;
+          const adherePct = aLogged.length ? Math.round(aInBand / aLogged.length * 100) : 0;
+          const avgDelta = aLogged.length ? Math.round(aLogged.reduce((s, d) => s + d.calDelta, 0) / aLogged.length) : 0;
+          const overDays = aLogged.filter(d => d.calDelta > 0.10 * d.calTarget).length;
+          let bandStreak = 0;
+          for (let i = pDays.length - 1; i >= 0; i--) { if (pDays[i].inBand) bandStreak++; else if (pDays[i].cal > 0) break; else break; }
+          const bandStrip = `<div style="display:flex;gap:1px;margin-top:.5rem">${pDays.map(d => {
+            let bg = 'var(--ring-track)';
+            if (d.inBand === true) bg = 'var(--success)';
+            else if (d.inBand === false) bg = d.calDelta > 0 ? 'var(--danger)' : 'var(--blue)';
+            return `<div title="${d.date}" style="flex:1;min-width:2px;height:14px;border-radius:2px;background:${bg};opacity:.85"></div>`;
+          }).join('')}</div>
+          <div style="display:flex;justify-content:space-between;font-size:.55rem;color:var(--muted);margin-top:.2rem"><span>${pDays[0]?.date.slice(5) || ''}</span><span>green in-band · red over · blue under</span><span>${pDays[pDays.length - 1]?.date.slice(5) || ''}</span></div>`;
+          const adherenceHtml = `
+          <div class="card">
+            <div class="card-title">${licon('target')} Calorie Adherence</div>
+            <div class="stats-row">
+              <div class="stat-box"><div class="stat-val" style="color:${adherePct >= 70 ? 'var(--success)' : adherePct >= 40 ? 'var(--warn)' : 'var(--danger)'}">${adherePct}%</div><div class="stat-label">in ±10% band</div></div>
+              <div class="stat-box"><div class="stat-val">${bandStreak}</div><div class="stat-label">band streak</div></div>
+              <div class="stat-box"><div class="stat-val">${avgDelta >= 0 ? '+' : ''}${avgDelta}</div><div class="stat-label">avg delta</div></div>
+              <div class="stat-box"><div class="stat-val">${overDays}</div><div class="stat-label">days over</div></div>
+            </div>
+            ${bandStrip}
+          </div>`;
+
+          // ── Hunger patterns (from "I'm hungry" taps) ──
+          const allH = pDays.flatMap(d => d.hungerHours);
+          let hungerHtml = '';
+          if (allH.length < 5) {
+            hungerHtml = `<div style="font-size:.72rem;color:var(--muted)">Not enough data yet — tap "I'm hungry" on the Fuel tab when you're struggling and patterns will appear here.</div>`;
+          } else {
+            const buckets = [];
+            for (let h = 6; h <= 23; h++) buckets.push({ day: String(h).padStart(2, '0'), n: allH.filter(x => x === h).length });
+            const modeH = buckets.reduce((a, b) => b.n > a.n ? b : a, buckets[0]);
+            const meanHC = a => a.length ? a.reduce((s, d) => s + d.hungerCount, 0) / a.length : null;
+            const shortS = pDays.filter(d => d.sleep > 0 && d.sleep < 7), longS = pDays.filter(d => d.sleep >= 7);
+            const loP = aLogged.filter(d => d.proteinLunch > 0 && d.proteinLunch < 30), hiP = aLogged.filter(d => d.proteinLunch >= 30);
+            const lines = [`Most common hunger hour: <b>${+modeH.day > 12 ? (+modeH.day - 12) + ' PM' : modeH.day + ' AM'}</b>.`];
+            if (shortS.length >= 3 && longS.length >= 3 && meanHC(longS) > 0) {
+              const ratio = (meanHC(shortS) / meanHC(longS)).toFixed(1);
+              if (ratio > 1.2) lines.push(`On nights under 7h sleep you tap hungry <b>${ratio}×</b> as often.`);
+            }
+            if (loP.length >= 3 && hiP.length >= 3 && meanHC(hiP) > 0) {
+              const ratio = (meanHC(loP) / meanHC(hiP)).toFixed(1);
+              if (ratio > 1.2) lines.push(`Lunches under 30g protein → <b>${ratio}×</b> the hunger taps.`);
+            }
+            hungerHtml = `${chartBarsRef(buckets, 'n', 'var(--warn)', null)}
+              <div style="font-size:.72rem;line-height:1.6;margin-top:.5rem">${lines.map(l => `<div>· ${l}</div>`).join('')}</div>`;
+          }
+          const hungerCard = `
+          <div class="card"><details class="move-section" data-key="hungerPat" ${so('hungerPat') ? 'open' : ''} ontoggle="${sToggle}">
+            <summary>${licon('flame')} Hunger Patterns</summary><div class="section-body">${hungerHtml}</div></details></div>`;
+
+          // Honest calorie reference line — averages the per-day target (ramp-aware)
+          const avgTarget = Math.round(pDays.reduce((s, d) => s + d.calTarget, 0) / (pDays.length || 1));
 
           // Aesthetic trend lines (only for 30d/90d) — gender-aware
           let aestheticHtml = '';
@@ -6215,10 +6751,12 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
             <button class="filter-btn ${statsPeriod === 30 ? 'active' : ''}" onclick="setStatsPeriod(30)">Last 30 days</button>
             <button class="filter-btn ${statsPeriod === 90 ? 'active' : ''}" onclick="setStatsPeriod(90)">Last 90 days</button>
           </div>
+          ${adherenceHtml}
+          ${hungerCard}
           <div class="card"><details class="move-section" data-key="tProtein" ${so('tProtein') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>${licon('egg')} Protein Intake</summary><div class="section-body">${lineChart(trendData, 'protein', 'var(--success)', 'g', 130)}</div></details></div>
+            <summary>${licon('egg')} Protein Intake</summary><div class="section-body">${lineChart(trendData, 'protein', 'var(--success)', 'g', TARGETS.protein)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tCal" ${so('tCal') ? 'open' : ''} ontoggle="${sToggle}">
-            <summary>${licon('flame')} Calorie Intake</summary><div class="section-body">${lineChart(trendData, 'cal', 'var(--accent)', 'kcal', 2050)}</div></details></div>
+            <summary>${licon('flame')} Calorie Intake</summary><div class="section-body">${lineChart(trendData, 'cal', 'var(--accent)', 'kcal', avgTarget)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tNet" ${so('tNet') ? 'open' : ''} ontoggle="${sToggle}">
             <summary>${licon('scale')} Net Calories</summary><div class="section-body">${lineChart(trendData, 'netCal', 'var(--warn)', 'kcal', -250)}</div></details></div>
           <div class="card"><details class="move-section" data-key="tMicro" ${so('tMicro') ? 'open' : ''} ontoggle="${sToggle}">
@@ -6379,14 +6917,19 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         const eventsStr = eventsData.length > 0
           ? '\nSaved events: ' + eventsData.map(e => `${e.name} on ${e.date || '?'} ${e.time || ''} at ${e.location || '?'}${e.bookingRequired ? ' (booking required)' : ''}`).join('; ')
           : '';
-        const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal\nMicros logged so far: ${microStr}\nFoods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}${eventsStr}`;
+        const pace = getPaceState();
+        const wb = getWeekBudget();
+        const paceStr = pace.show && pace.state !== 'early' ? `\nPacing: ~${pace.expected} kcal expected by now (${pace.state})` : '';
+        const weekStr = wb.ok && wb.completed > 0 ? `\nWeek bank: ${wb.bank >= 0 ? '+' : ''}${wb.bank} kcal vs weekly budget; practical aim today ${wb.adjustedToday} kcal` : '';
+        const hungerStr = activeItems(dayData.hungerLogs || []).length ? `\nHunger taps today: ${activeItems(dayData.hungerLogs).length}` : '';
+        const summary = `Date: ${selectedDate}, Cal: ${t.cal}/${calTarget}, Protein: ${t.protein}/${TARGETS.protein}g, Carbs: ${t.carbs}/${TARGETS.carbs}g, Fat: ${t.fat}/${TARGETS.fat}g, Fiber: ${t.fiber}g, Water: ${dayData.water || 0}/${TARGETS.water}ml, Sleep: ${dayData.sleep?.hours || 0}/${TARGETS.sleep}h, Steps: ${dayData.steps || 0}, Burned: ${dayData.calBurned || 0} kcal${paceStr}${weekStr}${hungerStr}\nMicros logged so far: ${microStr}\nFoods: ${activeItems(dayData.foods).map(f => f.name).join(", ") || "none"}${eventsStr}`;
         // Run food & water detection BEFORE LLM so we can tell the bot what was actually logged
         const loggedFood = await checkAndLogFoodIntent(userMsg);
         const loggedWater = await checkAndLogWaterIntent(userMsg);
         const foodNote = loggedFood ? ` [App auto-logged food: ${loggedFood}]` : '';
         const waterNote = loggedWater ? ` [App auto-logged water: ${loggedWater}ml]` : '';
 
-        const sys = `You are "HealThee Mate", a concise, warm, and highly capable health advisor for an Indian user doing a recomposition (cutting body fat, building muscle). Currency INR. Goals: ~2050 kcal training days, ~1850 rest days, 130-145g protein. Keep responses under 120 words. Use plain text only — do not use markdown, asterisks, bold, bullet points, or any special formatting.
+        const sys = `You are "HealThee Mate", a concise, warm, and highly capable health advisor for an Indian user doing a recomposition (cutting body fat, building muscle). Currency INR. Goals: ~${calTarget} kcal today, ${TARGETS.protein}g protein. Adherence means staying within ~10% of the calorie goal — being far under is NOT better than on-target; never praise under-eating. Keep responses under 120 words. Use plain text only — do not use markdown, asterisks, bold, bullet points, or any special formatting.
 When asked about micro gaps, macros, water, fiber, or exercise, base your answer strictly on the numerical totals provided below. DO NOT guess or calculate nutrients from the "Foods" array.
 If the message includes "[App auto-logged food: X]", briefly acknowledge that X was logged to the food diary, then give your normal advice.
 If the message includes "[App auto-logged water: Xml]", briefly acknowledge that X ml water was logged, then give your normal advice.
@@ -7029,11 +7572,13 @@ Rules:
         } catch (e) { console.warn('Water intent extraction failed:', e.message); return null; }
       }
 
-      window.getISTHour = function () {
+      window.getISTHourFloat = function () {
         const now = new Date();
         const istMs = now.getTime() + (now.getTimezoneOffset() * 60000) + (5.5 * 3600000);
-        return new Date(istMs).getHours();
+        const ist = new Date(istMs);
+        return ist.getHours() + ist.getMinutes() / 60;
       }
+      window.getISTHour = function () { return Math.floor(getISTHourFloat()); }
 
       window.inferMealFromTime = function () {
         const h = getISTHour();
@@ -7235,7 +7780,7 @@ Rules:
          NOTIFICATIONS / REMINDERS ENGINE
          ═══════════════════════════════════════════════════ */
 
-      const NTF_DEFAULT_IDS = ['ntf_water', 'ntf_breakfast', 'ntf_lunch', 'ntf_dinner', 'ntf_exercise', 'ntf_sleep'];
+      const NTF_DEFAULT_IDS = ['ntf_water', 'ntf_breakfast', 'ntf_lunch', 'ntf_dinner', 'ntf_exercise', 'ntf_sleep', 'ntf_guardrail'];
 
       function _ntfDefaults() {
         return {
@@ -7247,21 +7792,63 @@ Rules:
             { id: 'ntf_lunch', label: 'Prep Lunch', icon: 'utensils', type: 'time', timeHH: 12, timeMM: 0, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 },
             { id: 'ntf_dinner', label: 'Prep Dinner', icon: 'utensils', type: 'time', timeHH: 18, timeMM: 30, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 },
             { id: 'ntf_exercise', label: 'Time to Exercise', icon: 'dumbbell', type: 'time', timeHH: 17, timeMM: 30, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 },
-            { id: 'ntf_sleep', label: 'Wind Down', icon: 'moon', type: 'time', timeHH: 22, timeMM: 0, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 }
+            { id: 'ntf_sleep', label: 'Wind Down', icon: 'moon', type: 'time', timeHH: 22, timeMM: 0, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 },
+            { id: 'ntf_guardrail', label: 'Evening Check-in', icon: 'shield-check', type: 'time', timeHH: 21, timeMM: 0, enabled: true, lastFiredTs: 0, snoozedUntilTs: 0 }
           ]
         };
       }
 
       window._ntfLoad = function () {
-        try { return JSON.parse(localStorage.getItem('HT_notifs') || 'null') || _ntfDefaults(); }
-        catch (_) { return _ntfDefaults(); }
+        let cfg = null;
+        try { cfg = JSON.parse(localStorage.getItem('HT_notifs') || 'null'); } catch (_) { }
+        if (!cfg) return _ntfDefaults();
+        // Migration: append any new default reminders existing users don't have yet.
+        // Master cfg.enabled gate still applies, so nothing fires without opt-in.
+        cfg.reminders = Array.isArray(cfg.reminders) ? cfg.reminders : [];
+        const have = new Set(cfg.reminders.map(r => r.id));
+        _ntfDefaults().reminders.forEach(d => { if (!have.has(d.id)) cfg.reminders.push({ ...d }); });
+        return cfg;
       };
 
       window._ntfSave = function (cfg) {
         try { localStorage.setItem('HT_notifs', JSON.stringify(cfg)); } catch (_) { }
       };
 
+      // Live data snapshot for nudge bodies. Reminders always describe TODAY;
+      // dayData may hold a different date, in which case we stay generic.
+      function _ntfLiveSnapshot() {
+        if (typeof dayData === 'undefined' || !dayData || !selectedDate || selectedDate !== todayStr()) return null;
+        const t = computeTotals(dayData), target = getCalTargetFor(selectedDate);
+        return {
+          cal: t.cal, target, remaining: target - t.cal,
+          protein: t.protein, proteinTarget: TARGETS.protein,
+          fiber: t.fiber, fiberTarget: Math.round(14 * target / 1000),
+          water: num0(dayData.water), waterTarget: TARGETS.water,
+          week: getWeekBudget(), next: nextPlannedMeal()
+        };
+      }
+
+      const NTF_BODY_RESOLVERS = {
+        ntf_water: s => s.water >= s.waterTarget ? 'Water target hit — nice.'
+          : ((s.waterTarget - s.water) / 1000).toFixed(1) + ' L to go today.',
+        ntf_breakfast: s => s.next ? `Plan says: ${s.next.name} (${s.next.cal} kcal).` : null,
+        ntf_lunch: s => s.next ? `${s.next.name} · ${s.next.cal} kcal. ${s.remaining - s.next.cal} left after.` : null,
+        ntf_dinner: s => `Salad + 300ml water first. ${s.remaining} kcal left`
+          + (s.fiber < s.fiberTarget ? ` · fiber ${Math.round(s.fiber)} of ${s.fiberTarget}g.` : '.'),
+        ntf_sleep: s => s.protein < s.proteinTarget
+          ? `Protein ${Math.round(s.protein)} of ${s.proteinTarget}g — thick curd before bed closes it.` : null,
+        ntf_guardrail: s => {
+          if (s.remaining > 300) return `${s.remaining} kcal left — a curd bowl or 2 eggs fits.`;
+          if (s.remaining >= -100) return `On target: ${s.cal} of ${s.target}. Kitchen's closed.`;
+          return `${-s.remaining} over today. Week bank ${s.week.bank >= 0 ? '+' : ''}${s.week.bank} — tomorrow's target is unchanged.`;
+        }
+      };
+
       function _ntfBodyText(r) {
+        try {
+          const live = _ntfLiveSnapshot();
+          if (live && NTF_BODY_RESOLVERS[r.id]) { const s = NTF_BODY_RESOLVERS[r.id](live); if (s) return s; }
+        } catch (_) { /* never block a notification on a data error */ }
         if (r.type === 'interval') return 'Every ' + (r.intervalMin || 90) + ' minutes';
         const p = n => String(n).padStart(2, '0');
         return 'Scheduled at ' + p(r.timeHH) + ':' + p(r.timeMM);

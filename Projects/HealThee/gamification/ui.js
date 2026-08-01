@@ -170,12 +170,23 @@ export function renderDailyChallenges(state, dateKey, picks, mountEl) {
       ? (state.dailyChallenges.completed || [])
       : []
   );
-  const items = picks.map(c => `
-    <li style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;font-size:13px">
-      <span>${completed.has(c.id) ? '✅' : '⬜'}</span>
-      <span style="${completed.has(c.id) ? 'opacity:.6;text-decoration:line-through' : ''}">${escapeHtml(c.label)}</span>
-    </li>`).join('');
+  const items = picks.map(c => {
+    const done = completed.has(c.id);
+    return `
+    <li data-cid="${c.id}" data-done="${done ? 1 : 0}" style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;font-size:13px;cursor:${done ? 'default' : 'pointer'}">
+      <span>${done ? '✅' : '⬜'}</span>
+      <span style="${done ? 'opacity:.6;text-decoration:line-through' : ''}">${escapeHtml(c.label)}</span>
+    </li>`;
+  }).join('');
   mountEl.innerHTML = `<ul style="list-style:none;padding:0;margin:0">${items}</ul>`;
+  // onclick assignment (not addEventListener) so re-renders stay idempotent
+  mountEl.onclick = (e) => {
+    const li = e.target.closest('[data-cid]');
+    if (!li || li.dataset.done === '1' || typeof window === 'undefined' || !window.HTGam) return;
+    Promise.resolve(window.HTGam.completeDailyChallenge(li.dataset.cid, dateKey))
+      .then(() => window.HTGam.renderDailyChallenges(mountEl, dateKey))
+      .catch(() => {});
+  };
 }
 
 function escapeHtml(s) {

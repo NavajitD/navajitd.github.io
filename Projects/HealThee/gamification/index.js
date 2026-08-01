@@ -8,6 +8,7 @@ import {
   isoWeekKey, pickWeeklyChallenge, evalWeeklyProgress,
   evaluateBadges, awardGems, dateKeyLocal, BADGES,
   GEM_SOURCES, STREAK_MILESTONES, WEEKLY_CHALLENGE_POOL, DAILY_CHALLENGE_POOL,
+  DAILY_AUTO_EVAL,
 } from './core.js';
 import {
   DEFAULT_STATE, cloneState, makeLocalStorageAdapter, makeFirestoreAdapter,
@@ -93,7 +94,9 @@ export function diffSignatures(prev, cur) {
 
 // Updates state based on a single dayData snapshot. Pure (no I/O, no DOM).
 // Returns { state, events[] } where events describe what to notify the user about.
-export function applyDaySave(prevState, dayData, dateKey, sigCache /* { [dateKey]: sig } */) {
+// ctx (optional) is the nutrition context from health.html's htGamContext():
+// { totals, targets, mealProtein, snackCount, steps, sleepHours, firstMealHour, nowHour, isPast }
+export function applyDaySave(prevState, dayData, dateKey, sigCache /* { [dateKey]: sig } */, ctx = null) {
   let state = cloneState(prevState || DEFAULT_STATE);
   const events = [];
 
@@ -153,8 +156,32 @@ export function applyDaySave(prevState, dayData, dateKey, sigCache /* { [dateKey
   state.stats.totalStepEntries = (state.stats.totalStepEntries || 0) + Math.max(0, (sigNow.stepEntries - (sigPrev.stepEntries || 0)));
   state.stats.journalEntries = (state.stats.journalEntries || 0) + Math.max(0, (sigNow.journal - (sigPrev.journal || 0)));
 
+  // 3b) Goal XP — sticky per date, never re-awarded. Signature diffing can't be
+  // used here: goal-hit oscillates true→false→true as more food is logged.
+  // Calorie goal is a ±5% BAND, deliberately — far under target is a miss.
+  if (ctx && ctx.targets) {
+    state.awarded = state.awarded || {};
+    const aw = state.awarded[dateKey] = state.awarded[dateKey] || {};
+    if (!aw.cal && ctx.totals.cal > 0 && Math.abs(ctx.totals.cal - ctx.targets.cal) <= 0.05 * ctx.targets.cal) {
+      aw.cal = true;
+      const r = awardXp(state, XP_REWARDS.hitCalorieGoal);
+      state = r.state;
+      events.push({ type: 'xp', delta: XP_REWARDS.hitCalorieGoal, reason: 'calorie goal' });
+      if (r.leveledUp) events.push({ type: 'levelUp', toLevel: r.toLevel });
+    }
+    if (!aw.protein && ctx.totals.protein >= ctx.targets.protein) {
+      aw.protein = true;
+      const r = awardXp(state, XP_REWARDS.hitProteinGoal);
+      state = r.state;
+      events.push({ type: 'xp', delta: XP_REWARDS.hitProteinGoal, reason: 'protein goal' });
+      if (r.leveledUp) events.push({ type: 'levelUp', toLevel: r.toLevel });
+    }
+    const awKeys = Object.keys(state.awarded).sort();
+    while (awKeys.length > 14) { delete state.awarded[awKeys.shift()]; }
+  }
+
   // 4) Badge evaluation
-  const ctx = {
+  const badgeCtx = {
     totalLogs: state.stats.totalLogs,
     streak: state.streak?.current || 0,
     totalMeals: state.stats.totalMeals,
@@ -162,16 +189,46 @@ export function applyDaySave(prevState, dayData, dateKey, sigCache /* { [dateKey
     stepGoalHitOnce: state.stats.stepGoalHitOnce,
     sleepGoalStreak: state.stats.sleepGoalStreak,
     journalEntries: state.stats.journalEntries,
-    allMacrosHitToday: false, // TODO Phase 2: compute from totals vs targets
+    allMacrosHitToday: !!(ctx && ctx.targets
+      && ctx.totals.protein >= ctx.targets.protein
+      && Math.abs(ctx.totals.carbs - ctx.targets.carbs) <= 0.15 * ctx.targets.carbs
+      && Math.abs(ctx.totals.fat - ctx.targets.fat) <= 0.15 * ctx.targets.fat),
     allGoalsSet: false,
   };
-  const newBadges = evaluateBadges(ctx, state.badges || []);
+  const newBadges = evaluateBadges(badgeCtx, state.badges || []);
   for (const id of newBadges) {
     state.badges.push(id);
     events.push({ type: 'badge', id });
     const g = awardGems(state, GEM_SOURCES.badgeUnlock);
     state = g.state;
     events.push({ type: 'gems', delta: g.delta, reason: 'badge' });
+  }
+
+  // 4b) Auto-evaluate the day's picked challenges against the nutrition ctx.
+  // Routed through completeDailyChallenge so Bonus Burst logic stays shared.
+  if (ctx && ctx.targets) {
+    for (const c of pickDailyChallenges(dateKey)) {
+      const already = state.dailyChallenges && state.dailyChallenges.dateKey === dateKey
+        && (state.dailyChallenges.completed || []).includes(c.id);
+      const fn = DAILY_AUTO_EVAL[c.id];
+      let hit = false;
+      if (!already && fn) { try { hit = !!fn(ctx); } catch { hit = false; } }
+      if (hit) {
+        const r = completeDailyChallenge(state.dailyChallenges, c.id, dateKey);
+        state.dailyChallenges = r.state;
+        const x = awardXp(state, XP_REWARDS.completeDailyChallenge);
+        state = x.state;
+        events.push({ type: 'dailyChallenge', id: c.id, label: c.label });
+        if (x.leveledUp) events.push({ type: 'levelUp', toLevel: x.toLevel });
+        if (r.bonusBurst) {
+          const bb = awardXp(state, XP_REWARDS.bonusBurst);
+          state = bb.state;
+          const g = awardGems(state, GEM_SOURCES.allDailyChallenges);
+          state = g.state;
+          events.push({ type: 'bonusBurst', xp: XP_REWARDS.bonusBurst, gems: g.delta });
+        }
+      }
+    }
   }
 
   // 5) Cache signature so we don't re-award next save
@@ -219,11 +276,11 @@ const HTGam = {
 
   getState() { return cloneState(this._state); },
 
-  /** Called by health.html every time the user saves a day. */
-  async onDaySaved(dayData, dateKey) {
+  /** Called by health.html every time the user saves a day. ctx is optional nutrition context. */
+  async onDaySaved(dayData, dateKey, ctx = null) {
     if (!this._ready || !this._enabled) return null;
     const key = dateKey || dateKeyLocal();
-    const r = applyDaySave(this._state, dayData, key, this._sigCache);
+    const r = applyDaySave(this._state, dayData, key, this._sigCache, ctx);
     const prevState = this._state;
     this._state = r.state;
     this._sigCache = r.sigCache;
@@ -231,11 +288,13 @@ const HTGam = {
     // Notify UI for visible events
     for (const ev of r.events) {
       try {
-        if (ev.type === 'xp') ui.showXpToast(ev.delta);
+        if (ev.type === 'xp') ui.showXpToast(ev.delta, ev.reason);
         else if (ev.type === 'levelUp') ui.showLevelUp(ev.toLevel);
         else if (ev.type === 'badge') ui.showBadgeUnlock(ev.id);
         else if (ev.type === 'streakMilestone') ui.showStreakMilestone(ev.days);
         else if (ev.type === 'comeback') ui.showComebackBonus(ev.xp);
+        else if (ev.type === 'dailyChallenge') ui.showXpToast(XP_REWARDS.completeDailyChallenge, ev.label);
+        else if (ev.type === 'bonusBurst') ui.showBonusBurst(ev.xp, ev.gems);
       } catch { /* UI failures must not break logging */ }
     }
 
