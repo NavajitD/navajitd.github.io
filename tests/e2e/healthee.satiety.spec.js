@@ -96,23 +96,31 @@ test.describe('satiety-tuned meal plan', () => {
 
   test('no meal is a large drink — the root cause of the all-day hunger', async ({ page }) => {
     await boot(page);
-    // Previously ~45% of intake was drunk: a 550-650 kcal breakfast shake, plus
-    // afternoon whey and before-bed casein. Liquid calories barely blunt hunger.
+    // Previously ~45% of intake was drunk, led by a 550-650 kcal blended shake
+    // (whey + oats + banana + PB + milk + dates). Liquid calories barely blunt
+    // hunger. The lean post-workout shake (40g whey + creatine in WATER,
+    // ~150 kcal) is deliberate and stays — it's the user's clean protein and
+    // creatine vehicle. The calorie add-ins now arrive on a plate.
     const r = await page.evaluate(() => {
       const PLAN = __htConst('MEAL_PLAN');
       const meals = [1, 2, 3, 4, 5, 6, 0].flatMap(d => PLAN[d].meals);
+      const breakfasts = [1, 2, 3, 4, 5, 6, 0].map(d => PLAN[d].meals.find(m => m.meal === 'Breakfast'));
       // A meal is "drunk" only if every component is a beverage. Meals like
-      // "Paneer Chilla + Banana + Whey" or "Soup First -> Khichdi" are chewed food.
+      // "Shake + Veg Oats + Egg" or "Soup First -> Khichdi" are chewed food.
       const drinkOnly = /^(whey|milk|shake|chaas|buttermilk|golden milk|warm milk|clear veg soup)\b/i;
       return {
-        shakes: meals.filter(m => /shake/i.test(m.name)).length,
-        maxDrinkMeal: Math.max(0, ...meals.filter(m => drinkOnly.test(m.name)).map(m => m.cal)),
-        maxBreakfast: Math.max(...[1, 2, 3, 4, 5, 6, 0].map(d => PLAN[d].meals.find(m => m.meal === 'Breakfast').cal)),
+        drinkOnlyBig: meals.filter(m => drinkOnly.test(m.name) && m.cal > 200).map(m => m.name),
+        blendedShakes: meals.filter(m => /shake/i.test(m.name) && !/oats|egg|chilla|banana|curd|toast/i.test(m.name)).map(m => m.name),
+        shakeInWater: breakfasts.filter(m => /shake/i.test(m.name)).every(m => /water/i.test(m.desc)),
+        creatineDaily: [1, 2, 3, 4, 5, 6, 0].every(d => PLAN[d].meals.some(m => /creatine/i.test(m.desc))),
+        maxBreakfast: Math.max(...breakfasts.map(m => m.cal)),
       };
     });
-    expect(r.shakes, 'no meal-replacement shakes remain').toBe(0);
-    expect(r.maxDrinkMeal, 'no drink-only meal over 200 kcal').toBeLessThanOrEqual(200);
-    expect(r.maxBreakfast, 'breakfast is chewed food, not a 650 kcal shake').toBeLessThanOrEqual(560);
+    expect(r.drinkOnlyBig, 'no drink-only meal over 200 kcal').toEqual([]);
+    expect(r.blendedShakes, 'every shake meal is paired with chewed food').toEqual([]);
+    expect(r.shakeInWater, 'shakes are whey in water, not blended calorie bombs').toBe(true);
+    expect(r.creatineDaily, 'creatine has a named home every day, incl. rest days').toBe(true);
+    expect(r.maxBreakfast, 'breakfast is a plate, not a 650 kcal drink').toBeLessThanOrEqual(560);
   });
 
   test('every dinner opens with a salad or soup starter', async ({ page }) => {
