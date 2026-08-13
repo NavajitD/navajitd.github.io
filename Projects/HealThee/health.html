@@ -1186,6 +1186,30 @@
       padding-right: .2rem
     }
 
+    /* In-app nudge bar (dismissible reminders shown on open) */
+    #nudgeBar { padding: 0 1rem; margin-top: .4rem; display: flex; flex-direction: column; gap: .4rem; }
+    #nudgeBar:empty { display: none; }
+    .nudge {
+      display: flex; align-items: flex-start; gap: .6rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-left: 3px solid var(--accent); border-radius: 8px;
+      padding: .6rem .7rem; animation: nudgeIn .25s ease;
+    }
+    .nudge.warn { border-left-color: var(--danger); }
+    .nudge.info { border-left-color: var(--blue); }
+    .nudge-icon { color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+    .nudge.warn .nudge-icon { color: var(--danger); }
+    .nudge.info .nudge-icon { color: var(--blue); }
+    .nudge-body { flex: 1; min-width: 0; }
+    .nudge-title { font-size: .74rem; font-weight: 700; color: var(--text); }
+    .nudge-text { font-size: .68rem; color: var(--muted); line-height: 1.4; margin-top: .1rem; }
+    .nudge-close {
+      flex-shrink: 0; background: none; border: none; color: var(--muted);
+      font-size: .95rem; line-height: 1; cursor: pointer; padding: .1rem .2rem; border-radius: 4px;
+    }
+    .nudge-close:hover { color: var(--text); background: var(--border); }
+    @keyframes nudgeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
     /* Plan item in modal */
     .plan-item {
       padding: .7rem;
@@ -2974,6 +2998,7 @@
       <div class="date-label" id="dateLabel"></div>
       <button onclick="shiftDate(1)">next →</button>
     </div>
+    <div id="nudgeBar"></div>
     <div id="tabContent"></div>
   </main>
 
@@ -3080,17 +3105,24 @@
 
       // Clock hour (IST) by which each plan slot is normally finished — sits inside
       // the inferMealFromTime() buckets so the two never disagree. Drives pacing.
-      const MEAL_CLOCK = { "Breakfast": 8.5, "Mid-Morning": 11, "Lunch": 13.5, "Afternoon": 16.5, "Dinner": 20, "Before Bed": 22 };
-      const DAY_START_HOUR = 7; // nothing expected before this
+      // Tuned to the evening-shift day: wake + gym mid-morning, packed lunch eaten
+      // late at work, office dinner ~8pm, hot milk + laddoo after the commute home.
+      const MEAL_CLOCK = { "Breakfast": 10, "Mid-Morning": 12.5, "Lunch": 15.5, "Afternoon": 18, "Dinner": 20.5, "Before Bed": 23 };
+      const DAY_START_HOUR = 8; // nothing expected before this (later wake on evening shift)
 
+      // A supplement shows in the day's checklist only when it's DUE, so the list itself
+      // is the routine aid: dailies appear every day, `everyDays:N` appears every Nth day
+      // (Shelcal on alternate days), `monthlyDay:D` appears on that date each month (Uprise
+      // D3 on the 1st). `freq` is the label shown on the row. See isSupplementDue().
+      // Creatine lives in the post-workout shake and Shilajit in the before-bed milk
+      // (both in the meal plan); the checkboxes below are the rest of the stack.
       const SUPPLEMENTS = [
         { id: "creatine", name: "Creatine (3–5g)", freq: "daily", icon: "zap", micros: {} },
-        { id: "vitd", name: "Vitamin D (600-800 IU)", freq: "daily", icon: "sun", micros: { "vitamin_d_ug": 20 } },
-        { id: "omega3", name: "Omega-3 / Fish oil", freq: "daily", icon: "fish", micros: {} },
+        { id: "ashwagandha", name: "Ashwagandha extract", freq: "daily", icon: "leaf", micros: {} },
         { id: "zincovit", name: "Zincovit", freq: "daily", icon: "pill", micros: { "vitamin_a_ug": 600, "vitamin_b6": 2, "vitamin_b12": 1, "vitamin_c_mg": 40, "vitamin_d_ug": 10, "zinc_mg": 10, "iron_mg": 10, "magnesium_mg": 15 } },
-        { id: "vitc", name: "Vitamin C", freq: "daily", icon: "citrus", micros: { "vitamin_c_mg": 500 } },
-        { id: "ashwagandha", name: "Ashwagandha", freq: "daily", icon: "leaf", micros: {} },
-        { id: "collagen", name: "Collagen peptides (8g)", freq: "daily", icon: "dna", protein: 7, micros: {} }
+        { id: "omega3", name: "Fish oil (Omega-3)", freq: "daily", icon: "fish", micros: {} },
+        { id: "shelcal", name: "Shelcal XT (calcium)", freq: "every 2 days", icon: "bone", everyDays: 2, micros: { "calcium_mg": 600, "vitamin_d_ug": 10 } },
+        { id: "vitd", name: "Uprise D3 (60k IU)", freq: "monthly · 1st", icon: "sun", monthlyDay: 1, micros: {} }
       ];
 
       // One-tap rescue foods for the "I'm hungry" flow. tier 'free' = high-volume
@@ -3136,113 +3168,143 @@
       const WORKOUT_PLAN = {
         1: { name: "Upper Push (V-taper Shoulders + Chest)", exercises: ["Incline DB Press 4×6-10", "Flat Press 3×8-12", "Seated OHP 3×6-10", "Cable/Pec-Deck Fly 2-3×12-15", "Lateral Raise (cable) 4×12-20", "Triceps Rope Pressdown 3×10-15", "Push-ups 2×failure (optional)"] },
         2: { name: "Lower (Squat Focus) + Core", exercises: ["Back Squat/Hack Squat 4×5-8", "Romanian Deadlift 3×6-10", "Leg Press 3×10-15", "Lying Leg Curl 3×10-15", "Standing Calf Raises 4×8-12", "Hanging Knee Raises 3×10-15"] },
-        3: { name: "Active Recovery (Mobility + Walk)", exercises: ["30-45 min easy walk", "Couch stretch 60s/side", "Deep squat hold 60s", "Thoracic openers 6/side", "Hamstring floss 10/side", "Shoulder wall slides 10 reps"] },
+        // Dedicated core day (mid-week). rest:true keeps it on the lower (rest)
+        // calorie target — the deficit, not crunches, is what trims the midsection;
+        // the oblique work builds the taper underneath.
+        3: { name: "Core & Obliques", rest: true, exercises: ["Hanging Knee Raises 3×10-15", "Cable Woodchop 3×10/side", "Russian Twists 3×20/side", "Side Plank 3×30-45s/side", "Ab Wheel/Cable Crunch 3×8-15", "Plank Hold 3×30-45s", "Dead Bug 3×10/side", "15 min incline walk (fat-burn finisher)"] },
         4: { name: "Upper Pull (Back Width + Arms)", exercises: ["Pull-ups/Lat Pulldown 4×6-12", "Chest-Supported Row 3×8-12", "Seated Cable Row 3×10-15", "Rear Delt Fly 3×12-20", "Face Pulls 2×12-20", "Barbell/DB Curls 3×8-12", "Hammer Curls 2-3×10-15"] },
         5: { name: "Lower (Hinge/Glute) + Abs", exercises: ["Trap Bar/RDL Heavy 3-4×4-8", "Bulgarian Split Squat 3×8-12/side", "Hip Thrust 3×8-12", "Leg Extension 2×12-15", "Seated Calf Raise 3×10-15", "Ab Wheel/Cable Crunch 3×8-15", "Farmer's Carries 3×30-45s (optional)"] },
-        6: { name: "Body Pump (Optional) or Rest", exercises: ["Lateral Raise 5×12-20", "Cable Fly 3×12-15", "Rope Pushdown 3×12-15", "Incline Curls 3×10-15", "Calves 4×10-15", "10 min easy incline walk"] },
+        6: { name: "Active Recovery (Mobility + Walk)", exercises: ["30-45 min easy walk", "Couch stretch 60s/side", "Deep squat hold 60s", "Thoracic openers 6/side", "Hamstring floss 10/side", "Shoulder wall slides 10 reps"] },
         0: { name: "Social 5K + Long Mobility", exercises: ["5 min walk warm-up", "5K run (conversational pace)", "5 min walk cool-down", "Hamstring stretch 60s/side", "Hip flexor stretch 60s/side", "Calf stretch 45s/side", "Thoracic spine mobility 5 min"] }
       };
 
-      // Batch-cook meal plan, satiety-tuned: 2 cook sessions/week (Sun + Wed),
-      // everything else is a pan/microwave/air-fryer job. Dishes repeat 2-4×.
-      // Liquid calories are minimised (chewed food holds hunger better), every
-      // dinner opens with a salad/soup starter, fiber lands 31-38g. Daily totals
-      // hit the calorie target exactly: 2050 training / 1850 rest.
+      // Evening-shift meal plan, satiety-tuned — each ritual is its OWN line item so it
+      // can be tapped straight from the plan (wake-up lime water, post-workout shake,
+      // bedtime milk and laddoo are separate, not bundled into one breakfast/night row).
+      // The day: wake to a mug of hot water + lime, gym (BCA then lift), post-workout
+      // whey + creatine in water, breakfast, read/learn, then pack the tiffin. Lunch is
+      // eaten late at work; dinner Mon–Fri is the office thali (~8pm: rice/roti + veg or
+      // non-veg curry + dal + thin raita + salad); Sat/Sun are days off so dinner is a
+      // home thali. Bedtime is hot skimmed milk (shilajit) + a gond laddoo after the
+      // commute. Cook 2×/week (Sun + Wed) for breakfasts, packed lunches and snacks.
+      // Every dinner opens with the salad, no drink item tops 200 kcal, fiber lands
+      // 33-40g, protein ≥137g, and daily totals hit target exactly: 2050 train / 1850 rest.
       const MEAL_PLAN = {
         1: {
           label: "Mon", tag: "Upper Push", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake + Veg Oats + Egg", desc: "Shake: 40g whey (~30g protein) + creatine in cold water. Plate: microwave veg oats + 1 boiled egg", cal: 460, protein: 42, carbs: 38, fat: 13, fiber: 6 },
-            { meal: "Mid-Morning", name: "Guava + Roasted Chana", desc: "1 guava + 30g roasted chana — zero prep", cal: 180, protein: 9, carbs: 32, fat: 3, fiber: 8 },
-            { meal: "Lunch", name: "Chicken Curry + Rice + Big Salad + Curd", desc: "Sun-batch tiffin: 150g chicken curry, ¾ cup rice, salad box, curd", cal: 560, protein: 40, carbs: 57, fat: 17, fiber: 7 },
-            { meal: "Afternoon", name: "Sprouts Chaat + Chaas", desc: "Sun-batch sprouts box + chaas — zero prep", cal: 200, protein: 15, carbs: 22, fat: 4, fiber: 6 },
-            { meal: "Dinner", name: "Salad First → Dal + Rice + 2 Eggs", desc: "Start: salad plate + 300ml water. Then Sun-batch dal + rice + 2 pre-boiled eggs", cal: 500, protein: 30, carbs: 56, fat: 17, fiber: 9 },
-            { meal: "Before Bed", name: "Thick Curd", desc: "250g thick curd, spooned — slow overnight protein", cal: 150, protein: 16, carbs: 11, fat: 5, fiber: 0 }
+            { meal: "Breakfast", name: "Hot Water + Lime", desc: "1 mug hot water with 1 tsp lime juice, on waking", cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0 },
+            { meal: "Breakfast", name: "Post-Workout Shake", desc: "40g whey concentrate + creatine in cold water, back from the gym", cal: 150, protein: 30, carbs: 4, fat: 2, fiber: 0 },
+            { meal: "Breakfast", name: "Veg Oats + Boiled Egg", desc: "Microwave veg oats + 1 boiled egg", cal: 300, protein: 12, carbs: 44, fat: 7, fiber: 6 },
+            { meal: "Mid-Morning", name: "Guava + Roasted Chana", desc: "1 guava + 30g roasted chana — pack it, zero prep", cal: 170, protein: 9, carbs: 30, fat: 3, fiber: 8 },
+            { meal: "Lunch", name: "Packed Tiffin: Chicken Curry + Rice + Big Salad + Curd", desc: "Sun-batch: 130g chicken curry, ¾ cup rice, salad box, curd — eaten late at work", cal: 470, protein: 38, carbs: 46, fat: 14, fiber: 7 },
+            { meal: "Afternoon", name: "Sprouts Chaat + Chaas", desc: "Sun-batch sprouts box + chaas at work — zero prep", cal: 180, protein: 14, carbs: 20, fat: 4, fiber: 6 },
+            { meal: "Dinner", name: "Salad First → Office Thali: Chicken Curry + Rice + Dal + Thin Raita", desc: "Served at office ~8pm: start with the salad, then rice + curry + dal + thin raita", cal: 515, protein: 32, carbs: 51, fat: 18, fiber: 8 },
+            { meal: "Before Bed", name: "Hot Skimmed Milk (Shilajit)", desc: "200ml hot skimmed milk with shilajit mixed in, home ~midnight", cal: 90, protein: 8, carbs: 12, fat: 1, fiber: 0 },
+            { meal: "Before Bed", name: "Gond Laddoo", desc: "1 gond laddoo from the stocked jar", cal: 170, protein: 3, carbs: 18, fat: 10, fiber: 1 }
           ]
         },
         2: {
           label: "Tue", tag: "Lower Squat", meals: [
-            { meal: "Breakfast", name: "Paneer Chilla ×2 + Banana + Shake", desc: "One pan: 2 chillas; 1 banana; shake: 40g whey + creatine in water (squat day)", cal: 540, protein: 47, carbs: 54, fat: 14, fiber: 7 },
-            { meal: "Mid-Morning", name: "Apple + Roasted Chana", desc: "1 apple + 30g roasted chana — zero prep", cal: 200, protein: 8, carbs: 36, fat: 3, fiber: 8 },
-            { meal: "Lunch", name: "Chicken Curry + Rice + Big Salad + Curd", desc: "Sun-batch tiffin: same as Mon — just microwave", cal: 560, protein: 40, carbs: 57, fat: 17, fiber: 7 },
-            { meal: "Afternoon", name: "Curd Bowl + Seeds + Cucumber", desc: "Curd + 1 tbsp mixed seeds + cucumber sticks — zero prep", cal: 200, protein: 13, carbs: 16, fat: 9, fiber: 4 },
-            { meal: "Dinner", name: "Salad First → Air-Fryer Fish + Dal", desc: "Start: salad + 300ml water. Fish 12 min one tray; reheat Sun-batch dal", cal: 420, protein: 42, carbs: 33, fat: 12, fiber: 10 },
-            { meal: "Before Bed", name: "Thick Curd", desc: "200g thick curd", cal: 130, protein: 13, carbs: 9, fat: 4, fiber: 0 }
+            { meal: "Breakfast", name: "Hot Water + Lime", desc: "1 mug hot water with 1 tsp lime juice, on waking", cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0 },
+            { meal: "Breakfast", name: "Post-Workout Shake", desc: "40g whey concentrate + creatine in water, back from the gym", cal: 150, protein: 30, carbs: 4, fat: 2, fiber: 0 },
+            { meal: "Breakfast", name: "Paneer Chilla ×2 + Banana", desc: "One pan: 2 paneer chillas + 1 banana", cal: 410, protein: 17, carbs: 52, fat: 13, fiber: 7 },
+            { meal: "Mid-Morning", name: "Apple + Roasted Chana", desc: "1 apple + 30g roasted chana — zero prep", cal: 180, protein: 8, carbs: 34, fat: 3, fiber: 7 },
+            { meal: "Lunch", name: "Packed Tiffin: Chicken Curry + Rice + Big Salad + Curd", desc: "Sun-batch tiffin — just heat at work", cal: 460, protein: 37, carbs: 45, fat: 14, fiber: 7 },
+            { meal: "Afternoon", name: "Curd Bowl + Seeds + Cucumber", desc: "Curd + 1 tbsp mixed seeds + cucumber sticks — zero prep", cal: 160, protein: 13, carbs: 12, fat: 7, fiber: 3 },
+            { meal: "Dinner", name: "Salad First → Office Thali: Egg Curry + Rice + Dal + Thin Raita", desc: "Served at office ~8pm: salad first, then rice + egg curry + dal + thin raita", cal: 425, protein: 33, carbs: 39, fat: 12, fiber: 8 },
+            { meal: "Before Bed", name: "Hot Skimmed Milk (Shilajit)", desc: "200ml hot skimmed milk with shilajit mixed in, home ~midnight", cal: 90, protein: 8, carbs: 12, fat: 1, fiber: 0 },
+            { meal: "Before Bed", name: "Gond Laddoo", desc: "1 gond laddoo from the stocked jar", cal: 170, protein: 3, carbs: 18, fat: 10, fiber: 1 }
           ]
         },
         3: {
-          label: "Wed", tag: "Recovery", meals: [
-            { meal: "Breakfast", name: "Masala Oats + 3 Boiled Eggs", desc: "Microwave oats + veggies; eggs pre-boiled Sunday. Creatine in a glass of water (rest day)", cal: 450, protein: 28, carbs: 42, fat: 18, fiber: 7 },
-            { meal: "Mid-Morning", name: "Guava + Roasted Chana", desc: "1 guava + 30g roasted chana — zero prep", cal: 170, protein: 9, carbs: 30, fat: 3, fiber: 8 },
-            { meal: "Lunch", name: "Chicken Curry + Rice + Big Salad + Curd", desc: "Last Sun-batch chicken portion — just microwave", cal: 540, protein: 40, carbs: 54, fat: 16, fiber: 7 },
-            { meal: "Afternoon", name: "Paneer Cubes + Cucumber + Chaas", desc: "50g paneer cubes + cucumber + chaas — zero prep", cal: 200, protein: 19, carbs: 9, fat: 10, fiber: 2 },
-            { meal: "Dinner", name: "Soup First → Khichdi + Curd (cook 2×)", desc: "Start: fresh veg soup. One-pot khichdi ×2 (Thu dinner done); Wed-batch cooks alongside", cal: 340, protein: 17, carbs: 45, fat: 9, fiber: 7 },
-            { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
+          label: "Wed", tag: "Core Day", meals: [
+            { meal: "Breakfast", name: "Hot Water + Lime", desc: "1 mug hot water with 1 tsp lime juice, on waking", cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0 },
+            { meal: "Breakfast", name: "Post-Core Shake", desc: "40g whey + creatine in water, after the core session", cal: 150, protein: 30, carbs: 4, fat: 2, fiber: 0 },
+            { meal: "Breakfast", name: "Masala Oats + Boiled Egg", desc: "Microwave masala oats + 1 boiled egg", cal: 290, protein: 12, carbs: 42, fat: 7, fiber: 6 },
+            { meal: "Mid-Morning", name: "Guava + Roasted Chana", desc: "1 guava + 30g roasted chana — zero prep", cal: 160, protein: 9, carbs: 28, fat: 3, fiber: 8 },
+            { meal: "Lunch", name: "Packed Tiffin: Chicken Curry + Rice + Big Salad + Curd", desc: "Last Sun-batch chicken portion — heat at work", cal: 450, protein: 37, carbs: 44, fat: 13, fiber: 7 },
+            { meal: "Afternoon", name: "Sprouts Chaat + 2 Boiled Eggs", desc: "Sprouts box + 2 pre-boiled eggs at work — zero prep", cal: 170, protein: 17, carbs: 16, fat: 5, fiber: 6 },
+            { meal: "Dinner", name: "Salad First → Office Thali: Veg Curry + Roti + Dal + Thin Raita", desc: "Served at office ~8pm: salad first, then roti + veg curry + extra dal + thin raita", cal: 415, protein: 24, carbs: 53, fat: 12, fiber: 10 },
+            { meal: "Before Bed", name: "Hot Skimmed Milk (Shilajit)", desc: "200ml hot skimmed milk with shilajit, home ~midnight", cal: 90, protein: 8, carbs: 12, fat: 1, fiber: 0 },
+            { meal: "Before Bed", name: "Gond Laddoo (small)", desc: "1 small gond laddoo (rest-cal day)", cal: 120, protein: 2, carbs: 14, fat: 7, fiber: 1 }
           ]
         },
         4: {
           label: "Thu", tag: "Upper Pull", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake + Veg Oats + Egg", desc: "Shake: 40g whey (~30g protein) + creatine in cold water. Plate: microwave veg oats + 1 boiled egg", cal: 460, protein: 42, carbs: 38, fat: 13, fiber: 6 },
-            { meal: "Mid-Morning", name: "Orange + Roasted Chana", desc: "1 orange + 30g roasted chana — zero prep", cal: 175, protein: 8, carbs: 32, fat: 3, fiber: 8 },
-            { meal: "Lunch", name: "Paneer Bhurji + Rice + Big Salad + Curd", desc: "Wed-batch tiffin: 100g bhurji, rice, salad box, curd", cal: 560, protein: 34, carbs: 52, fat: 22, fiber: 8 },
-            { meal: "Afternoon", name: "Sprouts Chaat + Chaas", desc: "Wed-batch sprouts box + chaas — zero prep", cal: 200, protein: 15, carbs: 22, fat: 4, fiber: 6 },
-            { meal: "Dinner", name: "Salad First → Khichdi + 2 Eggs", desc: "Start: salad + 300ml water. Reheat khichdi + 2 pre-boiled eggs — zero cooking", cal: 505, protein: 28, carbs: 52, fat: 19, fiber: 8 },
-            { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
+            { meal: "Breakfast", name: "Hot Water + Lime", desc: "1 mug hot water with 1 tsp lime juice, on waking", cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0 },
+            { meal: "Breakfast", name: "Post-Workout Shake", desc: "40g whey concentrate + creatine in cold water, back from the gym", cal: 150, protein: 30, carbs: 4, fat: 2, fiber: 0 },
+            { meal: "Breakfast", name: "Veg Oats + Boiled Egg", desc: "Microwave veg oats + 1 boiled egg", cal: 300, protein: 12, carbs: 44, fat: 7, fiber: 6 },
+            { meal: "Mid-Morning", name: "Orange + Roasted Chana", desc: "1 orange + 30g roasted chana — zero prep", cal: 170, protein: 8, carbs: 32, fat: 3, fiber: 7 },
+            { meal: "Lunch", name: "Packed Tiffin: Paneer Bhurji + Rice + Big Salad + Curd", desc: "Wed-batch: 100g bhurji, rice, salad box, curd — eaten late at work", cal: 490, protein: 34, carbs: 46, fat: 18, fiber: 8 },
+            { meal: "Afternoon", name: "Sprouts Chaat + Chaas", desc: "Wed-batch sprouts box + chaas — zero prep", cal: 180, protein: 15, carbs: 20, fat: 4, fiber: 6 },
+            { meal: "Dinner", name: "Salad First → Office Thali: Chicken Curry + Rice + Dal + Thin Raita", desc: "Served at office ~8pm: salad first, then rice + curry + extra dal + thin raita", cal: 495, protein: 34, carbs: 49, fat: 15, fiber: 8 },
+            { meal: "Before Bed", name: "Hot Skimmed Milk (Shilajit)", desc: "200ml hot skimmed milk with shilajit mixed in, home ~midnight", cal: 90, protein: 8, carbs: 12, fat: 1, fiber: 0 },
+            { meal: "Before Bed", name: "Gond Laddoo", desc: "1 gond laddoo from the stocked jar", cal: 170, protein: 3, carbs: 18, fat: 10, fiber: 1 }
           ]
         },
         5: {
           label: "Fri", tag: "Lower Hinge", meals: [
-            { meal: "Breakfast", name: "Paneer Chilla ×2 + Banana + Shake", desc: "One pan: 2 chillas; 1 banana; shake: 40g whey + creatine in water (hinge day)", cal: 540, protein: 47, carbs: 54, fat: 14, fiber: 7 },
-            { meal: "Mid-Morning", name: "Apple + Roasted Chana", desc: "1 apple + 30g roasted chana — zero prep", cal: 200, protein: 8, carbs: 36, fat: 3, fiber: 8 },
-            { meal: "Lunch", name: "Paneer Bhurji + Rice + Big Salad + Curd", desc: "Wed-batch tiffin: same as Thu — just microwave", cal: 545, protein: 34, carbs: 50, fat: 22, fiber: 8 },
-            { meal: "Afternoon", name: "Curd Bowl + Seeds + Cucumber", desc: "Curd + seeds + cucumber sticks — zero prep", cal: 185, protein: 12, carbs: 14, fat: 9, fiber: 4 },
-            { meal: "Dinner", name: "Salad First → Air-Fryer Chicken + Rajma", desc: "Start: salad + 300ml water. Air-fry 150g chicken 18 min; reheat Wed-batch rajma", cal: 450, protein: 42, carbs: 38, fat: 12, fiber: 11 },
-            { meal: "Before Bed", name: "Thick Curd", desc: "200g thick curd", cal: 130, protein: 13, carbs: 9, fat: 4, fiber: 0 }
+            { meal: "Breakfast", name: "Hot Water + Lime", desc: "1 mug hot water with 1 tsp lime juice, on waking", cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0 },
+            { meal: "Breakfast", name: "Post-Workout Shake", desc: "40g whey concentrate + creatine in water, back from the gym", cal: 150, protein: 30, carbs: 4, fat: 2, fiber: 0 },
+            { meal: "Breakfast", name: "Paneer Chilla ×2 + Banana", desc: "One pan: 2 paneer chillas + 1 banana", cal: 410, protein: 17, carbs: 52, fat: 13, fiber: 7 },
+            { meal: "Mid-Morning", name: "Apple + Roasted Chana", desc: "1 apple + 30g roasted chana — zero prep", cal: 180, protein: 8, carbs: 34, fat: 3, fiber: 7 },
+            { meal: "Lunch", name: "Packed Tiffin: Rajma + Rice + Big Salad + Curd + Egg", desc: "Wed-batch rajma + rice + salad box + curd + 1 boiled egg — eaten late at work", cal: 470, protein: 28, carbs: 56, fat: 12, fiber: 12 },
+            { meal: "Afternoon", name: "Curd Bowl + Seeds + Cucumber", desc: "Curd + seeds + cucumber sticks — zero prep", cal: 150, protein: 12, carbs: 12, fat: 6, fiber: 3 },
+            { meal: "Dinner", name: "Salad First → Office Thali: Chicken Curry + Rice + Dal + Thin Raita", desc: "Served at office ~8pm: salad first, then rice + curry + extra dal + thin raita", cal: 425, protein: 36, carbs: 37, fat: 12, fiber: 8 },
+            { meal: "Before Bed", name: "Hot Skimmed Milk (Shilajit)", desc: "200ml hot skimmed milk with shilajit mixed in, home ~midnight", cal: 90, protein: 8, carbs: 12, fat: 1, fiber: 0 },
+            { meal: "Before Bed", name: "Gond Laddoo", desc: "1 gond laddoo from the stocked jar", cal: 170, protein: 3, carbs: 18, fat: 10, fiber: 1 }
           ]
         },
         6: {
-          label: "Sat", tag: "Pump / Rest", meals: [
-            { meal: "Breakfast", name: "Post-Workout Shake + Veg Oats", desc: "Shake: 40g whey + creatine in water. Plate: microwave veg oats + 5 almonds", cal: 400, protein: 38, carbs: 41, fat: 10, fiber: 6 },
-            { meal: "Mid-Morning", name: "Papaya + Roasted Chana", desc: "Papaya bowl + 30g roasted chana — zero prep", cal: 170, protein: 9, carbs: 30, fat: 3, fiber: 7 },
-            { meal: "Lunch", name: "Rajma + Rice + Big Salad + Curd + Egg", desc: "Wed-batch rajma + rice + salad box + curd + 1 boiled egg", cal: 520, protein: 28, carbs: 62, fat: 14, fiber: 13 },
-            { meal: "Afternoon", name: "Sprouts Chaat + Boiled Egg", desc: "Sprouts box + 1 pre-boiled egg — zero prep", cal: 200, protein: 18, carbs: 20, fat: 6, fiber: 6 },
-            { meal: "Dinner", name: "Salad First → Egg & Paneer Fried Rice", desc: "Start: salad. One pan 10 min: 3 eggs + 50g paneer + batch rice + peas", cal: 410, protein: 29, carbs: 40, fat: 16, fiber: 5 },
-            { meal: "Before Bed", name: "Casein / Thick Curd", desc: "30-40g casein or 300g thick curd", cal: 150, protein: 25, carbs: 8, fat: 3, fiber: 0 }
+          label: "Sat", tag: "Rest Day", meals: [
+            { meal: "Breakfast", name: "Hot Water + Lime", desc: "1 mug hot water with 1 tsp lime juice, on waking", cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0 },
+            { meal: "Breakfast", name: "Masala Oats + 3 Boiled Eggs + Curd", desc: "Microwave oats + 3 boiled eggs + curd. Creatine in a glass of water (rest day)", cal: 420, protein: 34, carbs: 40, fat: 13, fiber: 6 },
+            { meal: "Mid-Morning", name: "Papaya + Roasted Chana", desc: "Papaya bowl + 30g roasted chana — zero prep", cal: 160, protein: 9, carbs: 28, fat: 3, fiber: 7 },
+            { meal: "Lunch", name: "Chicken + Rice + Big Salad + Curd", desc: "Day off — 130g chicken, rice, salad, curd", cal: 450, protein: 36, carbs: 44, fat: 13, fiber: 8 },
+            { meal: "Afternoon", name: "Sprouts Chaat + 2 Boiled Eggs", desc: "Sprouts box + 2 pre-boiled eggs — zero prep", cal: 180, protein: 17, carbs: 18, fat: 5, fiber: 6 },
+            { meal: "Dinner", name: "Salad First → Home Thali: Paneer/Chicken + Roti + Dal", desc: "Day off: start with the salad, then a home thali", cal: 425, protein: 34, carbs: 39, fat: 14, fiber: 9 },
+            { meal: "Before Bed", name: "Hot Skimmed Milk (Shilajit)", desc: "200ml hot skimmed milk with shilajit, home before bed", cal: 90, protein: 8, carbs: 12, fat: 1, fiber: 0 },
+            { meal: "Before Bed", name: "Gond Laddoo (small)", desc: "1 small gond laddoo (rest-cal day)", cal: 120, protein: 2, carbs: 14, fat: 7, fiber: 1 }
           ]
         },
         0: {
           label: "Sun", tag: "5K + Prep Day", meals: [
-            { meal: "Breakfast", name: "Post-5K Oats + 3 Eggs + Curd", desc: "Microwave oats + 3 boiled eggs + curd, after the run. Creatine in water", cal: 440, protein: 27, carbs: 36, fat: 20, fiber: 6 },
-            { meal: "Mid-Morning", name: "Banana + Roasted Chana", desc: "1 banana + 30g roasted chana — zero prep", cal: 170, protein: 7, carbs: 34, fat: 2, fiber: 7 },
-            { meal: "Lunch", name: "Chicken Biryani Bowl + Raita + Salad", desc: "First Sun-batch serving: chicken folded into fresh rice + raita + salad", cal: 530, protein: 38, carbs: 52, fat: 17, fiber: 8 },
-            { meal: "Afternoon", name: "Sprouts Chaat + Egg Whites", desc: "Fresh sprouts box + 3 boiled egg whites — zero prep", cal: 200, protein: 19, carbs: 20, fat: 5, fiber: 6 },
-            { meal: "Dinner", name: "Soup First → Dal + Rice + 2 Eggs", desc: "Start: fresh veg soup (pot is out). Sun-batch dal + rice + 2 eggs", cal: 350, protein: 19, carbs: 44, fat: 10, fiber: 9 },
-            { meal: "Before Bed", name: "Casein + Curd", desc: "Casein in 150g curd — overnight protein", cal: 160, protein: 27, carbs: 8, fat: 3, fiber: 0 }
+            { meal: "Breakfast", name: "Hot Water + Lime", desc: "1 mug hot water with 1 tsp lime juice, on waking", cal: 5, protein: 0, carbs: 1, fat: 0, fiber: 0 },
+            { meal: "Breakfast", name: "Post-Run Shake", desc: "40g whey + creatine in water, after the 5K", cal: 150, protein: 30, carbs: 4, fat: 2, fiber: 0 },
+            { meal: "Breakfast", name: "Oats + 2 Boiled Eggs + Curd", desc: "Microwave oats + 2 boiled eggs + curd, after the run", cal: 280, protein: 20, carbs: 30, fat: 10, fiber: 6 },
+            { meal: "Mid-Morning", name: "Banana + Roasted Chana", desc: "1 banana + 30g roasted chana — zero prep", cal: 160, protein: 8, carbs: 32, fat: 2, fiber: 7 },
+            { meal: "Lunch", name: "Fresh Chicken Rice Bowl + Raita + Salad", desc: "Sun cook day: 150g chicken folded into fresh rice + raita + salad", cal: 470, protein: 40, carbs: 46, fat: 13, fiber: 8 },
+            { meal: "Afternoon", name: "Sprouts Chaat + Egg Whites", desc: "Fresh sprouts box + 3 boiled egg whites — zero prep", cal: 160, protein: 18, carbs: 18, fat: 4, fiber: 6 },
+            { meal: "Dinner", name: "Salad First → Dal + Rice + 2 Eggs (home)", desc: "Day off: start with the salad, then Sun-batch dal + rice + 2 pre-boiled eggs", cal: 415, protein: 28, carbs: 45, fat: 13, fiber: 9 },
+            { meal: "Before Bed", name: "Hot Skimmed Milk (Shilajit)", desc: "200ml hot skimmed milk with shilajit, home before bed", cal: 90, protein: 8, carbs: 12, fat: 1, fiber: 0 },
+            { meal: "Before Bed", name: "Gond Laddoo (small)", desc: "1 small gond laddoo (rest-cal day)", cal: 120, protein: 2, carbs: 14, fat: 7, fiber: 1 }
           ]
         }
       };
 
-      // Weekly batch-prep guide shown in the meal-plan modal
+      // Weekly batch-prep guide shown in the meal-plan modal. Dinners are the office
+      // thali — no dinner cooking at home; prep covers breakfasts, packed lunches and
+      // snacks so the tiffin is grab-and-go before you leave for the evening shift.
       const PREP_GUIDE = [
         {
-          title: "Sunday · ~85 min (after 5K)", items: [
-            "Rice cooker: 4-5 cups rice → fridge boxes (keeps 4 days)",
-            "Pressure cooker: chicken curry 650-700g → 4 boxes (Sun L, Mon-Wed L)",
-            "Same cooker, 2nd round: big dal pot → 3 boxes (Sun/Mon/Tue dinners)",
+          title: "Sunday · ~70 min (after 5K)", items: [
+            "Rice cooker: 4-5 cups rice → fridge boxes for the packed tiffins (keeps 4 days)",
+            "Pressure cooker: chicken curry 550-650g → 3 lunch tiffins (Mon/Tue/Wed)",
+            "Same cooker, 2nd round: dal pot → Sun dinner + a couple of tiffin toppers",
             "Boil 10 eggs alongside (breakfasts + snacks)",
             "Salad kit: cucumber + carrot + beetroot sticks, onion + tomato box (keeps 3 days)",
-            "Rinse + 3-min boil 300g sprouts → snack boxes; clear veg soup for tonight",
+            "Rinse + 3-min boil 300g sprouts → snack boxes",
             "Soak rajma for Wednesday",
-            "Utensils used: rice cooker + pressure cooker + 1 ladle"
+            "Keep shilajit + a lime by the kettle for the daily rituals (laddoos already stocked)"
           ]
         },
         {
-          title: "Wednesday · ~55 min (with dinner)", items: [
-            "Khichdi ×2 portions — one pot (Wed + Thu dinner); veg soup for tonight alongside",
-            "Paneer bhurji ×2 — one pan (Thu + Fri lunch)",
-            "Pressure-cook soaked rajma ×2 (Fri dinner + Sat lunch)",
+          title: "Wednesday · ~40 min (before the shift)", items: [
+            "Paneer bhurji ×2 — one pan (Thu + Fri lunch tiffins)",
+            "Pressure-cook soaked rajma (Fri lunch tiffin)",
             "Boil 6 eggs · top up salad kit + sprouts · top up rice if low",
-            "New fiber level — if bloated the first week, add the dinner starters from day 4",
-            "Rest of the week: pan, microwave, air fryer — and the salad box"
+            "Pack tomorrow's tiffin the night before so it's grab-and-go at 1pm",
+            "Mon–Fri dinner is the office thali — nothing to cook; Sat/Sun is a fresh home thali"
           ]
         }
       ];
@@ -3372,7 +3434,9 @@
         // NB plan exercises
         "Shoulder Press 3×8-12": 40, "Cable Fly 2×12-15": 20, "Back Squat/Goblet Squat 4×6-10": 75, "Walking Lunges 3×12/side": 45, "Hip Thrust 3×10-12": 45, "Ab Wheel/Cable Crunch 3×10-15": 25, "Cable Row 3×12-15": 25, "Bodyweight Squats 3×15": 15, "Push-ups 3×10-15": 20, "Trap Bar Deadlift 3×4-8": 70, "Bulgarian Split Squat 3×10-12/side": 50, "Hip Thrust 3×10-12": 45, "Leg Extension 2×12-15": 25, "Farmer's Carries 3×30-45s": 20, "Pigeon pose 60s/side": 5, "Full body foam roll 3 min": 6, "Shoulder wall slides 10 reps": 3, "Standing Calf Raises 3×12-15": 20,
         // Labels used in plans that were previously missing from this map
-        "Face Pulls 3×12-20": 25, "Lateral Raise 4×12-20": 30, "Lateral Raise 3×12-20": 25, "Tricep Rope Pressdown 3×10-15": 20, "Leg Curl 3×10-15": 30, "Hammer Curls 2×10-15": 15, "Romanian Deadlift 3×8-12": 55
+        "Face Pulls 3×12-20": 25, "Lateral Raise 4×12-20": 30, "Lateral Raise 3×12-20": 25, "Tricep Rope Pressdown 3×10-15": 20, "Leg Curl 3×10-15": 30, "Hammer Curls 2×10-15": 15, "Romanian Deadlift 3×8-12": 55,
+        // Dedicated core day
+        "Russian Twists 3×20/side": 20, "Side Plank 3×30-45s/side": 15, "15 min incline walk (fat-burn finisher)": 90
       };
 
       /* ═══════════════════════════════════════════════════
@@ -3535,6 +3599,7 @@
         "Russian Twists": ["Sit, lean back ~45°, plate at your chest, heels lightly down.", "Rotate the plate side to side, chest tall.", "Slower = harder; touch the plate to the floor each side.", "Avoid: rounding the lower back or just waving your arms."],
         "Plank Hold": ["Forearms down, elbows under shoulders, body one straight line.", "Squeeze glutes, tuck ribs, push the floor away with forearms.", "Breathe — don't hold your breath.", "Avoid: hips sagging or piking; stop the set when form breaks."],
         "Dead Bug": ["Lie on your back, arms up, knees over hips at 90°.", "Lower opposite arm and leg toward the floor, exhaling.", "Lower back stays pressed into the floor the whole rep.", "Avoid: letting the back arch — shorten the range if it does."],
+        "Side Plank": ["On your side, elbow under shoulder, feet stacked (or stagger the top foot forward for balance).", "Lift the hips so the body is one straight line; squeeze the down-side oblique.", "Hold tall and breathe steadily; keep the neck long.", "Avoid: letting the hip drop or rolling forward/back."],
         "Farmer's Carries": ["Heavy weight in each hand (DBs, or a loaded backpack in one hand).", "Walk tall and slow — shoulders back, ribs down, grip crushed.", "Breathe behind a braced core.", "Avoid: leaning or shrugging; the carry is a moving plank."],
         "Curls": ["Elbows pinned to your sides — only the forearm moves.", "Curl to shoulder height, squeeze 1s, 3s negative.", "Full stretch at the bottom every rep.", "Avoid: swinging or shortening the range as you tire."],
         // Mobility / recovery day
@@ -3673,7 +3738,7 @@
 
       window.getCalTargetFor = function (dateKey) {
         const w = getWorkoutPlan()[dow(dateKey)];
-        const isRest = !w || w.name.toLowerCase().includes("recovery") || w.name.toLowerCase().includes("mobility") || w.name.toLowerCase().includes("rest");
+        const isRest = !w || w.rest === true || w.name.toLowerCase().includes("recovery") || w.name.toLowerCase().includes("mobility") || w.name.toLowerCase().includes("rest");
         const base = isRest ? TARGETS.calRest : TARGETS.calTraining;
         return Math.round(base * rampFactorFor(dateKey) / 10) * 10;
       }
@@ -4565,6 +4630,20 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         return SUPPLEMENTS; // legacy fallback
       };
 
+      // Is a supplement scheduled for this date? Daily by default; `everyDays:N` uses a
+      // stable epoch-day cadence (so alternate-day items land on a fixed rhythm), and
+      // `monthlyDay:D` fires on that calendar date. Drives the day's supplement checklist.
+      window.isSupplementDue = function (s, dateKey) {
+        if (!s) return true;
+        const d = new Date((dateKey || todayStr()) + "T12:00:00");
+        if (num0(s.monthlyDay) > 0) return d.getDate() === s.monthlyDay;
+        if (num0(s.everyDays) > 1) return Math.floor(d.getTime() / 86400000) % s.everyDays === 0;
+        return true; // daily
+      };
+      window.getSupplementsForDay = function (dateKey) {
+        return getUserSupplements().filter(s => isSupplementDue(s, dateKey || selectedDate));
+      };
+
       // Save a profile field and sync
       window._saveProfileField = async function (field, value) {
         userProfile[field] = value;
@@ -4841,13 +4920,15 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         return 'volume'; // includes remaining < 0
       }
 
-      // Next unlogged MEAL_PLAN meal whose clock slot isn't long past
+      // Next unlogged MEAL_PLAN meal whose clock slot isn't long past. A hunger rescue
+      // should offer a real, satiating plate — so skip the wake-up lime water and the
+      // pure-liquid shakes/milk (no fiber): "eat your next meal" means chewed food.
       window.nextPlannedMeal = function () {
         const plan = MEAL_PLAN[dow(selectedDate)];
         if (!plan) return null;
         const logged = new Set(activeItems(dayData.foods).map(f => f.name + '|' + f.meal));
         const h = getISTHourFloat();
-        const left = plan.meals.filter(m => !logged.has(m.name + '|' + m.meal));
+        const left = plan.meals.filter(m => !logged.has(m.name + '|' + m.meal) && num0(m.cal) >= 50 && num0(m.fiber) > 0);
         if (!left.length) return null;
         return left.find(m => (MEAL_CLOCK[m.meal] ?? 24) >= h - 1.5) || left[0];
       }
@@ -5766,6 +5847,83 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
       /* ═══════════════════════════════════════════════════
          RENDER ENGINE
          ═══════════════════════════════════════════════════ */
+      /* ═══════════════════════════════════════════════════
+         IN-APP NUDGES — dismissible reminders shown on open
+         Each rule: when(ctx) decides if it applies right now; body(ctx) is the
+         message. Only shown for today, in #nudgeBar above the tab content, and a
+         dismissal (✕) is remembered for the rest of the day. Add a rule here and it
+         just works — the bar re-evaluates on every render. Kept separate from the
+         opt-in OS notification engine below (this needs no permission, fires on open).
+         ═══════════════════════════════════════════════════ */
+      const NUDGES = [
+        {
+          id: 'sleep', icon: 'moon', tone: 'info', title: 'Time to wind down',
+          when: c => c.h >= 23 || c.h < 5,
+          body: () => 'It’s late — wrap up and aim for 7–8h of sleep before your next shift.'
+        },
+        {
+          id: 'water', icon: 'droplets', tone: 'warn', title: 'Drink some water',
+          when: c => c.h >= 11 && c.h <= 24 && c.waterDeficitMl >= 700,
+          body: c => `You're about ${c.waterBehindGlasses} glass${c.waterBehindGlasses > 1 ? 'es' : ''} behind pace — ${(c.waterDeficitMl / 1000).toFixed(1)} L to catch up. Sip some now.`
+        },
+        {
+          id: 'logmeals', icon: 'utensils', tone: 'info', title: 'Log your meals',
+          when: c => c.h >= 14 && c.foods === 0,
+          body: () => 'Nothing logged yet today — add your meals so the ring and pacing stay honest.'
+        },
+        {
+          id: 'supps', icon: 'pill', tone: 'accent', title: 'Supplements due',
+          when: c => c.h >= 12 && c.suppsDue > 0,
+          body: c => `${c.suppsDue} supplement${c.suppsDue > 1 ? 's' : ''} scheduled today still unticked.`
+        }
+      ];
+
+      window.nudgeCtx = function () {
+        const h = getISTHourFloat();
+        // Water expected-by-now over the waking window (DAY_START_HOUR → midnight).
+        const frac = Math.max(0, Math.min(1, (h - DAY_START_HOUR) / (24 - DAY_START_HOUR)));
+        const waterDeficitMl = Math.max(0, Math.round(TARGETS.water * frac - num0(dayData.water)));
+        const suppsDue = getSupplementsForDay(selectedDate).filter(s => !lwwGet(dayData.supplementChecks, s.id)).length;
+        return {
+          h, waterDeficitMl, waterBehindGlasses: Math.max(1, Math.round(waterDeficitMl / 250)),
+          foods: activeItems(dayData.foods).length, suppsDue
+        };
+      };
+
+      const NUDGE_DISMISS_KEY = 'HT_nudge_dismiss';
+      function _nudgeDismissed() {
+        try {
+          const o = JSON.parse(localStorage.getItem(NUDGE_DISMISS_KEY) || '{}');
+          return (o.date === todayStr() && Array.isArray(o.ids)) ? o.ids : [];
+        } catch (_) { return []; }
+      }
+      window.dismissNudge = function (id) {
+        const ids = _nudgeDismissed();
+        if (!ids.includes(id)) ids.push(id);
+        try { localStorage.setItem(NUDGE_DISMISS_KEY, JSON.stringify({ date: todayStr(), ids })); } catch (_) { }
+        renderNudgeBar();
+      };
+
+      window.evalNudges = function () {
+        if (typeof dayData === 'undefined' || !dayData || selectedDate !== todayStr()) return [];
+        const c = nudgeCtx();
+        const dismissed = new Set(_nudgeDismissed());
+        return NUDGES.filter(n => !dismissed.has(n.id) && n.when(c))
+          .map(n => ({ id: n.id, icon: n.icon, tone: n.tone, title: n.title, text: n.body(c) }));
+      };
+
+      window.renderNudgeBar = function () {
+        const bar = document.getElementById('nudgeBar');
+        if (!bar) return;
+        bar.innerHTML = evalNudges().map(n => `
+          <div class="nudge ${n.tone === 'warn' ? 'warn' : n.tone === 'info' ? 'info' : ''}">
+            <span class="nudge-icon">${licon(n.icon, 16)}</span>
+            <div class="nudge-body"><div class="nudge-title">${esc(n.title)}</div><div class="nudge-text">${esc(n.text)}</div></div>
+            <button class="nudge-close" onclick="dismissNudge('${n.id}')" aria-label="Dismiss">✕</button>
+          </div>`).join('');
+        refreshIcons();
+      };
+
       window.render = function () {
         recompute();
         const isToday = selectedDate === todayStr();
@@ -5779,6 +5937,7 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           setTimeout(() => { const c = document.getElementById("chatMessages"); if (c) c.scrollTop = c.scrollHeight; }, 50);
         }
         else if (currentTab === "stats") loadStats();
+        renderNudgeBar();
         refreshIcons();
       }
 
@@ -5807,7 +5966,8 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           <button class="food-remove" onclick="event.stopPropagation();removeFood('${f.id}')">✕</button>
         </div>`).join("");
 
-        const suppItems = getUserSupplements();
+        const allSupps = getUserSupplements();
+        const suppItems = getSupplementsForDay(selectedDate); // only what's due today
         const isCustomSupp = Array.isArray((userProfile || {}).customSupplements);
         let suppList = suppItems.map(s => {
           const taken = lwwGet(dayData.supplementChecks, s.id);
@@ -5816,8 +5976,10 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
           <span class="supp-freq">${esc(s.freq)}</span><span class="supp-check">${taken ? "✓" : ""}</span>${isCustomSupp ? `<button class="log-del" onclick="event.stopPropagation();removeSupplement('${s.id}')">✕</button>` : ''}
           </div>`;
         }).join("");
-        if (!suppItems.length) {
+        if (!allSupps.length) {
           suppList = `<div class="empty-state"><div class="empty-icon">${licon('pill', 24)}</div>No supplements — add yours below</div>`;
+        } else if (!suppItems.length) {
+          suppList = `<div class="empty-state"><div class="empty-icon">${licon('check-circle', 24)}</div>Nothing scheduled today</div>`;
         }
 
         // Micros
@@ -7581,12 +7743,14 @@ Rules:
       window.getISTHour = function () { return Math.floor(getISTHourFloat()); }
 
       window.inferMealFromTime = function () {
+        // Evening-shift buckets: late breakfast after the gym, packed lunch eaten
+        // late at work, office dinner ~8pm, late-night home snack.
         const h = getISTHour();
-        if (h <= 10) return 'Breakfast';
-        if (h <= 12) return 'Mid-Morning';
-        if (h <= 14) return 'Lunch';
-        if (h <= 17) return 'Afternoon';
-        if (h <= 23) return 'Dinner';
+        if (h <= 11) return 'Breakfast';
+        if (h <= 13) return 'Mid-Morning';
+        if (h <= 16) return 'Lunch';
+        if (h <= 19) return 'Afternoon';
+        if (h <= 22) return 'Dinner';
         return 'Snack';
       }
 

@@ -76,12 +76,15 @@ test.describe('satiety-tuned meal plan', () => {
     const days = await page.evaluate(([mon, tue, wed, thu, fri, sat, sun]) => {
       const dates = { 1: mon, 2: tue, 3: wed, 4: thu, 5: fri, 6: sat, 0: sun };
       const PLAN = __htConst('MEAL_PLAN');
+      const CANON = ['Breakfast', 'Mid-Morning', 'Lunch', 'Afternoon', 'Dinner', 'Before Bed'];
       return [1, 2, 3, 4, 5, 6, 0].map(d => {
         const p = PLAN[d];
         const t = p.meals.reduce((a, m) => ({
           cal: a.cal + m.cal, protein: a.protein + m.protein, fiber: a.fiber + m.fiber,
         }), { cal: 0, protein: 0, fiber: 0 });
-        return { label: p.label, target: getCalTargetFor(dates[d]), slots: p.meals.length, ...t };
+        const present = new Set(p.meals.map(m => m.meal));
+        return { label: p.label, target: getCalTargetFor(dates[d]), items: p.meals.length,
+          missingSlots: CANON.filter(s => !present.has(s)), ...t };
       });
     }, [MON, TUE, WED, THU, FRI, SAT, SUN]);
 
@@ -89,7 +92,8 @@ test.describe('satiety-tuned meal plan', () => {
       expect(d.cal, `${d.label} calories`).toBe(d.target);
       expect(d.protein, `${d.label} protein`).toBeGreaterThanOrEqual(137);
       expect(d.fiber, `${d.label} fiber`).toBeGreaterThanOrEqual(31);
-      expect(d.slots, `${d.label} meal slots`).toBe(6);
+      // Each of the 6 canonical slots is represented (some hold multiple line items now).
+      expect(d.missingSlots, `${d.label} missing slots`).toEqual([]);
     }
     expect(days.reduce((s, d) => s + d.cal, 0)).toBe(13750);
   });
@@ -98,29 +102,32 @@ test.describe('satiety-tuned meal plan', () => {
     await boot(page);
     // Previously ~45% of intake was drunk, led by a 550-650 kcal blended shake
     // (whey + oats + banana + PB + milk + dates). Liquid calories barely blunt
-    // hunger. The lean post-workout shake (40g whey + creatine in WATER,
-    // ~150 kcal) is deliberate and stays — it's the user's clean protein and
-    // creatine vehicle. The calorie add-ins now arrive on a plate.
+    // hunger. Now each ritual is its OWN line item: the lean post-workout shake
+    // (40g whey + creatine in WATER, ~150 kcal) and the bedtime skimmed milk stay
+    // small; the calorie add-ins arrive on a plate.
     const r = await page.evaluate(() => {
       const PLAN = __htConst('MEAL_PLAN');
       const meals = [1, 2, 3, 4, 5, 6, 0].flatMap(d => PLAN[d].meals);
-      const breakfasts = [1, 2, 3, 4, 5, 6, 0].map(d => PLAN[d].meals.find(m => m.meal === 'Breakfast'));
-      // A meal is "drunk" only if every component is a beverage. Meals like
-      // "Shake + Veg Oats + Egg" or "Soup First -> Khichdi" are chewed food.
-      const drinkOnly = /^(whey|milk|shake|chaas|buttermilk|golden milk|warm milk|clear veg soup)\b/i;
+      const breakfasts = [1, 2, 3, 4, 5, 6, 0].flatMap(d => PLAN[d].meals.filter(m => m.meal === 'Breakfast'));
+      // Any item that is purely a beverage (shake, milk, lime water, chaas…).
+      const drink = /(^|→ )?(hot water|whey|shake|milk|chaas|buttermilk|lassi|smoothie)/i;
+      const shakes = meals.filter(m => /shake/i.test(m.name));
       return {
-        drinkOnlyBig: meals.filter(m => drinkOnly.test(m.name) && m.cal > 200).map(m => m.name),
-        blendedShakes: meals.filter(m => /shake/i.test(m.name) && !/oats|egg|chilla|banana|curd|toast/i.test(m.name)).map(m => m.name),
-        shakeInWater: breakfasts.filter(m => /shake/i.test(m.name)).every(m => /water/i.test(m.desc)),
+        // No pure-drink item carries real calories — protein/fiber must be chewed.
+        bigDrinks: meals.filter(m => drink.test(m.name) && m.cal > 200).map(m => m.name),
+        // Every shake item is whey-in-water and lean (≤200 kcal), never a blended bomb.
+        shakesWaterLean: shakes.every(m => /water/i.test(m.desc) && m.cal <= 200),
         creatineDaily: [1, 2, 3, 4, 5, 6, 0].every(d => PLAN[d].meals.some(m => /creatine/i.test(m.desc))),
-        maxBreakfast: Math.max(...breakfasts.map(m => m.cal)),
+        // The wake-up lime water is its own tappable line item on every day.
+        limeWaterDaily: [1, 2, 3, 4, 5, 6, 0].every(d => PLAN[d].meals.some(m => /hot water/i.test(m.name))),
+        maxBreakfastItem: Math.max(...breakfasts.map(m => m.cal)),
       };
     });
-    expect(r.drinkOnlyBig, 'no drink-only meal over 200 kcal').toEqual([]);
-    expect(r.blendedShakes, 'every shake meal is paired with chewed food').toEqual([]);
-    expect(r.shakeInWater, 'shakes are whey in water, not blended calorie bombs').toBe(true);
+    expect(r.bigDrinks, 'no drink-only item over 200 kcal').toEqual([]);
+    expect(r.shakesWaterLean, 'every shake is lean whey-in-water, not a blended bomb').toBe(true);
     expect(r.creatineDaily, 'creatine has a named home every day, incl. rest days').toBe(true);
-    expect(r.maxBreakfast, 'breakfast is a plate, not a 650 kcal drink').toBeLessThanOrEqual(560);
+    expect(r.limeWaterDaily, 'wake-up lime water is its own line item every day').toBe(true);
+    expect(r.maxBreakfastItem, 'no single breakfast item is a 650 kcal bomb').toBeLessThanOrEqual(460);
   });
 
   test('every dinner opens with a salad or soup starter', async ({ page }) => {
@@ -139,6 +146,35 @@ test.describe('satiety-tuned meal plan', () => {
     const src = await page.evaluate(() => window.addFromPlan.toString());
     expect(src).toContain('fiber: num0(data.fiber)');
     expect(src).toContain('num0(est.fiber) || num0(data.fiber)');
+  });
+});
+
+test.describe('supplement scheduling', () => {
+  test('dailies show every day; Shelcal alternates; Uprise D3 only on the 1st', async ({ page }) => {
+    await boot(page);
+    const r = await page.evaluate(() => {
+      const supps = getUserSupplements();
+      const byId = Object.fromEntries(supps.map(s => [s.id, s]));
+      const dates = [];
+      for (let i = 0; i < 6; i++) { const d = new Date('2026-08-01T12:00:00'); d.setDate(d.getDate() + i); dates.push(localDateStr(d)); }
+      return {
+        creatineEveryday: dates.every(dt => isSupplementDue(byId.creatine, dt)),
+        shelcalPattern: dates.map(dt => isSupplementDue(byId.shelcal, dt)),
+        upriseFirst: isSupplementDue(byId.vitd, '2026-08-01'),
+        upriseSecond: isSupplementDue(byId.vitd, '2026-08-02'),
+        dueOnAug2: getSupplementsForDay('2026-08-02').map(s => s.id),
+        fullCount: supps.length,
+      };
+    });
+    expect(r.creatineEveryday, 'a daily supplement shows every day').toBe(true);
+    // Shelcal (everyDays:2) must alternate — never due two days running.
+    for (let i = 1; i < r.shelcalPattern.length; i++) {
+      expect(r.shelcalPattern[i], 'Shelcal alternates day to day').not.toBe(r.shelcalPattern[i - 1]);
+    }
+    expect(r.upriseFirst, 'Uprise D3 is due on the 1st').toBe(true);
+    expect(r.upriseSecond, 'Uprise D3 is not due on the 2nd').toBe(false);
+    expect(r.dueOnAug2, 'monthly item filtered out on a non-1st day').not.toContain('vitd');
+    expect(r.dueOnAug2.length, 'a non-1st day shows fewer than the full stack').toBeLessThan(r.fullCount);
   });
 });
 
