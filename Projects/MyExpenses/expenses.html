@@ -1063,6 +1063,193 @@
             color: var(--danger-color);
         }
 
+        /* ─── Category Goals ─── */
+        .goals-area {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            margin-bottom: 1rem;
+        }
+
+        .goal-card {
+            padding: 0.85rem 0.9rem;
+            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .goal-card-head {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .goal-card-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .goal-status {
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            padding: 0.15rem 0.45rem;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .goal-status.on-track { background: color-mix(in srgb, var(--success-color) 18%, transparent); color: var(--success-color); }
+        .goal-status.warn     { background: color-mix(in srgb, var(--warning-color) 20%, transparent); color: var(--warning-color); }
+        .goal-status.danger   { background: color-mix(in srgb, var(--danger-color) 18%, transparent); color: var(--danger-color); }
+        .goal-status.met      { background: color-mix(in srgb, var(--success-color) 18%, transparent); color: var(--success-color); }
+
+        .goal-remove {
+            background: none;
+            border: none;
+            color: var(--muted-color);
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0.1rem 0.25rem;
+            flex-shrink: 0;
+        }
+        .goal-remove:hover { color: var(--danger-color); }
+
+        .goal-numbers {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            margin-bottom: 0.5rem;
+        }
+        .goal-numbers .spent { font-weight: 600; }
+        .goal-numbers .target { color: var(--muted-color); }
+        .goal-numbers .days { color: var(--muted-color); font-size: 0.72rem; }
+
+        .goal-bar {
+            position: relative;
+            height: 8px;
+            border-radius: 5px;
+            background: color-mix(in srgb, var(--muted-color) 22%, transparent);
+            overflow: hidden;
+        }
+        .goal-bar-fill {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        .goal-bar-fill.ok   { background: var(--success-color); }
+        .goal-bar-fill.warn { background: var(--warning-color); }
+        .goal-bar-fill.over { background: var(--danger-color); }
+
+        /* Pace marker: where linear "on-pace" spend should be by today */
+        .goal-bar-pace {
+            position: absolute;
+            top: -2px; bottom: -2px;
+            width: 2px;
+            background: var(--text-color);
+            opacity: 0.55;
+            z-index: 2;
+        }
+
+        .goal-hint {
+            margin-top: 0.5rem;
+            font-size: 0.72rem;
+            color: var(--muted-color);
+            line-height: 1.4;
+        }
+        .goal-hint.danger { color: var(--danger-color); }
+        .goal-hint.warn   { color: var(--warning-color); }
+
+        /* Offer card */
+        .goal-offer {
+            padding: 0.9rem;
+            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px dashed var(--accent-color);
+        }
+        .goal-offer-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .goal-offer-sub {
+            font-size: 0.75rem;
+            color: var(--muted-color);
+            line-height: 1.45;
+            margin-bottom: 0.7rem;
+        }
+        .goal-offer-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .goal-offer-controls label {
+            font-size: 0.72rem;
+            color: var(--muted-color);
+        }
+        .goal-pct-input {
+            width: 3.4rem;
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            padding: 0.3rem 0.4rem;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            text-align: right;
+        }
+        .goal-offer-target {
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .goal-offer-target .amt { color: var(--accent-color); }
+
+        .goal-offer-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .goal-btn {
+            font-family: var(--font-sans);
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 0.4rem 0.9rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .goal-btn-primary {
+            border: none;
+            background: var(--accent-color);
+            color: #fff;
+        }
+        .goal-btn-primary:hover { opacity: 0.9; }
+        .goal-btn-ghost {
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--muted-color);
+        }
+        .goal-btn-ghost:hover { border-color: var(--accent-color); color: var(--text-color); }
+
+        .goal-unreachable {
+            padding: 0.7rem 0.85rem;
+            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            font-size: 0.76rem;
+            color: var(--muted-color);
+            line-height: 1.45;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+        }
+
         /* ─── Onboarding ─── */
         .onboarding-screen {
             display: none;
@@ -2128,6 +2315,17 @@
         <button class="onboard-save-btn" id="onboardSaveBtn" onclick="saveOnboarding()">Save & Start Tracking</button>
     </div>
 
+    <!-- ─── GOAL RISK MODAL ─── -->
+    <div class="modal-overlay" id="goalRiskModal">
+        <div class="modal-box">
+            <h3>⚠️ Goal at risk</h3>
+            <p id="goalRiskBody"></p>
+            <div class="modal-actions">
+                <button class="modal-cancel" onclick="closeGoalRiskModal()">Got it</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ─── DELETE MODAL ─── -->
     <div class="modal-overlay" id="deleteModal">
         <div class="modal-box">
@@ -2337,6 +2535,7 @@
 
         <!-- ─── Logs section ─── -->
         <div id="section-logs" class="section-content active">
+            <div id="goalsArea" class="goals-area"></div>
             <div id="recentList" class="recent-list"></div>
             <div id="csvExportSection"
                 style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border-color);"></div>
@@ -3289,6 +3488,8 @@
                 renderRecent();
                 initFilters();
                 refreshAnalytics();
+                renderGoals();
+                maybeShowGoalRiskPopups();
             } catch (err) {
                 toast('Failed to load expenses', 'error');
                 console.error(err);
@@ -3392,6 +3593,7 @@
             sortExpenses();
             buildRagIndex();
             renderRecent();
+            renderGoals();
 
             noteWrite();
             docRef.set({
@@ -3419,6 +3621,8 @@
                 resetForm();
                 resetQueueUI();
                 closeFormSheet();
+                // Pace nudge overrides the "added" toast only when there's a goal signal.
+                notifyGoalAfterLog(category);
             }
         }
 
@@ -4141,6 +4345,8 @@ OTHER RULES:
             };
             const docRef = getCollection().doc();
             allExpenses.unshift({ id: docRef.id, ...docData });
+            renderGoals();
+            notifyGoalAfterLog(docData.category);
             noteWrite();
             docRef.set({
                 ...docData,
@@ -4408,6 +4614,7 @@ OTHER RULES:
             buildRagIndex();
             renderRecent();
             refreshAnalytics();
+            renderGoals();
             closeEditModal();
             toast('Expense updated!', 'success');
 
@@ -4437,6 +4644,7 @@ OTHER RULES:
             buildRagIndex();
             renderRecent();
             refreshAnalytics();
+            renderGoals();
             closeEditModal();
             toast('Expense deleted', 'success');
 
@@ -4455,6 +4663,10 @@ OTHER RULES:
 
         document.getElementById('editExpenseModal').addEventListener('click', function (e) {
             if (e.target === this) closeEditModal();
+        });
+
+        document.getElementById('goalRiskModal').addEventListener('click', function (e) {
+            if (e.target === this) closeGoalRiskModal();
         });
 
         /* ═══════════════════════════════════════════════════
@@ -5212,6 +5424,359 @@ Rules:
         }
 
         /* ═══════════════════════════════════════════════════
+           CATEGORY GOALS
+           Per-category monthly spend targets. Baseline = the
+           MINIMUM month total across the 3 completed months
+           before this one; target = a chosen % of that (80%
+           default). Goals surface as an offer in the Logs view
+           while still achievable, then drive two in-app nudges:
+           (1) an at-risk pop-up on open, and (2) pace alerts
+           after logging in the goal's category.
+           Goals sync via userProfile.categoryGoals; offer
+           snoozes / risk-shown flags stay device-local.
+           ═══════════════════════════════════════════════════ */
+        const GOAL = {
+            defaultPct: 80,
+            lookbackMonths: 3,        // completed prior months forming the baseline
+            achieveFloor: 0.80,       // remaining/day may dip to 20% below daily pace and still count as reachable
+            riskLevels: [0.90, 0.75, 0.50], // escalating at-risk pop-up thresholds (share of target), high→low
+            approachBufferFrac: 0.5,  // warn when within this × daily pace of the pace line
+            excluded: ['Rent/Maintenance'] // fixed / non-discretionary — never offered
+        };
+
+        const fmtInt = n => Math.round(n).toLocaleString('en-IN');
+        function monthKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
+        function currentMonthKey() { return monthKey(new Date()); }
+        function todayKey() { return new Date().toISOString().slice(0, 10); }
+        function daysInMonthOf(year, monthIdx) { return new Date(year, monthIdx + 1, 0).getDate(); }
+
+        // Sum of a category's spend within a specific calendar month.
+        function categorySpendInMonth(category, year, monthIdx) {
+            let sum = 0;
+            for (const e of allExpenses) {
+                const d = e.date instanceof Date ? e.date : new Date(e.date);
+                if (e.category === category && d.getFullYear() === year && d.getMonth() === monthIdx) sum += e.amount;
+            }
+            return sum;
+        }
+
+        // Month-to-date spend for a category in the current month.
+        function categoryMTD(category) {
+            const now = new Date();
+            return categorySpendInMonth(category, now.getFullYear(), now.getMonth());
+        }
+
+        // Minimum month total across the N completed months before the current one.
+        // Returns null unless every one of those months has spend, so the min is a
+        // real recurring floor and not an accidental zero from a tracking gap.
+        function categoryBaselineMin(category) {
+            const now = new Date();
+            const totals = [];
+            for (let i = 1; i <= GOAL.lookbackMonths; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                totals.push(categorySpendInMonth(category, d.getFullYear(), d.getMonth()));
+            }
+            if (totals.some(t => t <= 0)) return null;
+            return Math.min(...totals);
+        }
+
+        /* ── storage ── */
+        function getCategoryGoals() { return (userProfile && userProfile.categoryGoals) || {}; }
+
+        let saveCategoryGoalsTimer = null;
+        function persistCategoryGoals() {
+            clearTimeout(saveCategoryGoalsTimer);
+            saveCategoryGoalsTimer = setTimeout(async () => {
+                if (!currentUser || !userProfile) return;
+                try {
+                    noteWrite();
+                    await db.collection('users').doc(currentUser.uid).update({
+                        categoryGoals: userProfile.categoryGoals || {}
+                    });
+                } catch (err) {
+                    console.warn('[Goals] Firestore save failed:', err.message);
+                }
+            }, 400);
+        }
+
+        // Active goal for a category, only if it targets the current month.
+        function activeGoalFor(category) {
+            const g = getCategoryGoals()[category];
+            return (g && g.month === currentMonthKey()) ? g : null;
+        }
+        function activeGoals() {
+            return Object.values(getCategoryGoals()).filter(g => g.month === currentMonthKey());
+        }
+
+        // Offer snoozes ("Not now") — device-local, scoped to the month.
+        function getDismissedOffers() {
+            try { return JSON.parse(localStorage.getItem('goalOffersDismissed') || '{}'); } catch { return {}; }
+        }
+        function isOfferDismissed(category) {
+            return !!getDismissedOffers()[`${category}__${currentMonthKey()}`];
+        }
+        function dismissOfferKey(category) {
+            const d = getDismissedOffers();
+            d[`${category}__${currentMonthKey()}`] = true;
+            localStorage.setItem('goalOffersDismissed', JSON.stringify(d));
+        }
+
+        /* ── progress math ── */
+        function goalProgress(goal) {
+            const now = new Date();
+            const dim = daysInMonthOf(now.getFullYear(), now.getMonth());
+            const dayOfMonth = now.getDate();
+            const daysLeft = dim - dayOfMonth;
+            const mtd = categoryMTD(goal.category);
+            const dailyAvg = goal.target / dim;               // budgeted spend per day
+            const paceLine = dailyAvg * dayOfMonth;           // where MTD "should" be by today
+            const headroom = paceLine - mtd;                  // +ve ⇒ under pace, −ve ⇒ over
+            const pctOfTarget = goal.target > 0 ? mtd / goal.target : 0;
+            const projected = dayOfMonth > 0 ? (mtd / dayOfMonth) * dim : mtd;
+
+            let status;                                       // on-track | warn | danger
+            if (mtd >= goal.target) status = 'danger';        // cap already blown
+            else if (mtd > paceLine) status = 'warn';         // ahead of pace
+            else status = 'on-track';
+
+            // Escalating at-risk level: highest crossed threshold, but only while still
+            // under the cap AND ahead of pace (so hitting 90% on-pace late doesn't alarm).
+            let riskLevel = null;
+            if (mtd < goal.target && mtd > paceLine) {
+                for (const lvl of GOAL.riskLevels) { if (pctOfTarget >= lvl) { riskLevel = lvl; break; } }
+            }
+            return { dim, dayOfMonth, daysLeft, mtd, dailyAvg, paceLine, headroom, pctOfTarget, projected, status, riskLevel };
+        }
+
+        // Can a fresh goal at `target` still be met given this month's spend so far?
+        function isGoalAchievable(category, target) {
+            const now = new Date();
+            const dim = daysInMonthOf(now.getFullYear(), now.getMonth());
+            const daysLeft = dim - now.getDate();
+            const mtd = categoryMTD(category);
+            if (mtd >= target) return false;                  // already spent the whole target
+            if (daysLeft <= 0) return false;                  // month is over
+            const dailyAvg = target / dim;
+            const remainingPerDay = (target - mtd) / daysLeft;
+            return remainingPerDay >= dailyAvg * GOAL.achieveFloor;
+        }
+
+        // Best category to offer a goal for right now (biggest recurring one), or null.
+        function getGoalOfferCandidate() {
+            if (!userProfile) return null;
+            const cats = userProfile.categories || DEFAULT_CATEGORIES;
+            let best = null;
+            for (const category of cats) {
+                if (GOAL.excluded.includes(category)) continue;
+                if (activeGoalFor(category)) continue;        // already has a goal this month
+                if (isOfferDismissed(category)) continue;     // user said "not now"
+                const baseMin = categoryBaselineMin(category);
+                if (!baseMin) continue;                       // < 3 recurring months of history
+                const target = Math.round(baseMin * GOAL.defaultPct / 100);
+                if (target <= 0) continue;
+                if (!best || baseMin > best.baseMin) best = { category, baseMin, target };
+            }
+            return best;
+        }
+
+        /* ── render ── */
+        function renderGoals() {
+            const area = document.getElementById('goalsArea');
+            if (!area) return;
+            if (!userProfile) { area.innerHTML = ''; return; }
+
+            let html = '';
+
+            // 1) Active goals — worst status first, then largest target.
+            const rank = { danger: 0, warn: 1, 'on-track': 2 };
+            const active = activeGoals().map(g => ({ g, p: goalProgress(g) }));
+            active.sort((a, b) => (rank[a.p.status] - rank[b.p.status]) || (b.g.target - a.g.target));
+            for (const { g } of active) html += goalCardHTML(g);
+
+            // 2) One offer (or an unreachable note) for the best candidate.
+            const cand = getGoalOfferCandidate();
+            if (cand) {
+                const enc = encodeURIComponent(cand.category);
+                if (isGoalAchievable(cand.category, cand.target)) {
+                    html += goalOfferHTML(cand, enc);
+                } else {
+                    html += `<div class="goal-unreachable">
+                        <span>A goal for <strong>${esc(cand.category)}</strong> isn't reachable this month — you've already spent close to the target. Try next month.</span>
+                        <button class="goal-btn goal-btn-ghost" onclick="snoozeGoalOffer('${enc}')">Dismiss</button>
+                    </div>`;
+                }
+            }
+
+            area.innerHTML = html;
+        }
+
+        function goalCardHTML(g) {
+            const p = goalProgress(g);
+            const fillPct = Math.min(100, p.pctOfTarget * 100);
+            const pacePct = Math.min(100, (p.dayOfMonth / p.dim) * 100);
+            const fillClass = p.status === 'danger' ? 'over' : (p.status === 'warn' ? 'warn' : 'ok');
+            const daysWord = `${p.daysLeft} day${p.daysLeft === 1 ? '' : 's'}`;
+            const dLeft = `${daysWord} left`;
+
+            let statusLabel, statusClass;
+            if (p.mtd >= g.target) { statusLabel = 'Over budget'; statusClass = 'danger'; }
+            else if (p.riskLevel) { statusLabel = 'At risk'; statusClass = 'danger'; }
+            else if (p.status === 'warn') { statusLabel = 'Above pace'; statusClass = 'warn'; }
+            else { statusLabel = 'On track'; statusClass = 'on-track'; }
+
+            let hint, hintClass = '';
+            if (p.mtd >= g.target) {
+                hint = `Full ₹${fmtInt(g.target)} budget used — ₹${fmtInt(p.mtd - g.target)} over.`;
+                hintClass = 'danger';
+            } else if (p.headroom < 0) {
+                hint = `₹${fmtInt(-p.headroom)} ahead of pace — at this rate you'll finish near ₹${fmtInt(p.projected)}.`;
+                hintClass = 'warn';
+            } else {
+                hint = `₹${fmtInt(p.headroom)} under today's pace · ₹${fmtInt(g.target - p.mtd)} left for ${daysWord}.`;
+            }
+
+            return `<div class="goal-card">
+                <div class="goal-card-head">
+                    <span class="goal-card-name">${esc(g.category)} goal</span>
+                    <span class="goal-status ${statusClass}">${statusLabel}</span>
+                    <button class="goal-remove" title="Remove goal" onclick="removeGoal('${encodeURIComponent(g.category)}')">✕</button>
+                </div>
+                <div class="goal-numbers">
+                    <span><span class="spent">₹${fmtInt(p.mtd)}</span> <span class="target">/ ₹${fmtInt(g.target)}</span></span>
+                    <span class="days">${dLeft}</span>
+                </div>
+                <div class="goal-bar">
+                    <div class="goal-bar-fill ${fillClass}" style="width:${fillPct}%"></div>
+                    <div class="goal-bar-pace" style="left:${pacePct}%" title="On-pace marker for today"></div>
+                </div>
+                <div class="goal-hint ${hintClass}">${hint}</div>
+            </div>`;
+        }
+
+        function goalOfferHTML(cand, enc) {
+            return `<div class="goal-offer">
+                <div class="goal-offer-title">Set a goal for ${esc(cand.category)}?</div>
+                <div class="goal-offer-sub">Your lowest spend here in the last 3 months was ₹${fmtInt(cand.baseMin)}. Set a target below that and I'll help you hold it.</div>
+                <div class="goal-offer-controls">
+                    <label>Target</label>
+                    <input type="number" class="goal-pct-input" id="goalPct-${enc}" min="10" max="100" step="5" value="${GOAL.defaultPct}" oninput="updateOfferTarget('${enc}', ${cand.baseMin})">
+                    <label>% of ₹${fmtInt(cand.baseMin)}</label>
+                    <span class="goal-offer-target">= <span class="amt" id="goalTargetPreview-${enc}">₹${fmtInt(cand.target)}</span></span>
+                </div>
+                <div class="goal-offer-actions">
+                    <button class="goal-btn goal-btn-primary" onclick="setGoalFromOffer('${enc}', ${cand.baseMin})">Set goal</button>
+                    <button class="goal-btn goal-btn-ghost" onclick="snoozeGoalOffer('${enc}')">Not now</button>
+                </div>
+            </div>`;
+        }
+
+        function clampPct(v) {
+            let pct = parseFloat(v);
+            if (!(pct > 0)) pct = GOAL.defaultPct;
+            return Math.min(100, Math.max(1, pct));
+        }
+
+        function updateOfferTarget(enc, baseMin) {
+            const pct = clampPct(document.getElementById(`goalPct-${enc}`).value);
+            const preview = document.getElementById(`goalTargetPreview-${enc}`);
+            if (preview) preview.textContent = '₹' + fmtInt(Math.round(baseMin * pct / 100));
+        }
+
+        function setGoalFromOffer(enc, baseMin) {
+            const category = decodeURIComponent(enc);
+            const input = document.getElementById(`goalPct-${enc}`);
+            const pct = clampPct(input ? input.value : GOAL.defaultPct);
+            const target = Math.round(baseMin * pct / 100);
+
+            if (!isGoalAchievable(category, target)) {
+                toast('Already spent too much this month — try next month', 'error');
+                return;
+            }
+            if (!userProfile.categoryGoals) userProfile.categoryGoals = {};
+            userProfile.categoryGoals[category] = {
+                category, month: currentMonthKey(), target, pct,
+                baselineMin: baseMin, setOn: todayKey()
+            };
+            persistCategoryGoals();
+            renderGoals();
+            toast(`Goal set — keep ${category} under ₹${fmtInt(target)}`, 'success');
+        }
+
+        function snoozeGoalOffer(enc) {
+            dismissOfferKey(decodeURIComponent(enc));
+            renderGoals();
+        }
+
+        function removeGoal(enc) {
+            const category = decodeURIComponent(enc);
+            if (!userProfile || !userProfile.categoryGoals) return;
+            delete userProfile.categoryGoals[category];
+            persistCategoryGoals();
+            dismissOfferKey(category);      // don't immediately re-offer the same category
+            renderGoals();
+            toast('Goal removed', '');
+        }
+
+        /* ── notification 1: at-risk pop-up on app open ──
+           Escalating thresholds (50% → 75% → 90%). Each level shows once per goal
+           per month (we remember the highest level already shown), and at most ONE
+           pop-up fires per app open — the single highest-priority goal, ranked by
+           importance (potential saving = baseline − target) then achievability
+           (budget still left, from MTD). */
+        function getRiskShownMap() {
+            try { return JSON.parse(localStorage.getItem('goalRiskShown') || '{}'); } catch { return {}; }
+        }
+        function riskLevelShown(category) {
+            return getRiskShownMap()[`${category}__${currentMonthKey()}`] || 0;
+        }
+        function markRiskShown(category, level) {
+            const m = getRiskShownMap();
+            m[`${category}__${currentMonthKey()}`] = level;
+            localStorage.setItem('goalRiskShown', JSON.stringify(m));
+        }
+        function goalSaving(g) { return Math.max(0, (g.baselineMin || 0) - g.target); }
+
+        function maybeShowGoalRiskPopups() {
+            // Candidates: goals that crossed a new (higher) risk level not yet shown.
+            const pool = [];
+            for (const g of activeGoals()) {
+                const p = goalProgress(g);
+                if (p.riskLevel && p.riskLevel > riskLevelShown(g.category)) pool.push({ g, p });
+            }
+            if (pool.length === 0) return;
+
+            // Prioritise: bigger potential saving first, then more budget still left
+            // (more achievable). Pick exactly one so opens are never spammed.
+            pool.sort((a, b) =>
+                (goalSaving(b.g) - goalSaving(a.g)) ||
+                ((b.g.target - b.p.mtd) - (a.g.target - a.p.mtd))
+            );
+            const { g, p } = pool[0];
+            markRiskShown(g.category, p.riskLevel);
+
+            document.getElementById('goalRiskBody').innerHTML =
+                `You've spent <strong>₹${fmtInt(p.mtd)}</strong> of your <strong>₹${fmtInt(g.target)}</strong> ${esc(g.category)} goal — that's <strong>${Math.round(p.pctOfTarget * 100)}%</strong> with ${p.daysLeft} day${p.daysLeft === 1 ? '' : 's'} left, ahead of pace. Ease up to stay on track.`;
+            document.getElementById('goalRiskModal').classList.add('show');
+        }
+        function closeGoalRiskModal() {
+            document.getElementById('goalRiskModal').classList.remove('show');
+        }
+
+        /* ── notification 2: pace alerts after logging in a goal category ── */
+        function notifyGoalAfterLog(category) {
+            const g = activeGoalFor(category);
+            if (!g) return;
+            const p = goalProgress(g);
+            if (p.mtd >= g.target) {
+                toast(`⚠️ ${category}: hit your ₹${fmtInt(g.target)} cap (₹${fmtInt(p.mtd)} spent)`, 'error');
+            } else if (p.headroom < 0) {
+                toast(`⚠️ ${category}: above pace — on track for ~₹${fmtInt(p.projected)} vs ₹${fmtInt(g.target)} goal`, 'error');
+            } else if (p.headroom <= p.dailyAvg * GOAL.approachBufferFrac) {
+                toast(`${category}: only ₹${fmtInt(p.headroom)} left before you pass today's pace`, '');
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════
            PINNED SUGGESTIONS (localStorage → Add tab)
            ═══════════════════════════════════════════════════ */
         function getPinnedSuggestions() {
@@ -5290,6 +5855,7 @@ Rules:
             }
             if (e.key === 'Escape') {
                 closeEditModal();
+                closeGoalRiskModal();
             }
         });
 
