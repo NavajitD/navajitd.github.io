@@ -5556,9 +5556,9 @@ Rules:
             const mtd = categoryMTD(category);
             if (mtd >= target) return false;                  // already spent the whole target
             if (daysLeft <= 0) return false;                  // month is over
-            const dailyAvg = target / dim;
-            const remainingPerDay = (target - mtd) / daysLeft;
-            return remainingPerDay >= dailyAvg * GOAL.achieveFloor;
+            const dailyAvg = target / dim;                    // initial daily pace = target ÷ days in month
+            const remainingPerDay = (target - mtd) / daysLeft; // what's left to spend, per remaining day
+            return remainingPerDay > dailyAvg * GOAL.achieveFloor; // reachable if that stays above 80% of pace
         }
 
         // Best category to offer a goal for right now (biggest recurring one), or null.
@@ -5734,7 +5734,14 @@ Rules:
             m[`${category}__${currentMonthKey()}`] = level;
             localStorage.setItem('goalRiskShown', JSON.stringify(m));
         }
-        function goalSaving(g) { return Math.max(0, (g.baselineMin || 0) - g.target); }
+        // Potential monthly saving from a goal = last calendar month's total in that
+        // category minus the target (what you'd keep vs. how you spent most recently).
+        function goalSaving(g) {
+            const now = new Date();
+            const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const lastMonthTotal = categorySpendInMonth(g.category, lm.getFullYear(), lm.getMonth());
+            return Math.max(0, lastMonthTotal - g.target);
+        }
 
         function maybeShowGoalRiskPopups() {
             // Candidates: goals that crossed a new (higher) risk level not yet shown.
