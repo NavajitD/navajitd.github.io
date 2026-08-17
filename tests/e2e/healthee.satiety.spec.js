@@ -221,6 +221,37 @@ test.describe('calorie pacing', () => {
     expect(['early', 'none', 'on']).toContain(r.state);
     expect(r.chip).toBe(true);
   });
+
+  test('meals pre-logged for a later slot do not count toward pace until that slot', async ({ page }) => {
+    await boot(page);
+    const r = await page.evaluate(() => {
+      window.__htSetState({ date: todayStr(), tab: 'fuel', freshDay: true, profile: null });
+      // Plan the day in the "morning": tag a lunch and a dinner but it's only ~1pm.
+      window.getISTHourFloat = () => 13;
+      addFood({ name: 'Planned Lunch', meal: 'Lunch', cal: 600, protein: 40, carbs: 60, fat: 15, fiber: 6, micros: {} });
+      addFood({ name: 'Planned Dinner', meal: 'Dinner', cal: 800, protein: 40, carbs: 80, fat: 20, fiber: 8, micros: {} });
+      const morning = getPaceState();
+      // Same logs, later in the evening — both slots have now passed.
+      window.getISTHourFloat = () => 21;
+      const evening = getPaceState();
+      return {
+        total: computeTotals(__htDay()).cal,
+        mConsumed: consumedByNow(__htDay(), 13),
+        mActual: morning.actual, mState: morning.state,
+        eConsumed: consumedByNow(__htDay(), 21),
+        eActual: evening.actual,
+      };
+    });
+    // Both meals are logged (day totals reflect the plan)…
+    expect(r.total).toBe(1400);
+    // …but at 1pm neither slot is due, so pace sees 0 consumed and never says "ahead".
+    expect(r.mConsumed).toBe(0);
+    expect(r.mActual).toBe(0);
+    expect(r.mState).not.toBe('ahead');
+    // By 9pm both the lunch and dinner slots have passed → they count.
+    expect(r.eConsumed).toBe(1400);
+    expect(r.eActual).toBe(1400);
+  });
 });
 
 test.describe('weekly rolling budget', () => {

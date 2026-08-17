@@ -3777,6 +3777,18 @@
         return last.cum;
       }
 
+      // Calories actually due by clock-hour h. A meal logged for a slot whose
+      // MEAL_CLOCK time is still in the future — e.g. dinner planned in the morning —
+      // has NOT been eaten yet, so it doesn't count toward pace until its slot
+      // arrives. That's the whole point: planning the day ahead never reads as
+      // "ahead of pace". Meals with no clock slot (Snack) are spontaneous → count now.
+      window.consumedByNow = function (d, h) {
+        return activeItems(d?.foods || []).reduce((s, f) => {
+          const clock = MEAL_CLOCK[f.meal];
+          return s + ((clock == null || clock <= h) ? num0(f.cal) : 0);
+        }, 0);
+      };
+
       // state: early (before breakfast) | none (nothing logged before noon) |
       //        on | ahead | behind. Only shown for today.
       window.getPaceState = function () {
@@ -3786,11 +3798,14 @@
         const h = getISTHourFloat();
         const target = getCalTargetFor(selectedDate);
         const expected = Math.round(expectedByHour(pts, h));
-        const actual = computeTotals(dayData).cal;
+        // Only food whose meal slot is due by now — pre-logged later meals are excluded.
+        const actual = Math.round(consumedByNow(dayData, h));
         const band = Math.max(120, Math.round(target * 0.07));
         const expectedPct = expected / target * 100;
         if (h < MEAL_CLOCK["Breakfast"]) return { show: true, state: "early", expected, actual, target, band, expectedPct };
-        if (actual === 0 && h < 12) return { show: true, state: "none", expected, actual, target, band, expectedPct };
+        // Nothing consumed by now (incl. a day planned ahead but not yet eaten) → "none",
+        // never "behind": you can't be behind on eating when you've eaten nothing yet.
+        if (actual === 0) return { show: true, state: "none", expected, actual, target, band, expectedPct };
         const delta = actual - expected;
         const state = Math.abs(delta) <= band ? "on" : (delta > 0 ? "ahead" : "behind");
         return { show: true, state, expected, actual, target, delta, band, expectedPct };
@@ -5953,7 +5968,11 @@ Return ONLY valid JSON: {"weightGoal":"...","weightGoalRate":0.5,"gainRate":0.3,
         const bmrEstimate = getBMR(dayData.body?.weight || parseFloat(localStorage.getItem("HT_LAST_WEIGHT")) || 57, dayData.body?.bodyFat || 15);
         const net = t.cal > 0 ? Math.round(t.cal - bmrEstimate - burned) : 0;
         const totalMacro = (t.protein + t.carbs + t.fat) || 1;
-        const foods = activeItems(dayData.foods);
+        // Show the diary in meal-time order (Breakfast → … → Before Bed), then by
+        // log time within a slot, so it reads top-to-bottom through the day.
+        const mealSort = m => (MEAL_CLOCK[m] != null ? MEAL_CLOCK[m] : 24);
+        const foods = activeItems(dayData.foods).slice()
+          .sort((a, b) => (mealSort(a.meal) - mealSort(b.meal)) || (num0(a.ts) - num0(b.ts)));
         const waterMl = num0(dayData.water);
         const waterPct = (waterMl / TARGETS.water) * 100;
 
