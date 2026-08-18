@@ -4,8 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap"></noscript>
     <script defer src="/analytics.js"></script>
 
     <!-- Favicon -->
@@ -15,7 +17,7 @@
     <title>Projects — Navajit D</title>
 
     <!-- SEO -->
-    <meta name="description" content="Projects by Navajit D: Vidur (AI website redesign extension), Aria (AI voice sales agent), HealThee (free AI health tracker), MyExpenses, Numo, Letter Hunt, and WhatsApp Scheduler. Built with Pipecat, Firebase, p5.js, and more.">
+    <meta name="description" content="Projects by Navajit D: Will you? (pixel proposal-page generator), Numo (AI numerology), Aria (AI voice sales agent), ProbashiBangalore (Bengaluru guide for Bengalis), MyExpenses, HealThee (free AI health tracker), Letter Hunt, and Vidur (AI website redesign extension). Built with Firebase, Pipecat, p5.js, and more.">
     <meta name="author" content="Navajit D">
     <meta name="theme-color" content="#2563eb">
     <link rel="canonical" href="https://navajitd.github.io/projects.html">
@@ -24,7 +26,7 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Navajit D">
     <meta property="og:title" content="Projects — Navajit D">
-    <meta property="og:description" content="Vidur, Aria, HealThee, MyExpenses, Numo, Letter Hunt & WhatsApp Scheduler — AI voice agents, browser extensions, health and finance trackers by Navajit D.">
+    <meta property="og:description" content="Will you?, Numo, Aria, ProbashiBangalore, MyExpenses, HealThee, Letter Hunt & Vidur — pixel toys, AI voice agents, browser extensions, and health & finance trackers by Navajit D.">
     <meta property="og:url" content="https://navajitd.github.io/projects.html">
     <meta property="og:image" content="https://navajitd.github.io/og-image.png">
     <meta property="og:image:width" content="1200">
@@ -36,7 +38,7 @@
     <meta name="twitter:site" content="@solitary_nav">
     <meta name="twitter:creator" content="@solitary_nav">
     <meta name="twitter:title" content="Projects — Navajit D">
-    <meta name="twitter:description" content="Vidur, Aria, HealThee, MyExpenses, Numo, Letter Hunt & WhatsApp Scheduler — AI voice agents, browser extensions, health and finance trackers by Navajit D.">
+    <meta name="twitter:description" content="Will you?, Numo, Aria, ProbashiBangalore, MyExpenses, HealThee, Letter Hunt & Vidur — pixel toys, AI voice agents, browser extensions, and health & finance trackers by Navajit D.">
     <meta name="twitter:image" content="https://navajitd.github.io/og-image.png">
 
     <!-- Structured data -->
@@ -73,15 +75,39 @@
                 "mainEntity": {
                     "@type": "ItemList",
                     "itemListElement": [
-                        { "@type": "ListItem", "position": 1, "item": { "@id": "https://navajitd.github.io/projects.html#vidur" } },
-                        { "@type": "ListItem", "position": 2, "item": { "@id": "https://navajitd.github.io/projects.html#aria" } },
-                        { "@type": "ListItem", "position": 3, "item": { "@id": "https://navajitd.github.io/projects.html#health-tracker" } },
-                        { "@type": "ListItem", "position": 4, "item": { "@id": "https://navajitd.github.io/projects.html#myexpenses" } },
-                        { "@type": "ListItem", "position": 5, "item": { "@id": "https://navajitd.github.io/projects.html#numo" } },
-                        { "@type": "ListItem", "position": 6, "item": { "@id": "https://navajitd.github.io/projects.html#letter-hunt" } },
-                        { "@type": "ListItem", "position": 7, "item": { "@id": "https://navajitd.github.io/projects.html#whatsapp-scheduler" } }
+                        { "@type": "ListItem", "position": 1, "item": { "@id": "https://navajitd.github.io/projects.html#will-you" } },
+                        { "@type": "ListItem", "position": 2, "item": { "@id": "https://navajitd.github.io/projects.html#numo" } },
+                        { "@type": "ListItem", "position": 3, "item": { "@id": "https://navajitd.github.io/projects.html#aria" } },
+                        { "@type": "ListItem", "position": 4, "item": { "@id": "https://navajitd.github.io/projects.html#probashi" } },
+                        { "@type": "ListItem", "position": 5, "item": { "@id": "https://navajitd.github.io/projects.html#myexpenses" } },
+                        { "@type": "ListItem", "position": 6, "item": { "@id": "https://navajitd.github.io/projects.html#health-tracker" } },
+                        { "@type": "ListItem", "position": 7, "item": { "@id": "https://navajitd.github.io/projects.html#letter-hunt" } },
+                        { "@type": "ListItem", "position": 8, "item": { "@id": "https://navajitd.github.io/projects.html#vidur" } },
+                        { "@type": "ListItem", "position": 9, "item": { "@id": "https://navajitd.github.io/projects.html#whatsapp-scheduler" } }
                     ]
                 }
+            },
+            {
+                "@type": "WebApplication",
+                "@id": "https://navajitd.github.io/projects.html#will-you",
+                "name": "Will you?",
+                "url": "https://willyou.web.app",
+                "applicationCategory": "EntertainmentApplication",
+                "operatingSystem": "Any (web browser)",
+                "description": "Cutesy pixel-art page generator for popping a question. Customise the escalating messages, theme, and sticker, then share a short link where the 'No' button runs away and 'Yes' grows into a confetti celebration with your event details. Built on Firebase with Cloud Functions and content moderation.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "isAccessibleForFree": true,
+                "datePublished": "2026"
+            },
+            {
+                "@type": "WebSite",
+                "@id": "https://navajitd.github.io/projects.html#probashi",
+                "name": "ProbashiBangalore",
+                "url": "https://probashibangalore.web.app",
+                "description": "A warm, editorial guide for Bengalis (probashis) making a home in Bengaluru — food, festivals, communities, and everyday essentials. A cream-and-vermillion, magazine-style resource site, currently gathering readers via a waitlist.",
+                "author": { "@id": "https://navajitd.github.io/#navajit" },
+                "datePublished": "2026"
             },
             {
                 "@type": "SoftwareApplication",
@@ -196,8 +222,8 @@
         [data-theme="colorful"] {
             --text-color: #0f2e00;
             --bg-color: #fefffe;
-            --accent-color: #16a34a;
-            --muted-color: #65a30d;
+            --accent-color: #15803d;
+            --muted-color: #4d7c0f;
             --border-color: #bbf7d0;
             --secondary-color: #ea580c;
             --highlight-color: #eab308;
@@ -617,6 +643,16 @@
             color: var(--highlight-color);
         }
 
+        .status-waitlist {
+            background-color: rgba(245, 158, 11, 0.12);
+            color: #b45309;
+        }
+
+        [data-theme="colorful"] .status-waitlist {
+            background-color: rgba(234, 179, 8, 0.15);
+            color: var(--highlight-color);
+        }
+
         /* Footer */
         footer {
             margin-top: 4rem;
@@ -713,6 +749,156 @@
 
     <section id="projects">
 
+        <div class="project-item" id="will-you">
+            <h2 class="project-title">
+                <a href="https://willyou.web.app" target="_blank" rel="noopener">Will you?</a>
+                <span class="project-status status-active">Live</span>
+            </h2>
+            <div class="project-meta">Firebase, Firestore, Cloud Functions · 2026</div>
+            <p class="project-description">Will you? is a cutesy pixel-art page generator for popping a question —
+                "Will you be my valentine?", "…go to prom?", anything you like. Build a page in seconds with your own
+                escalating messages, theme, and sticker, then send the link: the "No" button runs away while "Yes"
+                grows, and a confetti celebration — with your event details — waits at the end. Short shareable links,
+                a QR code, and moderation built in.</p>
+            <div class="project-links">
+                <a href="https://willyou.web.app" target="_blank" rel="noopener">Launch</a>
+            </div>
+        </div>
+
+        <div class="project-item" id="numo">
+            <h2 class="project-title">
+                <a href="https://numo.web.app" target="_blank" rel="noopener">Numo</a>
+                <span class="project-status status-active">Live</span>
+            </h2>
+            <div class="project-meta">Firebase, Firestore, Cerebras · 2026</div>
+            <p class="project-description">Numo is an AI numerology guide that answers your life queries with the
+                profound insights of numerology. Built in collaboration with <a
+                    href="https://mysticsmentor.com/">Mystics Mentor</a>.</p>
+            <div class="project-links">
+                <a href="https://numo.web.app" target="_blank" rel="noopener">Launch</a>
+            </div>
+        </div>
+
+        <div class="project-item" id="aria">
+            <h2 class="project-title">
+                <a href="https://talktoaria.web.app" target="_blank" rel="noopener">Aria</a>
+                <span class="project-status status-wip">Demo closed</span>
+            </h2>
+            <div class="project-meta">Pipecat · Deepgram · Sarvam · Vobiz · Cloud Run · Firestore · 2026</div>
+            <p class="project-description">Aria is an AI voice sales agent that calls your phone and roleplays a
+                post-demo-class sales conversation in Hinglish — you play a parent after your child's demo class at
+                Vedantu, and Aria gauges interest, reasons through objections, and works to close the sale. Pick a
+                parent persona, enter your phone, and watch its intent classification, objection plays, and next-step
+                decisions in real time. Pipecat pipeline, Deepgram Nova-3 STT + Sarvam Bulbul v3 TTS, key-rotating LLM
+                pool (Groq → Cerebras → Gemini), Vobiz telephony. The live call demo is currently closed.</p>
+            <div class="project-links">
+                <a href="https://github.com/NavajitD/sales-conversion-agent" target="_blank" rel="noopener">Git Repo</a>
+            </div>
+            <details class="project-instructions">
+                <summary>How it worked</summary>
+                <div class="instructions-body">
+                    <strong>The demo flow</strong>
+                    <ol>
+                        <li>Pick one of five parent personas (Sharma + Aarav + JEE, Reddy + Pranavi + JEE Crash, Iyer + Diya + NEET, etc.)</li>
+                        <li>Enter your phone in E.164 format (e.g. <code>+9198XXXXXXXX</code>)</li>
+                        <li>Click <strong>Call me</strong>. Pick up — Aria greets you in Hindi and starts the conversation</li>
+                        <li>Roleplay the parent. Try a soft objection ("PW sasta hai"), a stall ("sochna padega"), or a hard no ("interest nahi") — the agent's reasoning panel responds in real time</li>
+                    </ol>
+                    <strong>What was under the hood</strong>
+                    <p>FastAPI + Pipecat on Cloud Run · Firestore for CRM + call logs · Deepgram Nova-3 STT + Sarvam Bulbul v3 TTS · OpenAI-compatible LLM proxy with key rotation across Groq, Cerebras, Gemini · Firebase Hosting rewrites for REST · direct Cloud Run WebSocket for media + reasoning panel. Source on GitHub.</p>
+                </div>
+            </details>
+        </div>
+
+        <div class="project-item" id="probashi">
+            <h2 class="project-title">
+                <a href="https://probashibangalore.web.app" target="_blank" rel="noopener">ProbashiBangalore</a>
+                <span class="project-status status-waitlist">Waitlist</span>
+            </h2>
+            <div class="project-meta">Firebase Hosting · Editorial · 2026</div>
+            <p class="project-description">Probashi Bangalore is a warm, editorial guide for Bengalis (probashis)
+                making a home in Bengaluru — the food, festivals, communities, and everyday essentials that help the
+                city feel familiar. A cream-and-vermillion, magazine-style resource site, currently gathering its
+                first readers through a waitlist.</p>
+            <div class="project-links">
+                <a href="https://probashibangalore.web.app" target="_blank" rel="noopener">Launch</a>
+            </div>
+        </div>
+
+        <div class="project-item" id="myexpenses">
+            <h2 class="project-title">
+                <a href="/Projects/MyExpenses/expenses.html">MyExpenses</a>
+                <span class="project-status status-active">Live</span>
+            </h2>
+            <div class="project-meta">Firebase, Firestore, Cerebras · 2025-26</div>
+            <p class="project-description">MyExpenses is a free AI expense tracker with smart budget tracking and
+                AI-powered spending insights. Features automated expense categorization, spending pattern
+                visualization, and financial habit optimization. Includes a beautiful dark mode interface and secure
+                Google authentication.</p>
+            <div class="project-links">
+                <a href="/Projects/MyExpenses/expenses.html">Launch</a>
+            </div>
+        </div>
+
+        <div class="project-item" id="health-tracker">
+            <h2 class="project-title">
+                <a href="/Projects/HealThee/health.html">HealThee</a>
+                <span class="project-status status-active">Live</span>
+            </h2>
+            <div class="project-meta">Firebase, Firestore, Groq, Cerebras · 2026</div>
+            <p class="project-description">HealThee is a free AI health tracker — a HealthifyMe Plus alternative,
+                optimised for me and forever free. A full-stack personal health dashboard with daily calorie, macro,
+                and micronutrient tracking, plus AI insights. Includes an adaptive meal plan, water intake and weight
+                logging, exercise tracking and sleep monitoring, with trend analysis, weekly/monthly dashboards, and
+                access controlled by Google Auth. Installable as a PWA.</p>
+            <div class="project-links">
+                <a href="/Projects/HealThee/health.html">Launch</a>
+                <!--<a href="/blog.html#latest" id="healthBlogCta" data-target-title="Death of SaaS and Other Clickbaits"> Read more </a>-->
+            </div>
+            <details class="project-instructions">
+                <summary>How to Use</summary>
+                <div class="instructions-body">
+                    <strong>Getting started</strong>
+                    <ol>
+                        <li>Open HealThee and sign in with your Google account</li>
+                        <li>Complete the quick onboarding — enter your height, weight, and gender</li>
+                        <li>Tell the AI what you want to achieve; it will set personalised weight and exercise goals
+                        </li>
+                        <li>Choose which areas to track (nutrition, exercise, wellness, skincare, haircare, trends)</li>
+                    </ol>
+                    <strong>Daily tracking</strong>
+                    <ol>
+                        <li><strong>Fuel</strong> — log meals (from your plan, by photo, or manually), water, and
+                            supplements</li>
+                        <li><strong>Move</strong> — follow your personalised workout, log steps and custom exercises
+                        </li>
+                        <li><strong>Well</strong> — record weight, body metrics, sleep, and daily delights</li>
+                        <li><strong>Care</strong> — check off skincare and haircare routines, or chat with the AI health
+                            advisor</li>
+                        <li><strong>Stats</strong> — review weekly summaries and 7/30/90-day trend charts</li>
+                    </ol>
+                    <strong>Tips</strong>
+                    <p>Tap your profile photo to update goals anytime. Works offline as a PWA — install it to your home
+                        screen for quick access.</p>
+                </div>
+            </details>
+        </div>
+
+        <div class="project-item" id="letter-hunt">
+            <h2 class="project-title">
+                <a href="/Projects/Sketches/letter-hunt.html">Letter Hunt</a>
+                <span class="project-status status-active">Live</span>
+            </h2>
+            <div class="project-meta">p5.js · 2025</div>
+            <p class="project-description">Letter Hunt is a free interactive browser game where you hunt for letters
+                hidden in street photography from Bengaluru. Click on letters to progress through images and discover
+                what fruit you'll find at the end. A playful p5.js experiment combining code and urban
+                exploration.</p>
+            <div class="project-links">
+                <a href="/Projects/Sketches/letter-hunt.html">Launch</a>
+            </div>
+        </div>
+
         <div class="project-item" id="vidur">
             <h2 class="project-title">
                 <a href="https://github.com/NavajitD/Vidur" target="_blank" rel="noopener">Vidur</a>
@@ -759,131 +945,6 @@
                 </div>
             </details>
         </div>
-
-        <div class="project-item" id="aria">
-            <h2 class="project-title">
-                <a href="https://talktoaria.web.app" target="_blank" rel="noopener">Aria</a>
-                <span class="project-status status-active">Live</span>
-            </h2>
-            <div class="project-meta">Pipecat · Deepgram · Sarvam · Vobiz · Cloud Run · Firestore · 2026</div>
-            <p class="project-description">Aria is an AI voice sales agent that calls your phone and roleplays a
-                post-demo-class sales conversation in Hinglish — you play a parent after your child's demo class at
-                Vedantu, and Aria gauges interest, reasons through objections, and works to close the sale. Pick a
-                parent persona, enter your phone, and watch its intent classification, objection plays, and next-step
-                decisions in real time. Pipecat pipeline, Deepgram Nova-3 STT + Sarvam Bulbul v3 TTS, key-rotating LLM
-                pool (Groq → Cerebras → Gemini), Vobiz telephony.</p>
-            <div class="project-links">
-                <a href="https://talktoaria.web.app" target="_blank" rel="noopener">Launch</a>
-                <a href="https://github.com/NavajitD/sales-conversion-agent" target="_blank" rel="noopener">Git Repo</a>
-            </div>
-            <details class="project-instructions">
-                <summary>How to Use</summary>
-                <div class="instructions-body">
-                    <strong>Try the live demo</strong>
-                    <ol>
-                        <li>Open <a href="https://talktoaria.web.app" target="_blank" rel="noopener">talktoaria.web.app</a> on a device with a working phone number you can answer</li>
-                        <li>Pick one of five parent personas (Sharma + Aarav + JEE, Reddy + Pranavi + JEE Crash, Iyer + Diya + NEET, etc.)</li>
-                        <li>Enter your phone in E.164 format (e.g. <code>+9198XXXXXXXX</code>)</li>
-                        <li>Click <strong>Call me</strong>. Pick up — Aria will greet you in Hindi and start the conversation</li>
-                        <li>Roleplay the parent. Try a soft objection ("PW sasta hai"), a stall ("sochna padega"), or a hard no ("interest nahi") — see how the agent's reasoning panel responds in real time</li>
-                    </ol>
-                    <strong>Rate limit</strong>
-                    <p>Each phone number can trigger up to 5 demo calls per hour (per build-cost discipline). The dashboard shows your remaining quota; the call button locks at 0.</p>
-                    <strong>What's under the hood</strong>
-                    <p>FastAPI + Pipecat on Cloud Run · Firestore for CRM + call logs · Deepgram Nova-3 STT + Sarvam Bulbul v3 TTS · OpenAI-compatible LLM proxy with key rotation across Groq, Cerebras, Gemini · Firebase Hosting rewrites for REST · direct Cloud Run WebSocket for media + reasoning panel. Source on GitHub.</p>
-                </div>
-            </details>
-        </div>
-
-        <div class="project-item" id="health-tracker">
-            <h2 class="project-title">
-                <a href="/Projects/HealThee/health.html">HealThee</a>
-                <span class="project-status status-active">Active</span>
-            </h2>
-            <div class="project-meta">Firebase, Firestore, Groq, Cerebras · 2026</div>
-            <p class="project-description">HealThee is a free AI health tracker — a HealthifyMe Plus alternative,
-                optimised for me and forever free. A full-stack personal health dashboard with daily calorie, macro,
-                and micronutrient tracking, plus AI insights. Includes an adaptive meal plan, water intake and weight
-                logging, exercise tracking and sleep monitoring, with trend analysis, weekly/monthly dashboards, and
-                access controlled by Google Auth. Installable as a PWA.</p>
-            <div class="project-links">
-                <a href="/Projects/HealThee/health.html">Launch</a>
-                <!--<a href="/blog.html#latest" id="healthBlogCta" data-target-title="Death of SaaS and Other Clickbaits"> Read more </a>-->
-            </div>
-            <details class="project-instructions">
-                <summary>How to Use</summary>
-                <div class="instructions-body">
-                    <strong>Getting started</strong>
-                    <ol>
-                        <li>Open HealThee and sign in with your Google account</li>
-                        <li>Complete the quick onboarding — enter your height, weight, and gender</li>
-                        <li>Tell the AI what you want to achieve; it will set personalised weight and exercise goals
-                        </li>
-                        <li>Choose which areas to track (nutrition, exercise, wellness, skincare, haircare, trends)</li>
-                    </ol>
-                    <strong>Daily tracking</strong>
-                    <ol>
-                        <li><strong>Fuel</strong> — log meals (from your plan, by photo, or manually), water, and
-                            supplements</li>
-                        <li><strong>Move</strong> — follow your personalised workout, log steps and custom exercises
-                        </li>
-                        <li><strong>Well</strong> — record weight, body metrics, sleep, and daily delights</li>
-                        <li><strong>Care</strong> — check off skincare and haircare routines, or chat with the AI health
-                            advisor</li>
-                        <li><strong>Stats</strong> — review weekly summaries and 7/30/90-day trend charts</li>
-                    </ol>
-                    <strong>Tips</strong>
-                    <p>Tap your profile photo to update goals anytime. Works offline as a PWA — install it to your home
-                        screen for quick access.</p>
-                </div>
-            </details>
-        </div>
-
-        <div class="project-item" id="myexpenses">
-            <h2 class="project-title">
-                <a href="/Projects/MyExpenses/expenses.html">MyExpenses</a>
-                <span class="project-status status-active">Live</span>
-            </h2>
-            <div class="project-meta">Firebase, Firestore, Cerebras · 2025-26</div>
-            <p class="project-description">MyExpenses is a free AI expense tracker with smart budget tracking and
-                AI-powered spending insights. Features automated expense categorization, spending pattern
-                visualization, and financial habit optimization. Includes a beautiful dark mode interface and secure
-                Google authentication.</p>
-            <div class="project-links">
-                <a href="/Projects/MyExpenses/expenses.html">Launch</a>
-            </div>
-        </div>
-
-        <div class="project-item" id="numo">
-            <h2 class="project-title">
-                <a href="https://numo.web.app" target="_blank" rel="noopener">Numo</a>
-                <span class="project-status status-active">Active</span>
-            </h2>
-            <div class="project-meta">Firebase, Firestore, Cerebras · 2026</div>
-            <p class="project-description">Numo is an AI numerology guide that answers your life queries with the
-                profound insights of numerology. Built in collaboration with <a
-                    href="https://mysticsmentor.com/">Mystics Mentor</a>.</p>
-            <div class="project-links">
-                <a href="https://numo.web.app" target="_blank" rel="noopener">Launch</a>
-            </div>
-        </div>
-
-        <div class="project-item" id="letter-hunt">
-            <h2 class="project-title">
-                <a href="/Projects/Sketches/letter-hunt.html">Letter Hunt</a>
-                <span class="project-status status-active">Live</span>
-            </h2>
-            <div class="project-meta">p5.js · 2025</div>
-            <p class="project-description">Letter Hunt is a free interactive browser game where you hunt for letters
-                hidden in street photography from Bengaluru. Click on letters to progress through images and discover
-                what fruit you'll find at the end. A playful p5.js experiment combining code and urban
-                exploration.</p>
-            <div class="project-links">
-                <a href="/Projects/Sketches/letter-hunt.html">Launch</a>
-            </div>
-        </div>
-
-
 
         <div class="project-item" id="whatsapp-scheduler">
             <h2 class="project-title">

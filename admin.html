@@ -610,6 +610,18 @@ function renderMetrics() {
     const ctas = Object.values(ctaMap).map(c => ({ project: c.project, label: c.label, clickers: c.clickers.size, total: c.total }))
         .sort((a, b) => b.clickers - a.clickers);
 
+    // Traffic sources — utm_source (e.g. willyou.web.app) wins, else referrer host, else Direct.
+    const srcOf = e => (e.src || e.ref || 'Direct');
+    function sources(list) {
+        const m = {};
+        list.forEach(e => { const k = srcOf(e); const s = m[k] || (m[k] = { src: k, ind: new Set(), views: 0 }); s.ind.add(e.vid); s.views++; });
+        return Object.values(m).map(s => ({ src: s.src, ind: s.ind.size, views: s.views })).sort((a, b) => b.ind - a.ind);
+    }
+    const srcProjects = sources(pvPage('projects'));
+    const srcAll = sources(pv);
+    const srcTable = rows => '<table class="mx-table"><thead><tr><th>Source</th><th class="num">Individuals</th><th class="num">Views</th></tr></thead><tbody>'
+        + rows.map(s => `<tr><td>${escHtml(s.src)}</td><td class="num">${s.ind}</td><td class="num">${s.views}</td></tr>`).join('') + '</tbody></table>';
+
     // Per-post engagement
     const postMap = {};
     const P = id => postMap[id] || (postMap[id] = { openers: new Set(), reads: new Set(), dwell: [] });
@@ -635,6 +647,11 @@ function renderMetrics() {
             + ctas.map(c => `<tr><td>${escHtml(c.project)}</td><td>${escHtml(c.label)}</td><td class="num">${c.clickers}</td><td class="num">${c.total}</td></tr>`).join('')
             + '</tbody></table>'
         : '<div class="mx-empty">No CTA clicks in this range.</div>';
+
+    html += '<div class="mx-section-title">Traffic sources — Projects page</div>';
+    html += srcProjects.length ? srcTable(srcProjects) : '<div class="mx-empty">No projects-page views in this range.</div>';
+    html += '<div class="mx-section-title">Traffic sources — all pages</div>';
+    html += srcAll.length ? srcTable(srcAll) : '<div class="mx-empty">No page views in this range.</div>';
 
     html += '<div class="mx-section-title">Blog posts — opens, completion & time on page</div>';
     html += posts.length

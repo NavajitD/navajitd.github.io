@@ -70,8 +70,6 @@
       map: function (d) { return d ? { country: d.country, cc: d.country_code, city: d.city, region: d.region, ip: d.ip } : null; } },
     { url: 'https://ipapi.co/json/',
       map: function (d) { return (d && !d.error) ? { country: d.country_name, cc: d.country_code, city: d.city, region: d.region, ip: d.ip } : { ip: d && d.ip }; } },
-    { url: 'https://freeipapi.com/api/json',
-      map: function (d) { return d ? { country: d.countryName, cc: d.countryCode, city: d.cityName, region: d.regionName, ip: d.ipAddress } : null; } },
     { url: 'https://api.ipify.org?format=json',
       map: function (d) { return (d && d.ip) ? { ip: d.ip } : null; } }
   ];
@@ -128,6 +126,9 @@
       os: UA.os, device: UA.device, browser: UA.browser
     };
     try { ev.ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) {}
+    // Explicit campaign attribution (e.g. the "made by Navajit" link on willyou.web.app).
+    // utm_source wins over the referrer host so cross-site sources survive referrer stripping.
+    try { var us = new URLSearchParams(location.search).get('utm_source'); if (us) ev.src = us.slice(0, 60); } catch (e) {}
     if (geo) {
       if (geo.country) { ev.country = geo.country; ev.cc = geo.cc; ev.city = geo.city; ev.region = geo.region; }
       if (geo.ip) ev.ip = geo.ip;   // logged for backfill even when country lookup failed
