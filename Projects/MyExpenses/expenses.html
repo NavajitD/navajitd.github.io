@@ -1071,6 +1071,62 @@
             margin-bottom: 1rem;
         }
 
+        /* ── Scalable goal layouts ──
+           ≤3 goals: full-width stack. 4–6: two columns of up to three.
+           >6: horizontal-scroll track of 3-card columns with scroll markers. */
+        .goals-list { display: flex; flex-direction: column; gap: 0.7rem; }
+
+        .goals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; align-items: start; }
+        .goals-col { display: flex; flex-direction: column; gap: 0.6rem; min-width: 0; }
+
+        .goals-scroll-wrap { position: relative; }
+        .goals-track {
+            display: flex; gap: 0.6rem; overflow-x: auto; overscroll-behavior-x: contain;
+            scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+            padding-bottom: 0.35rem; scrollbar-width: thin;
+        }
+        .goals-track .goals-col { flex: 0 0 min(280px, 80%); scroll-snap-align: start; }
+
+        /* Condensed cards inside grid / scroll */
+        .goals-grid .goal-card, .goals-track .goal-card { padding: 0.6rem 0.65rem; }
+        .goals-grid .goal-card-head, .goals-track .goal-card-head { margin-bottom: 0.45rem; gap: 0.3rem; }
+        .goals-grid .goal-card-name, .goals-track .goal-card-name {
+            font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .goals-grid .goal-status, .goals-track .goal-status { font-size: 0.55rem; padding: 0.12rem 0.35rem; }
+        .goals-grid .goal-numbers, .goals-track .goal-numbers { font-size: 0.75rem; margin-bottom: 0.4rem; }
+        .goals-grid .goal-numbers .days, .goals-track .goal-numbers .days { display: none; }
+        .goals-grid .goal-hint, .goals-track .goal-hint { font-size: 0.66rem; margin-top: 0.4rem; }
+
+        /* Scroll affordances: edge fades + chevrons + hint line */
+        .goals-scroll-wrap::before, .goals-scroll-wrap::after {
+            content: ''; position: absolute; top: 0; bottom: 0.35rem; width: 34px;
+            pointer-events: none; opacity: 0; transition: opacity 0.2s ease; z-index: 3;
+        }
+        .goals-scroll-wrap::before { left: 0; background: linear-gradient(to right, var(--bg-color), transparent); }
+        .goals-scroll-wrap::after { right: 0; background: linear-gradient(to left, var(--bg-color), transparent); }
+        .goals-scroll-wrap.can-left::before { opacity: 1; }
+        .goals-scroll-wrap.can-right::after { opacity: 1; }
+
+        .goals-scroll-chevron {
+            position: absolute; top: calc(50% - 0.6rem); transform: translateY(-50%); z-index: 4;
+            width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            color: var(--text-color); font-family: var(--font-sans); font-size: 0.85rem; line-height: 1;
+            opacity: 0; transition: opacity 0.2s ease; box-shadow: var(--shadow-lg);
+        }
+        .goals-scroll-chevron.left { left: 1px; }
+        .goals-scroll-chevron.right { right: 1px; }
+        .goals-scroll-wrap.can-left .goals-scroll-chevron.left { opacity: 0.92; }
+        .goals-scroll-wrap.can-right .goals-scroll-chevron.right { opacity: 0.92; }
+
+        .goals-scroll-hint {
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase;
+            color: var(--muted-color); margin-top: 0.4rem;
+        }
+
         .goal-card {
             padding: 0.85rem 0.9rem;
             border-radius: 8px;
@@ -5587,11 +5643,34 @@ Rules:
 
             let html = '';
 
-            // 1) Active goals — worst status first, then largest target.
-            const rank = { danger: 0, warn: 1, 'on-track': 2 };
+            // 1) Active goals ordered by impact — biggest potential saving vs. last
+            //    month first, so the goal that matters most is noticed first.
             const active = activeGoals().map(g => ({ g, p: goalProgress(g) }));
-            active.sort((a, b) => (rank[a.p.status] - rank[b.p.status]) || (b.g.target - a.g.target));
-            for (const { g } of active) html += goalCardHTML(g);
+            active.sort((a, b) => (goalSaving(b.g) - goalSaving(a.g)) || (b.p.pctOfTarget - a.p.pctOfTarget));
+            const n = active.length;
+
+            if (n > 0) {
+                if (n <= 3) {
+                    // Full-width stack.
+                    html += `<div class="goals-list">${active.map(({ g }) => goalCardHTML(g)).join('')}</div>`;
+                } else {
+                    // 4–6: two columns; >6: horizontal-scroll track. Both chunk into
+                    // condensed columns of 3, filled top-to-bottom by impact.
+                    let cols = '';
+                    for (let i = 0; i < n; i += 3)
+                        cols += `<div class="goals-col">${active.slice(i, i + 3).map(({ g }) => goalCardHTML(g, true)).join('')}</div>`;
+                    if (n <= 6) {
+                        html += `<div class="goals-grid">${cols}</div>`;
+                    } else {
+                        html += `<div class="goals-scroll-wrap">
+                            <button class="goals-scroll-chevron left" onclick="scrollGoals(-1)" aria-label="Scroll goals left">‹</button>
+                            <div class="goals-track">${cols}</div>
+                            <button class="goals-scroll-chevron right" onclick="scrollGoals(1)" aria-label="Scroll goals right">›</button>
+                            <div class="goals-scroll-hint">← swipe · ${n} goals →</div>
+                        </div>`;
+                    }
+                }
+            }
 
             // 2) One offer (or an unreachable note) for the best candidate.
             const cand = getGoalOfferCandidate();
@@ -5608,9 +5687,30 @@ Rules:
             }
 
             area.innerHTML = html;
+
+            // Wire up horizontal-scroll markers (>6 goals).
+            const wrap = area.querySelector('.goals-scroll-wrap');
+            if (wrap) {
+                const track = wrap.querySelector('.goals-track');
+                track.addEventListener('scroll', () => updateGoalScrollMarkers(wrap), { passive: true });
+                requestAnimationFrame(() => updateGoalScrollMarkers(wrap));
+            }
         }
 
-        function goalCardHTML(g) {
+        function updateGoalScrollMarkers(wrap) {
+            const track = wrap.querySelector('.goals-track');
+            if (!track) return;
+            const maxScroll = track.scrollWidth - track.clientWidth;
+            wrap.classList.toggle('can-left', track.scrollLeft > 4);
+            wrap.classList.toggle('can-right', track.scrollLeft < maxScroll - 4);
+        }
+
+        function scrollGoals(dir) {
+            const track = document.querySelector('#goalsArea .goals-track');
+            if (track) track.scrollBy({ left: dir * track.clientWidth * 0.85, behavior: 'smooth' });
+        }
+
+        function goalCardHTML(g, condensed = false) {
             const p = goalProgress(g);
             const fillPct = Math.min(100, p.pctOfTarget * 100);
             const pacePct = Math.min(100, (p.dayOfMonth / p.dim) * 100);
@@ -5626,18 +5726,21 @@ Rules:
 
             let hint, hintClass = '';
             if (p.mtd >= g.target) {
-                hint = `Full ₹${fmtInt(g.target)} budget used — ₹${fmtInt(p.mtd - g.target)} over.`;
+                hint = condensed ? `₹${fmtInt(p.mtd - g.target)} over budget`
+                                 : `Full ₹${fmtInt(g.target)} budget used — ₹${fmtInt(p.mtd - g.target)} over.`;
                 hintClass = 'danger';
             } else if (p.headroom < 0) {
-                hint = `₹${fmtInt(-p.headroom)} ahead of pace — at this rate you'll finish near ₹${fmtInt(p.projected)}.`;
+                hint = condensed ? `₹${fmtInt(-p.headroom)} over pace · ${daysWord} left`
+                                 : `₹${fmtInt(-p.headroom)} ahead of pace — at this rate you'll finish near ₹${fmtInt(p.projected)}.`;
                 hintClass = 'warn';
             } else {
-                hint = `₹${fmtInt(p.headroom)} under today's pace · ₹${fmtInt(g.target - p.mtd)} left for ${daysWord}.`;
+                hint = condensed ? `₹${fmtInt(g.target - p.mtd)} left · ${daysWord}`
+                                 : `₹${fmtInt(p.headroom)} under today's pace · ₹${fmtInt(g.target - p.mtd)} left for ${daysWord}.`;
             }
 
             return `<div class="goal-card">
                 <div class="goal-card-head">
-                    <span class="goal-card-name">${esc(g.category)} goal</span>
+                    <span class="goal-card-name">${esc(g.category)}${condensed ? '' : ' goal'}</span>
                     <span class="goal-status ${statusClass}">${statusLabel}</span>
                     <button class="goal-remove" title="Remove goal" onclick="removeGoal('${encodeURIComponent(g.category)}')">✕</button>
                 </div>
