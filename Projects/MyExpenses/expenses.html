@@ -1306,6 +1306,82 @@
             gap: 0.6rem;
         }
 
+        /* ─── Monthly summary pop-up ─── */
+        .summary-box { max-width: 400px; }
+
+        .summary-headline {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0.7rem;
+        }
+        .summary-headline .amt { font-weight: 700; }
+        .summary-delta.down { color: var(--success-color); }
+        .summary-delta.up { color: var(--warning-color); }
+
+        .summary-teasers {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 0.2rem;
+        }
+        .summary-teaser {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.82rem;
+        }
+        .summary-teaser .tag {
+            font-size: 0.95rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .summary-teaser.down .tag { color: var(--success-color); }
+        .summary-teaser.up .tag { color: var(--warning-color); }
+
+        .summary-toggle {
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            cursor: pointer;
+            padding: 0.55rem 0 0.2rem;
+        }
+        .summary-toggle:hover { text-decoration: underline; }
+
+        .summary-details {
+            margin: 0.4rem 0 0.4rem;
+            max-height: 46vh;
+            overflow-y: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 0.7rem;
+        }
+        .summary-section-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted-color);
+            margin: 0.2rem 0 0.4rem;
+        }
+        .summary-section-label:not(:first-child) { margin-top: 0.9rem; }
+
+        .summary-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.6rem;
+            font-size: 0.82rem;
+            padding: 0.28rem 0;
+        }
+        .summary-row:not(:last-child) { border-bottom: 1px solid var(--border-color); }
+        .summary-row .cat { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .summary-row .val { font-weight: 600; white-space: nowrap; }
+        .summary-row .pct { color: var(--muted-color); font-size: 0.7rem; margin-left: 0.35rem; font-weight: 400; }
+        .summary-row.up .val { color: var(--warning-color); }
+        .summary-row.down .val { color: var(--success-color); }
+
+        .summary-empty { font-size: 0.78rem; color: var(--muted-color); }
+
         /* ─── Onboarding ─── */
         .onboarding-screen {
             display: none;
@@ -2369,6 +2445,19 @@
             </div>
         </div>
         <button class="onboard-save-btn" id="onboardSaveBtn" onclick="saveOnboarding()">Save & Start Tracking</button>
+    </div>
+
+    <!-- ─── MONTHLY SUMMARY MODAL ─── -->
+    <div class="modal-overlay" id="monthlySummaryModal">
+        <div class="modal-box summary-box">
+            <h3 id="summaryTitle">Month in review</h3>
+            <div id="summaryBrief"></div>
+            <button class="summary-toggle" id="summaryToggle" onclick="toggleSummaryDetails()">See details ▾</button>
+            <div class="summary-details" id="summaryDetails" style="display:none;"></div>
+            <div class="modal-actions">
+                <button class="modal-cancel" onclick="closeMonthlySummary()">Got it</button>
+            </div>
+        </div>
     </div>
 
     <!-- ─── GOAL RISK MODAL ─── -->
@@ -3545,7 +3634,9 @@
                 initFilters();
                 refreshAnalytics();
                 renderGoals();
-                maybeShowGoalRiskPopups();
+                // First open of a new month → month-in-review takes precedence over
+                // the goal-risk pop-up so only one modal appears at a time.
+                if (!maybeShowMonthlySummary()) maybeShowGoalRiskPopups();
             } catch (err) {
                 toast('Failed to load expenses', 'error');
                 console.error(err);
@@ -4725,6 +4816,10 @@ OTHER RULES:
             if (e.target === this) closeGoalRiskModal();
         });
 
+        document.getElementById('monthlySummaryModal').addEventListener('click', function (e) {
+            if (e.target === this) closeMonthlySummary();
+        });
+
         /* ═══════════════════════════════════════════════════
            SECTION SWITCHING
            ═══════════════════════════════════════════════════ */
@@ -5887,6 +5982,109 @@ Rules:
         }
 
         /* ═══════════════════════════════════════════════════
+           MONTHLY SUMMARY — a once-per-month "month in review"
+           pop-up on the first open of a new month, comparing the
+           month that just ended against the one before it. Brief
+           by default (overall change + headline movers), with an
+           expandable details section.
+           ═══════════════════════════════════════════════════ */
+        // Per-category totals for the last complete month vs. the month before it.
+        function monthlyReviewData() {
+            const now = new Date();
+            const review = new Date(now.getFullYear(), now.getMonth() - 1, 1); // just-ended month
+            const base = new Date(now.getFullYear(), now.getMonth() - 2, 1);   // month before that
+            const rY = review.getFullYear(), rM = review.getMonth();
+            const bY = base.getFullYear(), bM = base.getMonth();
+
+            const revMap = {}, baseMap = {};
+            let revTotal = 0, baseTotal = 0;
+            for (const e of allExpenses) {
+                const d = e.date instanceof Date ? e.date : new Date(e.date);
+                if (d.getFullYear() === rY && d.getMonth() === rM) { revMap[e.category] = (revMap[e.category] || 0) + e.amount; revTotal += e.amount; }
+                else if (d.getFullYear() === bY && d.getMonth() === bM) { baseMap[e.category] = (baseMap[e.category] || 0) + e.amount; baseTotal += e.amount; }
+            }
+            const rows = [];
+            for (const c of new Set([...Object.keys(revMap), ...Object.keys(baseMap)])) {
+                const r = revMap[c] || 0, b = baseMap[c] || 0;
+                rows.push({ category: c, review: r, base: b, delta: r - b });
+            }
+            const monthName = d => d.toLocaleString('en', { month: 'long' });
+            return { reviewName: monthName(review), baseName: monthName(base), revTotal, baseTotal, rows };
+        }
+
+        function pctLabel(delta, base) {
+            if (base <= 0) return '';
+            return `<span class="pct">${delta > 0 ? '+' : ''}${Math.round(delta / base * 100)}%</span>`;
+        }
+
+        // Shows the summary once per calendar month. Returns true if a modal was shown.
+        function maybeShowMonthlySummary() {
+            const monthKeyNow = currentMonthKey();
+            let shown;
+            try { shown = localStorage.getItem('monthlySummaryShown'); } catch { shown = null; }
+            if (shown === monthKeyNow) return false;         // already seen this month
+
+            // Mark seen regardless — the trigger is "first open of the month".
+            try { localStorage.setItem('monthlySummaryShown', monthKeyNow); } catch { }
+
+            const data = monthlyReviewData();
+            // Need real data in both months for a meaningful comparison.
+            if (data.baseTotal <= 0 || data.revTotal <= 0) return false;
+
+            const increases = data.rows.filter(r => r.delta > 0).sort((a, b) => b.delta - a.delta);
+            const decreases = data.rows.filter(r => r.delta < 0).sort((a, b) => a.delta - b.delta);
+            const topIncreases = increases.slice(0, 3);
+            const overall = data.revTotal - data.baseTotal;
+
+            document.getElementById('summaryTitle').textContent = `📊 ${data.reviewName} in review`;
+
+            // ── Brief ──
+            const overallDir = overall <= 0 ? 'down' : 'up';
+            const overallWord = overall <= 0 ? 'less' : 'more';
+            let brief = `<div class="summary-headline">You spent <span class="amt">₹${fmtInt(data.revTotal)}</span> in ${data.reviewName} — <span class="summary-delta ${overallDir}">₹${fmtInt(Math.abs(overall))} ${overallWord}</span> than ${data.baseName}.</div>`;
+            brief += `<div class="summary-teasers">`;
+            if (decreases.length) {
+                brief += `<div class="summary-teaser down"><span class="tag">↓</span><span>${decreases.length} categor${decreases.length === 1 ? 'y' : 'ies'} lower than ${data.baseName}</span></div>`;
+            }
+            if (topIncreases.length) {
+                const t = topIncreases[0];
+                brief += `<div class="summary-teaser up"><span class="tag">↑</span><span>Biggest rise: ${esc(t.category)} +₹${fmtInt(t.delta)}</span></div>`;
+            }
+            brief += `</div>`;
+            document.getElementById('summaryBrief').innerHTML = brief;
+
+            // ── Details ──
+            let details = `<div class="summary-section-label">Top increases vs ${data.baseName}</div>`;
+            details += topIncreases.length
+                ? topIncreases.map(r => `<div class="summary-row up"><span class="cat">${esc(r.category)}</span><span class="val">+₹${fmtInt(r.delta)}${pctLabel(r.delta, r.base)}</span></div>`).join('')
+                : `<div class="summary-empty">Nothing went up — nice.</div>`;
+            details += `<div class="summary-section-label">Where you spent less</div>`;
+            details += decreases.length
+                ? decreases.map(r => `<div class="summary-row down"><span class="cat">${esc(r.category)}</span><span class="val">−₹${fmtInt(-r.delta)}${pctLabel(r.delta, r.base)}</span></div>`).join('')
+                : `<div class="summary-empty">No categories came down this time.</div>`;
+            document.getElementById('summaryDetails').innerHTML = details;
+
+            // Reset to collapsed each time it opens.
+            const det = document.getElementById('summaryDetails');
+            det.style.display = 'none';
+            document.getElementById('summaryToggle').textContent = 'See details ▾';
+
+            document.getElementById('monthlySummaryModal').classList.add('show');
+            return true;
+        }
+
+        function toggleSummaryDetails() {
+            const det = document.getElementById('summaryDetails');
+            const open = det.style.display !== 'none';
+            det.style.display = open ? 'none' : 'block';
+            document.getElementById('summaryToggle').textContent = open ? 'See details ▾' : 'Hide details ▴';
+        }
+
+        function closeMonthlySummary() {
+            document.getElementById('monthlySummaryModal').classList.remove('show');
+        }
+
+        /* ═══════════════════════════════════════════════════
            PINNED SUGGESTIONS (localStorage → Add tab)
            ═══════════════════════════════════════════════════ */
         function getPinnedSuggestions() {
@@ -5966,6 +6164,7 @@ Rules:
             if (e.key === 'Escape') {
                 closeEditModal();
                 closeGoalRiskModal();
+                closeMonthlySummary();
             }
         });
 
