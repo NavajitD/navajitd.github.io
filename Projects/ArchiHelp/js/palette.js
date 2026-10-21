@@ -1,4 +1,4 @@
-// Vaastu Planner — furniture palette (sizes from the planner's defaults) and wall-aware placement.
+// ArchiHelp — furniture palette (sizes from the planner's defaults) and wall-aware placement.
 import { rw, rh } from '../engine/geom.js';
 
 export const PALETTE = [

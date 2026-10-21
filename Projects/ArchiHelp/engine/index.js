@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — public API.
+// ArchiHelp design engine — public API.
 //   analysePlan(cfg, doc)  -> runtime plan: checks, Vaastu rows, doors, furniture, openings, schedules data
 //   (generation lives in generator.js; drawings in drawing.js)
 import { resolveConfig } from './config.js';

@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — geometry primitives and Python-parity number helpers.
+// ArchiHelp design engine — geometry primitives and Python-parity number helpers.
 // Pure ES module, no DOM: runs in the browser, in Web Workers and in Node (tests).
 // Coordinates are feet. x grows to the east, y grows to the north, origin at the SW outer corner.
 

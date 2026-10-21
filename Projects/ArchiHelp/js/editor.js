@@ -1,4 +1,4 @@
-// Vaastu Planner — plan editor. The canvas is the engine's own A-101 drawing (what you see is what gets printed);
+// ArchiHelp — plan editor. The canvas is the engine's own A-101 drawing (what you see is what gets printed);
 // an overlay in plan feet carries hover, selection and tool previews. Every change is a pure document edit
 // (engine/edits.js), re-checked by the independent rule checker straight away, undoable, and autosaved.
 import { h, s, clear, toast, modal, field, ftIn, seg, select } from './dom.js';
@@ -51,7 +51,7 @@ export function renderEditor(root, app, idxIn) {
   const idx = Math.min(Math.max(0, Number(idxIn) || 0), p.plans.length - 1);
   for (const d of p.plans) if (!d.pid) d.pid = newId();
   if (p.activePlan !== idx) { p.activePlan = idx; app.save(); }
-  const stored = (k, dflt) => { try { const v = JSON.parse(localStorage.getItem(`vp:${k}`)); return v ?? dflt; } catch { return dflt; } };
+  const stored = (k, dflt) => { try { const v = JSON.parse(localStorage.getItem(`archihelp:${k}`)); return v ?? dflt; } catch { return dflt; } };
   const ed = {
     app, p, idx, cfg: prepareConfig(p.cfg), doc: p.plans[idx], plan: null,
     sel: null, hover: null, tool: 'select', snap: stored('snap', 1 / 12), placing: null, splitAxis: null,
@@ -256,7 +256,7 @@ export function renderEditor(root, app, idxIn) {
   function renderView() {
     clear(viewEl);
     const tg = (key, label, tip) => h('button', { class: `btn sm ${ed.show[key] ? 'on' : ''}`, type: 'button', title: tip, 'aria-pressed': String(!!ed.show[key]),
-      onclick: () => { ed.show[key] = !ed.show[key]; localStorage.setItem('vp:show', JSON.stringify(ed.show)); renderView(); renderCanvas(); } }, label);
+      onclick: () => { ed.show[key] = !ed.show[key]; localStorage.setItem('archihelp:show', JSON.stringify(ed.show)); renderView(); renderCanvas(); } }, label);
     viewEl.append(tg('furniture', 'Furniture', 'Show furniture'), tg('dims', 'Dims', 'Dimension chains'), tg('padas', 'Padas', '32 Vaastu padas'), tg('grid', 'Grid', 'Structural grid and columns'),
       h('button', { class: 'btn sm icon', type: 'button', title: 'Zoom out (−)', 'aria-label': 'Zoom out', onclick: () => zoomBy(1 / 1.25) }, '−'),
       h('button', { class: 'btn sm icon', type: 'button', title: 'Zoom in (+)', 'aria-label': 'Zoom in', onclick: () => zoomBy(1.25) }, '+'),
@@ -270,7 +270,7 @@ export function renderEditor(root, app, idxIn) {
         h('b', {}, `Vaastu ${pl.vaastu_score.toFixed(1)}`)),
       pl.failed.length ? h('span', { class: 'badge bad' }, `${pl.failed.length} hard rule${pl.failed.length === 1 ? '' : 's'} missed`) : h('span', { class: 'badge ok' }, 'Hard rules pass'),
       h('span', { class: `badge ${soft ? 'adv' : 'plain'}` }, `${soft} advisor${soft === 1 ? 'y' : 'ies'}`),
-      h('label', { class: 'row small', style: { gap: '4px' } }, 'Snap', select(SNAPS.map(([v, l]) => [String(v), l]), String(ed.snap), (v) => { ed.snap = Number(v); localStorage.setItem('vp:snap', JSON.stringify(ed.snap)); }, { style: { height: '26px', width: 'auto', padding: '0 4px' }, 'aria-label': 'Snap step' })),
+      h('label', { class: 'row small', style: { gap: '4px' } }, 'Snap', select(SNAPS.map(([v, l]) => [String(v), l]), String(ed.snap), (v) => { ed.snap = Number(v); localStorage.setItem('archihelp:snap', JSON.stringify(ed.snap)); }, { style: { height: '26px', width: 'auto', padding: '0 4px' }, 'aria-label': 'Snap step' })),
       h('span', { class: 'num muted', id: 'edCoords' }, ed.cursor ? coordsText(ed.cursor) : ''),
       h('span', { class: 'msg', title: ed.msg }, ed.msg));
   }
@@ -690,7 +690,7 @@ export function renderEditor(root, app, idxIn) {
   ro.observe(canvas);
   app.cleanup = () => { document.removeEventListener('keydown', onKey); document.removeEventListener('keyup', onKeyUp); ro.disconnect(); };
 
-  document.title = `${ed.doc.label || 'Plan'} — ${p.name} — Vaastu Planner`;
+  document.title = `${ed.doc.label || 'Plan'} — ${p.name} — ArchiHelp`;
   renderTools(); renderHint(); renderView(); renderAll();
-  window.__vpEditor = ed;              // e2e tests and debugging
+  window.__ahEditor = ed;              // e2e tests and debugging
 }

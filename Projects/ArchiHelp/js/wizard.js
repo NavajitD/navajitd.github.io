@@ -1,4 +1,4 @@
-// Vaastu Planner — guided setup wizard: every input of the notebook's Config, in six steps, with a live preview.
+// ArchiHelp — guided setup wizard: every input of the notebook's Config, in six steps, with a live preview.
 import { h, clear, field, ftIn, num, seg, select, checkbox, toast } from './dom.js';
 import { saveProject } from './store.js';
 import { resolveConfig, ROOM_SPECS, SECTOR_RULES, BRAHMASTHAN_MAX_OVERLAP, PADAS } from '../engine/config.js';
@@ -22,7 +22,7 @@ export function renderWizard(root, app, { fresh = false, step = null } = {}) {
   root.append(h('div', { class: 'wz' }, h('nav', { class: 'wz-steps', 'aria-label': 'Setup steps' }, stepsEl), main, side));
   app.crumbs([['Projects', '#/'], [p.name || 'New project', p.plans.length ? `#/p/${p.id}` : null], ['Setup', null]]);
   app.actions(p.plans.length || (p.candidates && p.candidates.length) ? [h('a', { class: 'btn sm', href: `#/p/${p.id}/options` }, 'Options')] : []);
-  document.title = `Setup — ${p.name} — Vaastu Planner`;
+  document.title = `Setup — ${p.name} — ArchiHelp`;
   const changed = () => { p.updated = Date.now(); if (!fresh) app.save(); drawSide(); };
 
   function nav() {

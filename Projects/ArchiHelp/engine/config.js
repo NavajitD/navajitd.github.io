@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — configuration defaults and rule tables.
+// ArchiHelp design engine — configuration defaults and rule tables.
 // Every default mirrors parametric_vaastu_floorplan_v3.ipynb (incl. the hand-sketch revisions that added
 // 'lobby' and 'suite' spaces), so a project created with defaults reproduces the notebook's behaviour.
 

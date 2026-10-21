@@ -1,15 +1,15 @@
-// Vaastu Planner edit operations: the hand-sketch revision moves as pure document edits.
+// ArchiHelp edit operations: the hand-sketch revision moves as pure document edits.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { analysePlan } from '../../Projects/VaastuPlanner/engine/index.js';
-import * as E from '../../Projects/VaastuPlanner/engine/edits.js';
-import { rw, rh, rarea } from '../../Projects/VaastuPlanner/engine/geom.js';
+import { analysePlan } from '../../Projects/ArchiHelp/engine/index.js';
+import * as E from '../../Projects/ArchiHelp/engine/edits.js';
+import { rw, rh, rarea } from '../../Projects/ArchiHelp/engine/geom.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const project = JSON.parse(readFileSync(join(HERE, '..', '..', 'Projects', 'VaastuPlanner', 'examples', 'residence-rev9.json'), 'utf8'));
+const project = JSON.parse(readFileSync(join(HERE, '..', '..', 'Projects', 'ArchiHelp', 'examples', 'residence-rev9.json'), 'utf8'));
 const cfg = project.cfg, doc0 = project.plans[0];
 const uid = (doc, name) => doc.rooms.find((r) => r.name === name).uid;
 const room = (plan, name) => plan.rooms.find((r) => r.name === name);

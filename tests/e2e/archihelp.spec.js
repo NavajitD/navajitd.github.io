@@ -1,9 +1,9 @@
-// End-to-end: Vaastu Planner (Projects/VaastuPlanner/planner.html). No sign-in, no network beyond the static server.
+// End-to-end: ArchiHelp (Projects/ArchiHelp/planner.html). No sign-in, no network beyond the static server.
 // Covers the paths the hand-sketch revisions needed: open the example (the final plan), edit with real mouse input,
 // live checks, undo, the A3 drawing set as a PDF, and the wizard -> multi-worker search -> options -> editor flow.
 import { test, expect } from '@playwright/test';
 
-const PAGE = '/Projects/VaastuPlanner/planner.html';
+const PAGE = '/Projects/ArchiHelp/planner.html';
 
 function trackErrors(page) {
   const errors = [];
@@ -19,7 +19,7 @@ const ftToPx = (page, x, y) => page.evaluate(([fx, fy]) => {
   const m = document.querySelector('.ov').getScreenCTM(), q = new DOMPoint(fx, fy).matrixTransform(m);
   return [q.x, q.y];
 }, [x, y]);
-const roomNet = (page, name) => page.evaluate((n) => window.__vpEditor.plan.rooms.find((r) => r.name === n).net, name);
+const roomNet = (page, name) => page.evaluate((n) => window.__ahEditor.plan.rooms.find((r) => r.name === n).net, name);
 
 async function openExample(page) {
   await page.goto(`${PAGE}#/`);
@@ -28,16 +28,16 @@ async function openExample(page) {
   await expect(page.locator('.ed-status')).toContainText('Hard rules pass');
 }
 
-test.describe('Vaastu Planner', () => {
+test.describe('ArchiHelp', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => { try { indexedDB.deleteDatabase('vaastu-planner'); } catch { /* ignore */ } });
+    await page.addInitScript(() => { try { indexedDB.deleteDatabase('archihelp'); } catch { /* ignore */ } });
   });
 
   test('home loads; the example opens as the final revision-9 plan', async ({ page }) => {
     const errors = trackErrors(page);
     await openExample(page);
     await expect(page.locator('#crumbs select')).toHaveValue('0');
-    const rooms = await page.evaluate(() => window.__vpEditor.plan.rooms.map((r) => r.name));
+    const rooms = await page.evaluate(() => window.__ahEditor.plan.rooms.map((r) => r.name));
     expect(rooms).toEqual(expect.arrayContaining(['Master Bedroom', 'Kitchen', 'Puja Room', 'Hall', 'Stair Landing', 'Lobby']));
     expect(errors).toEqual([]);
   });
@@ -54,9 +54,9 @@ test.describe('Vaastu Planner', () => {
     const area = page.locator('[data-k="room-area"]');
     await area.fill('85');
     await area.press('Enter');
-    await expect.poll(() => page.evaluate(() => window.__vpEditor.plan.rooms.find((r) => r.name === 'Kitchen').area)).toBeCloseTo(85, 6);
+    await expect.poll(() => page.evaluate(() => window.__ahEditor.plan.rooms.find((r) => r.name === 'Kitchen').area)).toBeCloseTo(85, 6);
     // drag the wall between Bedroom 2 and the Lobby one foot east
-    const b2 = await roomNet(page, 'Bedroom 2'), t = await page.evaluate(() => window.__vpEditor.plan.rooms.find((r) => r.name === 'Bedroom 2').tile);
+    const b2 = await roomNet(page, 'Bedroom 2'), t = await page.evaluate(() => window.__ahEditor.plan.rooms.find((r) => r.name === 'Bedroom 2').tile);
     const [wx, wy] = await ftToPx(page, t.x1, (b2.y0 + b2.y1) / 2), [wx2] = await ftToPx(page, t.x1 + 1, (b2.y0 + b2.y1) / 2);
     await page.mouse.move(wx, wy); await page.mouse.down(); await page.mouse.move(wx2, wy, { steps: 8 }); await page.mouse.up();
     await expect.poll(async () => (await roomNet(page, 'Bedroom 2')).x1 - b2.x1).toBeCloseTo(1, 6);
@@ -64,10 +64,10 @@ test.describe('Vaastu Planner', () => {
     await page.keyboard.press('ControlOrMeta+z');
     await page.keyboard.press('ControlOrMeta+z');
     await expect.poll(async () => (await roomNet(page, 'Bedroom 2')).x1).toBeCloseTo(b2.x1, 9);
-    await expect.poll(() => page.evaluate(() => window.__vpEditor.plan.rooms.find((r) => r.name === 'Kitchen').area)).toBeCloseTo(80.102, 2);
+    await expect.poll(() => page.evaluate(() => window.__ahEditor.plan.rooms.find((r) => r.name === 'Kitchen').area)).toBeCloseTo(80.102, 2);
     // remove the puja door (revision 5) -> the reachability rule fails live
-    const pj = await page.evaluate(() => { const e = window.__vpEditor, u = e.plan.rooms.find((r) => r.name === 'Puja Room').uid; return e.plan.links_all.findIndex((l) => l.a === u || l.b === u); });
-    await page.evaluate((k2) => { const e = window.__vpEditor, l = e.plan.links_all[k2]; e.select({ t: 'link', a: l.a, b: l.b }); }, pj);
+    const pj = await page.evaluate(() => { const e = window.__ahEditor, u = e.plan.rooms.find((r) => r.name === 'Puja Room').uid; return e.plan.links_all.findIndex((l) => l.a === u || l.b === u); });
+    await page.evaluate((k2) => { const e = window.__ahEditor, l = e.plan.links_all[k2]; e.select({ t: 'link', a: l.a, b: l.b }); }, pj);
     await page.getByRole('button', { name: 'Remove', exact: true }).click();
     await expect(page.locator('.ed-status')).toContainText(/hard rule/);
     await page.keyboard.press('ControlOrMeta+z');
@@ -82,9 +82,9 @@ test.describe('Vaastu Planner', () => {
     const n = await roomNet(page, 'Bedroom 3');
     const [x, y] = await ftToPx(page, n.x0 + 2.5, n.y1 - 0.8);
     await page.mouse.click(x, y);
-    const sel = await page.evaluate(() => window.__vpEditor.sel);
+    const sel = await page.evaluate(() => window.__ahEditor.sel);
     expect(sel.t).toBe('item');
-    const item = () => page.evaluate((s) => window.__vpEditor.plan.furniture[s.uid][s.i], sel);
+    const item = () => page.evaluate((s) => window.__ahEditor.plan.furniture[s.uid][s.i], sel);
     const before = await item();
     expect(before.kind).toBe('study');
     expect(before.rect.y1).toBeCloseTo(n.y1, 6);        // backs onto the north wall
@@ -95,9 +95,9 @@ test.describe('Vaastu Planner', () => {
     await expect.poll(async () => (await item()).rect.x0 - before.rect.x0).toBeCloseTo(2, 6);
     await page.keyboard.press('r');
     await expect.poll(async () => (await item()).side).toBe('E');
-    const count = (await page.evaluate((s) => window.__vpEditor.plan.furniture[s.uid].length, sel));
+    const count = (await page.evaluate((s) => window.__ahEditor.plan.furniture[s.uid].length, sel));
     await page.keyboard.press('Delete');
-    await expect.poll(() => page.evaluate((s) => window.__vpEditor.plan.furniture[s.uid].length, sel)).toBe(count - 1);
+    await expect.poll(() => page.evaluate((s) => window.__ahEditor.plan.furniture[s.uid].length, sel)).toBe(count - 1);
   });
 
   test('drawing set: four A3 sheets and a PDF download', async ({ page }) => {

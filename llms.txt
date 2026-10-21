@@ -4,12 +4,12 @@
 
 ## Pages
 - [Home](https://navajitd.github.io/): Profile, experience, and contact.
-- [Projects](https://navajitd.github.io/projects.html): Personal builds — Vaastu Planner, Will you?, Numo, Aria, ProbashiBangalore, MyExpenses, HealThee, Letter Hunt, and Vidur.
+- [Projects](https://navajitd.github.io/projects.html): Personal builds — ArchiHelp, Will you?, Numo, Aria, ProbashiBangalore, MyExpenses, HealThee, Letter Hunt, and Vidur.
 - [Blog](https://navajitd.github.io/blog.html): Essays on building AI products and personal projects.
 - [Recipes](https://navajitd.github.io/recipes.html): Field notes from the kitchen.
 
 ## Projects
-- [Vaastu Planner](https://navajitd.github.io/Projects/VaastuPlanner/planner.html): Free parametric floor-plan designer — guided setup, multi-core layout search scored on 32-pada Vaastu rules, NBC room sizes and a structural grid, an editor for walls, doors, windows and furniture, and a dimensioned A3 drawing set (PDF). No sign-in; runs entirely in the browser.
+- [ArchiHelp](https://navajitd.github.io/Projects/ArchiHelp/planner.html): Free parametric floor-plan designer — guided setup, multi-core layout search scored on 32-pada Vaastu rules, NBC room sizes and a structural grid, an editor for walls, doors, windows and furniture, and a dimensioned A3 drawing set (PDF). No sign-in; runs entirely in the browser.
 - [Will you?](https://willyou.web.app): Pixel-art page generator for popping a question — customisable escalating messages, theme, and sticker, with a confetti celebration at the end. Firebase, Cloud Functions.
 - [Numo](https://numo.web.app): AI numerology guide answering life queries, built with Mystics Mentor.
 - [Aria](https://talktoaria.web.app): AI voice sales agent that phones you and roleplays a Hinglish post-demo-class sales call — intent classification, objection handling, and next-step decisions shown in real time. Pipecat, Deepgram Nova-3, Sarvam Bulbul v3, Cloud Run.

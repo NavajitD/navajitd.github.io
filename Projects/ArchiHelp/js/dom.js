@@ -1,4 +1,4 @@
-// Vaastu Planner UI — tiny DOM helpers (no framework).
+// ArchiHelp UI — tiny DOM helpers (no framework).
 import { fi, parseFtIn } from '../engine/geom.js';
 
 /** h('div', {class:'x', onclick: fn, style: {...}}, child, [children], 'text') */

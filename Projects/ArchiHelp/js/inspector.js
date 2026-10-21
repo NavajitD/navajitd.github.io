@@ -1,4 +1,4 @@
-// Vaastu Planner — editor side panel: the inspector for whatever is selected, the live checks, and plan settings.
+// ArchiHelp — editor side panel: the inspector for whatever is selected, the live checks, and plan settings.
 import { h, clear, toast, confirmDlg, prompt, field, ftIn, num, seg, select, checkbox, download, when } from './dom.js';
 import { saveProject, newId } from './store.js';
 import * as E from '../engine/edits.js';

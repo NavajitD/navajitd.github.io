@@ -1,4 +1,4 @@
-// Vaastu Planner — application controller: routing, projects, engine worker pool.
+// ArchiHelp — application controller: routing, projects, engine worker pool.
 import { h, $, clear, toast, download, pickFile, confirmDlg, prompt, when } from './dom.js';
 import { listProjects, getProject, saveProject, deleteProject, newId } from './store.js';
 import { renderWizard } from './wizard.js';
@@ -68,12 +68,12 @@ class EnginePool {
 // ------------------------------------------------------------------------------------------------ projects
 export function newProject(cfg = {}) {
   const c = { ...JSON.parse(JSON.stringify(DEFAULT_CONFIG)), ...cfg };
-  return { format: 'vaastu-planner-project', version: 1, id: newId(), name: c.project_name || 'New house', created: Date.now(), updated: Date.now(),
+  return { format: 'archihelp-project', version: 1, id: newId(), name: c.project_name || 'New house', created: Date.now(), updated: Date.now(),
     cfg: c, drawing: { name: c.project_name || 'Residence', plan_label: '', rev: 'P1' }, plans: [], activePlan: 0, revisions: {}, candidates: [] };
 }
 
 function normaliseImported(p) {
-  if (!p || p.format !== 'vaastu-planner-project' || !p.cfg || !Array.isArray(p.plans)) throw new Error('Not a Vaastu Planner project file.');
+  if (!p || p.format !== 'archihelp-project' || !p.cfg || !Array.isArray(p.plans)) throw new Error('Not an ArchiHelp project file.');
   return { revisions: {}, candidates: [], drawing: { name: p.name, plan_label: '', rev: 'P1' }, activePlan: 0, ...p, id: newId(), updated: Date.now() };
 }
 
@@ -154,7 +154,7 @@ async function route() {
 async function renderHome(root) {
   app.project = null;
   app.crumbs([]); app.actions([]);
-  document.title = 'Vaastu Planner — parametric floor plans, 32-pada Vaastu checks, A3 drawing sets';
+  document.title = 'ArchiHelp — parametric floor plans, 32-pada Vaastu checks, A3 drawing sets';
   const list = h('div', { class: 'plist' }, h('div', { class: 'empty' }, h('span', { class: 'spin' }), ' Loading your projects…'));
   root.append(h('div', { class: 'home' },
     h('div', {},
@@ -168,7 +168,7 @@ async function renderHome(root) {
         h('button', { class: 'opt', type: 'button', onclick: async () => {
           const txt = await pickFile(); if (!txt) return;
           try { const p = normaliseImported(JSON.parse(txt)); await saveProject(p); app.project = p; app.go(`#/p/${p.id}`); toast('Project imported.'); } catch (e) { toast(e.message, 'bad'); }
-        } }, h('b', {}, 'Import a project file'), h('span', {}, '.json exported from Vaastu Planner'), h('i', {}, '↑'))),
+        } }, h('b', {}, 'Import a project file'), h('span', {}, '.json exported from ArchiHelp'), h('i', {}, '↑'))),
       h('div', { class: 'how' }, h('b', {}, 'How it works'),
         h('ol', {},
           h('li', {}, 'Setup wizard — plot and road side, floor heights, rooms, walls and columns, the Vaastu pada rules.'),
@@ -208,7 +208,7 @@ async function renderHome(root) {
 
 export function exportProject(p) {
   const slug = p.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'project';
-  download(`${slug}.vaastu-planner.json`, JSON.stringify(p, null, 1), 'application/json');
+  download(`${slug}.archihelp.json`, JSON.stringify(p, null, 1), 'application/json');
 }
 app.exportProject = exportProject;
 app.newProject = newProject;
@@ -217,5 +217,5 @@ app.analyse = (doc) => analysePlan(app.project.cfg, doc);
 window.addEventListener('hashchange', route);
 window.addEventListener('beforeunload', () => { if (app.project) saveProject(app.project); });
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
-window.__vp = app;                 // handy for debugging / e2e tests
+window.__ah = app;                 // handy for debugging / e2e tests
 route();

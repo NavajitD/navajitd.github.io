@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — independent plan checker (port of the notebook's evaluate()).
+// ArchiHelp design engine — independent plan checker (port of the notebook's evaluate()).
 // Re-measures the plan from its geometry and runs EVERY rule (no early exit). Hard rules gate a design;
 // soft rules are advisory. Rule names and detail strings match the notebook so reports read the same.
 import { rarea, rw, rh, sharedEdge, overlapArea, fmt, pyFixed, argmax, sortedBy, EPS } from './geom.js';

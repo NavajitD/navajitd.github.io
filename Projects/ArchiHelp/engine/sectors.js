@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — 32-sector (pada) Vaastu geometry.
+// ArchiHelp design engine — 32-sector (pada) Vaastu geometry.
 // Exact split of a rectangle across the padas (convex clipping, as shapely does in the notebook) and a fast
 // 1-inch raster with integral images for the generator (share in allowed padas + score for any rectangle in O(1)).
 import { PADAS, PADA_SPAN } from './config.js';

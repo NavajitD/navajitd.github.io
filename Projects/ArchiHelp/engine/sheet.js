@@ -1,4 +1,4 @@
-// Vaastu Planner — vector display list for drawing sheets, with an SVG renderer and a dependency-free PDF writer.
+// ArchiHelp — vector display list for drawing sheets, with an SVG renderer and a dependency-free PDF writer.
 // Sheet coordinates are millimetres, origin bottom-left, y up (as matplotlib's figure axes in the notebook).
 // Line widths and font sizes are in points, like matplotlib, so the drawings keep the notebook's proportions.
 import { textWidthEm, winAnsiCode } from './fontmetrics.js';
@@ -241,7 +241,7 @@ function contentStream(sheet, gs) {
 }
 
 /** Multi-page PDF (one page per sheet). Optional `deflate(Uint8Array) -> Uint8Array` compresses the content streams. */
-export function sheetsToPdf(sheets, { title = 'Drawing set', author = 'Vaastu Planner', deflate = null, date = new Date() } = {}) {
+export function sheetsToPdf(sheets, { title = 'Drawing set', author = 'ArchiHelp', deflate = null, date = new Date() } = {}) {
   const enc = new TextEncoder();
   const objs = [];                       // [id] -> bytes/string
   const add = (body) => { objs.push(body); return objs.length; };
@@ -263,7 +263,7 @@ export function sheetsToPdf(sheets, { title = 'Drawing set', author = 'Vaastu Pl
   objs[gsObj - 1] = `<< ${[...gs.entries()].map(([a, nm]) => `/${nm} << /Type /ExtGState /ca ${a} /CA ${a} >>`).join(' ')} >>`;
   const pad = (v) => String(v).padStart(2, '0');
   const d = `D:${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
-  const info = add(`<< /Title ${pdfString(title)} /Author ${pdfString(author)} /Creator (Vaastu Planner design engine) /Producer (Vaastu Planner) /CreationDate (${d}) >>`);
+  const info = add(`<< /Title ${pdfString(title)} /Author ${pdfString(author)} /Creator (ArchiHelp design engine) /Producer (ArchiHelp) /CreationDate (${d}) >>`);
   const chunks = [], offsets = []; let len = 0;
   const put = (x) => { const b = typeof x === 'string' ? enc.encode(x) : x; chunks.push(b); len += b.length; };
   put('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');

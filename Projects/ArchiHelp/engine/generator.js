@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — scalable layout generator.
+// ArchiHelp design engine — scalable layout generator.
 //
 // Replaces the notebook's per-skeleton CP-SAT model with a search that runs anywhere (browser Web Workers, Node):
 //   1. Skeletons: the envelope is cut into three bands along its LONG axis (rooms | circulation spine | rooms), for every

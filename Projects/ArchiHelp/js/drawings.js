@@ -1,4 +1,4 @@
-// Vaastu Planner — the A3 drawing set (A-101 plan, A-102 Vaastu, S-101 structure, A-601 schedules): view, title block, PDF.
+// ArchiHelp — the A3 drawing set (A-101 plan, A-102 Vaastu, S-101 structure, A-601 schedules): view, title block, PDF.
 import { h, clear, toast, download } from './dom.js';
 import { drawingSet } from '../engine/drawing.js';
 import { sheetToSvg, sheetsToPdfAsync } from '../engine/sheet.js';

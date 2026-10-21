@@ -1,5 +1,5 @@
 {
- "format": "vaastu-planner-project",
+ "format": "archihelp-project",
  "version": 1,
  "name": "Residence - Example House",
  "createdFrom": "parametric_vaastu_floorplan_v3.ipynb + hand-sketch revisions 1-9",

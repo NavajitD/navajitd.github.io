@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — plan model.
+// ArchiHelp design engine — plan model.
 // A plan document (JSON, what gets saved/edited) is turned into a runtime plan (net rects, structure, rules).
 //
 // PlanDoc = {

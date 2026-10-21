@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — import/export helpers.
+// ArchiHelp design engine — import/export helpers.
 // The notebook (parametric_vaastu_floorplan_v3.ipynb) names rooms in link specs, window hints and overrides;
 // the engine document uses stable uids so rooms can be renamed in the editor.
 

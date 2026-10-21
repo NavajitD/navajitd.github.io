@@ -1,5 +1,5 @@
-// Vaastu Planner — projects persist in this browser (IndexedDB, localStorage fallback). No account, no server.
-const DB = 'vaastu-planner', STORE = 'projects', LS = 'vaastu-planner:projects';
+// ArchiHelp — projects persist in this browser (IndexedDB, localStorage fallback). No account, no server.
+const DB = 'archihelp', STORE = 'projects', LS = 'archihelp:projects';
 let dbp = null;
 
 function openDb() {

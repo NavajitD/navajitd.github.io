@@ -1,4 +1,4 @@
-// Vaastu Planner — plan pictures for cards and previews: the engine's own wall drawing (tinted by room type)
+// ArchiHelp — plan pictures for cards and previews: the engine's own wall drawing (tinted by room type)
 // with large room names fitted into each room, so a 300-px card stays readable.
 import { analysePlan } from '../engine/index.js';
 import { planSheet } from '../engine/drawing.js';

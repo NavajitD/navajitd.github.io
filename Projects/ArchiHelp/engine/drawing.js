@@ -1,4 +1,4 @@
-// Vaastu Planner — engineering drawing set for one plan (port of the notebook's make_drawing_set):
+// ArchiHelp — engineering drawing set for one plan (port of the notebook's make_drawing_set):
 //   A-101 dimensioned floor plan · A-102 Vaastu 32-sector plan · S-101 column & beam layout · A-601 schedules
 // Four A3 sheets at true scale 1:75 (print at 100 %). Every sheet carries "PRELIMINARY - NOT FOR CONSTRUCTION".
 import { Sheet } from './sheet.js';

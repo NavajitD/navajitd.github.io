@@ -1,4 +1,4 @@
-// Vaastu Planner — layout options: run the search on every core, then browse, compare and open candidates.
+// ArchiHelp — layout options: run the search on every core, then browse, compare and open candidates.
 import { h, clear, toast, modal, seg, checkbox, select } from './dom.js';
 import { saveProject } from './store.js';
 import { planThumbSvg, planPreviewSvg, dominantPada } from './thumbs.js';
@@ -25,7 +25,7 @@ export function renderCatalogue(root, app) {
   const p = app.project, cfg = prepareConfig(p.cfg);
   app.crumbs([['Projects', '#/'], [p.name, p.plans.length ? `#/p/${p.id}/plan/${p.activePlan || 0}` : null], ['Options', null]]);
   app.actions([h('a', { class: 'btn sm', href: `#/p/${p.id}/setup` }, 'Edit setup')]);
-  document.title = `Options — ${p.name} — Vaastu Planner`;
+  document.title = `Options — ${p.name} — ArchiHelp`;
   const picked = new Set();
   let effort = (p.lastRun && p.lastRun.effort) || 'standard', relaxed = !!(p.lastRun && p.lastRun.relaxed), running = false, sortBy = 'best';
   const SORTS = { best: ['Best overall', null], vaastu: ['Vaastu score', (c) => -c.quality.vaastu], soft: ['Fewest advisories', (c) => c.quality.soft * 1000 - c.quality.vaastu], circ: ['Least circulation', (c) => c.quality.circ] };

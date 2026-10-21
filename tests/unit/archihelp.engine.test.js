@@ -1,21 +1,21 @@
-// Vaastu Planner design engine — parity with the notebook (Python) and the final drawing set, plus generator sanity.
+// ArchiHelp design engine — parity with the notebook (Python) and the final drawing set, plus generator sanity.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { loadFixture, cfgFromGolden, finalDoc, generatedDoc, diffPlan } from './_vaastu-planner-parity.js';
-import { analysePlan } from '../../Projects/VaastuPlanner/engine/index.js';
-import { drawingSet } from '../../Projects/VaastuPlanner/engine/drawing.js';
-import { sheetsToPdf, sheetToSvg } from '../../Projects/VaastuPlanner/engine/sheet.js';
-import { sectorSplit } from '../../Projects/VaastuPlanner/engine/sectors.js';
-import { resolveConfig } from '../../Projects/VaastuPlanner/engine/config.js';
-import { generate, diagnose } from '../../Projects/VaastuPlanner/engine/generator.js';
-import { fi, fmt, parseFtIn, pyFixed, rectUnionLoops, polyArea } from '../../Projects/VaastuPlanner/engine/geom.js';
+import { loadFixture, cfgFromGolden, finalDoc, generatedDoc, diffPlan } from './_archihelp-parity.js';
+import { analysePlan } from '../../Projects/ArchiHelp/engine/index.js';
+import { drawingSet } from '../../Projects/ArchiHelp/engine/drawing.js';
+import { sheetsToPdf, sheetToSvg } from '../../Projects/ArchiHelp/engine/sheet.js';
+import { sectorSplit } from '../../Projects/ArchiHelp/engine/sectors.js';
+import { resolveConfig } from '../../Projects/ArchiHelp/engine/config.js';
+import { generate, diagnose } from '../../Projects/ArchiHelp/engine/generator.js';
+import { fi, fmt, parseFtIn, pyFixed, rectUnionLoops, polyArea } from '../../Projects/ArchiHelp/engine/geom.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const g = loadFixture('golden.json'), gg = loadFixture('golden_gen.json'), cfg = cfgFromGolden(g);
-const example = JSON.parse(readFileSync(join(HERE, '..', '..', 'Projects', 'VaastuPlanner', 'examples', 'residence-rev9.json'), 'utf8'));
+const example = JSON.parse(readFileSync(join(HERE, '..', '..', 'Projects', 'ArchiHelp', 'examples', 'residence-rev9.json'), 'utf8'));
 
 test('formatting helpers match the notebook', () => {
   assert.equal(fi(4.75), `4'-9"`);

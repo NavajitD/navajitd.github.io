@@ -1,6 +1,6 @@
 {
-  "name": "Vaastu Planner",
-  "short_name": "Vaastu Planner",
+  "name": "ArchiHelp",
+  "short_name": "ArchiHelp",
   "description": "Parametric floor plans with 32-pada Vaastu checks, editing and A3 drawing sets. Runs in your browser; no sign-in.",
   "start_url": "./planner.html",
   "scope": "./",

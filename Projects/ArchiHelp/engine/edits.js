@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — edit operations on plan documents (pure: each returns a NEW document).
+// ArchiHelp design engine — edit operations on plan documents (pure: each returns a NEW document).
 // These are the moves made by hand in the sketch revisions: walls to exact dimensions, area targets, split / merge /
 // swap / retype spaces, hand-specified doors / openings / "no wall", windows, furniture (auto preferences or manual
 // layouts), keep-outs and drawing notes. Problems raise EditError with a message for the user.

@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — doors + furniture planned together, room by room (port of the notebook's section 6b).
+// ArchiHelp design engine — doors + furniture planned together, room by room (port of the notebook's section 6b).
 // For every door that swings INTO a room the planner tries the legal positions on the shared wall (near either corner or
 // centred) and both hinge sides, lays out the room's furniture for each, and keeps the best combination. Doors swinging out of
 // a room, openings and stair arrivals are fixed obstacles with a clear zone in front. Windows are placed afterwards.

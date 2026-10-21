@@ -1,4 +1,4 @@
-// Vaastu Planner engine worker: runs the layout search off the main thread (one worker per CPU core).
+// ArchiHelp engine worker: runs the layout search off the main thread (one worker per CPU core).
 // Protocol (postMessage):
 //   -> { id, cmd: 'count', cfg }                                  <- { id, type: 'result', count }
 //   -> { id, cmd: 'search', cfg, skeletons:[index...], budget, perSkeleton }

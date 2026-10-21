@@ -1,9 +1,9 @@
 // Builds the seed example project (the final hand-sketch plan, revision 9) in the engine's own edit vocabulary,
-// from the notebook dump. Run:  node tests/unit/_vaastu-planner-example.js  -> writes Projects/VaastuPlanner/examples/residence-rev9.json
+// from the notebook dump. Run:  node tests/unit/_archihelp-example.js  -> writes Projects/ArchiHelp/examples/residence-rev9.json
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { loadFixture, cfgFromGolden } from './_vaastu-planner-parity.js';
+import { loadFixture, cfgFromGolden } from './_archihelp-parity.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const R4 = (a) => ({ x0: a[0], y0: a[1], x1: a[2], y1: a[3] });
@@ -50,13 +50,13 @@ export function buildExampleDoc(g) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const g = loadFixture('golden.json');
   const project = {
-    format: 'vaastu-planner-project', version: 1,
+    format: 'archihelp-project', version: 1,
     name: 'Residence - Example House', createdFrom: 'parametric_vaastu_floorplan_v3.ipynb + hand-sketch revisions 1-9',
     cfg: { ...cfgFromGolden(g), project_name: 'Residence - Example House' },
     drawing: { name: 'Residence - Example House', plan_label: 'Final - hand sketch IMG_5243, revision 9', rev: 'P1' },
     plans: [buildExampleDoc(g)], activePlan: 0,
   };
-  const out = join(HERE, '..', '..', 'Projects', 'VaastuPlanner', 'examples', 'residence-rev9.json');
+  const out = join(HERE, '..', '..', 'Projects', 'ArchiHelp', 'examples', 'residence-rev9.json');
   writeFileSync(out, JSON.stringify(project, null, 1));
   console.log('wrote', out);
 }

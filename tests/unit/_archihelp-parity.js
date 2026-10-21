@@ -1,12 +1,12 @@
-// Parity harness: JS engine vs the notebook (Python) golden dumps. Used by tests/unit/vaastu-planner.engine.test.js too.
+// Parity harness: JS engine vs the notebook (Python) golden dumps. Used by tests/unit/archihelp.engine.test.js too.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { analysePlan } from '../../Projects/VaastuPlanner/engine/index.js';
-import { docFromNotebook } from '../../Projects/VaastuPlanner/engine/io.js';
+import { analysePlan } from '../../Projects/ArchiHelp/engine/index.js';
+import { docFromNotebook } from '../../Projects/ArchiHelp/engine/io.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-export const loadFixture = (name) => JSON.parse(readFileSync(join(HERE, '..', 'fixtures', 'vaastu-planner', name), 'utf8'));
+export const loadFixture = (name) => JSON.parse(readFileSync(join(HERE, '..', 'fixtures', 'archihelp', name), 'utf8'));
 
 const close = (a, b, tol = 1e-6) => (a === null || b === null || a === undefined || b === undefined) ? a == b : Math.abs(a - b) <= tol;
 const rectArr = (r) => [r.x0, r.y0, r.x1, r.y1];

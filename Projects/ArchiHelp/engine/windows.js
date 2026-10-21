@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — window specification: explicit, "as wide as the piers allow", or suppressed.
+// ArchiHelp design engine — window specification: explicit, "as wide as the piers allow", or suppressed.
 //
 // plan.windows = [{ room: uid, side: 'S'|'N'|'E'|'W',
 //                   fit: 'max' | undefined,     max = widest multiple of 3" keeping `pier` ft of solid wall from column faces

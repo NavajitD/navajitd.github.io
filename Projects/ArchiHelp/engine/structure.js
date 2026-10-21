@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — structural grid, preliminary column sizing and beams (rule-of-thumb only).
+// ArchiHelp design engine — structural grid, preliminary column sizing and beams (rule-of-thumb only).
 import { rect } from './geom.js';
 
 export function coreRect(cfg) { return rect(cfg.ew_ft / 3, cfg.ns_ft / 3, 2 * cfg.ew_ft / 3, 2 * cfg.ns_ft / 3); }

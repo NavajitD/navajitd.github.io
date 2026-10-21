@@ -7,7 +7,7 @@
 //                             OpenGraph article tags, BlogPosting JSON-LD, body)
 //   • recipes.html          — recipe cards + Recipe JSON-LD injected between
 //                             <!-- @prerender:* --> markers (no-op while empty)
-//   • sitemap.xml           — home, projects, blog, recipes + every post URL
+//   • sitemap.xml           — home, projects, ArchiHelp, blog, recipes + every post URL
 //
 // Regenerate after publishing:  npm run build:blog
 // A GitHub Action (.github/workflows/blog-index.yml) also runs this on a schedule
@@ -363,6 +363,7 @@ function buildSitemap(posts) {
   const staticPages = [
     { loc: `${SITE}/`, priority: '1.0' },
     { loc: `${SITE}/projects.html`, priority: '0.8' },
+    { loc: `${SITE}/Projects/ArchiHelp/planner.html`, priority: '0.7' },
     { loc: `${SITE}/blog.html`, priority: '0.8' },
     { loc: `${SITE}/recipes.html`, priority: '0.6' },
   ];
@@ -415,4 +416,4 @@ await writeFile(SITEMAP, buildSitemap(posts));
 console.log(`✓ posts.json ${wrotePosts ? 'updated' : 'unchanged'} (${posts.length} posts)`);
 console.log(`✓ blog/ pages written (${posts.length})`);
 console.log(`✓ recipes.html ${wroteRecipes ? 'updated' : 'unchanged'} (${recipes.length} recipes)`);
-console.log(`✓ sitemap.xml written (${posts.length + 4} urls)`);
+console.log(`✓ sitemap.xml written (${posts.length + 5} urls)`);

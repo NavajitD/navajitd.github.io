@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — doors / openings / windows: the single source of truth for the drawings and the schedules.
+// ArchiHelp design engine — doors / openings / windows: the single source of truth for the drawings and the schedules.
 // Door positions and hinge sides come from the furniture planner; windows avoid doors, columns and tall furniture.
 import { sharedEdge, arange } from './geom.js';
 import { DEFAULT_WIN } from './config.js';

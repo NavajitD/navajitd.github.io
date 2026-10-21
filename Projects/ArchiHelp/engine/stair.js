@@ -1,4 +1,4 @@
-// Vaastu Planner design engine — dog-leg staircase design and arrival-lobby geometry.
+// ArchiHelp design engine — dog-leg staircase design and arrival-lobby geometry.
 import { rect, rw, rh, rarea, sharedEdge, EPS } from './geom.js';
 
 /** Dog-leg stair from the floor height: risers, flights and the block size (turns clockwise going up). */
