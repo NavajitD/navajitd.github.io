@@ -82,6 +82,10 @@ export function renderEditor(root, app, idxIn) {
       console.error(e); toast(`That edit failed: ${e.message}`, 'bad', 6000); return false;
     }
     if (!nd || nd === ed.doc) return false;
+    if (app.stairOk && app.stairOk(ed.doc) && !app.stairOk(nd)) {
+      toast(`The staircase lines up with the ${app.fixedStair.from.toLowerCase()}: it keeps its place and size on every floor.`, 'bad', 5000);
+      return false;
+    }
     ed.undo.push(ed.doc); if (ed.undo.length > 300) ed.undo.shift();
     ed.redo = [];
     commit(nd, msg, sel);

@@ -1,7 +1,7 @@
 {
   "name": "ArchiHelp",
   "short_name": "ArchiHelp",
-  "description": "Parametric floor plans with 32-pada Vaastu checks, editing and A3 drawing sets. Runs in your browser; no sign-in.",
+  "description": "Parametric floor plans with 32-pada Vaastu checks, editing, A3 drawing sets and wind circulation. Runs in your browser; no sign-in.",
   "start_url": "./planner.html",
   "scope": "./",
   "display": "standalone",

@@ -5,7 +5,7 @@ import { Sheet } from './sheet.js';
 import { fi, pyFixed, pyG, pyRound, rw, rh, rarea, rcx, rcy, sharedEdge, linspace, arange, rectUnionLoops, clipSegmentToBox } from './geom.js';
 import { PADAS, PADA_SPAN, DOOR_TYPES, ROOM_COLORS } from './config.js';
 import { padaRange, sectorFrame } from './sectors.js';
-import { designStair } from './stair.js';
+import { designStair, stairRiseFt } from './stair.js';
 
 const INK = '#111111', MID = '#555555', LIGHT = '#9a9a9a';
 const ORD = { 0: 'GROUND', 1: 'FIRST', 2: 'SECOND', 3: 'THIRD' };
@@ -407,7 +407,7 @@ function table(fr, x, y, cols, rows, widths, { fs = 6.0, title = null, rowH = 3.
 }
 
 export function planNotes(plan) {
-  const cfg = plan.cfg, S = designStair(cfg), h = cfg.floor_level === 1 ? cfg.ground_floor_height_ft : cfg.typical_floor_height_ft;
+  const cfg = plan.cfg, S = designStair(cfg), h = stairRiseFt(cfg);
   return ['All dimensions in feet-inches. Room sizes are CLEAR (wall face to wall face).',
     `External walls ${pyFixed(cfg.t_ext * 12, 0)}" , internal walls ${pyFixed(cfg.t_int * 12, 0)}" unless noted.` + (plan.rooms.some((r) => r.rtype === 'court') ? ' Courtyards are open to sky (parapet on the outer edge).' : ''),
     `Floor-to-floor ${pyG(h)}'-0"; stair ${S.risers} risers @ ${pyFixed(S.riser_in, 2)}" / ${pyG(cfg.tread_in)}" tread, dog-leg, turns clockwise going up.`,

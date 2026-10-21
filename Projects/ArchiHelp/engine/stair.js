@@ -2,8 +2,11 @@
 import { rect, rw, rh, rarea, sharedEdge, EPS } from './geom.js';
 
 /** Dog-leg stair from the floor height: risers, flights and the block size (turns clockwise going up). */
+/** Rise of the flight drawn on this floor (ft): the ground storey for the ground and first floors, typical above. */
+export const stairRiseFt = (cfg) => ((cfg.floor_level ?? 0) <= 1 ? cfg.ground_floor_height_ft : cfg.typical_floor_height_ft);
+
 export function designStair(cfg) {
-  const H = (cfg.floor_level === 1 ? cfg.ground_floor_height_ft : cfg.typical_floor_height_ft) * 12.0;
+  const H = stairRiseFt(cfg) * 12.0;
   const n = Math.ceil(H / cfg.max_riser_in - 1e-9), r1 = Math.ceil(n / 2), r2 = n - r1, fw = cfg.stair_width_ft;
   const run = Math.max(r1 - 1, r2 - 1) * cfg.tread_in / 12.0;
   return { height_in: H, risers: n, riser_in: H / n, tread_in: cfg.tread_in, r1, r2, flight_w: fw, block_l: run + fw, block_w: 2 * fw + 0.33, run };

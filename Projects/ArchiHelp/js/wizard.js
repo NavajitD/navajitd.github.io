@@ -1,5 +1,6 @@
 // ArchiHelp — guided setup wizard: every input of the notebook's Config, in six steps, with a live preview.
 import { h, clear, field, ftIn, num, seg, select, checkbox, toast } from './dom.js';
+import { floorsOf, levelName, setActiveLevel } from './floors.js';
 import { saveProject } from './store.js';
 import { resolveConfig, ROOM_SPECS, SECTOR_RULES, BRAHMASTHAN_MAX_OVERLAP, PADAS } from '../engine/config.js';
 import { designStair } from '../engine/stair.js';
@@ -68,12 +69,21 @@ export function renderWizard(root, app, { fresh = false, step = null } = {}) {
             'Compass bearing of the plan\'s "up". Measure on site — the padas rotate with it.'))));
   }
 
+  /** Level of the floor being designed; levels taken by the house's other floors are not offered. */
+  function levelSelect() {
+    const others = new Set(floorsOf(p).filter((f) => !f.active).map((f) => f.level));
+    const sel = select([0, 1, 2, 3, 4, 5].filter((l) => !others.has(l) || l === cfg.floor_level).map((l) => [l, levelName(l)]), cfg.floor_level, (v) => {
+      try { setActiveLevel(p, Number(v)); changed(); if (app.refreshBar) app.refreshBar('plan'); } catch (e) { toast(e.message, 'bad'); }
+    });
+    return sel;
+  }
+
   function stepBuilding() {
     const st = designStair(resolveConfig(cfg));
     main.append(h('h2', {}, 'Building'), h('p', { class: 'intro' }, 'Which floor you are designing, the construction, and the structural grid. Defaults follow the notebook: 7" brick walls, RCC frame, columns kept out of the Brahmasthan and inside wall lines.'),
       h('fieldset', {}, h('legend', {}, 'Levels'),
         h('div', { class: 'grid4' },
-          field('Floor being designed', select([[0, 'Ground'], [1, 'First'], [2, 'Second'], [3, 'Third']], cfg.floor_level, (v) => set('floor_level', Number(v)))),
+          field('This floor', levelSelect()),
           field('Ground floor height', ftIn({ value: cfg.ground_floor_height_ft, min: 8, max: 16, onChange: (v) => set('ground_floor_height_ft', v) })),
           field('Typical floor height', ftIn({ value: cfg.typical_floor_height_ft, min: 8, max: 16, onChange: (v) => set('typical_floor_height_ft', v) })),
           field('Floors above', num({ value: cfg.floors_above, min: 0, max: 10, onChange: (v) => set('floors_above', Math.round(v)) }), 'For column loads.'))),
@@ -113,7 +123,9 @@ export function renderWizard(root, app, { fresh = false, step = null } = {}) {
       return h('div', { class: 'counter' }, h('div', {}, h('b', {}, label), hint ? h('div', { class: 'small muted' }, hint) : null),
         h('div', { class: 'stepper' }, h('button', { type: 'button', 'aria-label': `Fewer ${label}`, onclick: () => bump(-1) }, '−'), out, h('button', { type: 'button', 'aria-label': `More ${label}`, onclick: () => bump(1) }, '+')));
     };
-    main.append(h('h2', {}, 'Rooms'), h('p', { class: 'intro' }, 'The programme for this floor. The first bedroom becomes the master bedroom (largest, with an attached bath). Passages, lobbies and landings are added by the generator as needed.'),
+    if (app.fixedStair && !(P.stair > 0)) P.stair = 1;
+    main.append(h('h2', {}, 'Rooms'), h('p', { class: 'intro' }, `${levelName(cfg.floor_level ?? 0)}. `, 'The programme for this floor. The first bedroom becomes the master bedroom (largest, with an attached bath). Passages, lobbies and landings are added by the generator as needed.'),
+      app.fixedStair ? h('p', { class: 'note' }, `The staircase stays where it is on the ${app.fixedStair.from.toLowerCase()}; the generator arranges this floor around it.`) : null,
       h('div', { class: 'grid2' },
         counter('bedroom', 'Bedrooms', 'incl. the master', 0, 6), counter('bath', 'Baths / toilets', null, 0, 6),
         counter('kitchen', 'Kitchen', null, 0, 1), counter('dining', 'Dining', null, 0, 1),
@@ -224,7 +236,7 @@ export function renderWizard(root, app, { fresh = false, step = null } = {}) {
     side.append(h('h3', {}, 'Preview'), h('div', { class: 'preview' }, envelopeSvg(c, S)),
       h('dl', { class: 'facts num' },
         h('dt', {}, 'Built-up'), h('dd', {}, `${Math.round(c.ew_ft * c.ns_ft)} sq ft`),
-        h('dt', {}, 'Floor'), h('dd', {}, `${['Ground', 'First', 'Second', 'Third'][c.floor_level] || `Level ${c.floor_level}`}, ${pyG(c.floor_level === 1 ? c.ground_floor_height_ft : c.typical_floor_height_ft)} ft below`),
+        h('dt', {}, 'Floor'), h('dd', {}, `${['Ground', 'First', 'Second', 'Third'][c.floor_level] || `Level ${c.floor_level}`}, ${pyG((c.floor_level ?? 0) <= 1 ? c.ground_floor_height_ft : c.typical_floor_height_ft)} ft flight`),
         h('dt', {}, 'Stair'), h('dd', {}, `${st.risers} × ${st.riser_in.toFixed(2)}", block ${fi(st.block_w)} × ${fi(st.block_l)}`),
         h('dt', {}, 'Columns'), h('dd', {}, `${S.columns.length} on a ${S.xs.length - 1} × ${S.ys.length - 1} bay grid`),
         h('dt', {}, 'Brahmasthan'), h('dd', {}, `${fi(c.ew_ft / 3)} × ${fi(c.ns_ft / 3)} at the centre`)),

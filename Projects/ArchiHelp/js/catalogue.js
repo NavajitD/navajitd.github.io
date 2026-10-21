@@ -1,10 +1,13 @@
 // ArchiHelp — layout options: run the search on every core, then browse, compare and open candidates.
-import { h, clear, toast, modal, seg, checkbox, select } from './dom.js';
+import { h, clear, toast, modal, seg, checkbox, dropdown } from './dom.js';
+import { floorsOf, levelName } from './floors.js';
+import { designStair, stairRiseFt, stairSizeOk } from '../engine/stair.js';
+import { netRect, region } from '../engine/plan.js';
 import { saveProject } from './store.js';
 import { planThumbSvg, planPreviewSvg, dominantPada } from './thumbs.js';
 import { analysePlan, prepareConfig } from '../engine/index.js';
 import { cloneDoc } from '../engine/edits.js';
-import { fi } from '../engine/geom.js';
+import { fi, rw, rh } from '../engine/geom.js';
 
 export const EFFORT = {
   quick: { budget: { beam: 300, perSig: 6, ms: 1500 }, perSkeleton: 3, maxCandidates: 18 },
@@ -28,16 +31,21 @@ export function renderCatalogue(root, app) {
   document.title = `Options — ${p.name} — ArchiHelp`;
   const picked = new Set();
   let effort = (p.lastRun && p.lastRun.effort) || 'standard', relaxed = !!(p.lastRun && p.lastRun.relaxed), running = false, sortBy = 'best';
-  const SORTS = { best: ['Best overall', null], vaastu: ['Vaastu score', (c) => -c.quality.vaastu], soft: ['Fewest advisories', (c) => c.quality.soft * 1000 - c.quality.vaastu], circ: ['Least circulation', (c) => c.quality.circ] };
-  const head = h('div', { class: 'cat-head' }), mine = h('div'), grid = h('div', { class: 'cards', 'aria-live': 'polite' }), cmpBar = h('div', { class: 'cmp', hidden: true });
-  root.append(h('div', { class: 'cat' }, head, mine, grid), cmpBar);
+  const SORTS = {
+    best: ['Best overall', null, 'Vaastu score, advisories and circulation combined'],
+    vaastu: ['Vaastu score', (c) => -c.quality.vaastu, 'Highest pada score first'],
+    soft: ['Fewest advisories', (c) => c.quality.soft * 1000 - c.quality.vaastu, 'Fewest soft-rule notes, then Vaastu score'],
+    circ: ['Least circulation', (c) => c.quality.circ, 'Smallest passage and lobby area first'],
+  };
+  const head = h('div', { class: 'cat-head' }), mine = h('div'), bar = h('div', { class: 'cat-bar' }), grid = h('div', { class: 'cards', 'aria-live': 'polite' }), cmpBar = h('div', { class: 'cmp', hidden: true });
+  root.append(h('div', { class: 'cat' }, head, mine, bar, grid), cmpBar);
   const analysed = new Map();                // candidate index -> analysed plan (cache)
   const planOf = (c, i) => { if (!analysed.has(i)) analysed.set(i, analysePlan(cfg, c.doc)); return analysed.get(i); };
 
   function drawHead(progress = null) {
     clear(head);
     const run = p.lastRun;
-    const sub = `${fi(cfg.ew_ft)} × ${fi(cfg.ns_ft)} · road ${cfg.road_side} · ${programLine(cfg)}`;
+    const sub = `${levelName(cfg.floor_level ?? 0)} · ${fi(cfg.ew_ft)} × ${fi(cfg.ns_ft)} · road ${cfg.road_side} · ${programLine(cfg)}${app.fixedStair ? ` · stair kept from the ${app.fixedStair.from.toLowerCase()}` : ''}`;
     const left = h('div', {}, h('h1', {}, 'Layout options'), h('div', { class: 'muted small num' }, sub));
     if (progress) {
       const pct = progress.total ? Math.round(100 * progress.done / progress.total) : 0;
@@ -49,14 +57,28 @@ export function renderCatalogue(root, app) {
       left.append(h('div', { class: 'small muted num', style: { marginTop: '6px' } },
         `${p.candidates.length} option${p.candidates.length === 1 ? '' : 's'} · ${run.layouts} valid layouts in ${run.topologies} arrangements from ${run.skeletons} skeletons · ${(run.ms / 1000).toFixed(1)} s on ${run.workers} cores${run.relaxed ? ' · relaxed' : ''}`));
     }
-    const controls = h('div', { class: 'row' },
+    const rx = checkbox('Relaxed', relaxed, (v) => { relaxed = v; }, null);
+    rx.classList.add('chip');
+    const controls = h('div', { class: 'row cat-run' },
       seg([['quick', 'Quick'], ['standard', 'Standard'], ['thorough', 'Thorough']], effort, (v) => { effort = v; }, { 'aria-label': 'Search effort' }),
-      checkbox('Relaxed', relaxed, (v) => { relaxed = v; }, null),
+      rx,
       running ? h('button', { class: 'btn', type: 'button', onclick: () => { app.pool.stop(); } }, 'Stop')
         : h('button', { class: 'btn primary', type: 'button', onclick: () => run_({ effort, relaxed }) }, p.candidates && p.candidates.length ? 'Generate again' : 'Generate options'));
     controls.querySelector('.check').title = 'Also keep layouts that miss the pada share of a hard Vaastu rule (flagged), like the notebook\'s min_frac = 0';
-    if ((p.candidates || []).length && !progress) controls.prepend(h('label', { class: 'row small', style: { gap: '6px' } }, 'Sort', select(Object.entries(SORTS).map(([k, [l]]) => [k, l]), sortBy, (v) => { sortBy = v; drawCards(); }, { style: { width: 'auto' }, 'aria-label': 'Sort options' })));
     head.append(left, controls);
+    drawBar(progress);
+  }
+
+  /** Heading row over the generated options: count on the left, sort menu on the right. */
+  function drawBar(progress = null) {
+    clear(bar);
+    const n = (p.candidates || []).length;
+    bar.hidden = !n && !p.plans.length;
+    bar.append(h('h2', {}, n ? `Generated options · ${n}` : 'Generated options'));
+    if (n && !progress) {
+      bar.append(dropdown(Object.entries(SORTS).map(([k, [l, , d]]) => [k, l, d]), sortBy, (v) => { sortBy = v; drawCards(); },
+        { label: 'Sort', ariaLabel: 'Sort options', align: 'right' }));
+    }
   }
 
   function drawMine() {
@@ -73,7 +95,7 @@ export function renderCatalogue(root, app) {
         h('div', { class: 'stats' }, pl ? statusBadges(pl) : null, h('span', { class: 'small muted', style: { gridColumn: '1 / -1' } }, d.source || '')),
         h('div', { class: 'ft' }, h('span', { style: { marginRight: 'auto' } }), h('a', { class: 'btn sm primary', href: `#/p/${p.id}/plan/${i}` }, 'Open'))));
     });
-    mine.append(row, h('h2', { class: 'small muted', style: { textTransform: 'uppercase', letterSpacing: '.06em', margin: '4px 0 10px' } }, 'Generated options'));
+    mine.append(row);
   }
 
   function drawCards() {
@@ -84,6 +106,7 @@ export function renderCatalogue(root, app) {
       const msg = p.lastRun
         ? h('div', { class: 'empty' }, h('p', {}, h('b', {}, 'No layout passed every hard rule.')),
           h('p', {}, p.lastRun.relaxed ? 'Even the relaxed search found nothing: check room sizes and the programme against the envelope in the setup.' : 'The Vaastu pada rules may be too tight for this plot. The relaxed search keeps layouts that miss a pada share and flags them.'),
+          stairNote(),
           h('div', { class: 'row', style: { justifyContent: 'center' } },
             !p.lastRun.relaxed ? h('button', { class: 'btn primary', type: 'button', onclick: () => { relaxed = true; run_({ effort, relaxed: true }); } }, 'Try the relaxed search') : null,
             h('a', { class: 'btn', href: `#/p/${p.id}/setup/vaastu` }, 'Review the rules')))
@@ -187,6 +210,21 @@ export function renderCatalogue(root, app) {
     document.querySelector('.modal .box').style.width = 'min(1280px, 100%)';
   }
 
+  /** Search config: multi-floor projects keep the staircase of the other floors and size it for the tallest storey. */
+  function runCfg() {
+    const fl = floorsOf(p), extra = {};
+    if (app.fixedStair) extra.__fixedStair = app.fixedStair.tile;
+    if (fl.length > 1) extra.__stairRiseFt = Math.max(...fl.map((f) => stairRiseFt({ ...p.cfg, floor_level: f.level })));
+    return Object.keys(extra).length ? { ...p.cfg, ...extra } : p.cfg;
+  }
+  /** Why a fixed staircase can make a floor impossible: it may be too small for this house's tallest flight. */
+  function stairNote() {
+    if (!app.fixedStair) return null;
+    const c = prepareConfig(runCfg()), st = designStair({ ...c, floor_level: 2, typical_floor_height_ft: c.__stairRiseFt || stairRiseFt(c) });
+    const net = netRect(app.fixedStair.tile, region(c), c);
+    if (stairSizeOk(net, st)) return h('p', { class: 'small muted' }, `The staircase is kept where it is on the ${app.fixedStair.from.toLowerCase()}; the other rooms are arranged around it.`);
+    return h('p', {}, `The staircase from the ${app.fixedStair.from.toLowerCase()} (${fi(rw(net))} × ${fi(rh(net))} clear) is too small for a ${fi(c.__stairRiseFt || stairRiseFt(c))} flight: a ${st.risers}-riser dog-leg needs ${fi(st.block_l)} × ${fi(st.block_w)}. Enlarge it on that floor or lower the floor heights in the setup.`);
+  }
   async function run_({ effort: ef = 'standard', relaxed: rx = false } = {}) {
     if (running) return;
     running = true; picked.clear(); drawCmp();
@@ -194,7 +232,7 @@ export function renderCatalogue(root, app) {
     drawHead({ phase: 'search', done: 0, total: 0, pool: [] });
     let last = 0;
     try {
-      const res = await app.pool.generate(p.cfg, { ...EFFORT[ef], relaxed: rx, onProgress: (d) => { const now = performance.now(); if (now - last > 120 || d.phase === 'polish') { last = now; drawHead(d); } } });
+      const res = await app.pool.generate(runCfg(), { ...EFFORT[ef], relaxed: rx, onProgress: (d) => { const now = performance.now(); if (now - last > 120 || d.phase === 'polish') { last = now; drawHead(d); } } });
       p.candidates = res.candidates.map((c) => ({ doc: c.doc, quality: c.quality, key: c.key, skeleton: c.skeleton }));
       p.lastRun = { ...res.stats, layouts: res.stats.layouts, effort: ef, relaxed: rx, time: Date.now() };
       analysed.clear();

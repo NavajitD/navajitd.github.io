@@ -78,6 +78,49 @@ export function select(options, value, onChange, attrs = {}) {
   return s;
 }
 
+/**
+ * Dropdown menu button: a styled list instead of a native <select> (native popups ignore the page's type and spacing).
+ * options: [[value, label, description?]]. Arrow keys move, Enter picks, Escape closes.
+ */
+export function dropdown(options, value, onChange, { label = '', ariaLabel = '', align = 'left' } = {}) {
+  let cur = value, menu = null;
+  const val = h('span', { class: 'dd-val' });
+  const btn = h('button', { type: 'button', class: 'btn dd', 'aria-haspopup': 'listbox', 'aria-expanded': 'false', 'aria-label': ariaLabel || label || null },
+    label ? h('span', { class: 'dd-lbl' }, label) : null, val, h('span', { class: 'dd-caret', 'aria-hidden': 'true' }));
+  const wrap = h('div', { class: 'dd-wrap' }, btn);
+  const paint = () => { const o = options.find((x) => String(x[0]) === String(cur)); val.textContent = o ? o[1] : ''; };
+  const items = () => (menu ? [...menu.querySelectorAll('[role=option]')] : []);
+  const close = () => {
+    if (!menu) return;
+    menu.remove(); menu = null; btn.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('pointerdown', outside, true); document.removeEventListener('keydown', onKey, true);
+  };
+  const outside = (e) => { if (!wrap.contains(e.target)) close(); };
+  const pick = (v) => { const changed = String(v) !== String(cur); cur = v; paint(); close(); btn.focus(); if (changed && onChange) onChange(v); };
+  const onKey = (e) => {
+    const L = items(), k = L.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); btn.focus(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const n = L.length; L[(k + (e.key === 'ArrowDown' ? 1 : -1) + n) % n].focus(); }
+    else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); L[e.key === 'Home' ? 0 : L.length - 1].focus(); }
+    else if (e.key === 'Tab') close();
+  };
+  btn.addEventListener('click', () => {
+    if (menu) { close(); return; }
+    menu = h('div', { class: `dd-menu${align === 'right' ? ' right' : ''}`, role: 'listbox', 'aria-label': ariaLabel || label || null },
+      options.map(([v, l, d]) => {
+        const on = String(v) === String(cur);
+        return h('button', { type: 'button', role: 'option', 'aria-selected': String(on), class: on ? 'on' : '', 'data-value': String(v), onclick: () => pick(v) },
+          h('b', {}, l), d ? h('span', {}, d) : null);
+      }));
+    wrap.append(menu); btn.setAttribute('aria-expanded', 'true');
+    (menu.querySelector('.on') || menu.firstChild).focus();
+    document.addEventListener('pointerdown', outside, true); document.addEventListener('keydown', onKey, true);
+  });
+  paint();
+  wrap.setValue = (v) => { cur = v; paint(); };
+  return wrap;
+}
+
 export function seg(options, value, onChange, attrs = {}) {
   const wrap = h('div', { class: 'seg', role: 'radiogroup', ...attrs });
   for (const o of options) {

@@ -59,17 +59,30 @@ function sizeOk(cfg, t, net, st, span) {
 
 /** Search context for one configuration (shared by all skeletons). */
 export function makeContext(cfgIn, opts = {}) {
-  const cfg = prepareConfig(cfgIn), R = region(cfg), st = designStair(cfg), fs = new FastSectors(cfg), core = coreRect(cfg);
+  const cfg = prepareConfig(cfgIn), R = region(cfg), fs = new FastSectors(cfg), core = coreRect(cfg);
   const swap = cfg.ns_ft > cfg.ew_ft + 1e-9;                     // bands always run along the long axis
   const U0 = swap ? R.y0 : R.x0, U1 = swap ? R.y1 : R.x1, V0 = swap ? R.x0 : R.y0, V1 = swap ? R.x1 : R.y1;
   const toReal = (u0, v0, u1, v1) => (swap ? rect(v0, u0, v1, u1) : rect(u0, v0, u1, v1));
   const step = opts.step ?? 0.5, pos = [];
   for (let k = 0; U0 + k * step < U1 - 1e-6; k++) pos.push(+(U0 + k * step).toFixed(6));
   pos.push(+U1.toFixed(6));
+  // multi-floor projects: the staircase must sit exactly where it is on the other floors (its edges join the lattice)
+  const fx = opts.fixedStair ?? cfgIn.__fixedStair ?? null;
+  const fixedStair = fx ? rect(fx.x0, fx.y0, fx.x1, fx.y1) : null;
+  const anchorAt = [];
+  if (fixedStair) {
+    for (const u of swap ? [fixedStair.y0, fixedStair.y1] : [fixedStair.x0, fixedStair.x1]) if (!pos.some((q) => Math.abs(q - u) < 1e-6)) { pos.push(+u.toFixed(6)); anchorAt.push(+u.toFixed(6)); }
+    pos.sort((a, b) => a - b);
+  }
+  const anchors = new Set(anchorAt.map((u) => pos.findIndex((q) => Math.abs(q - u) < 1e-9)));
+  // big rooms take 1-ft length steps (notebook); a length that starts or ends on a fixed-stair edge is exempt
+  const coarseSkip = (i, j) => !(i === 0 || j === pos.length - 1 || anchors.has(i) || anchors.has(j)) && Math.round((pos[j] - pos[i]) / step) % 2 !== 0;
+  const riseFt = opts.stairRiseFt ?? cfgIn.__stairRiseFt ?? null;     // multi-floor: size the stair for the tallest storey
   const counts = programCounts(cfg);
   const maxLobby = opts.maxLobby ?? 2;
   const types = Object.keys(counts).filter((t) => counts[t] > 0).concat(['passage', 'lobby'], cfg.max_courtyards > 0 ? ['court'] : []);
-  return { cfg, R, st, fs, core, swap, U0, U1, V0, V1, toReal, pos, counts, types, maxLobby, struct: buildStructure(cfg), minFrac: opts.minFrac ?? null,
+  const st = designStair(riseFt ? { ...cfg, floor_level: 2, typical_floor_height_ft: riseFt } : cfg);
+  return { cfg, R, st, fs, core, swap, U0, U1, V0, V1, toReal, pos, counts, types, maxLobby, struct: buildStructure(cfg), minFrac: opts.minFrac ?? null, fixedStair, coarseSkip,
     nRated: Object.entries(counts).reduce((a, [t, n]) => a + (sectorRule(cfg, t) ? n : 0), 0) };
 }
 
@@ -77,6 +90,14 @@ export function makeContext(cfgIn, opts = {}) {
 export function skeletons(ctx, { depths = null, spines = [3.5, 3.75, 4.0, 4.5] } = {}) {
   const cfg = ctx.cfg, out = [], span = ctx.V1 - ctx.V0;
   const ds = depths || []; if (!depths) for (let s = 7.5; s <= span - 7.5; s += 0.5) ds.push(s);
+  if (!depths && ctx.fixedStair) {
+    // band depths that put a band edge on the fixed stair's inner edge (stair alone in the south or north band)
+    const F = ctx.fixedStair, [f0, f1] = ctx.swap ? [F.x0, F.x1] : [F.y0, F.y1];
+    const extra = [];
+    if (Math.abs(f0 - ctx.V0) < 1e-6) extra.push(f1 - ctx.V0);
+    if (Math.abs(f1 - ctx.V1) < 1e-6) for (const c of spines) extra.push(f0 - ctx.V0 - c - cfg.t_int);
+    for (const e of extra) if (e > 0 && !ds.some((d) => Math.abs(d - e) < 1e-6)) ds.push(+e.toFixed(6));
+  }
   for (const s of ds) for (const c of spines) {
     const L1 = ctx.V0 + s, L2 = L1 + c + cfg.t_int;
     if (ctx.V1 - L2 - (cfg.t_int / 2 + cfg.t_ext / 2) < 7.0 - 1e-9) continue;
@@ -99,10 +120,11 @@ function candidates(ctx, sk, stacks = true) {
     for (const t of spanTypes(span, ctx.types)) {
       const rule = sectorRule(cfg, t);
       for (let i = 0; i < n; i++) for (let j = i + 1; j <= n; j++) {
-        if (COARSE.has(t) && (j - i) % 2 && j !== n && i !== 0) continue;
+        if (COARSE.has(t) && ctx.coarseSkip(i, j)) continue;
         const tile = ctx.toReal(pos[i], v0, pos[j], v1), net = netRect(tile, ctx.R, cfg);
         const len = pos[j] - pos[i];
         if (t === 'passage' && len < 3.0 - 1e-6) continue;
+        if (t === 'stair' && ctx.fixedStair && !sameRect(tile, ctx.fixedStair)) continue;
         if (!sizeOk(cfg, t, net, st, span)) {
           if (t !== 'passage' && t !== 'stair' && cfg.room_specs[t] && rarea(net) > cfg.room_specs[t].amax) break;
           if (t === 'stair' && rarea(net) > st.block_w * st.block_l + 80) break;
@@ -142,6 +164,7 @@ function candidates(ctx, sk, stacks = true) {
 }
 
 const isCirc = (t) => CIRC.has(t);
+const sameRect = (a, b, tol = 1e-3) => Math.abs(a.x0 - b.x0) < tol && Math.abs(a.y0 - b.y0) < tol && Math.abs(a.x1 - b.x1) < tol && Math.abs(a.y1 - b.y1) < tol;
 
 /** Stacked candidates (see STACKS) for one outer band of a skeleton, appended to cand[i]. */
 function stackCandidates(ctx, sk, span, bands, cand, bestFrom, need) {
@@ -152,11 +175,20 @@ function stackCandidates(ctx, sk, span, bands, cand, bestFrom, need) {
     if (!(ctx.counts[A] > 0) || !ctx.types.includes(Bt)) continue;
     const spA = cfg.room_specs[A], spB = cfg.room_specs[Bt], ruleA = sectorRule(cfg, A), ruleB = sectorRule(cfg, Bt);
     const dMinA = A === 'stair' ? Math.min(st.block_w, st.block_l) : spA.wmin, dMinB = spB.wmin;
-    for (let d1 = Math.ceil((dMinA + cfg.t_int) * 2) / 2; d1 <= D - dMinB - cfg.t_int + 1e-9; d1 += 0.5) {
+    const fixedA = A === 'stair' ? ctx.fixedStair : null;
+    let d1s = [];
+    for (let d1 = Math.ceil((dMinA + cfg.t_int) * 2) / 2; d1 <= D - dMinB - cfg.t_int + 1e-9; d1 += 0.5) d1s.push(d1);
+    if (fixedA) {
+      const [f0, f1] = ctx.swap ? [fixedA.x0, fixedA.x1] : [fixedA.y0, fixedA.y1];
+      const onOut = Math.abs((b === 0 ? f0 : f1) - vOut) < 1e-6, d = b === 0 ? f1 - vOut : vOut - f0;
+      d1s = onOut && d >= dMinA - 1e-6 && d <= D - dMinB - cfg.t_int + 1e-9 ? [d] : [];
+    }
+    for (const d1 of d1s) {
       const vMid = vOut + dir * d1;
       for (let i = 0; i < n; i++) for (let j = i + 1; j <= n; j++) {
-        if (COARSE.has(A) && (j - i) % 2 && j !== n && i !== 0) continue;
+        if (COARSE.has(A) && ctx.coarseSkip(i, j)) continue;
         const tA = tile(i, j, vOut, vMid), nA = netRect(tA, ctx.R, cfg);
+        if (fixedA && !sameRect(tA, fixedA)) continue;
         if (!sizeOk(cfg, A, nA, st, span)) {
           if (A === 'stair' ? rarea(nA) > st.block_w * st.block_l + 80 : rarea(nA) > spA.amax) break;
           continue;
@@ -495,6 +527,7 @@ export function polish(cfgIn, doc, { evals = 400, steps = [1.0, 0.5, 0.25], dead
         if (used >= evals) break;
         const nd = shiftWall(cur, w, d);
         if (!nd) continue;
+        if (cfgIn.__fixedStair && !nd.rooms.some((r) => r.rtype === 'stair' && sameRect(r.tile, cfgIn.__fixedStair))) continue;
         used++;
         const q = quality(quickPlan(cfg, nd));
         if (q.score > best.score + 1e-6 && (!bestMove || q.score > bestMove[1].score)) bestMove = [nd, q];

@@ -10,7 +10,7 @@ import { makeContext, skeletons, collectSkeleton, rankCandidates, diagnose } fro
 let cache = { key: null, ctx: null, sks: null };
 function context(cfg) {
   const key = JSON.stringify(cfg);
-  if (cache.key !== key) { const ctx = makeContext(cfg, { minFrac: cfg.__minFrac ?? null }); cache = { key, ctx, sks: skeletons(ctx) }; }
+  if (cache.key !== key) { const ctx = makeContext(cfg, { minFrac: cfg.__minFrac ?? null, fixedStair: cfg.__fixedStair ?? null, stairRiseFt: cfg.__stairRiseFt ?? null }); cache = { key, ctx, sks: skeletons(ctx) }; }
   return cache;
 }
 
