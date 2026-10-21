@@ -2,10 +2,10 @@
 // Same-origin app files: stale-while-revalidate. Everything else (analytics, fonts) goes to the network.
 // Weather (Open-Meteo) and the PDF reader (jsDelivr) are other origins: always from the network; downloaded climate
 // data and computed wind pictures are kept by the app itself (IndexedDB).
-const CACHE = 'archihelp-v2';
+const CACHE = 'archihelp-v3';
 const ENGINE = ['checker', 'config', 'drawing', 'edits', 'fontmetrics', 'furniture', 'generator', 'geom', 'index', 'io', 'openings', 'plan', 'sectors', 'sheet', 'stair', 'structure', 'windows', 'worker'];
 const WIND = ['airflow', 'comfort', 'fans', 'fromplan', 'house', 'lbm', 'model', 'sim', 'thermal', 'weather', 'worker'];
-const UI = ['app', 'catalogue', 'dom', 'drawings', 'editor', 'floors', 'inspector', 'palette', 'store', 'thumbs', 'trace', 'wind', 'windcache', 'windcharts', 'windsection', 'windview', 'wizard'];
+const UI = ['app', 'catalogue', 'dom', 'drawings', 'editor', 'floors', 'inspector', 'palette', 'selection', 'store', 'thumbs', 'trace', 'wind', 'windcache', 'windcharts', 'windsection', 'windview', 'wizard'];
 const ASSETS = ['./planner.html', './manifest.json', './examples/residence-rev9.json',
   ...ENGINE.map((f) => `./engine/${f}.js`), ...WIND.map((f) => `./wind/${f}.js`), ...UI.map((f) => `./js/${f}.js`)];
 

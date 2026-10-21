@@ -2,7 +2,7 @@
 // Steps: load the drawing → set the scale from one known dimension → draw the rooms (wall centre to wall centre;
 // neighbours snap together) → add doors, windows, plain openings and missing walls → Wind circulation.
 // Geometry is kept in image pixels (so a later scale change rescales everything) and converted to feet in p.trace.doc.
-import { h, clear, toast, select, seg, field, ftIn, modal, s as svgEl, confirmDlg } from './dom.js';
+import { h, clear, toast, select, seg, field, ftIn, modal, s as svgEl, confirmDlg, addKey, ADD_CLICK } from './dom.js';
 import { newId } from './store.js';
 import { fi } from '../engine/geom.js';
 import { floorsOf } from './floors.js';
@@ -40,7 +40,9 @@ export function renderTrace(root, app) {
   const me = floorsOf(p).find((f) => f.active);
   app.crumbs([['Trace a drawing']]);
   document.title = `Trace — ${me.name} — ${p.name} — ArchiHelp`;
-  const ui = { tool: tr.image || tr.px.rooms.length ? (tr.scale ? 'room' : 'scale') : 'room', sel: null, zoom: null, undo: [], redo: [], scalePts: [] };
+  const ui = { tool: tr.image || tr.px.rooms.length ? (tr.scale ? 'room' : 'scale') : 'room', sels: [], zoom: null, undo: [], redo: [], scalePts: [] };
+  // ui.sels: what is selected ({type: 'room'|'op', id}); Shift-click / Ctrl-click / ⌘-click selects several
+  const isSel = (type, id) => ui.sels.some((q) => q.type === type && q.id === id);
   const W = () => (tr.image ? tr.image.w : BLANK.w), H = () => (tr.image ? tr.image.h : BLANK.h), S = () => (tr.scale ? tr.scale.ftPerPx : BLANK.ftPerPx);
 
   const commit = (label) => {
@@ -53,8 +55,8 @@ export function renderTrace(root, app) {
     app.save(); paint(); side(); if (label) status(label);
   };
   const snapshot = () => { ui.undo.push(JSON.stringify({ px: tr.px, scale: tr.scale })); if (ui.undo.length > 100) ui.undo.shift(); ui.redo = []; };
-  const undo = () => { if (!ui.undo.length) return; ui.redo.push(JSON.stringify({ px: tr.px, scale: tr.scale })); const s = JSON.parse(ui.undo.pop()); tr.px = s.px; tr.scale = s.scale; ui.sel = null; commit('Undone.'); };
-  const redo = () => { if (!ui.redo.length) return; ui.undo.push(JSON.stringify({ px: tr.px, scale: tr.scale })); const s = JSON.parse(ui.redo.pop()); tr.px = s.px; tr.scale = s.scale; ui.sel = null; commit('Redone.'); };
+  const undo = () => { if (!ui.undo.length) return; ui.redo.push(JSON.stringify({ px: tr.px, scale: tr.scale })); const s = JSON.parse(ui.undo.pop()); tr.px = s.px; tr.scale = s.scale; ui.sels = []; commit('Undone.'); };
+  const redo = () => { if (!ui.redo.length) return; ui.undo.push(JSON.stringify({ px: tr.px, scale: tr.scale })); const s = JSON.parse(ui.redo.pop()); tr.px = s.px; tr.scale = s.scale; ui.sels = []; commit('Redone.'); };
 
   // ------------------------------------------------------------------ layout
   const bar = h('div', { class: 'tr-bar' }), stage = h('div', { class: 'tr-stage' }), inspector = h('aside', { class: 'tr-side' }), hint = h('div', { class: 'tr-hint small', 'aria-live': 'polite' });
@@ -79,7 +81,7 @@ export function renderTrace(root, app) {
   }
   function toolHint() {
     const t = {
-      select: 'Click a room or an opening to edit it; Delete removes it.',
+      select: `Click a room or an opening to edit it; ${ADD_CLICK} selects several. Delete removes them.`,
       scale: tr.image ? 'Click both ends of a dimension you know (a wall, a dimension line), then type its length.' : 'Load a drawing first, or trace on the grid (1 square = 1 ft).',
       room: 'Drag a rectangle from wall centre to wall centre. Edges snap to the rooms next to it.',
       door: 'Click on a wall to put a door there (between two rooms, or to the outside).',
@@ -127,7 +129,7 @@ export function renderTrace(root, app) {
     }
     clear(gRooms);
     for (const r of P.rooms) {
-      const on = ui.sel && ui.sel.type === 'room' && ui.sel.id === r.uid, cls = `tr-room t-${r.rtype}${on ? ' on' : ''}`;
+      const on = isSel('room', r.uid), cls = `tr-room t-${r.rtype}${on ? ' on' : ''}`;
       const g = svgEl('g', { class: cls, 'data-uid': r.uid });
       g.append(svgEl('rect', { x: r.x0, y: r.y0, width: r.x1 - r.x0, height: r.y1 - r.y0, 'stroke-width': lw * (on ? 2 : 1.2) }));
       const fs = Math.min(14 / k, (r.x1 - r.x0) / 6);
@@ -137,7 +139,7 @@ export function renderTrace(root, app) {
     }
     clear(gOps);
     for (const o of P.openings) {
-      const on = ui.sel && ui.sel.type === 'op' && ui.sel.id === o.id;
+      const on = isSel('op', o.id);
       if (o.kind === 'nowall') {
         const e = sharedEdge(o.a, o.b); if (!e) continue;
         gOps.append(svgEl('line', { x1: e.horiz ? e.lo : e.line, y1: e.horiz ? e.line : e.lo, x2: e.horiz ? e.hi : e.line, y2: e.horiz ? e.line : e.hi, class: `tr-nowall${on ? ' on' : ''}`, 'stroke-width': 6 / k, 'data-id': o.id }));
@@ -214,7 +216,9 @@ export function renderTrace(root, app) {
     if (ui.tool === 'room') { const sx = snap(x, 'x', tol), sy = snap(y, 'y', tol); drag = { band: true }; ui.band = [sx, sy, sx, sy]; svg.setPointerCapture(e.pointerId); paintTool(); return; }
     if (ui.tool === 'select') {
       const opEl = e.target.closest('[data-id]'), roomEl = e.target.closest('[data-uid]');
-      ui.sel = opEl ? { type: 'op', id: opEl.getAttribute('data-id') } : roomEl ? { type: 'room', id: roomEl.getAttribute('data-uid') } : null;
+      const hit = opEl ? { type: 'op', id: opEl.getAttribute('data-id') } : roomEl ? { type: 'room', id: roomEl.getAttribute('data-uid') } : null;
+      if (addKey(e)) { if (hit) ui.sels = isSel(hit.type, hit.id) ? ui.sels.filter((q) => !(q.type === hit.type && q.id === hit.id)) : [...ui.sels, hit]; }
+      else ui.sels = hit ? [hit] : [];
       paint(); side(); return;
     }
     // openings
@@ -233,7 +237,7 @@ export function renderTrace(root, app) {
     const o = { id: newId(), kind: ui.tool === 'door' && !ed.b ? 'entrance' : ui.tool, a: ed.a, b: ed.b, horiz: ed.horiz, line: ed.line, t, w: d.w, sill: d.sill, head: d.head, vent: false };
     if (o.kind === 'entrance') o.label = 'entrance';
     tr.px.openings.push(o);
-    ui.sel = { type: 'op', id: o.id };
+    ui.sels = [{ type: 'op', id: o.id }];
     commit(`${o.kind === 'entrance' ? 'Outside door' : o.kind[0].toUpperCase() + o.kind.slice(1)} added: set its size on the right.`);
   });
   svg.addEventListener('pointermove', (e) => {
@@ -255,7 +259,7 @@ export function renderTrace(root, app) {
     snapshot();
     const n = tr.px.rooms.filter((q) => q.rtype === type).length + 1;
     const room = { uid: newId(), name: `${TYPE_NAME[type]}${['hall', 'kitchen', 'dining', 'stair', 'puja', 'master', 'court'].includes(type) && n === 1 ? '' : ` ${n}`}`, rtype: type, ...r };
-    tr.px.rooms.push(room); ui.sel = { type: 'room', id: room.uid };
+    tr.px.rooms.push(room); ui.sels = [{ type: 'room', id: room.uid }];
     commit(`${room.name} added.`);
   };
   svg.addEventListener('pointerup', endDrag); svg.addEventListener('pointercancel', endDrag);
@@ -263,9 +267,9 @@ export function renderTrace(root, app) {
   const onKey = (e) => {
     if (e.target.closest && e.target.closest('input, select, textarea')) return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
-    else if ((e.key === 'Delete' || e.key === 'Backspace') && ui.sel) { e.preventDefault(); removeSel(); }
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && ui.sels.length) { e.preventDefault(); removeSel(); }
     else if (e.key === ' ') { ui.space = true; }
-    else if (e.key === 'Escape') { ui.scalePts = []; ui.band = null; drag = null; paintTool(); }
+    else if (e.key === 'Escape') { const busy = ui.scalePts.length || ui.band; ui.scalePts = []; ui.band = null; drag = null; if (!busy && ui.sels.length) { ui.sels = []; paint(); side(); } else paintTool(); }
   };
   const onKeyUp = (e) => { if (e.key === ' ') ui.space = false; };
   document.addEventListener('keydown', onKey); document.addEventListener('keyup', onKeyUp);
@@ -294,17 +298,21 @@ export function renderTrace(root, app) {
 
   // ------------------------------------------------------------------ inspector
   function removeSel() {
-    if (!ui.sel) return;
+    if (!ui.sels.length) return;
     snapshot();
-    if (ui.sel.type === 'room') { tr.px.rooms = tr.px.rooms.filter((r) => r.uid !== ui.sel.id); tr.px.openings = tr.px.openings.filter((o) => o.a !== ui.sel.id && o.b !== ui.sel.id); }
-    else tr.px.openings = tr.px.openings.filter((o) => o.id !== ui.sel.id);
-    ui.sel = null; commit('Removed.');
+    const rooms = new Set(ui.sels.filter((q) => q.type === 'room').map((q) => q.id)), ops = new Set(ui.sels.filter((q) => q.type === 'op').map((q) => q.id));
+    const n = rooms.size + ops.size;
+    tr.px.rooms = tr.px.rooms.filter((r) => !rooms.has(r.uid));
+    tr.px.openings = tr.px.openings.filter((o) => !ops.has(o.id) && !rooms.has(o.a) && !rooms.has(o.b));    // a room's doors and windows go with it
+    ui.sels = []; commit(n > 1 ? `Removed ${n}.` : 'Removed.');
   }
+  const OP_NAME = { door: 'Door', entrance: 'Outside door', window: 'Window', open: 'Opening', nowall: 'No wall' };
   function side() {
     clear(inspector);
-    const P = tr.px, s = S();
-    if (ui.sel && ui.sel.type === 'room') {
-      const r = P.rooms.find((q) => q.uid === ui.sel.id);
+    const P = tr.px, s = S(), sl = ui.sels.length === 1 ? ui.sels[0] : null;
+    if (ui.sels.length > 1) { severalSide(P, s); return; }
+    if (sl && sl.type === 'room') {
+      const r = P.rooms.find((q) => q.uid === sl.id);
       if (r) {
         const setDim = (k, vFt) => { snapshot(); const H0 = H(); if (k === 'w') r.x1 = r.x0 + vFt / s; if (k === 'd') r.y0 = r.y1 - vFt / s; void H0; commit(); };
         inspector.append(h('h3', {}, 'Room'),
@@ -313,8 +321,8 @@ export function renderTrace(root, app) {
           h('div', { class: 'grid2' }, field('Width (E–W)', ftIn({ value: (r.x1 - r.x0) * s, min: 2.5, max: 300, onChange: (v) => setDim('w', v) })), field('Depth (N–S)', ftIn({ value: (r.y1 - r.y0) * s, min: 2.5, max: 300, onChange: (v) => setDim('d', v) }))),
           h('button', { type: 'button', class: 'btn sm danger', onclick: removeSel }, 'Delete room'));
       }
-    } else if (ui.sel && ui.sel.type === 'op') {
-      const o = P.openings.find((q) => q.id === ui.sel.id);
+    } else if (sl && sl.type === 'op') {
+      const o = P.openings.find((q) => q.id === sl.id);
       if (o) {
         const nm = (uid) => { const r = P.rooms.find((q) => q.uid === uid); return r ? r.name : 'outside'; };
         inspector.append(h('h3', {}, { door: 'Door', entrance: 'Outside door', window: 'Window', open: 'Opening', nowall: 'No wall' }[o.kind]),
@@ -341,6 +349,39 @@ export function renderTrace(root, app) {
         h('p', { class: 'small muted' }, 'Draw rooms to the middle of the walls so neighbours share an edge: that is where the walls go. Wall thicknesses come from the floor-plan setup. Hold space (or the middle button) and drag to pan; scroll to zoom.'),
         checks()].filter(Boolean));
     }
+  }
+  /** Several selected: what they are, sizes that apply to all of them, Delete. */
+  function severalSide(P, s) {
+    const rooms = ui.sels.filter((q) => q.type === 'room').map((q) => P.rooms.find((r) => r.uid === q.id)).filter(Boolean);
+    const ops = ui.sels.filter((q) => q.type === 'op').map((q) => P.openings.find((o) => o.id === q.id)).filter(Boolean);
+    const nm = (uid) => { const r = P.rooms.find((q) => q.uid === uid); return r ? r.name : 'outside'; };
+    const count = (n, one, many) => (n ? `${n} ${n === 1 ? one : many}` : null);
+    inspector.append(h('h3', {}, `${ui.sels.length} selected`),
+      h('p', { class: 'small muted' }, [count(rooms.length, 'room', 'rooms'), count(ops.filter((o) => o.kind === 'window').length, 'window', 'windows'),
+        count(ops.filter((o) => o.kind === 'door' || o.kind === 'entrance').length, 'door', 'doors'), count(ops.filter((o) => o.kind === 'open' || o.kind === 'nowall').length, 'opening', 'openings')].filter(Boolean).join(' · ')));
+    if (rooms.length > 1) inspector.append(h('p', { class: 'small num' }, `The ${rooms.length} rooms add up to ${Math.round(rooms.reduce((a, r) => a + (r.x1 - r.x0) * (r.y1 - r.y0), 0) * s * s)} sq ft (to the wall centre-lines).`));
+    // doors / windows / openings only: one size for all of them
+    const sized = ops.filter((o) => o.kind !== 'nowall');
+    if (!rooms.length && sized.length > 1 && sized.length === ops.length) {
+      const same = (k) => sized.every((o) => o[k] === sized[0][k]), lab = (t, k) => (same(k) ? t : `${t} (they differ)`);
+      const updAll = (k, v) => { snapshot(); for (const o of sized) o[k] = v; commit(`${sized.length} changed.`); };
+      inspector.append(h('h4', {}, 'All of them'), field(lab('Width', 'w'), ftIn({ value: sized[0].w, min: 1, max: 30, onChange: (v) => updAll('w', v) })));
+      if (sized.every((o) => o.kind === 'window')) {
+        inspector.append(h('div', { class: 'grid2' }, field(lab('Sill height', 'sill'), ftIn({ value: sized[0].sill, min: 0, max: 9, onChange: (v) => updAll('sill', v) })),
+          field(lab('Head height', 'head'), ftIn({ value: sized[0].head, min: 1, max: 12, onChange: (v) => updAll('head', v) }))),
+        h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: sized.every((o) => o.vent), onchange: (e) => updAll('vent', e.target.checked) }), h('span', {}, 'Ventilators (always open, louvred)')));
+      } else if (sized.every((o) => o.kind !== 'window')) inspector.append(field(lab('Height', 'head'), ftIn({ value: sized[0].head, min: 5, max: 12, onChange: (v) => updAll('head', v) })));
+    }
+    inspector.append(h('div', { class: 'list', style: { marginTop: '10px' } }, ui.sels.map((q) => {
+      const r = q.type === 'room' ? P.rooms.find((x) => x.uid === q.id) : null, o = q.type === 'op' ? P.openings.find((x) => x.id === q.id) : null;
+      if (!r && !o) return null;
+      const main = r ? r.name : OP_NAME[o.kind], sub = r ? `${fi((r.x1 - r.x0) * s)} × ${fi((r.y1 - r.y0) * s)}` : o.b ? `${nm(o.a)} ↔ ${nm(o.b)}` : `${nm(o.a)} to the outside`;
+      return h('div', { class: 'li', role: 'button', tabindex: '0', style: { cursor: 'pointer' },
+        onclick: (e) => { ui.sels = addKey(e) ? ui.sels.filter((x) => x !== q) : [q]; paint(); side(); } }, h('span', {}, main), h('span'), h('small', {}, sub));
+    })),
+    h('div', { class: 'row', style: { marginTop: '10px' } }, h('button', { type: 'button', class: 'btn sm danger', onclick: removeSel }, `Delete all ${ui.sels.length}`),
+      h('button', { type: 'button', class: 'btn sm ghost', onclick: () => { ui.sels = []; paint(); side(); } }, 'Clear selection')),
+    h('p', { class: 'small muted' }, `${ADD_CLICK} adds or takes away. Deleting a room takes its doors and windows with it.`));
   }
   function checks() {
     const P = tr.px, out = [];

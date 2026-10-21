@@ -23,6 +23,11 @@ function append(el, kids) {
     else el.append(k instanceof Node ? k : document.createTextNode(String(k)));
   }
 }
+/** ⌘ on a Mac, Ctrl elsewhere (shortcuts, and adding to a selection). */
+export const IS_MAC = typeof navigator !== 'undefined' && /mac|iphone|ipad|ipod/i.test((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '');
+/** Shift-click, or Ctrl-click (⌘-click on a Mac): add to the selection, or take away from it. */
+export const addKey = (e) => !!e && (e.shiftKey || (IS_MAC ? e.metaKey : e.ctrlKey));
+export const ADD_CLICK = IS_MAC ? '⇧-click or ⌘-click' : 'Shift-click or Ctrl-click';
 export const $ = (s, r = document) => r.querySelector(s);
 export const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 export const clear = (el) => { while (el.firstChild) el.firstChild.remove(); return el; };

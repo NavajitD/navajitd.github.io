@@ -1,7 +1,8 @@
 // ArchiHelp — plan editor. The canvas is the engine's own A-101 drawing (what you see is what gets printed);
 // an overlay in plan feet carries hover, selection and tool previews. Every change is a pure document edit
 // (engine/edits.js), re-checked by the independent rule checker straight away, undoable, and autosaved.
-import { h, s, clear, toast, modal, field, ftIn, seg, select } from './dom.js';
+import { h, s, clear, toast, modal, field, ftIn, seg, select, addKey, IS_MAC, ADD_CLICK } from './dom.js';
+import * as SEL from './selection.js';
 import { newId } from './store.js';
 import { analysePlan, prepareConfig } from '../engine/index.js';
 import { planSheet } from '../engine/drawing.js';
@@ -32,7 +33,7 @@ const TOOLS = [
   ['furniture', 'Place furniture (F)', 'f'], ['keepout', 'Keep-out zone: no tall furniture (K)', 'k'],
 ];
 const HINT = {
-  select: 'Click to select. Drag walls, doors, windows and furniture. Arrows nudge · R rotates · Delete removes · ⌘Z undoes.',
+  select: `Click to select; ${ADD_CLICK} to select several. Drag walls, doors, windows and furniture. Arrows nudge · R rotates · Delete removes · ${IS_MAC ? '⌘Z' : 'Ctrl+Z'} undoes.`,
   pan: 'Drag to move around. Scroll or pinch to zoom.',
   split: 'Click inside a room to add a wall there. Tab switches between a north–south and an east–west wall.',
   door: 'Click the wall between two rooms. The door swings into the room on the side you click.',
@@ -54,7 +55,7 @@ export function renderEditor(root, app, idxIn) {
   const stored = (k, dflt) => { try { const v = JSON.parse(localStorage.getItem(`archihelp:${k}`)); return v ?? dflt; } catch { return dflt; } };
   const ed = {
     app, p, idx, cfg: prepareConfig(p.cfg), doc: p.plans[idx], plan: null,
-    sel: null, hover: null, tool: 'select', snap: stored('snap', 1 / 12), placing: null, splitAxis: null,
+    sel: null, sels: [], hover: null, tool: 'select', snap: stored('snap', 1 / 12), placing: null, splitAxis: null,
     show: { furniture: true, dims: false, padas: false, grid: true, ...stored('show', {}) },
     undo: [], redo: [], msg: '', tab: 'inspect', vb: null, map: null, cursor: null,
   };
@@ -73,7 +74,16 @@ export function renderEditor(root, app, idxIn) {
   root.append(h('div', { class: 'ed' }, toolsEl, canvas, sideEl, statusEl));
 
   // ------------------------------------------------------------------------------------------ state changes
-  ed.select = (sel, { tab = true } = {}) => { ed.sel = sel; if (sel && tab) ed.tab = 'inspect'; drawOverlay(); renderSide(ed, sideEl); };
+  // ed.sels = everything selected, in the order it was picked; ed.sel = the last one (the only one, most of the time)
+  const setSels = (list) => { ed.sels = list.filter(Boolean); ed.sel = ed.sels.length ? ed.sels[ed.sels.length - 1] : null; };
+  ed.select = (sel, { tab = true } = {}) => { setSels([sel]); if (sel && tab) ed.tab = 'inspect'; drawOverlay(); renderSide(ed, sideEl); };
+  /** Shift-click / Ctrl-click / ⌘-click: add to the selection, or take it out again. */
+  ed.toggle = (sel) => {
+    if (!sel) return;
+    setSels(SEL.toggleSel(ed.sels, sel, E.wallComponents(ed.doc, ed.cfg)));
+    ed.tab = 'inspect'; drawOverlay(); renderSide(ed, sideEl);
+  };
+  ed.isSelected = (x) => ed.sels.some((q) => SEL.sameSel(q, x));
   /** Apply an edit: fn(doc, plan) -> new doc. EditErrors become a message; the old doc goes on the undo stack. */
   ed.apply = (fn, msg, { sel } = {}) => {
     let nd;
@@ -94,7 +104,7 @@ export function renderEditor(root, app, idxIn) {
   function commit(nd, msg, sel) {
     ed.doc = nd; p.plans[ed.idx] = nd;
     ed.plan = analysePlan(ed.cfg, nd);
-    if (sel !== undefined) ed.sel = typeof sel === 'function' ? sel(ed.plan) : sel;
+    if (sel !== undefined) { const v = typeof sel === 'function' ? sel(ed.plan) : sel; setSels(Array.isArray(v) ? v : [v]); }
     validateSel();
     ed.msg = msg || '';
     app.save();
@@ -111,21 +121,12 @@ export function renderEditor(root, app, idxIn) {
     if (t === 'furniture') ed.tab = 'inspect';
     renderTools(); drawOverlay(); renderHint(); renderSide(ed, sideEl);
   };
-  ed.wallOf = (sel) => E.wallComponents(ed.doc, ed.cfg).find((c) => c.closed && c.rooms.some(([u, e]) => u === sel.ref[0] && e === sel.ref[1])) || null;
-  ed.linkK = (sel) => ed.plan.links_all.findIndex((l) => (sel.entrance ? !!l.entrance : !l.entrance && ((l.a === sel.a && l.b === sel.b) || (l.a === sel.b && l.b === sel.a))));
+  ed.wallOf = (sel) => SEL.wallOf(ed.doc, ed.cfg, sel);
+  ed.linkK = (sel) => SEL.linkIndex(ed.plan, sel);
   ed.room = (uid) => ed.plan.rooms.find((r) => r.uid === uid);
-  ed.needsManual = (uid) => { const r = ed.room(uid), fs = (ed.doc.furniture || {})[uid]; return !!r && AUTO_TYPES.has(r.rtype) && (!fs || fs.mode !== 'manual'); };
+  ed.needsManual = (uid) => SEL.needsHandLayout(ed.doc, ed.plan, uid);
   /** Hand layout from the planner's: items copied, and the doors into the room pinned where they are. */
-  ed.toManual = (doc, plan, uid) => {
-    let d = E.furnitureToManual(doc, plan, uid);
-    plan.links_all.forEach((l, k) => {
-      if (l.into !== uid || !plan.door_plan.has(k) || l.kind === 'nowall') return;
-      if (l.kind === 'open' && ed.room(l.into).rtype !== 'kitchen') return;
-      const pinned = l.entrance ? !!(doc.meta && doc.meta.entranceHint) : !!(l.hint && l.hint.at !== undefined);
-      if (!pinned) d = E.placeLink(d, plan, k, { clamp: false });
-    });
-    return d;
-  };
+  ed.toManual = (doc, plan, uid) => SEL.toHandLayout(doc, plan, uid);
   ed.editItem = (uid, i, patch, msg) => ed.apply((doc, plan) => E.updateItem(ed.needsManual(uid) ? ed.toManual(doc, plan, uid) : doc, uid, i, patch), msg);
   ed.addItemTo = (uid, item) => ed.apply((doc) => {
     let d = E.addItem(doc, uid, item);
@@ -139,15 +140,9 @@ export function renderEditor(root, app, idxIn) {
   ed.splitDialog = (r, axis, at) => splitDialog(r, axis, at);
 
   function validateSel() {
-    const sl = ed.sel;
-    if (!sl) return;
-    const ok = sl.t === 'room' ? !!ed.room(sl.uid)
-      : sl.t === 'wall' ? !!ed.wallOf(sl)
-        : sl.t === 'link' ? ed.linkK(sl) >= 0
-          : sl.t === 'window' ? !!ed.room(sl.room)
-            : sl.t === 'item' ? !!(ed.plan.furniture[sl.uid] && ed.plan.furniture[sl.uid][sl.i])
-              : sl.t === 'keepout' ? !!(ed.doc.keepouts || [])[sl.i] : false;
-    if (!ok) ed.sel = null;
+    if (!ed.sels.length) return;
+    const comps = E.wallComponents(ed.doc, ed.cfg), keep = ed.sels.filter((q) => SEL.validSel(ed.doc, ed.plan, ed.cfg, q, comps));
+    if (keep.length !== ed.sels.length) setSels(keep);
   }
 
   // ------------------------------------------------------------------------------------------ rendering
@@ -230,8 +225,8 @@ export function renderEditor(root, app, idxIn) {
     if (!ed.map) return;
     clear(gOv);
     if (ed.show.furniture) (ed.doc.keepouts || []).forEach((k) => gOv.append(rectEl(k.rect, 'ko')));
-    if (ed.hover && !sameSel(ed.hover, ed.sel)) gOv.append(...shapeOf(ed.hover, 'hov'));
-    if (ed.sel) gOv.append(...shapeOf(ed.sel, 'sel'));
+    if (ed.hover && !ed.isSelected(ed.hover)) gOv.append(...shapeOf(ed.hover, 'hov'));
+    for (const q of ed.sels) gOv.append(...shapeOf(q, 'sel'));
     const pv = ed.preview;
     if (pv) {
       if (pv.t === 'split') gOv.append(pv.axis === 'x' ? lineEl(pv.at, pv.r.net.y0, pv.at, pv.r.net.y1, 'guide') : lineEl(pv.r.net.x0, pv.at, pv.r.net.x1, pv.at, 'guide'));
@@ -239,7 +234,6 @@ export function renderEditor(root, app, idxIn) {
       if (pv.t === 'band') gOv.append(rectEl(pv.rect, 'ghost'));
     }
   }
-  const sameSel = (a, b) => !!a && !!b && a.t === b.t && JSON.stringify({ ...a, w: undefined, k: undefined }) === JSON.stringify({ ...b, w: undefined, k: undefined });
   ed.drawOverlay = drawOverlay;
 
   function renderTools() {
@@ -300,7 +294,7 @@ export function renderEditor(root, app, idxIn) {
     const hits = ed.plan.rooms.filter((r) => cx >= r.tile.x0 - 1e-9 && cx <= r.tile.x1 + 1e-9 && cy >= r.tile.y0 - 1e-9 && cy <= r.tile.y1 + 1e-9);
     return hits.find((r) => cx >= r.net.x0 && cx <= r.net.x1 && cy >= r.net.y0 && cy <= r.net.y1) || hits[0] || null;
   }
-  function windowSide(o, r) { return o.horiz ? (Math.abs(o.y - r.tile.y0) < Math.abs(o.y - r.tile.y1) ? 'S' : 'N') : (Math.abs(o.x - r.tile.x0) < Math.abs(o.x - r.tile.x1) ? 'W' : 'E'); }
+  const windowSide = SEL.windowSide;
   ed.windowSide = windowSide;
   /** Wall between two rooms at (x, y): {a: room clicked, b: neighbour, seg} */
   function pairAt(x, y) {
@@ -405,7 +399,7 @@ export function renderEditor(root, app, idxIn) {
     try { svg.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }
     if (e.button === 1 || ed.tool === 'pan' || spaceDown) { drag = { kind: 'pan', cx: e.clientX, cy: e.clientY, vb: [...ed.vb] }; e.preventDefault(); return; }
     if (e.button !== 0) return;
-    if (ed.tool === 'select') drag = { kind: 'press', hit: hitTest(x, y), x, y, cx: e.clientX, cy: e.clientY, base: ed.doc, basePlan: ed.plan, moved: false };
+    if (ed.tool === 'select') drag = { kind: 'press', hit: hitTest(x, y), add: addKey(e), x, y, cx: e.clientX, cy: e.clientY, base: ed.doc, basePlan: ed.plan, moved: false };
     else if (ed.tool === 'keepout') { const r = roomAt(x, y); drag = r ? { kind: 'keepout', r, x, y } : { kind: 'pan', cx: e.clientX, cy: e.clientY, vb: [...ed.vb] }; }
     else drag = { kind: 'click', x, y, cx: e.clientX, cy: e.clientY, vb: [...ed.vb] };
   });
@@ -442,6 +436,7 @@ export function renderEditor(root, app, idxIn) {
     if (!d) return;
     if (d.kind === 'press') {
       if (d.moved) endDrag(d);
+      else if (d.add) ed.toggle(d.hit);              // Shift / Ctrl / ⌘ held: add it, or take it out again
       else ed.select(d.hit);
     } else if (d.kind === 'keepout') {
       const pv = ed.preview; ed.preview = null;
@@ -458,7 +453,7 @@ export function renderEditor(root, app, idxIn) {
     zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018)));
   }, { passive: false });
   svg.addEventListener('dblclick', (e) => {
-    if (ed.tool !== 'select') return;
+    if (ed.tool !== 'select' || addKey(e)) return;
     const [x, y] = toFt(e), hit = hitTest(x, y);
     if (hit && hit.t === 'room') { ed.select(hit); setTimeout(() => { const inp = sideEl.querySelector('[data-k="room-name"]'); if (inp) { inp.focus(); inp.select(); } }, 30); }
   });
@@ -482,8 +477,18 @@ export function renderEditor(root, app, idxIn) {
   // ------------------------------------------------------------------------------------------ drags (select tool)
   function beginDrag(d) {
     const hit = d.hit;
+    // several selected and one of them dragged (or Shift / Ctrl / ⌘ held on something new): they all move together
+    if (hit && hit.t !== 'room') {
+      const inSel = ed.sels.some((q) => SEL.sameSel(q, hit, E.wallComponents(ed.doc, ed.cfg)));
+      if ((inSel && ed.sels.length > 1) || (d.add && !inSel && ed.sels.length)) {
+        const list = inSel ? ed.sels : [...ed.sels, hit], g = SEL.groupMovers(ed.cfg, d.base, d.basePlan, list);
+        setSels(list); ed.hover = null;
+        if (g.movers.length) { d.mode = 'group'; d.g = g; renderSide(ed, sideEl); return; }
+        d.kind = 'pan'; d.vb = [...ed.vb]; drawOverlay(); renderSide(ed, sideEl); return;
+      }
+    }
     if (!hit || hit.t === 'room' || hit.t === 'keepout') { d.kind = 'pan'; d.vb = [...ed.vb]; return; }
-    ed.sel = hit; ed.hover = null;
+    setSels([hit]); ed.hover = null;
     if (hit.t === 'item') {
       d.mode = 'item';
       d.docM = ed.needsManual(hit.uid) ? ed.toManual(d.base, d.basePlan, hit.uid) : d.base;
@@ -510,7 +515,12 @@ export function renderEditor(root, app, idxIn) {
   function moveDrag(d, x, y, e) {
     if (d.kind === 'pan') { panBy(e.clientX - d.cx, e.clientY - d.cy, d.vb); return; }
     try {
-      if (d.mode === 'item') {
+      if (d.mode === 'group') {
+        const [gx, gy] = SEL.groupDelta(d.g.movers, sn(x - d.x), sn(y - d.y), { lead: d.hit, snapTol: 6 / ppf() });
+        if (Math.abs(gx) > 1e-9 || Math.abs(gy) > 1e-9) preview(SEL.applyMovers(ed.cfg, d.g.doc, d.g.movers, gx, gy));
+        else if (ed.doc !== d.base) { ed.doc = d.base; ed.plan = d.basePlan; renderSoon(); }
+        renderHint(`Moving ${howMany(d.g.movers.length)} together: ${moveText(gx, gy, d.g.movers, true)}`);
+      } else if (d.mode === 'item') {
         const n = d.net, W = rw(d.rect0), H = rh(d.rect0);
         let x0 = d.rect0.x0 + sn(x - d.x), y0 = d.rect0.y0 + sn(y - d.y);
         x0 = Math.min(n.x1 - W, Math.max(n.x0, x0)); y0 = Math.min(n.y1 - H, Math.max(n.y0, y0));
@@ -541,10 +551,19 @@ export function renderEditor(root, app, idxIn) {
     if (ed.doc === d.base) { renderAll(); return; }
     const nd = ed.doc;
     ed.doc = d.base; ed.plan = d.basePlan;
-    const what = d.mode === 'item' ? `Moved ${(KIND_NAMES[(ed.plan.furniture[d.hit.uid] || [])[d.hit.i]?.kind] || 'item').toLowerCase()} in ${ed.room(d.hit.uid).name}.`
+    const what = d.mode === 'group' ? `Moved ${howMany(d.g.movers.length)} together.` : d.mode === 'item' ? `Moved ${(KIND_NAMES[(ed.plan.furniture[d.hit.uid] || [])[d.hit.i]?.kind] || 'item').toLowerCase()} in ${ed.room(d.hit.uid).name}.`
       : d.mode === 'link' ? 'Moved the door / opening.' : d.mode === 'window' ? `Moved the ${SIDE_NAME[d.hit.side]} window of ${ed.room(d.hit.room).name}.` : 'Moved the wall.';
-    ed.apply(() => nd, what, { sel: d.hit });
+    ed.apply(() => nd, what, d.mode === 'group' ? {} : { sel: d.hit });
   }
+  /** "3 things", or "2 of the 3" when rooms or no-wall joins in the selection stay put. */
+  const howMany = (m) => (m === ed.sels.length ? `${m} things` : `${m} of the ${ed.sels.length}`);
+  /** "1'-0\" east, 6\" north"; zeros: also name an axis they could move along but did not (live drag hint). */
+  const moveText = (dx, dy, movers, zeros = false) => {
+    const parts = [];
+    if (SEL.movesAlong(movers, 'x') && (zeros || Math.abs(dx) > 1e-9)) parts.push(Math.abs(dx) < 1e-9 ? 'east–west 0' : `${fi(Math.abs(dx))} ${dx > 0 ? 'east' : 'west'}`);
+    if (SEL.movesAlong(movers, 'y') && (zeros || Math.abs(dy) > 1e-9)) parts.push(Math.abs(dy) < 1e-9 ? 'north–south 0' : `${fi(Math.abs(dy))} ${dy > 0 ? 'north' : 'south'}`);
+    return parts.join(', ');
+  };
 
   // ------------------------------------------------------------------------------------------ tool clicks
   async function toolClick(x, y) {
@@ -615,6 +634,15 @@ export function renderEditor(root, app, idxIn) {
   function nudge(dx, dy) {
     const sl = ed.sel;
     if (!sl) return;
+    if (ed.sels.length > 1) {
+      const g = SEL.groupMovers(ed.cfg, ed.doc, ed.plan, ed.sels);
+      if (!g.movers.length) { toast('Rooms stay where they are: select walls, doors, windows or furniture to move them.'); return; }
+      if (!SEL.movesAlong(g.movers, dx ? 'x' : 'y')) { toast(`None of them moves ${dx ? 'east–west' : 'north–south'}: doors and windows slide along their own walls.`); return; }
+      const [gx, gy] = SEL.groupDelta(g.movers, dx, dy);
+      if (Math.abs(gx) < 1e-9 && Math.abs(gy) < 1e-9) { toast('One of them is already as far as it can go that way.'); return; }
+      ed.apply(() => SEL.applyMovers(ed.cfg, g.doc, g.movers, gx, gy), `Moved ${howMany(g.movers.length)} ${moveText(gx, gy, g.movers)}.`);
+      return;
+    }
     if (sl.t === 'item') {
       const it = ed.plan.furniture[sl.uid][sl.i], n = ed.room(sl.uid).net, r = it.rect, W = rw(r), H = rh(r);
       const x0 = Math.min(n.x1 - W, Math.max(n.x0, r.x0 + dx)), y0 = Math.min(n.y1 - H, Math.max(n.y0, r.y0 + dy));
@@ -641,6 +669,13 @@ export function renderEditor(root, app, idxIn) {
   ed.deleteSel = () => {
     const sl = ed.sel;
     if (!sl) return;
+    if (ed.sels.length > 1) {
+      const list = ed.sels, msg = SEL.deleteText(list);
+      if (!msg) { toast('Rooms and walls stay: merge two rooms to take the wall between them away.'); return; }
+      const kept = list.length - SEL.deletable(list).length;
+      ed.apply((doc, plan) => SEL.deleteSelection(ed.cfg, doc, plan, list), `${msg}${kept ? ' Rooms and walls stay where they are.' : ''}`, { sel: null });
+      return;
+    }
     if (sl.t === 'item') ed.apply((doc, plan) => E.removeItem(ed.needsManual(sl.uid) ? ed.toManual(doc, plan, sl.uid) : doc, sl.uid, sl.i), 'Item removed.', { sel: null });
     else if (sl.t === 'link') { const k = ed.linkK(sl); ed.apply((doc, plan) => E.removeLinkAt(doc, plan, k), 'Connection removed.', { sel: null }); }
     else if (sl.t === 'window') ed.apply((doc) => E.setWindow(doc, sl.room, sl.side, { none: true }), `No window on the ${SIDE_NAME[sl.side]} wall of ${ed.room(sl.room).name}.`);
@@ -649,6 +684,15 @@ export function renderEditor(root, app, idxIn) {
   };
   ed.rotateSel = () => {
     const sl = ed.sel;
+    if (ed.sels.length > 1) {
+      const n = ed.sels.filter((q) => q.t === 'item').length;
+      if (!n) return;
+      let res = null;
+      ed.apply((doc, plan) => { res = SEL.rotateSelection(ed.cfg, doc, plan, ed.sels); if (!res.done) throw new E.EditError(n === 1 ? 'It does not fit that way round.' : 'None of them fits turned round.'); return res.doc; },
+        `Rotated ${n === 1 ? 'the piece of furniture' : `${n} pieces of furniture`}.`);
+      if (res && res.done && res.stuck) toast(`${res.stuck} of them did not fit turned round and stayed as ${res.stuck === 1 ? 'it was' : 'they were'}.`);
+      return;
+    }
     if (!sl || sl.t !== 'item') return;
     ed.apply((doc, plan) => {
       const d = ed.needsManual(sl.uid) ? ed.toManual(doc, plan, sl.uid) : doc, nd = E.rotateItem(d, sl.uid, sl.i);

@@ -211,6 +211,23 @@ test.describe('ArchiHelp: tabs, floors, wind circulation, tracing', () => {
     for (const [x, y] of [[14, 6], [14, 18], [20, 12], [26, 18], [0, 12]]) await place('Door', x, y);
     const kinds = await page.evaluate(() => window.__ahTrace.tr.doc.openings.map((o) => o.kind).sort().join(','));
     expect(kinds).toBe('door,door,door,door,entrance,window,window,window,window');
+    // several at once: Shift-click two windows, one sill height for both; Ctrl/⌘-click a third in and out again
+    await page.locator('.tr-tools').getByRole('radio', { name: 'Select', exact: true }).click();
+    const clickAt = async (x, y, key) => { const [cx, cy] = await px(X(x), Y(y)); if (key) await page.keyboard.down(key); await page.mouse.click(cx, cy); if (key) await page.keyboard.up(key); };
+    await clickAt(7, 0);
+    await clickAt(25, 0, 'Shift');
+    await expect(page.locator('.tr-side h3')).toHaveText('2 selected');
+    await clickAt(20, 24, 'ControlOrMeta');
+    await expect(page.locator('.tr-side h3')).toHaveText('3 selected');
+    await clickAt(20, 24, 'ControlOrMeta');
+    await expect(page.locator('.tr-side h3')).toHaveText('2 selected');
+    const sill = page.locator('.tr-side .field', { hasText: 'Sill height' }).locator('input');
+    await sill.fill(`2'-6"`); await sill.press('Enter');
+    await expect.poll(() => page.evaluate(() => window.__ahTrace.tr.doc.openings.filter((o) => o.kind === 'window' && o.y === 0).map((o) => o.sill).join(','))).toBe('2.5,2.5');
+    await page.keyboard.press('Delete');
+    await expect.poll(() => page.evaluate(() => window.__ahTrace.tr.doc.openings.filter((o) => o.kind === 'window').length)).toBe(2);
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(() => page.evaluate(() => window.__ahTrace.tr.doc.openings.filter((o) => o.kind === 'window').length)).toBe(4);
     // on to the wind tab
     await page.locator('.tr-bar a.btn.primary').click();
     await expect(page.locator('.wcard').nth(1)).toContainText('traced drawing');

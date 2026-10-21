@@ -100,6 +100,75 @@ test.describe('ArchiHelp', () => {
     await expect.poll(() => page.evaluate((s) => window.__ahEditor.plan.furniture[s.uid].length, sel)).toBe(count - 1);
   });
 
+  test('select several: Shift-click and Ctrl/⌘-click, then move, nudge, delete and undo them together', async ({ page }) => {
+    const errors = trackErrors(page);
+    await openExample(page);
+    const centre = (name, i) => page.evaluate(([n, k]) => { const e = window.__ahEditor, r = e.plan.rooms.find((q) => q.name === n), it = e.plan.furniture[r.uid][k].rect; return [(it.x0 + it.x1) / 2, (it.y0 + it.y1) / 2]; }, [name, i]);
+    const rect = (name, i) => page.evaluate(([n, k]) => { const e = window.__ahEditor, r = e.plan.rooms.find((q) => q.name === n); return e.plan.furniture[r.uid][k].rect; }, [name, i]);
+    const clickFt = async (fx, fy, key) => { const [x, y] = await ftToPx(page, fx, fy); if (key) await page.keyboard.down(key); await page.mouse.click(x, y); if (key) await page.keyboard.up(key); };
+    const bed = await centre('Bedroom 2', 0), coffee = await centre('Hall', 1), sofa = await centre('Hall', 0);
+    await clickFt(...bed);
+    await expect(page.locator('.panel h3')).toHaveText('Bed');
+    await clickFt(...coffee, 'Shift');
+    await expect(page.locator('.panel h3')).toHaveText('2 selected');
+    await clickFt(...sofa, 'ControlOrMeta');
+    await expect(page.locator('.panel h3')).toHaveText('3 selected');
+    await expect(page.locator('.ov .sel')).toHaveCount(3);
+    await clickFt(...sofa, 'ControlOrMeta');                     // a second click takes it out again
+    await expect(page.locator('.panel h3')).toHaveText('2 selected');
+    // drag one of them: both move by the same amount
+    const b0 = await rect('Bedroom 2', 0), c0 = await rect('Hall', 1);
+    const [x0, y0] = await ftToPx(page, ...coffee), [x1, y1] = await ftToPx(page, coffee[0] + 1, coffee[1] + 1);
+    await page.mouse.move(x0, y0); await page.mouse.down(); await page.mouse.move(x1, y1, { steps: 8 }); await page.mouse.up();
+    await expect.poll(async () => (await rect('Bedroom 2', 0)).x0 - b0.x0).toBeCloseTo(1, 6);
+    expect((await rect('Bedroom 2', 0)).y0 - b0.y0).toBeCloseTo(1, 6);
+    expect((await rect('Hall', 1)).x0 - c0.x0).toBeCloseTo(1, 6);
+    expect((await rect('Hall', 1)).y0 - c0.y0).toBeCloseTo(1, 6);
+    await expect(page.locator('.panel h3')).toHaveText('2 selected');
+    // arrow keys nudge both (Shift = 1 ft)
+    await page.keyboard.press('Shift+ArrowLeft');
+    await expect.poll(async () => (await rect('Bedroom 2', 0)).x0 - b0.x0).toBeCloseTo(0, 6);
+    expect((await rect('Hall', 1)).x0 - c0.x0).toBeCloseTo(0, 6);
+    // Delete removes both; one undo brings both back
+    const count = () => page.evaluate(() => Object.values(window.__ahEditor.plan.furniture).reduce((a, l) => a + l.length, 0));
+    const n = await count();
+    await page.keyboard.press('Delete');
+    await expect.poll(count).toBe(n - 2);
+    await expect(page.locator('.ed-status')).toContainText('Removed 2 pieces of furniture');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(count).toBe(n);
+    // two rooms: their area together, and swap them
+    await page.keyboard.press('Escape');
+    const k = await roomNet(page, 'Kitchen'), d = await roomNet(page, 'Dining');
+    await clickFt((k.x0 + k.x1) / 2, (k.y0 + k.y1) / 2);            // clear floor, away from furniture and doorways
+    await clickFt(d.x0 + 2.3, (d.y0 + d.y1) / 2, 'Shift');
+    await expect(page.locator('[data-k="multi-area"]')).toContainText('180 sq ft');
+    await page.getByRole('button', { name: 'Swap them' }).click();
+    await expect.poll(() => page.evaluate((x) => window.__ahEditor.plan.rooms.find((r) => Math.abs(r.net.x0 - x) < 1e-6).name, k.x0)).toBe('Dining');
+    expect(errors).toEqual([]);
+  });
+
+  // the add-to-selection key follows the platform: Ctrl on Windows (and Linux), ⌘ on a Mac; Shift on both
+  for (const [os, platform, uaPlatform, addKey, otherKey, label] of [['Windows', 'Win32', 'Windows', 'Control', 'Meta', 'Ctrl-click'], ['macOS', 'MacIntel', 'macOS', 'Meta', 'Control', '⌘-click']]) {
+    test(`${os}: ${label} adds to the selection, the other modifier does not`, async ({ page }) => {
+      await page.addInitScript(([pl, up]) => {
+        Object.defineProperty(Navigator.prototype, 'platform', { configurable: true, get: () => pl });
+        Object.defineProperty(Navigator.prototype, 'userAgentData', { configurable: true, get: () => ({ platform: up, mobile: false, brands: [] }) });
+      }, [platform, uaPlatform]);
+      await openExample(page);
+      await expect(page.locator('#edHint')).toContainText(label);
+      const at = (name, i) => page.evaluate(([n, k]) => { const e = window.__ahEditor, r = e.plan.rooms.find((q) => q.name === n), it = e.plan.furniture[r.uid][k].rect; return [(it.x0 + it.x1) / 2, (it.y0 + it.y1) / 2]; }, [name, i]);
+      const clickFt = async ([fx, fy], key) => { const [x, y] = await ftToPx(page, fx, fy); if (key) await page.keyboard.down(key); await page.mouse.click(x, y); if (key) await page.keyboard.up(key); };
+      await clickFt(await at('Bedroom 2', 0));
+      await clickFt(await at('Hall', 1), addKey);
+      await expect(page.locator('.panel h3')).toHaveText('2 selected');
+      await clickFt(await at('Hall', 0), 'Shift');
+      await expect(page.locator('.panel h3')).toHaveText('3 selected');
+      await clickFt(await at('Hall', 2), otherKey);                 // not the add key here: a plain click, just the TV
+      await expect(page.locator('.panel h3')).toHaveText('TV unit');
+    });
+  }
+
   test('drawing set: four A3 sheets and a PDF download', async ({ page }) => {
     await openExample(page);
     await page.getByRole('button', { name: /PDF/ }).click();

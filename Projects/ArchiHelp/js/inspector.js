@@ -1,5 +1,6 @@
 // ArchiHelp — editor side panel: the inspector for whatever is selected, the live checks, and plan settings.
-import { h, clear, toast, confirmDlg, prompt, field, ftIn, num, seg, select, checkbox, download, when } from './dom.js';
+import { h, clear, toast, confirmDlg, prompt, field, ftIn, num, seg, select, checkbox, download, when, addKey, ADD_CLICK } from './dom.js';
+import * as SEL from './selection.js';
 import { saveProject, newId } from './store.js';
 import * as E from '../engine/edits.js';
 import { fi, rw, rh } from '../engine/geom.js';
@@ -13,11 +14,13 @@ const tag = (el, k) => { el.dataset.k = k; return el; };
 const typeLabel = (ed, t) => (t === 'suite' ? 'Part of a room' : (ed.cfg.room_specs[t] || {}).label || t);
 const li = (main, sub, { onclick, sel = false, extra = null, k = null } = {}) => h('div', { class: `li ${sel ? 'sel' : ''}`, role: onclick ? 'button' : null, tabindex: onclick ? '0' : null, 'data-k': k,
   onclick, onkeydown: onclick ? (e) => { if (e.key === 'Enter') onclick(); } : null, style: onclick ? { cursor: 'pointer' } : null }, h('span', {}, main), extra || h('span'), sub ? h('small', {}, sub) : null);
+/** Click handler for a list row: select just this one, or with Shift / Ctrl / ⌘ held add it to the selection. */
+const pick = (ed, sl) => (e) => (addKey(e) ? ed.toggle(sl) : ed.select(sl));
 const x = (onclick, label = 'Remove') => h('button', { class: 'btn sm ghost danger', type: 'button', 'aria-label': label, title: label, onclick: (e) => { e.stopPropagation(); onclick(); } }, '×');
 
 export function renderSide(ed, el) {
   const act = document.activeElement, focusKey = act && el.contains(act) ? act.dataset.k : null;
-  const key = JSON.stringify([ed.tab, ed.sel, ed.tool === 'furniture']), old = el.querySelector('.panel'), scroll = old && el._key === key ? old.scrollTop : 0;
+  const key = JSON.stringify([ed.tab, ed.sels || ed.sel, ed.tool === 'furniture']), old = el.querySelector('.panel'), scroll = old && el._key === key ? old.scrollTop : 0;
   el._key = key;
   clear(el);
   const soft = ed.plan.checks.filter((c) => !c.hard && !c.ok).length, hard = ed.plan.failed.length;
@@ -44,6 +47,7 @@ function summary(ed) {
 function inspect(ed, panel) {
   const sl = ed.sel;
   if (!sl) return overview(ed, panel);
+  if (ed.sels && ed.sels.length > 1) return multiPanel(ed, panel);
   if (sl.t === 'room') return roomPanel(ed, panel, sl.uid);
   if (sl.t === 'wall') return wallPanel(ed, panel, sl);
   if (sl.t === 'link') return linkPanel(ed, panel, sl);
@@ -57,9 +61,9 @@ function inspect(ed, panel) {
 function overview(ed, panel) {
   const d = ed.doc;
   panel.append(h('h3', {}, d.label || 'Plan'), h('div', { class: 'sub' }, d.source || ''), summary(ed),
-    h('p', { class: 'small muted' }, 'Select a room, wall, door, window or piece of furniture on the plan to change it. The tools on the left add doors, openings and windows, split rooms and place furniture. Every change is checked straight away.'),
+    h('p', { class: 'small muted' }, `Select a room, wall, door, window or piece of furniture on the plan to change it; ${ADD_CLICK} selects several. The tools on the left add doors, openings and windows, split rooms and place furniture. Every change is checked straight away.`),
     h('h4', {}, 'Rooms'),
-    h('div', { class: 'list' }, ed.plan.rooms.map((r) => li(r.name, `${typeLabel(ed, r.rtype)} · ${fi(rw(r.net))} × ${fi(rh(r.net))}`, { onclick: () => ed.select({ t: 'room', uid: r.uid }), extra: h('span', { class: 'num small' }, `${Math.round(r.area)} sq ft`) }))));
+    h('div', { class: 'list' }, ed.plan.rooms.map((r) => li(r.name, `${typeLabel(ed, r.rtype)} · ${fi(rw(r.net))} × ${fi(rh(r.net))}`, { onclick: pick(ed, { t: 'room', uid: r.uid }), extra: h('span', { class: 'num small' }, `${Math.round(r.area)} sq ft`) }))));
 }
 
 // ------------------------------------------------------------------------------------------------ room
@@ -118,7 +122,7 @@ function roomPanel(ed, panel, uid) {
       const other = l.entrance ? null : ed.room(l.a === uid ? l.b : l.a), o = pl.openings.find((q) => q.link === k);
       const main = l.entrance ? 'Entrance door (road)' : `${KIND[l.kind]} to ${other.name}`;
       const sub = l.kind === 'door' ? `${o ? `${o.type} · ${fi(o.w)}` : ''}${l.into === uid ? ' · swings in here' : ` · swings into ${ed.room(l.into).name}`}` : o ? `${fi(o.w)} wide` : '';
-      return li(main, sub, { onclick: () => ed.select(l.entrance ? { t: 'link', entrance: true } : { t: 'link', a: l.a, b: l.b }) });
+      return li(main, sub, { onclick: pick(ed, l.entrance ? { t: 'link', entrance: true } : { t: 'link', a: l.a, b: l.b }) });
     }) : h('div', { class: 'small muted' }, 'No connections — this room cannot be reached.')),
     h('div', { class: 'row', style: { marginTop: '8px' } }, seg([['door', 'Door'], ['open', 'Opening'], ['nowall', 'No wall']], addKind, (v) => { addKind = v; }), h('div', { style: { flex: 1, minWidth: '120px' } }, addSel)));
 
@@ -130,7 +134,7 @@ function roomPanel(ed, panel, uid) {
     : ext.length ? h('div', { class: 'list' }, ext.map((sd) => {
       const spec = E.windowSpec(doc, uid, sd), ws = pl.openings.filter((o) => o.kind === 'window' && o.into === uid && ed.windowSide(o, r) === sd);
       const mode = !spec ? 'automatic' : spec.none || spec.w === 0 ? 'none' : spec.fit === 'max' ? 'widest between piers' : 'exact';
-      return li(`${SIDE[sd]} wall`, ws.length ? ws.map((o) => `${o.type} ${fi(o.w)}`).join(', ') : 'no window', { onclick: () => ed.select({ t: 'window', room: uid, side: sd }), extra: h('span', { class: 'small muted' }, mode) });
+      return li(`${SIDE[sd]} wall`, ws.length ? ws.map((o) => `${o.type} ${fi(o.w)}`).join(', ') : 'no window', { onclick: pick(ed, { t: 'window', room: uid, side: sd }), extra: h('span', { class: 'small muted' }, mode) });
     })) : h('div', { class: 'small muted' }, 'No outer walls — an interior room.'));
 
   // furniture
@@ -152,11 +156,11 @@ function roomPanel(ed, panel, uid) {
     }
   }
   panel.append(h('div', { class: 'list', style: { marginTop: '10px' } }, items.length ? items.map((it, i) => li(KIND_NAMES[it.kind] || it.kind, `${fi(rw(it.rect))} × ${fi(rh(it.rect))}${it.label && it.label !== (KIND_NAMES[it.kind] || '').toUpperCase() ? ` · "${it.label}"` : ''}`,
-    { onclick: () => ed.select({ t: 'item', uid, i }), extra: x(() => { ed.select({ t: 'item', uid, i }, { tab: false }); ed.deleteSel(); }) })) : h('div', { class: 'small muted' }, auto ? 'Nothing placed — the room may be too tight for the required furniture.' : 'No furniture.')),
+    { onclick: pick(ed, { t: 'item', uid, i }), extra: x(() => { ed.select({ t: 'item', uid, i }, { tab: false }); ed.deleteSel(); }) })) : h('div', { class: 'small muted' }, auto ? 'Nothing placed — the room may be too tight for the required furniture.' : 'No furniture.')),
   h('div', { class: 'row', style: { marginTop: '8px' } }, h('button', { class: 'btn sm', type: 'button', onclick: () => ed.setTool('furniture') }, '+ Add furniture'),
     h('button', { class: 'btn sm', type: 'button', onclick: () => ed.setTool('keepout') }, '+ Keep-out zone')));
   const kos = (doc.keepouts || []).map((k, i) => [k, i]).filter(([k]) => k.room === uid);
-  if (kos.length) panel.append(h('div', { class: 'list', style: { marginTop: '8px' } }, kos.map(([k, i]) => li('Keep-out zone', `${fi(rw(k.rect))} × ${fi(rh(k.rect))}`, { onclick: () => ed.select({ t: 'keepout', i }), extra: x(() => ed.apply((dd) => E.removeKeepout(dd, i), 'Keep-out removed.', { sel: { t: 'room', uid } })) }))));
+  if (kos.length) panel.append(h('div', { class: 'list', style: { marginTop: '8px' } }, kos.map(([k, i]) => li('Keep-out zone', `${fi(rw(k.rect))} × ${fi(rh(k.rect))}`, { onclick: pick(ed, { t: 'keepout', i }), extra: x(() => ed.apply((dd) => E.removeKeepout(dd, i), 'Keep-out removed.', { sel: { t: 'room', uid } })) }))));
 }
 function sharesSide(t, c, sd) {
   const e = 1e-6;
@@ -164,6 +168,71 @@ function sharesSide(t, c, sd) {
   if (sd === 'N') return Math.abs(t.y1 - c.y0) < e && Math.min(t.x1, c.x1) - Math.max(t.x0, c.x0) >= 2.5;
   if (sd === 'W') return Math.abs(t.x0 - c.x1) < e && Math.min(t.y1, c.y1) - Math.max(t.y0, c.y0) >= 2.5;
   return Math.abs(t.x1 - c.x0) < e && Math.min(t.y1, c.y1) - Math.max(t.y0, c.y0) >= 2.5;
+}
+
+// ------------------------------------------------------------------------------------------------ several at once
+function describe(ed, s) {
+  const pl = ed.plan;
+  if (s.t === 'room') { const r = ed.room(s.uid); return r ? [r.name, `${typeLabel(ed, r.rtype)} · ${fi(rw(r.net))} × ${fi(rh(r.net))} · ${Math.round(r.area)} sq ft`] : ['Room', '']; }
+  if (s.t === 'wall') {
+    const w = ed.wallOf(s);
+    if (!w) return ['Wall', ''];
+    const names = [...new Set(w.rooms.map(([u]) => (ed.room(u) || {}).name).filter(Boolean))];
+    return [w.axis === 'x' ? 'North–south wall' : 'East–west wall', `${names.join(', ')} · ${fi(w.hi - w.lo)} long`];
+  }
+  if (s.t === 'link') {
+    const k = ed.linkK(s), l = pl.links_all[k];
+    if (!l) return ['Connection', ''];
+    const o = pl.openings.find((q) => q.link === k), wd = o ? ` · ${fi(o.w)}` : '';
+    return l.entrance ? ['Entrance door', `${ed.room(l.b).name}${wd}`] : [KIND[l.kind], `${ed.room(l.a).name} ↔ ${ed.room(l.b).name}${wd}`];
+  }
+  if (s.t === 'window') {
+    const r = ed.room(s.room), ws = SEL.windowsOn(pl, s.room, s.side);
+    return [`${SIDE[s.side]} window`, `${r ? r.name : ''}${ws.length ? ` · ${ws.map((o) => `${o.type} ${fi(o.w)}`).join(', ')}` : ' · none'}`];
+  }
+  if (s.t === 'item') {
+    const it = (pl.furniture[s.uid] || [])[s.i], r = ed.room(s.uid);
+    return it ? [KIND_NAMES[it.kind] || it.kind, `${r ? r.name : ''} · ${fi(rw(it.rect))} × ${fi(rh(it.rect))}`] : ['Furniture', ''];
+  }
+  if (s.t === 'keepout') { const k = (ed.doc.keepouts || [])[s.i], r = k && ed.room(k.room); return ['Keep-out zone', k ? `${r ? r.name : ''} · ${fi(rw(k.rect))} × ${fi(rh(k.rect))}` : '']; }
+  return [s.t, ''];
+}
+const winMode = (spec) => (!spec ? 'auto' : spec.none || spec.w === 0 ? 'none' : spec.fit === 'max' ? 'max' : 'exact');
+
+function multiPanel(ed, panel) {
+  const list = ed.sels, cfg = ed.cfg, n = list.length;
+  panel.append(h('h3', {}, `${n} selected`), h('div', { class: 'sub' }, SEL.countText(list)));
+  // rooms: the area they add up to; two of them can be merged or swapped
+  const rooms = list.filter((s) => s.t === 'room').map((s) => ed.room(s.uid)).filter(Boolean);
+  if (rooms.length > 1) panel.append(h('p', { class: 'small num', 'data-k': 'multi-area' }, `The ${rooms.length} rooms add up to ${Math.round(rooms.reduce((a, r) => a + r.area, 0))} sq ft of floor (clear, wall face to wall face).`));
+  if (rooms.length === 2 && n === 2) {
+    const [A, B] = rooms, ok = E.canMerge(ed.doc, A.uid, B.uid);
+    panel.append(h('div', { class: 'row' },
+      h('button', { class: 'btn sm', type: 'button', disabled: !ok, title: ok ? `One room, named ${A.name}` : 'Together they do not make a rectangle',
+        onclick: () => ed.apply((dd) => E.mergeRooms(dd, cfg, A.uid, B.uid), `Merged ${B.name} into ${A.name}.`, { sel: { t: 'room', uid: A.uid } }) }, `Merge into ${A.name}`),
+      h('button', { class: 'btn sm', type: 'button', onclick: () => ed.apply((dd) => E.swapRooms(dd, A.uid, B.uid), `Swapped ${A.name} and ${B.name}.`) }, 'Swap them')),
+    h('p', { class: 'small muted', style: { margin: '6px 0 0' } }, 'Swap exchanges the use of the two rooms (type, name, furniture choices); walls stay put.'));
+  }
+  // windows only: one setting for all of them
+  if (list.every((s) => s.t === 'window')) {
+    const modes = list.map((s) => winMode(E.windowSpec(ed.doc, s.room, s.side))), cur = modes.every((m) => m === modes[0]) ? modes[0] : '';
+    panel.append(field('All of them', seg([['auto', 'Automatic'], ['max', 'Widest'], ['none', 'None']], cur, (v) => ed.apply((dd) => list.reduce((d, s) => {
+      const sp = E.windowSpec(d, s.room, s.side) || {};
+      return E.setWindow(d, s.room, s.side, v === 'auto' ? null : v === 'none' ? { none: true } : { fit: 'max', sill: sp.sill !== undefined ? sp.sill : 3.0, desc: sp.desc || 'Window', keepout: true });
+    }, dd), v === 'auto' ? `The planner chooses all ${n} windows.` : v === 'none' ? `No windows on those ${n} walls.` : `${n} windows as wide as the piers allow.`))));
+  }
+  const items = list.filter((s) => s.t === 'item').length, del = SEL.deletable(list).length;
+  if (items || del) panel.append(h('div', { class: 'row', style: { marginTop: '14px' } },
+    items ? h('button', { class: 'btn sm', type: 'button', onclick: ed.rotateSel, title: 'R' }, items === n ? 'Rotate each 90°' : 'Rotate the furniture 90°') : null,
+    del ? h('button', { class: 'btn sm danger', type: 'button', onclick: ed.deleteSel, title: 'Delete' }, del === n ? `Delete all ${n}` : `Delete ${del} of them`) : null));
+  panel.append(h('div', { class: 'row', style: { justifyContent: 'space-between', marginTop: '16px' } }, h('h4', { style: { margin: 0 } }, 'Selected'),
+    h('button', { class: 'btn sm ghost', type: 'button', onclick: () => ed.select(null), title: 'Esc' }, 'Clear selection')),
+  h('div', { class: 'list', style: { marginTop: '6px' } }, list.map((s) => {
+    const [main, sub] = describe(ed, s);
+    return li(main, sub, { onclick: pick(ed, s),
+      extra: h('button', { class: 'btn sm ghost', type: 'button', 'aria-label': `Leave ${main} out of the selection`, title: 'Leave out of the selection', onclick: (e) => { e.stopPropagation(); ed.toggle(s); } }, '×') });
+  })));
+  panel.append(h('p', { class: 'small muted' }, `${ADD_CLICK} on the plan adds or takes away. Drag any of them, or use the arrow keys (Shift = 1 ft), to move them together: furniture stays inside its room, doors and windows slide along their walls, walls move across. ${del ? 'Delete removes them' : 'Rooms and walls cannot be deleted'}; Esc clears the selection.`));
 }
 
 // ------------------------------------------------------------------------------------------------ wall
