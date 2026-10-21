@@ -1,0 +1,3503 @@
+{
+ "config": {
+  "location": "Tripura, India",
+  "seismic_zone": "V",
+  "road_side": "E",
+  "ew_ft": 63.0,
+  "ns_ft": 24.0,
+  "floor_level": 1,
+  "ground_floor_height_ft": 10.0,
+  "typical_floor_height_ft": 11.0,
+  "floors_above": 2,
+  "program": {
+   "bedroom": 3,
+   "bath": 2,
+   "veranda": 0,
+   "kitchen": 1,
+   "stair": 1,
+   "hall": 1,
+   "dining": 1,
+   "puja": 1
+  },
+  "min_courtyards": 0,
+  "max_courtyards": 0,
+  "t_ext": 0.5833,
+  "t_int": 0.5833,
+  "max_bay_ft": 12.5,
+  "ew_bays": null,
+  "ns_bays": 1,
+  "avoid_core_columns": true,
+  "require_columns_in_walls": true,
+  "col_wall_tol_ft": 0.45,
+  "col_long_axis": "y",
+  "min_column_mm": [
+   230,
+   380
+  ],
+  "floor_load_kn_m2": 12.0,
+  "roof_load_kn_m2": 10.0,
+  "fck": 25.0,
+  "fy": 500.0,
+  "stair_width_ft": 4.0,
+  "max_riser_in": 6.0,
+  "tread_in": 10.0,
+  "sector_mapping": "angular",
+  "sector_min_frac": 0.7,
+  "sector_pref_floor": 0.5,
+  "plan_north_bearing_deg": 0.0,
+  "sector_centre": null,
+  "sector_rules": null,
+  "brahmasthan_rule": true
+ },
+ "stair": {
+  "height_in": 120.0,
+  "risers": 20,
+  "riser_in": 6.0,
+  "tread_in": 10.0,
+  "r1": 10,
+  "r2": 10,
+  "flight_w": 4.0,
+  "block_l": 11.5,
+  "block_w": 8.33,
+  "run": 7.5
+ },
+ "room_specs": {
+  "master": {
+   "label": "Master Bedroom",
+   "amin": 102.3,
+   "amax": 220,
+   "wmin": 6.9,
+   "asp": 2.2
+  },
+  "bedroom": {
+   "label": "Bedroom",
+   "amin": 80.7,
+   "amax": 170,
+   "wmin": 6.9,
+   "asp": 2.2
+  },
+  "bath": {
+   "label": "Bath",
+   "amin": 30.1,
+   "amax": 60,
+   "wmin": 3.9,
+   "asp": 2.6
+  },
+  "kitchen": {
+   "label": "Kitchen",
+   "amin": 53.8,
+   "amax": 130,
+   "wmin": 5.9,
+   "asp": 2.5
+  },
+  "puja": {
+   "label": "Puja Room",
+   "amin": 20,
+   "amax": 60,
+   "wmin": 4.0,
+   "asp": 2.0
+  },
+  "hall": {
+   "label": "Hall",
+   "amin": 120,
+   "amax": 360,
+   "wmin": 8.0,
+   "asp": 3.0
+  },
+  "dining": {
+   "label": "Dining",
+   "amin": 70,
+   "amax": 200,
+   "wmin": 7.0,
+   "asp": 2.5
+  },
+  "veranda": {
+   "label": "Veranda",
+   "amin": 30,
+   "amax": 150,
+   "wmin": 4.0,
+   "asp": 8.0
+  },
+  "passage": {
+   "label": "Passage",
+   "amin": 10,
+   "amax": 400,
+   "wmin": 3.5,
+   "asp": 99,
+   "wmax": 4.5
+  },
+  "lobby": {
+   "label": "Lobby",
+   "amin": 10,
+   "amax": 80,
+   "wmin": 3.0,
+   "asp": 4.0
+  },
+  "suite": {
+   "label": "Dressing / entry",
+   "amin": 0,
+   "amax": 80,
+   "wmin": 3.0,
+   "asp": 9.0
+  },
+  "court": {
+   "label": "Courtyard",
+   "amin": 40,
+   "amax": 160,
+   "wmin": 6.0,
+   "asp": 3.0
+  },
+  "stair": {
+   "label": "Staircase"
+  }
+ },
+ "sector_rules": {
+  "puja": {
+   "tiers": [
+    "N8",
+    "E1",
+    "E2",
+    "E3",
+    "N4",
+    "N3",
+    "N6",
+    "N7"
+   ],
+   "hard": true
+  },
+  "bath": {
+   "tiers": [
+    "W6",
+    "W7",
+    "S6",
+    "S7",
+    "E6",
+    "E7"
+   ],
+   "hard": true
+  },
+  "kitchen": {
+   "tiers": [
+    "E6",
+    "E7",
+    "E8",
+    "S1",
+    "S2",
+    "S3"
+   ],
+   "hard": true
+  },
+  "stair": {
+   "tiers": [
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7"
+   ],
+   "hard": true
+  },
+  "bedroom": {
+   "tiers": [
+    "S8",
+    "W1",
+    "W2",
+    "W8",
+    "N1",
+    "N2",
+    "N3",
+    "N4",
+    "N5"
+   ],
+   "hard": false
+  },
+  "hall": null,
+  "dining": null,
+  "passage": null,
+  "court": null,
+  "veranda": null,
+  "lobby": null,
+  "suite": null,
+  "master": {
+   "tiers": [
+    "S8",
+    "W1",
+    "W2",
+    "W8",
+    "N1",
+    "N2",
+    "N3",
+    "N4",
+    "N5"
+   ],
+   "hard": false
+  }
+ },
+ "brahma": {
+  "bath": 18,
+  "kitchen": 18,
+  "stair": 18,
+  "master": 45,
+  "bedroom": 45,
+  "puja": 10
+ },
+ "furn": {
+  "queen": [
+   5.0,
+   6.5
+  ],
+  "double": [
+   4.5,
+   6.25
+  ],
+  "single": [
+   3.0,
+   6.25
+  ],
+  "side_table": [
+   1.5,
+   1.5
+  ],
+  "wardrobe_depth": 2.0,
+  "wardrobe_lengths": [
+   6.0,
+   5.0,
+   4.0,
+   3.5,
+   3.0
+  ],
+  "study": [
+   3.5,
+   2.0
+  ],
+  "bath_shower": 3.0,
+  "bath_wc": [
+   1.75,
+   2.33
+  ],
+  "bath_basin": [
+   1.75,
+   1.5
+  ],
+  "counter_depth": 2.0,
+  "fridge": [
+   2.25,
+   2.25
+  ],
+  "altar_depth": 1.5,
+  "sofa": [
+   [
+    7.0,
+    3.0
+   ],
+   [
+    6.0,
+    2.75
+   ],
+   [
+    4.5,
+    2.75
+   ]
+  ],
+  "coffee": [
+   3.5,
+   1.75
+  ],
+  "tv_unit": [
+   5.0,
+   1.25
+  ],
+  "dining": [
+   [
+    5.5,
+    3.0,
+    6
+   ],
+   [
+    4.0,
+    3.0,
+    4
+   ],
+   [
+    3.0,
+    3.0,
+    4
+   ],
+   [
+    2.5,
+    2.5,
+    2
+   ]
+  ],
+  "chair": 1.5,
+  "planter": 1.5
+ },
+ "clear": {
+  "bed_side": 2.0,
+  "bed_foot": 2.0,
+  "wardrobe_front": 2.5,
+  "aisle": 3.0,
+  "opening": 2.5,
+  "door_access": 2.5,
+  "wc_front": 1.5
+ },
+ "final": {
+  "id": "S",
+  "source": "hand sketch IMG_5243, revision 9",
+  "vaastu_score": 62.362135400606334,
+  "rooms": [
+   {
+    "uid": 0,
+    "rtype": "master",
+    "name": "Master Bedroom",
+    "tile": [
+     0.29165,
+     0.29165,
+     12.77499,
+     9.791616666666666
+    ],
+    "net": [
+     0.5833,
+     0.5833,
+     12.48334,
+     9.499966666666666
+    ],
+    "group": null
+   },
+   {
+    "uid": 1,
+    "rtype": "suite",
+    "name": "Master Bedroom (entry)",
+    "tile": [
+     0.29165,
+     9.791616666666666,
+     7.583283333333333,
+     15.625049999999998
+    ],
+    "net": [
+     0.5833,
+     10.083266666666667,
+     7.291633333333333,
+     15.333399999999997
+    ],
+    "group": "Master Bedroom"
+   },
+   {
+    "uid": 2,
+    "rtype": "bedroom",
+    "name": "Bedroom 3",
+    "tile": [
+     12.77499,
+     0.29165,
+     25.25833,
+     9.791616666666666
+    ],
+    "net": [
+     13.066640000000001,
+     0.5833,
+     24.96668,
+     9.499966666666666
+    ],
+    "group": null
+   },
+   {
+    "uid": 3,
+    "rtype": "stair",
+    "name": "Staircase",
+    "tile": [
+     25.25833,
+     0.29165,
+     37.74167,
+     9.791616666666666
+    ],
+    "net": [
+     25.54998,
+     0.5833,
+     37.45002,
+     9.499966666666666
+    ],
+    "group": null
+   },
+   {
+    "uid": 4,
+    "rtype": "lobby",
+    "name": "Stair Landing",
+    "tile": [
+     37.74167,
+     0.29165,
+     41.32496999999999,
+     9.791616666666666
+    ],
+    "net": [
+     38.033319999999996,
+     0.5833,
+     41.033319999999996,
+     9.499966666666666
+    ],
+    "group": null
+   },
+   {
+    "uid": 5,
+    "rtype": "kitchen",
+    "name": "Kitchen",
+    "tile": [
+     41.32496999999999,
+     0.29165,
+     50.89167666666666,
+     9.791616666666666
+    ],
+    "net": [
+     41.61661999999999,
+     0.5833,
+     50.600026666666665,
+     9.499966666666666
+    ],
+    "group": null
+   },
+   {
+    "uid": 6,
+    "rtype": "dining",
+    "name": "Dining",
+    "tile": [
+     50.89167666666666,
+     0.29165,
+     62.70835,
+     9.791616666666666
+    ],
+    "net": [
+     51.18332666666666,
+     0.5833,
+     62.416700000000006,
+     9.499966666666666
+    ],
+    "group": null
+   },
+   {
+    "uid": 7,
+    "rtype": "passage",
+    "name": "Passage",
+    "tile": [
+     7.583283333333333,
+     9.791616666666666,
+     44.15830333333333,
+     14.124916666666667
+    ],
+    "net": [
+     7.874933333333333,
+     10.083266666666667,
+     43.86665333333333,
+     13.833266666666667
+    ],
+    "group": null
+   },
+   {
+    "uid": 8,
+    "rtype": "bath",
+    "name": "Bath 1",
+    "tile": [
+     0.29165,
+     15.625049999999998,
+     7.583283333333333,
+     23.70835
+    ],
+    "net": [
+     0.5833,
+     15.916699999999999,
+     7.291633333333333,
+     23.4167
+    ],
+    "group": null
+   },
+   {
+    "uid": 9,
+    "rtype": "bath",
+    "name": "Bath 2",
+    "tile": [
+     7.583283333333333,
+     14.124916666666667,
+     13.749916666666667,
+     23.70835
+    ],
+    "net": [
+     7.874933333333333,
+     14.416566666666668,
+     13.458266666666667,
+     23.4167
+    ],
+    "group": null
+   },
+   {
+    "uid": 10,
+    "rtype": "bedroom",
+    "name": "Bedroom 2",
+    "tile": [
+     13.749916666666667,
+     14.124916666666667,
+     28.61670366666667,
+     23.70835
+    ],
+    "net": [
+     14.041566666666668,
+     14.416566666666668,
+     28.32505366666667,
+     23.4167
+    ],
+    "group": null
+   },
+   {
+    "uid": 11,
+    "rtype": "lobby",
+    "name": "Lobby",
+    "tile": [
+     28.61670366666667,
+     14.124916666666667,
+     37.74167,
+     23.70835
+    ],
+    "net": [
+     28.90835366666667,
+     14.416566666666668,
+     37.45002,
+     23.4167
+    ],
+    "group": null
+   },
+   {
+    "uid": 12,
+    "rtype": "puja",
+    "name": "Puja Room",
+    "tile": [
+     37.74167,
+     14.124916666666667,
+     44.15830333333333,
+     23.70835
+    ],
+    "net": [
+     38.033319999999996,
+     14.416566666666668,
+     43.86665333333333,
+     23.4167
+    ],
+    "group": null
+   },
+   {
+    "uid": 13,
+    "rtype": "hall",
+    "name": "Hall",
+    "tile": [
+     44.15830333333333,
+     9.791616666666666,
+     62.70835,
+     23.70835
+    ],
+    "net": [
+     44.449953333333326,
+     10.083266666666667,
+     62.416700000000006,
+     23.4167
+    ],
+    "group": null
+   }
+  ],
+  "link_spec": [
+   [
+    "Passage",
+    "Master Bedroom (entry)",
+    "door",
+    "Master Bedroom (entry)"
+   ],
+   [
+    "Master Bedroom",
+    "Master Bedroom (entry)",
+    "nowall",
+    "Master Bedroom"
+   ],
+   [
+    "Master Bedroom (entry)",
+    "Bath 1",
+    "door",
+    "Bath 1"
+   ],
+   [
+    "Passage",
+    "Bath 2",
+    "door",
+    "Bath 2"
+   ],
+   [
+    "Bedroom 2",
+    "Bath 2",
+    "door",
+    "Bath 2"
+   ],
+   [
+    "Passage",
+    "Bedroom 2",
+    "door",
+    "Bedroom 2",
+    {
+     "at": 3.0,
+     "hinge": "lo"
+    }
+   ],
+   [
+    "Passage",
+    "Bedroom 3",
+    "door",
+    "Bedroom 3"
+   ],
+   [
+    "Passage",
+    "Lobby",
+    "nowall",
+    "Lobby"
+   ],
+   [
+    "Lobby",
+    "Puja Room",
+    "open",
+    "Lobby"
+   ],
+   [
+    "Passage",
+    "Hall",
+    "nowall",
+    "Hall"
+   ],
+   [
+    "Staircase",
+    "Stair Landing",
+    "nowall",
+    "Stair Landing"
+   ],
+   [
+    "Stair Landing",
+    "Passage",
+    "door",
+    "Passage",
+    {
+     "at": -0.25,
+     "hinge": "lo"
+    }
+   ],
+   [
+    "Hall",
+    "Kitchen",
+    "door",
+    "Kitchen",
+    {
+     "at": 0.44164999999999566,
+     "hinge": "lo"
+    }
+   ],
+   [
+    "Kitchen",
+    "Dining",
+    "door",
+    "Dining",
+    {
+     "at": 5.766666666666666,
+     "hinge": "hi"
+    }
+   ],
+   [
+    "Hall",
+    "Dining",
+    "open",
+    "Hall",
+    {
+     "w": 6.0,
+     "end": "hi"
+    }
+   ]
+  ],
+  "links": [
+   {
+    "a": 7,
+    "b": 1,
+    "kind": "door",
+    "into": 1,
+    "seg": [
+     [
+      7.583283333333333,
+      9.791616666666666
+     ],
+     [
+      7.583283333333333,
+      14.124916666666667
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 0,
+    "b": 1,
+    "kind": "nowall",
+    "into": 0,
+    "seg": [
+     [
+      0.29165,
+      9.791616666666666
+     ],
+     [
+      7.583283333333333,
+      9.791616666666666
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 1,
+    "b": 8,
+    "kind": "door",
+    "into": 8,
+    "seg": [
+     [
+      0.29165,
+      15.625049999999998
+     ],
+     [
+      7.583283333333333,
+      15.625049999999998
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 9,
+    "kind": "door",
+    "into": 9,
+    "seg": [
+     [
+      7.583283333333333,
+      14.124916666666667
+     ],
+     [
+      13.749916666666667,
+      14.124916666666667
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 10,
+    "b": 9,
+    "kind": "door",
+    "into": 9,
+    "seg": [
+     [
+      13.749916666666667,
+      14.124916666666667
+     ],
+     [
+      13.749916666666667,
+      23.70835
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 10,
+    "kind": "door",
+    "into": 10,
+    "seg": [
+     [
+      13.749916666666667,
+      14.124916666666667
+     ],
+     [
+      28.61670366666667,
+      14.124916666666667
+     ]
+    ],
+    "hint": {
+     "at": 3.0,
+     "hinge": "lo"
+    },
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 2,
+    "kind": "door",
+    "into": 2,
+    "seg": [
+     [
+      12.77499,
+      9.791616666666666
+     ],
+     [
+      25.25833,
+      9.791616666666666
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 11,
+    "kind": "nowall",
+    "into": 11,
+    "seg": [
+     [
+      28.61670366666667,
+      14.124916666666667
+     ],
+     [
+      37.74167,
+      14.124916666666667
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 11,
+    "b": 12,
+    "kind": "open",
+    "into": 11,
+    "seg": [
+     [
+      37.74167,
+      14.124916666666667
+     ],
+     [
+      37.74167,
+      23.70835
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 13,
+    "kind": "nowall",
+    "into": 13,
+    "seg": [
+     [
+      44.15830333333333,
+      9.791616666666666
+     ],
+     [
+      44.15830333333333,
+      14.124916666666667
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 3,
+    "b": 4,
+    "kind": "nowall",
+    "into": 4,
+    "seg": [
+     [
+      37.74167,
+      0.29165
+     ],
+     [
+      37.74167,
+      9.791616666666666
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 4,
+    "b": 7,
+    "kind": "door",
+    "into": 7,
+    "seg": [
+     [
+      37.74167,
+      9.791616666666666
+     ],
+     [
+      41.32496999999999,
+      9.791616666666666
+     ]
+    ],
+    "hint": {
+     "at": -0.25,
+     "hinge": "lo"
+    },
+    "entrance": false
+   },
+   {
+    "a": 13,
+    "b": 5,
+    "kind": "door",
+    "into": 5,
+    "seg": [
+     [
+      44.15830333333333,
+      9.791616666666666
+     ],
+     [
+      50.89167666666666,
+      9.791616666666666
+     ]
+    ],
+    "hint": {
+     "at": 0.44164999999999566,
+     "hinge": "lo"
+    },
+    "entrance": false
+   },
+   {
+    "a": 5,
+    "b": 6,
+    "kind": "door",
+    "into": 6,
+    "seg": [
+     [
+      50.89167666666666,
+      0.29165
+     ],
+     [
+      50.89167666666666,
+      9.791616666666666
+     ]
+    ],
+    "hint": {
+     "at": 5.766666666666666,
+     "hinge": "hi"
+    },
+    "entrance": false
+   },
+   {
+    "a": 13,
+    "b": 6,
+    "kind": "open",
+    "into": 13,
+    "seg": [
+     [
+      50.89167666666666,
+      9.791616666666666
+     ],
+     [
+      62.70835,
+      9.791616666666666
+     ]
+    ],
+    "hint": {
+     "w": 6.0,
+     "end": "hi"
+    },
+    "entrance": false
+   }
+  ],
+  "links_all": [
+   {
+    "a": 7,
+    "b": 1,
+    "kind": "door",
+    "into": 1,
+    "seg": [
+     [
+      7.583283333333333,
+      9.791616666666666
+     ],
+     [
+      7.583283333333333,
+      14.124916666666667
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 0,
+    "b": 1,
+    "kind": "nowall",
+    "into": 0,
+    "seg": [
+     [
+      0.29165,
+      9.791616666666666
+     ],
+     [
+      7.583283333333333,
+      9.791616666666666
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 1,
+    "b": 8,
+    "kind": "door",
+    "into": 8,
+    "seg": [
+     [
+      0.29165,
+      15.625049999999998
+     ],
+     [
+      7.583283333333333,
+      15.625049999999998
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 9,
+    "kind": "door",
+    "into": 9,
+    "seg": [
+     [
+      7.583283333333333,
+      14.124916666666667
+     ],
+     [
+      13.749916666666667,
+      14.124916666666667
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 10,
+    "b": 9,
+    "kind": "door",
+    "into": 9,
+    "seg": [
+     [
+      13.749916666666667,
+      14.124916666666667
+     ],
+     [
+      13.749916666666667,
+      23.70835
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 10,
+    "kind": "door",
+    "into": 10,
+    "seg": [
+     [
+      13.749916666666667,
+      14.124916666666667
+     ],
+     [
+      28.61670366666667,
+      14.124916666666667
+     ]
+    ],
+    "hint": {
+     "at": 3.0,
+     "hinge": "lo"
+    },
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 2,
+    "kind": "door",
+    "into": 2,
+    "seg": [
+     [
+      12.77499,
+      9.791616666666666
+     ],
+     [
+      25.25833,
+      9.791616666666666
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 11,
+    "kind": "nowall",
+    "into": 11,
+    "seg": [
+     [
+      28.61670366666667,
+      14.124916666666667
+     ],
+     [
+      37.74167,
+      14.124916666666667
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 11,
+    "b": 12,
+    "kind": "open",
+    "into": 11,
+    "seg": [
+     [
+      37.74167,
+      14.124916666666667
+     ],
+     [
+      37.74167,
+      23.70835
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 7,
+    "b": 13,
+    "kind": "nowall",
+    "into": 13,
+    "seg": [
+     [
+      44.15830333333333,
+      9.791616666666666
+     ],
+     [
+      44.15830333333333,
+      14.124916666666667
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 3,
+    "b": 4,
+    "kind": "nowall",
+    "into": 4,
+    "seg": [
+     [
+      37.74167,
+      0.29165
+     ],
+     [
+      37.74167,
+      9.791616666666666
+     ]
+    ],
+    "hint": null,
+    "entrance": false
+   },
+   {
+    "a": 4,
+    "b": 7,
+    "kind": "door",
+    "into": 7,
+    "seg": [
+     [
+      37.74167,
+      9.791616666666666
+     ],
+     [
+      41.32496999999999,
+      9.791616666666666
+     ]
+    ],
+    "hint": {
+     "at": -0.25,
+     "hinge": "lo"
+    },
+    "entrance": false
+   },
+   {
+    "a": 13,
+    "b": 5,
+    "kind": "door",
+    "into": 5,
+    "seg": [
+     [
+      44.15830333333333,
+      9.791616666666666
+     ],
+     [
+      50.89167666666666,
+      9.791616666666666
+     ]
+    ],
+    "hint": {
+     "at": 0.44164999999999566,
+     "hinge": "lo"
+    },
+    "entrance": false
+   },
+   {
+    "a": 5,
+    "b": 6,
+    "kind": "door",
+    "into": 6,
+    "seg": [
+     [
+      50.89167666666666,
+      0.29165
+     ],
+     [
+      50.89167666666666,
+      9.791616666666666
+     ]
+    ],
+    "hint": {
+     "at": 5.766666666666666,
+     "hinge": "hi"
+    },
+    "entrance": false
+   },
+   {
+    "a": 13,
+    "b": 6,
+    "kind": "open",
+    "into": 13,
+    "seg": [
+     [
+      50.89167666666666,
+      9.791616666666666
+     ],
+     [
+      62.70835,
+      9.791616666666666
+     ]
+    ],
+    "hint": {
+     "w": 6.0,
+     "end": "hi"
+    },
+    "entrance": false
+   }
+  ],
+  "door_plan": {
+   "1": [
+    3.9374666666666664,
+    "lo",
+    null,
+    7.291633333333333
+   ],
+   "7": [
+    33.17918683333333,
+    "lo",
+    null,
+    9.12496633333333
+   ],
+   "8": [
+    18.916633333333333,
+    "lo",
+    null,
+    4.5
+   ],
+   "9": [
+    11.958266666666667,
+    "lo",
+    null,
+    4.333300000000001
+   ],
+   "10": [
+    5.041633333333333,
+    "lo",
+    null,
+    9.499966666666666
+   ],
+   "14": [
+    59.416700000000006,
+    "lo",
+    null,
+    6.0
+   ],
+   "2": [
+    1.9833,
+    "lo",
+    "S",
+    2.5
+   ],
+   "3": [
+    9.274933333333333,
+    "lo",
+    "S",
+    2.5
+   ],
+   "4": [
+    15.816566666666668,
+    "lo",
+    "E",
+    2.5
+   ],
+   "12": [
+    46.099953333333325,
+    "lo",
+    "N",
+    3.0
+   ],
+   "6": [
+    23.31668,
+    "hi",
+    "N",
+    3.0
+   ],
+   "5": [
+    18.541566666666668,
+    "lo",
+    "S",
+    3.0
+   ],
+   "13": [
+    7.849966666666666,
+    "hi",
+    "W",
+    3.0
+   ],
+   "0": [
+    12.104091666666667,
+    "lo",
+    "E",
+    3.0
+   ],
+   "11": [
+    38.99167,
+    "lo",
+    "S",
+    3.0
+   ]
+  },
+  "attach": {
+   "8": 0,
+   "9": 10
+  },
+  "checks": [
+   {
+    "cat": "Planning",
+    "name": "Spaces tile the envelope exactly",
+    "ok": true,
+    "hard": true,
+    "detail": "1461.6 of 1461.6 sq ft, overlap 0.00"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Master Bedroom: 11'-11\" x 8'-11\" + L-part = 141 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Bedroom 3: 11'-11\" x 8'-11\" = 106 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Staircase: 11'-11\" x 8'-11\" = 106 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Stair Landing: 3'-0\" x 8'-11\" = 27 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Kitchen: 9'-0\" x 8'-11\" = 80 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Dining: 11'-3\" x 8'-11\" = 100 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Passage: 36'-0\" x 3'-9\" = 135 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 1: 6'-8\" x 7'-6\" = 50 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 2: 5'-7\" x 9'-0\" = 50 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Bedroom 2: 14'-3\" x 9'-0\" = 129 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Lobby: 8'-6\" x 9'-0\" = 77 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Puja Room: 5'-10\" x 9'-0\" = 53 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Room size within limits (NBC minimums)",
+    "ok": true,
+    "hard": true,
+    "detail": "Hall: 18'-0\" x 13'-4\" = 240 sq ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Master bedroom is the largest bedroom",
+    "ok": true,
+    "hard": true,
+    "detail": "master 141.3 sq ft vs Bedroom 3 106.1, Bedroom 2 128.6"
+   },
+   {
+    "cat": "Planning",
+    "name": "Master bedroom has an attached bath",
+    "ok": true,
+    "hard": true,
+    "detail": "Master Bedroom"
+   },
+   {
+    "cat": "Planning",
+    "name": "Master Bedroom opens onto circulation",
+    "ok": true,
+    "hard": true,
+    "detail": "Master Bedroom: 9.5 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Bedroom opens onto circulation",
+    "ok": true,
+    "hard": true,
+    "detail": "Bedroom 3: 12.5 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Kitchen opens onto circulation",
+    "ok": true,
+    "hard": true,
+    "detail": "Kitchen: 9.5 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Bedroom opens onto circulation",
+    "ok": true,
+    "hard": true,
+    "detail": "Bedroom 2: 14.9 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Puja Room opens onto circulation",
+    "ok": true,
+    "hard": true,
+    "detail": "Puja Room: 9.6 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Bath is attached to a bedroom or opens onto circulation",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 1"
+   },
+   {
+    "cat": "Planning",
+    "name": "Bath is attached to a bedroom or opens onto circulation",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 2"
+   },
+   {
+    "cat": "Planning",
+    "name": "Light & ventilation (exterior or courtyard wall)",
+    "ok": true,
+    "hard": true,
+    "detail": "Master Bedroom: 22.0 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Light & ventilation (exterior or courtyard wall)",
+    "ok": true,
+    "hard": true,
+    "detail": "Bedroom 3: 12.5 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Light & ventilation (exterior or courtyard wall)",
+    "ok": true,
+    "hard": true,
+    "detail": "Kitchen: 9.6 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Light & ventilation (exterior or courtyard wall)",
+    "ok": true,
+    "hard": true,
+    "detail": "Dining: 21.3 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Light & ventilation (exterior or courtyard wall)",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 1: 15.4 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Light & ventilation (exterior or courtyard wall)",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 2: 6.2 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Light & ventilation (exterior or courtyard wall)",
+    "ok": true,
+    "hard": true,
+    "detail": "Bedroom 2: 14.9 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Light & ventilation (exterior or courtyard wall)",
+    "ok": true,
+    "hard": true,
+    "detail": "Puja Room: 6.4 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Light & ventilation (exterior or courtyard wall)",
+    "ok": true,
+    "hard": true,
+    "detail": "Hall: 32.5 ft"
+   },
+   {
+    "cat": "Planning",
+    "name": "Staircase arrival lobby opens onto circulation",
+    "ok": true,
+    "hard": true,
+    "detail": "Staircase"
+   },
+   {
+    "cat": "Planning",
+    "name": "Every room reachable from the staircase",
+    "ok": true,
+    "hard": true,
+    "detail": "all"
+   },
+   {
+    "cat": "Planning",
+    "name": "All bedrooms have an attached bath",
+    "ok": false,
+    "hard": false,
+    "detail": ""
+   },
+   {
+    "cat": "Planning",
+    "name": "Kitchen adjoins dining",
+    "ok": true,
+    "hard": false,
+    "detail": ""
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Sector placement (master): >= 70% in allowed padas",
+    "ok": false,
+    "hard": false,
+    "detail": "Master Bedroom: 11% in allowed padas, score 9/100  [W3 58%, W4 28%, W2 14%]"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Sector placement (bedroom): >= 70% in allowed padas",
+    "ok": false,
+    "hard": false,
+    "detail": "Bedroom 3: 69% in allowed padas, score 63/100  [W2 35%, W3 27%, W1 24%, S8 10%]"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Sector placement (stair): >= 70% in allowed padas",
+    "ok": true,
+    "hard": true,
+    "detail": "Staircase: 74% in allowed padas, score 56/100  [S7 13%, S2 13%, S3 13%, S6 13%, S5 12%, S4 12%, S1 7%, S8 7%]"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Sector placement (kitchen): >= 70% in allowed padas",
+    "ok": true,
+    "hard": true,
+    "detail": "Kitchen: 95% in allowed padas, score 87/100  [E7 40%, E6 35%, E8 19%, E5 5%]"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Sector placement (bath): >= 70% in allowed padas",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 1: 79% in allowed padas, score 79/100  [W6 74%, W5 21%]"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Sector placement (bath): >= 70% in allowed padas",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 2: 81% in allowed padas, score 78/100  [W6 50%, W7 31%, W5 19%]"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Sector placement (bedroom): >= 70% in allowed padas",
+    "ok": false,
+    "hard": false,
+    "detail": "Bedroom 2: 50% in allowed padas, score 38/100  [W7 28%, W8 24%, W6 20%, N1 15%, N2 9%]"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Sector placement (puja): >= 70% in allowed padas",
+    "ok": true,
+    "hard": true,
+    "detail": "Puja Room: 100% in allowed padas, score 89/100  [E1 34%, E2 27%, N8 21%, E3 17%]"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Brahmasthan (centre) kept free",
+    "ok": true,
+    "hard": true,
+    "detail": "Master Bedroom: 0 sq ft in the centre"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Brahmasthan (centre) kept free",
+    "ok": true,
+    "hard": true,
+    "detail": "Bedroom 3: 6 sq ft in the centre"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Brahmasthan (centre) kept free",
+    "ok": true,
+    "hard": true,
+    "detail": "Staircase: 18 sq ft in the centre"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Brahmasthan (centre) kept free",
+    "ok": true,
+    "hard": true,
+    "detail": "Kitchen: 1 sq ft in the centre"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Brahmasthan (centre) kept free",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 1: 0 sq ft in the centre"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Brahmasthan (centre) kept free",
+    "ok": true,
+    "hard": true,
+    "detail": "Bath 2: 0 sq ft in the centre"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Brahmasthan (centre) kept free",
+    "ok": true,
+    "hard": true,
+    "detail": "Bedroom 2: 12 sq ft in the centre"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Brahmasthan (centre) kept free",
+    "ok": true,
+    "hard": true,
+    "detail": "Puja Room: 6 sq ft in the centre"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Staircase turns clockwise going up",
+    "ok": true,
+    "hard": true,
+    "detail": "variant D (all variants are clockwise)"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "No structural column in the Brahmasthan",
+    "ok": true,
+    "hard": true,
+    "detail": "0 columns"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Toilet does not share a wall with the kitchen",
+    "ok": true,
+    "hard": false,
+    "detail": "Bath 1"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Puja room does not share a wall with a toilet",
+    "ok": true,
+    "hard": false,
+    "detail": "Bath 1"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Toilet does not share a wall with the kitchen",
+    "ok": true,
+    "hard": false,
+    "detail": "Bath 2"
+   },
+   {
+    "cat": "Vaastu",
+    "name": "Puja room does not share a wall with a toilet",
+    "ok": true,
+    "hard": false,
+    "detail": "Bath 2"
+   },
+   {
+    "cat": "Structure",
+    "name": "No beam span over 6 m",
+    "ok": false,
+    "hard": false,
+    "detail": "6 long spans (engineer to verify)"
+   }
+  ],
+  "sector_rows": [
+   {
+    "room": "Master Bedroom",
+    "rtype": "master",
+    "hard": false,
+    "frac": 0.10701866969208663,
+    "score": 9.36413359805758,
+    "ok": true,
+    "padas": "W3 58%, W4 28%, W2 14%"
+   },
+   {
+    "room": "Master Bedroom (entry)",
+    "rtype": "suite",
+    "hard": false,
+    "frac": 1.0,
+    "score": null,
+    "ok": true,
+    "padas": "W5 63%, W4 37%"
+   },
+   {
+    "room": "Bedroom 3",
+    "rtype": "bedroom",
+    "hard": false,
+    "frac": 0.6920213138394881,
+    "score": 63.33998283694281,
+    "ok": true,
+    "padas": "W2 35%, W3 27%, W1 24%, S8 10%"
+   },
+   {
+    "room": "Staircase",
+    "rtype": "stair",
+    "hard": true,
+    "frac": 0.7416830526474365,
+    "score": 55.62622894855773,
+    "ok": true,
+    "padas": "S7 13%, S2 13%, S3 13%, S6 13%, S5 12%, S4 12%, S1 7%, S8 7%"
+   },
+   {
+    "room": "Stair Landing",
+    "rtype": "lobby",
+    "hard": false,
+    "frac": 1.0,
+    "score": null,
+    "ok": true,
+    "padas": "S1 35%, E8 30%, E7 23%, E6 9%"
+   },
+   {
+    "room": "Kitchen",
+    "rtype": "kitchen",
+    "hard": true,
+    "frac": 0.9470317726746527,
+    "score": 86.55400398753564,
+    "ok": true,
+    "padas": "E7 40%, E6 35%, E8 19%, E5 5%"
+   },
+   {
+    "room": "Dining",
+    "rtype": "dining",
+    "hard": false,
+    "frac": 1.0,
+    "score": null,
+    "ok": true,
+    "padas": "E6 59%, E5 28%, E7 13%"
+   },
+   {
+    "room": "Passage",
+    "rtype": "passage",
+    "hard": false,
+    "frac": 1.0,
+    "score": null,
+    "ok": true,
+    "padas": "W4 27%, W5 26%, E5 11%, E4 11%"
+   },
+   {
+    "room": "Bath 1",
+    "rtype": "bath",
+    "hard": true,
+    "frac": 0.791222832491457,
+    "score": 78.65921955321224,
+    "ok": true,
+    "padas": "W6 74%, W5 21%"
+   },
+   {
+    "room": "Bath 2",
+    "rtype": "bath",
+    "hard": true,
+    "frac": 0.8080634826261055,
+    "score": 77.70947950919613,
+    "ok": true,
+    "padas": "W6 50%, W7 31%, W5 19%"
+   },
+   {
+    "room": "Bedroom 2",
+    "rtype": "bedroom",
+    "hard": false,
+    "frac": 0.5024352226859979,
+    "score": 38.30836084021476,
+    "ok": true,
+    "padas": "W7 28%, W8 24%, W6 20%, N1 15%, N2 9%"
+   },
+   {
+    "room": "Lobby",
+    "rtype": "lobby",
+    "hard": false,
+    "frac": 1.0,
+    "score": null,
+    "ok": true,
+    "padas": "N7 18%, N6 17%, N4 16%, N5 16%, N3 10%, N8 10%, E1 6%"
+   },
+   {
+    "room": "Puja Room",
+    "rtype": "puja",
+    "hard": true,
+    "frac": 0.9999101761773035,
+    "score": 89.33567393113381,
+    "ok": true,
+    "padas": "E1 34%, E2 27%, N8 21%, E3 17%"
+   },
+   {
+    "room": "Hall",
+    "rtype": "hall",
+    "hard": false,
+    "frac": 1.0,
+    "score": null,
+    "ok": true,
+    "padas": "E3 34%, E4 33%, E2 16%, E5 14%"
+   }
+  ],
+  "stair_geo": {
+   "var": "D",
+   "access": "E",
+   "lobby": [
+    37.049980000000005,
+    0.5833,
+    37.45002,
+    9.499966666666666
+   ],
+   "block": [
+    25.54998,
+    0.5833,
+    37.049980000000005,
+    8.9133
+   ],
+   "room": 3
+  },
+  "stair_flights": [
+   [
+    [
+     29.54998,
+     0.5833,
+     37.049980000000005,
+     4.5833
+    ],
+    [
+     -1,
+     0
+    ]
+   ],
+   [
+    [
+     29.54998,
+     4.9133,
+     37.049980000000005,
+     8.9133
+    ],
+    [
+     1,
+     0
+    ]
+   ]
+  ],
+  "struct": {
+   "xs": [
+    0.29165,
+    12.77499,
+    25.25833,
+    37.74167,
+    50.22501,
+    62.70835
+   ],
+   "ys": [
+    0.29165,
+    23.70835
+   ],
+   "columns": [
+    {
+     "id": "A1",
+     "i": 0,
+     "j": 0,
+     "x": 0.29165,
+     "y": 0.29165,
+     "kind": "corner",
+     "trib_ft2": 78.39984000000001,
+     "trib_m2": 7.283345136000001,
+     "Pu_kN": 628.1885179800001,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "B1",
+     "i": 1,
+     "j": 0,
+     "x": 12.77499,
+     "y": 0.29165,
+     "kind": "edge",
+     "trib_ft2": 149.80008000000004,
+     "trib_m2": 13.916427432000003,
+     "Pu_kN": 1200.2918660100001,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "C1",
+     "i": 2,
+     "j": 0,
+     "x": 25.25833,
+     "y": 0.29165,
+     "kind": "edge",
+     "trib_ft2": 149.80007999999998,
+     "trib_m2": 13.916427431999997,
+     "Pu_kN": 1200.2918660099997,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "D1",
+     "i": 3,
+     "j": 0,
+     "x": 37.74167,
+     "y": 0.29165,
+     "kind": "edge",
+     "trib_ft2": 149.80007999999998,
+     "trib_m2": 13.916427431999997,
+     "Pu_kN": 1200.2918660099997,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "E1",
+     "i": 4,
+     "j": 0,
+     "x": 50.22501,
+     "y": 0.29165,
+     "kind": "edge",
+     "trib_ft2": 149.80007999999998,
+     "trib_m2": 13.916427431999997,
+     "Pu_kN": 1200.2918660099997,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "F1",
+     "i": 5,
+     "j": 0,
+     "x": 62.70835,
+     "y": 0.29165,
+     "kind": "corner",
+     "trib_ft2": 78.39984000000004,
+     "trib_m2": 7.283345136000004,
+     "Pu_kN": 628.1885179800004,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "A2",
+     "i": 0,
+     "j": 1,
+     "x": 0.29165,
+     "y": 23.70835,
+     "kind": "corner",
+     "trib_ft2": 78.39984000000001,
+     "trib_m2": 7.283345136000001,
+     "Pu_kN": 628.1885179800001,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "B2",
+     "i": 1,
+     "j": 1,
+     "x": 12.77499,
+     "y": 23.70835,
+     "kind": "edge",
+     "trib_ft2": 149.80008000000004,
+     "trib_m2": 13.916427432000003,
+     "Pu_kN": 1200.2918660100001,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "C2",
+     "i": 2,
+     "j": 1,
+     "x": 25.25833,
+     "y": 23.70835,
+     "kind": "edge",
+     "trib_ft2": 149.80007999999998,
+     "trib_m2": 13.916427431999997,
+     "Pu_kN": 1200.2918660099997,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "D2",
+     "i": 3,
+     "j": 1,
+     "x": 37.74167,
+     "y": 23.70835,
+     "kind": "edge",
+     "trib_ft2": 149.80007999999998,
+     "trib_m2": 13.916427431999997,
+     "Pu_kN": 1200.2918660099997,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "E2",
+     "i": 4,
+     "j": 1,
+     "x": 50.22501,
+     "y": 23.70835,
+     "kind": "edge",
+     "trib_ft2": 149.80007999999998,
+     "trib_m2": 13.916427431999997,
+     "Pu_kN": 1200.2918660099997,
+     "size_mm": [
+      230,
+      450
+     ]
+    },
+    {
+     "id": "F2",
+     "i": 5,
+     "j": 1,
+     "x": 62.70835,
+     "y": 23.70835,
+     "kind": "corner",
+     "trib_ft2": 78.39984000000004,
+     "trib_m2": 7.283345136000004,
+     "Pu_kN": 628.1885179800004,
+     "size_mm": [
+      230,
+      450
+     ]
+    }
+   ],
+   "beams": [
+    {
+     "dir": "E-W",
+     "line": "1",
+     "frm": "A1",
+     "to": "B1",
+     "x0": 0.29165,
+     "y0": 0.29165,
+     "x1": 12.77499,
+     "y1": 0.29165,
+     "span_ft": 12.48334,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "E-W",
+     "line": "1",
+     "frm": "B1",
+     "to": "C1",
+     "x0": 12.77499,
+     "y0": 0.29165,
+     "x1": 25.25833,
+     "y1": 0.29165,
+     "span_ft": 12.48334,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "E-W",
+     "line": "1",
+     "frm": "C1",
+     "to": "D1",
+     "x0": 25.25833,
+     "y0": 0.29165,
+     "x1": 37.74167,
+     "y1": 0.29165,
+     "span_ft": 12.483339999999998,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "E-W",
+     "line": "1",
+     "frm": "D1",
+     "to": "E1",
+     "x0": 37.74167,
+     "y0": 0.29165,
+     "x1": 50.22501,
+     "y1": 0.29165,
+     "span_ft": 12.483339999999998,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "E-W",
+     "line": "1",
+     "frm": "E1",
+     "to": "F1",
+     "x0": 50.22501,
+     "y0": 0.29165,
+     "x1": 62.70835,
+     "y1": 0.29165,
+     "span_ft": 12.483340000000005,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "E-W",
+     "line": "2",
+     "frm": "A2",
+     "to": "B2",
+     "x0": 0.29165,
+     "y0": 23.70835,
+     "x1": 12.77499,
+     "y1": 23.70835,
+     "span_ft": 12.48334,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "E-W",
+     "line": "2",
+     "frm": "B2",
+     "to": "C2",
+     "x0": 12.77499,
+     "y0": 23.70835,
+     "x1": 25.25833,
+     "y1": 23.70835,
+     "span_ft": 12.48334,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "E-W",
+     "line": "2",
+     "frm": "C2",
+     "to": "D2",
+     "x0": 25.25833,
+     "y0": 23.70835,
+     "x1": 37.74167,
+     "y1": 23.70835,
+     "span_ft": 12.483339999999998,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "E-W",
+     "line": "2",
+     "frm": "D2",
+     "to": "E2",
+     "x0": 37.74167,
+     "y0": 23.70835,
+     "x1": 50.22501,
+     "y1": 23.70835,
+     "span_ft": 12.483339999999998,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "E-W",
+     "line": "2",
+     "frm": "E2",
+     "to": "F2",
+     "x0": 50.22501,
+     "y0": 23.70835,
+     "x1": 62.70835,
+     "y1": 23.70835,
+     "span_ft": 12.483340000000005,
+     "skipped": false,
+     "depth_mm": 400,
+     "width_mm": 230,
+     "long_span": false
+    },
+    {
+     "dir": "N-S",
+     "line": "A",
+     "frm": "A1",
+     "to": "A2",
+     "x0": 0.29165,
+     "y0": 0.29165,
+     "x1": 0.29165,
+     "y1": 23.70835,
+     "span_ft": 23.4167,
+     "skipped": false,
+     "depth_mm": 600,
+     "width_mm": 300,
+     "long_span": true
+    },
+    {
+     "dir": "N-S",
+     "line": "B",
+     "frm": "B1",
+     "to": "B2",
+     "x0": 12.77499,
+     "y0": 0.29165,
+     "x1": 12.77499,
+     "y1": 23.70835,
+     "span_ft": 23.4167,
+     "skipped": false,
+     "depth_mm": 600,
+     "width_mm": 300,
+     "long_span": true
+    },
+    {
+     "dir": "N-S",
+     "line": "C",
+     "frm": "C1",
+     "to": "C2",
+     "x0": 25.25833,
+     "y0": 0.29165,
+     "x1": 25.25833,
+     "y1": 23.70835,
+     "span_ft": 23.4167,
+     "skipped": false,
+     "depth_mm": 600,
+     "width_mm": 300,
+     "long_span": true
+    },
+    {
+     "dir": "N-S",
+     "line": "D",
+     "frm": "D1",
+     "to": "D2",
+     "x0": 37.74167,
+     "y0": 0.29165,
+     "x1": 37.74167,
+     "y1": 23.70835,
+     "span_ft": 23.4167,
+     "skipped": false,
+     "depth_mm": 600,
+     "width_mm": 300,
+     "long_span": true
+    },
+    {
+     "dir": "N-S",
+     "line": "E",
+     "frm": "E1",
+     "to": "E2",
+     "x0": 50.22501,
+     "y0": 0.29165,
+     "x1": 50.22501,
+     "y1": 23.70835,
+     "span_ft": 23.4167,
+     "skipped": false,
+     "depth_mm": 600,
+     "width_mm": 300,
+     "long_span": true
+    },
+    {
+     "dir": "N-S",
+     "line": "F",
+     "frm": "F1",
+     "to": "F2",
+     "x0": 62.70835,
+     "y0": 0.29165,
+     "x1": 62.70835,
+     "y1": 23.70835,
+     "span_ft": 23.4167,
+     "skipped": false,
+     "depth_mm": 600,
+     "width_mm": 300,
+     "long_span": true
+    }
+   ],
+   "core": [
+    21.0,
+    8.0,
+    42.0,
+    16.0
+   ]
+  },
+  "window_hints": {
+   "Master Bedroom": [
+    [
+     "S",
+     8.5,
+     "W6",
+     6.533320000000001
+    ],
+    [
+     "W",
+     3.5,
+     "W11",
+     7.6666333333333325
+    ]
+   ],
+   "Bedroom 3": [
+    [
+     "S",
+     8.5,
+     "W6",
+     19.01666
+    ]
+   ],
+   "Dining": [
+    [
+     "S",
+     8.0,
+     "W7",
+     56.75719003937007
+    ],
+    [
+     "E",
+     5.25,
+     "W10",
+     5.264902821522309
+    ]
+   ],
+   "Staircase": [
+    [
+     "S",
+     8.5,
+     "W8",
+     31.5
+    ]
+   ],
+   "Stair Landing": [
+    [
+     "S",
+     0,
+     null
+    ]
+   ],
+   "Kitchen": [
+    [
+     "S",
+     5.0,
+     "W9",
+     45.732166706036736
+    ]
+   ],
+   "Bath 1": [
+    [
+     "N",
+     2.0,
+     "V1",
+     3.4083
+    ],
+    [
+     "W",
+     0,
+     null
+    ]
+   ],
+   "Hall": [
+    [
+     "E",
+     10.0,
+     "W5"
+    ]
+   ]
+  },
+  "tall_keepout": {
+   "Master Bedroom": [
+    [
+     2.2833200000000007,
+     0.5833,
+     10.78332,
+     2.5833
+    ],
+    [
+     0.5833,
+     5.8332999999999995,
+     2.5833,
+     9.499966666666666
+    ]
+   ],
+   "Bedroom 3": [
+    [
+     14.766660000000002,
+     0.5833,
+     23.26666,
+     2.5833
+    ]
+   ],
+   "Dining": [
+    [
+     52.75719003937007,
+     0.5833,
+     60.75719003937007,
+     2.5833
+    ]
+   ],
+   "Staircase": [
+    [
+     27.25,
+     0.5833,
+     35.75,
+     2.5833
+    ]
+   ],
+   "Kitchen": [
+    [
+     43.232166706036736,
+     0.5833,
+     48.232166706036736,
+     2.5833
+    ]
+   ]
+  },
+  "bed_head": {
+   "Bedroom 3": "E",
+   "Bedroom 2": "S"
+  },
+  "wardrobe_side": {
+   "Bedroom 2": "E"
+  },
+  "extra_notes": [
+   "Staircase window (W8): FIXED, NON-OPENABLE glazing, continuous from first-floor level to the roof on all upper floors.\n     Floor beams / slab edges stay (Zone V); glazing runs outside them as spandrel panels."
+  ],
+  "road_door": false,
+  "furniture": {
+   "8": [
+    {
+     "kind": "shower",
+     "rect": [
+      4.291633333333333,
+      15.916699999999999,
+      7.291633333333333,
+      23.4167
+     ],
+     "label": "SHOWER",
+     "tall": false,
+     "side": "",
+     "meta": {}
+    },
+    {
+     "kind": "wc",
+     "rect": [
+      0.5833,
+      21.0867,
+      2.3333,
+      23.4167
+     ],
+     "label": "WC",
+     "tall": false,
+     "side": "N",
+     "meta": {}
+    },
+    {
+     "kind": "basin",
+     "rect": [
+      2.5333,
+      21.9167,
+      4.2833000000000006,
+      23.4167
+     ],
+     "label": "",
+     "tall": false,
+     "side": "N",
+     "meta": {}
+    }
+   ],
+   "9": [
+    {
+     "kind": "shower",
+     "rect": [
+      7.874933333333333,
+      20.4167,
+      13.458266666666667,
+      23.4167
+     ],
+     "label": "SHOWER",
+     "tall": false,
+     "side": "",
+     "meta": {}
+    },
+    {
+     "kind": "wc",
+     "rect": [
+      7.874933333333333,
+      18.6667,
+      10.204933333333333,
+      20.4167
+     ],
+     "label": "WC",
+     "tall": false,
+     "side": "W",
+     "meta": {}
+    },
+    {
+     "kind": "basin",
+     "rect": [
+      11.958266666666667,
+      18.6667,
+      13.458266666666667,
+      20.4167
+     ],
+     "label": "",
+     "tall": false,
+     "side": "E",
+     "meta": {}
+    }
+   ],
+   "12": [
+    {
+     "kind": "altar",
+     "rect": [
+      42.36665333333333,
+      16.916633333333333,
+      43.86665333333333,
+      20.916633333333333
+     ],
+     "label": "ALTAR",
+     "tall": false,
+     "side": "E",
+     "meta": {}
+    }
+   ],
+   "5": [
+    {
+     "kind": "counter",
+     "rect": [
+      41.61661999999999,
+      0.5833,
+      43.61661999999999,
+      6.999966666666666
+     ],
+     "label": "",
+     "tall": false,
+     "side": "W",
+     "meta": {
+      "hob": true,
+      "hob_end": "lo"
+     }
+    },
+    {
+     "kind": "counter",
+     "rect": [
+      48.600026666666665,
+      0.5833,
+      50.600026666666665,
+      6.3333
+     ],
+     "label": "",
+     "tall": false,
+     "side": "E",
+     "meta": {
+      "sink": true,
+      "sink_end": "lo"
+     }
+    },
+    {
+     "kind": "fridge",
+     "rect": [
+      41.61661999999999,
+      7.249966666666666,
+      43.86661999999999,
+      9.499966666666666
+     ],
+     "label": "F",
+     "tall": true,
+     "side": "W",
+     "meta": {}
+    }
+   ],
+   "0": [
+    {
+     "kind": "bed",
+     "rect": [
+      0.5833,
+      1.5416333333333325,
+      7.0833,
+      6.5416333333333325
+     ],
+     "label": "BED",
+     "tall": false,
+     "side": "W",
+     "meta": {
+      "head": "W"
+     }
+    },
+    {
+     "kind": "wardrobe",
+     "rect": [
+      10.48334,
+      2.5833,
+      12.48334,
+      8.5833
+     ],
+     "label": "WARDROBE",
+     "tall": true,
+     "side": "E",
+     "meta": {}
+    }
+   ],
+   "2": [
+    {
+     "kind": "bed",
+     "rect": [
+      18.71668,
+      1.7916333333333325,
+      24.96668,
+      6.2916333333333325
+     ],
+     "label": "BED",
+     "tall": false,
+     "side": "E",
+     "meta": {
+      "head": "E"
+     }
+    },
+    {
+     "kind": "wardrobe",
+     "rect": [
+      13.066640000000001,
+      2.5833,
+      15.066640000000001,
+      8.5833
+     ],
+     "label": "WARDROBE",
+     "tall": true,
+     "side": "W",
+     "meta": {}
+    }
+   ],
+   "10": [
+    {
+     "kind": "bed",
+     "rect": [
+      20.041566666666668,
+      14.416566666666668,
+      24.541566666666668,
+      20.666566666666668
+     ],
+     "label": "BED",
+     "tall": false,
+     "side": "S",
+     "meta": {
+      "head": "S"
+     }
+    },
+    {
+     "kind": "side_table",
+     "rect": [
+      24.541566666666668,
+      14.416566666666668,
+      26.041566666666668,
+      15.916566666666668
+     ],
+     "label": "",
+     "tall": false,
+     "side": "",
+     "meta": {}
+    },
+    {
+     "kind": "wardrobe",
+     "rect": [
+      26.32505366666667,
+      17.4167,
+      28.32505366666667,
+      23.4167
+     ],
+     "label": "WARDROBE",
+     "tall": true,
+     "side": "E",
+     "meta": {}
+    }
+   ],
+   "6": [
+    {
+     "kind": "dining_table",
+     "rect": [
+      56.28332666666666,
+      1.0833000000000004,
+      59.28332666666666,
+      6.5833
+     ],
+     "label": "6-SEATER",
+     "tall": false,
+     "side": "",
+     "meta": {
+      "seats": 6,
+      "rot": 1
+     }
+    },
+    {
+     "kind": "basin",
+     "rect": [
+      51.18332666666666,
+      0.5833,
+      52.68332666666666,
+      2.3333
+     ],
+     "label": "WASH BASIN",
+     "tall": false,
+     "side": "W",
+     "meta": {}
+    }
+   ],
+   "13": [
+    {
+     "kind": "sofa",
+     "rect": [
+      49.199953333333326,
+      10.083266666666667,
+      56.199953333333326,
+      13.083266666666667
+     ],
+     "label": "SOFA",
+     "tall": false,
+     "side": "S",
+     "meta": {}
+    },
+    {
+     "kind": "coffee",
+     "rect": [
+      50.949953333333326,
+      14.583266666666667,
+      54.449953333333326,
+      16.333266666666667
+     ],
+     "label": "",
+     "tall": false,
+     "side": "",
+     "meta": {}
+    },
+    {
+     "kind": "tv",
+     "rect": [
+      50.199953333333326,
+      22.1667,
+      55.199953333333326,
+      23.4167
+     ],
+     "label": "TV UNIT",
+     "tall": true,
+     "side": "N",
+     "meta": {}
+    }
+   ],
+   "4": [],
+   "11": [
+    {
+     "kind": "wash_area",
+     "rect": [
+      33.05002,
+      21.1667,
+      37.45002,
+      23.4167
+     ],
+     "label": "",
+     "tall": false,
+     "side": "",
+     "meta": {}
+    },
+    {
+     "kind": "washer",
+     "rect": [
+      33.30002,
+      21.4167,
+      35.30002,
+      23.4167
+     ],
+     "label": "WM",
+     "tall": false,
+     "side": "N",
+     "meta": {}
+    },
+    {
+     "kind": "basin",
+     "rect": [
+      35.45002,
+      21.6667,
+      37.45002,
+      23.4167
+     ],
+     "label": "",
+     "tall": false,
+     "side": "N",
+     "meta": {}
+    }
+   ]
+  },
+  "gaps": [],
+  "openings": [
+   {
+    "kind": "door",
+    "type": "D2",
+    "w": 3.0,
+    "x": 7.583283333333333,
+    "y": 12.104091666666667,
+    "horiz": false,
+    "t": 0.5833,
+    "hinge": "lo",
+    "into": 1,
+    "rooms": [
+     "Passage",
+     "Master Bedroom (entry)"
+    ]
+   },
+   {
+    "kind": "door",
+    "type": "D3",
+    "w": 2.5,
+    "x": 1.9833,
+    "y": 15.625049999999998,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": "lo",
+    "into": 8,
+    "rooms": [
+     "Master Bedroom (entry)",
+     "Bath 1"
+    ]
+   },
+   {
+    "kind": "door",
+    "type": "D3",
+    "w": 2.5,
+    "x": 9.274933333333333,
+    "y": 14.124916666666667,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": "lo",
+    "into": 9,
+    "rooms": [
+     "Passage",
+     "Bath 2"
+    ]
+   },
+   {
+    "kind": "door",
+    "type": "D3",
+    "w": 2.5,
+    "x": 13.749916666666667,
+    "y": 15.816566666666668,
+    "horiz": false,
+    "t": 0.5833,
+    "hinge": "lo",
+    "into": 9,
+    "rooms": [
+     "Bedroom 2",
+     "Bath 2"
+    ]
+   },
+   {
+    "kind": "door",
+    "type": "D2",
+    "w": 3.0,
+    "x": 18.541566666666668,
+    "y": 14.124916666666667,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": "lo",
+    "into": 10,
+    "rooms": [
+     "Passage",
+     "Bedroom 2"
+    ]
+   },
+   {
+    "kind": "door",
+    "type": "D2",
+    "w": 3.0,
+    "x": 23.31668,
+    "y": 9.791616666666666,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": "hi",
+    "into": 2,
+    "rooms": [
+     "Passage",
+     "Bedroom 3"
+    ]
+   },
+   {
+    "kind": "open",
+    "type": "OP",
+    "w": 4.5,
+    "x": 37.74167,
+    "y": 18.916633333333333,
+    "horiz": false,
+    "t": 0.5833,
+    "hinge": "lo",
+    "into": 11,
+    "rooms": [
+     "Lobby",
+     "Puja Room"
+    ]
+   },
+   {
+    "kind": "door",
+    "type": "D2",
+    "w": 3.0,
+    "x": 38.99167,
+    "y": 9.791616666666666,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": "lo",
+    "into": 7,
+    "rooms": [
+     "Stair Landing",
+     "Passage"
+    ]
+   },
+   {
+    "kind": "door",
+    "type": "D2",
+    "w": 3.0,
+    "x": 46.099953333333325,
+    "y": 9.791616666666666,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": "lo",
+    "into": 5,
+    "rooms": [
+     "Hall",
+     "Kitchen"
+    ]
+   },
+   {
+    "kind": "door",
+    "type": "D2",
+    "w": 3.0,
+    "x": 50.89167666666666,
+    "y": 7.849966666666666,
+    "horiz": false,
+    "t": 0.5833,
+    "hinge": "hi",
+    "into": 6,
+    "rooms": [
+     "Kitchen",
+     "Dining"
+    ]
+   },
+   {
+    "kind": "open",
+    "type": "OP",
+    "w": 6.0,
+    "x": 59.416700000000006,
+    "y": 9.791616666666666,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": "lo",
+    "into": 13,
+    "rooms": [
+     "Hall",
+     "Dining"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W6",
+    "w": 8.5,
+    "x": 6.533320000000001,
+    "y": 0.29165,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 0,
+    "rooms": [
+     "Master Bedroom",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W11",
+    "w": 3.5,
+    "x": 0.29165,
+    "y": 7.6666333333333325,
+    "horiz": false,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 0,
+    "rooms": [
+     "Master Bedroom",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W6",
+    "w": 8.5,
+    "x": 19.01666,
+    "y": 0.29165,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 2,
+    "rooms": [
+     "Bedroom 3",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W8",
+    "w": 8.5,
+    "x": 31.5,
+    "y": 0.29165,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 3,
+    "rooms": [
+     "Staircase",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W9",
+    "w": 5.0,
+    "x": 45.732166706036736,
+    "y": 0.29165,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 5,
+    "rooms": [
+     "Kitchen",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W7",
+    "w": 8.0,
+    "x": 56.75719003937007,
+    "y": 0.29165,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 6,
+    "rooms": [
+     "Dining",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W10",
+    "w": 5.25,
+    "x": 62.70835,
+    "y": 5.264902821522309,
+    "horiz": false,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 6,
+    "rooms": [
+     "Dining",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "V1",
+    "w": 2.0,
+    "x": 3.4083,
+    "y": 23.70835,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 8,
+    "rooms": [
+     "Bath 1",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "V1",
+    "w": 2.0,
+    "x": 10.633283333333335,
+    "y": 23.70835,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 9,
+    "rooms": [
+     "Bath 2",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W1",
+    "w": 4.0,
+    "x": 21.174916666666668,
+    "y": 23.70835,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 10,
+    "rooms": [
+     "Bedroom 2",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W1",
+    "w": 4.0,
+    "x": 33.16670366666667,
+    "y": 23.70835,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 11,
+    "rooms": [
+     "Lobby",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W3",
+    "w": 2.0,
+    "x": 40.916669999999996,
+    "y": 23.70835,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 12,
+    "rooms": [
+     "Puja Room",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W5",
+    "w": 10.0,
+    "x": 62.70835,
+    "y": 16.716616666666667,
+    "horiz": false,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 13,
+    "rooms": [
+     "Hall",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W1",
+    "w": 4.0,
+    "x": 47.208303333333326,
+    "y": 23.70835,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 13,
+    "rooms": [
+     "Hall",
+     "outside"
+    ]
+   },
+   {
+    "kind": "window",
+    "type": "W1",
+    "w": 4.0,
+    "x": 58.10832666666666,
+    "y": 23.70835,
+    "horiz": true,
+    "t": 0.5833,
+    "hinge": null,
+    "into": 13,
+    "rooms": [
+     "Hall",
+     "outside"
+    ]
+   }
+  ],
+  "win_types": {
+   "W4": [
+    "Window (high sill, above cooking platform)",
+    "6'-0\" x 3'-0\"",
+    "sill 4'-0\""
+   ],
+   "W5": [
+    "Window",
+    "10'-0\" x 4'-0\"",
+    "sill 3'-0\""
+   ],
+   "W1": [
+    "Window",
+    "4'-0\" x 4'-0\"",
+    "sill 3'-0\""
+   ],
+   "W2": [
+    "Window",
+    "3'-0\" x 4'-0\"",
+    "sill 3'-0\""
+   ],
+   "W3": [
+    "Window",
+    "2'-0\" x 3'-0\"",
+    "sill 3'-6\""
+   ],
+   "V1": [
+    "Ventilator",
+    "2'-0\" x 1'-6\"",
+    "sill 6'-0\""
+   ],
+   "W6": [
+    "Window",
+    "8'-6\" x 4'-0\"",
+    "sill 3'-0\""
+   ],
+   "W7": [
+    "Window",
+    "8'-0\" x 4'-0\"",
+    "sill 3'-0\""
+   ],
+   "W8": [
+    "Fixed glazing, non-openable",
+    "8'-6\" x full height",
+    "see note 7"
+   ],
+   "W9": [
+    "Window (over counter)",
+    "5'-0\" x 3'-6\"",
+    "sill 3'-6\""
+   ],
+   "W10": [
+    "Window",
+    "5'-3\" x 4'-0\"",
+    "sill 3'-0\""
+   ],
+   "W11": [
+    "Window",
+    "3'-6\" x 4'-0\"",
+    "sill 3'-0\""
+   ]
+  },
+  "door_types": {
+   "D1": [
+    "Entrance / balcony door",
+    "3'-6\" x 7'-0\"",
+    "flush / panel, teak frame"
+   ],
+   "D2": [
+    "Room door",
+    "3'-0\" x 7'-0\"",
+    "flush door"
+   ],
+   "D3": [
+    "Bath / puja door",
+    "2'-6\" x 7'-0\"",
+    "PVC / FRP (bath), wood (puja)"
+   ],
+   "OP": [
+    "Opening (no shutter)",
+    "as shown x 7'-0\"",
+    "plastered reveal"
+   ]
+  }
+ },
+ "probes": [
+  {
+   "rect": [
+    0.29,
+    0.29,
+    12.77,
+    9.79
+   ],
+   "split": {
+    "W2": 0.15899849436420824,
+    "W3": 0.5508076305336791,
+    "W4": 0.2901938751021127
+   }
+  },
+  {
+   "rect": [
+    30.0,
+    14.0,
+    37.7,
+    23.7
+   ],
+   "split": {
+    "N1": 0.00026829239305493446,
+    "N2": 0.007020734014977243,
+    "N3": 0.03359438051927913,
+    "N4": 0.15392178787788321,
+    "N5": 0.17695450864294246,
+    "N6": 0.1915341799616939,
+    "N7": 0.199711605487353,
+    "N8": 0.11890641363327493,
+    "E1": 0.07208990566153572,
+    "E2": 0.04078180683602663,
+    "E3": 0.0052163849719785655
+   }
+  },
+  {
+   "rect": [
+    41.6,
+    0.58,
+    50.6,
+    9.5
+   ],
+   "split": {
+    "E5": 0.05285309273517426,
+    "E6": 0.34485072011764945,
+    "E7": 0.39889036601965333,
+    "E8": 0.19255380319030316,
+    "S1": 0.010852017937219736
+   }
+  },
+  {
+   "rect": [
+    5.0,
+    5.0,
+    6.0,
+    20.0
+   ],
+   "split": {
+    "W3": 0.12188522987525868,
+    "W4": 0.3447814367914077,
+    "W5": 0.3447814367914076,
+    "W6": 0.188551896541926
+   }
+  },
+  {
+   "rect": [
+    31.0,
+    11.0,
+    33.0,
+    13.0
+   ],
+   "split": {
+    "N1": 0.015518930083296554,
+    "N2": 0.026454374620066626,
+    "N3": 0.026912649374179528,
+    "N4": 0.02486404592245728,
+    "N5": 0.02486404592245725,
+    "N6": 0.02691264937417963,
+    "N7": 0.03174563444327547,
+    "N8": 0.04147767026008764,
+    "E1": 0.06207572033318613,
+    "E2": 0.07142671524938088,
+    "E3": 0.060553461091904175,
+    "E4": 0.055944103325528814,
+    "E5": 0.05594410332552882,
+    "E6": 0.06055346109190417,
+    "E7": 0.07142671524938099,
+    "E8": 0.06207572033318601,
+    "S1": 0.04147767026008768,
+    "S2": 0.031745634443275446,
+    "S3": 0.02691264937417966,
+    "S4": 0.024864045922457226,
+    "S5": 0.02486404592245728,
+    "S6": 0.026912649374179594,
+    "S7": 0.026454374620066612,
+    "S8": 0.015518930083296523,
+    "W1": 0.01036941756502192,
+    "W2": 0.007936408610818879,
+    "W3": 0.006728162343544881,
+    "W4": 0.0062160114806143205,
+    "W5": 0.0062160114806143205,
+    "W6": 0.006728162343544916,
+    "W7": 0.007936408610818839,
+    "W8": 0.010369417565021914
+   }
+  }
+ ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Vaastu Planner",
+  "short_name": "Vaastu Planner",
+  "description": "Parametric floor plans with 32-pada Vaastu checks, editing and A3 drawing sets. Runs in your browser; no sign-in.",
+  "start_url": "./planner.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%232563eb'/><path d='M6 7h20v18H6z' fill='none' stroke='white' stroke-width='2'/><path d='M6 16h11M17 7v18' stroke='white' stroke-width='2'/></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,661 @@
+{
+ "format": "vaastu-planner-project",
+ "version": 1,
+ "name": "Residence - Example House",
+ "createdFrom": "parametric_vaastu_floorplan_v3.ipynb + hand-sketch revisions 1-9",
+ "cfg": {
+  "location": "Tripura, India",
+  "seismic_zone": "V",
+  "road_side": "E",
+  "ew_ft": 63,
+  "ns_ft": 24,
+  "floor_level": 1,
+  "ground_floor_height_ft": 10,
+  "typical_floor_height_ft": 11,
+  "floors_above": 2,
+  "program": {
+   "bedroom": 3,
+   "bath": 2,
+   "veranda": 0,
+   "kitchen": 1,
+   "stair": 1,
+   "hall": 1,
+   "dining": 1,
+   "puja": 1
+  },
+  "min_courtyards": 0,
+  "max_courtyards": 0,
+  "t_ext": 0.5833,
+  "t_int": 0.5833,
+  "max_bay_ft": 12.5,
+  "ew_bays": null,
+  "ns_bays": 1,
+  "avoid_core_columns": true,
+  "require_columns_in_walls": true,
+  "col_wall_tol_ft": 0.45,
+  "col_long_axis": "y",
+  "min_column_mm": [
+   230,
+   380
+  ],
+  "floor_load_kn_m2": 12,
+  "roof_load_kn_m2": 10,
+  "fck": 25,
+  "fy": 500,
+  "stair_width_ft": 4,
+  "max_riser_in": 6,
+  "tread_in": 10,
+  "sector_mapping": "angular",
+  "sector_min_frac": 0.7,
+  "sector_pref_floor": 0.5,
+  "plan_north_bearing_deg": 0,
+  "sector_centre": null,
+  "brahmasthan_rule": true,
+  "project_name": "Residence - Example House"
+ },
+ "drawing": {
+  "name": "Residence - Example House",
+  "plan_label": "Final - hand sketch IMG_5243, revision 9",
+  "rev": "P1"
+ },
+ "plans": [
+  {
+   "id": "S",
+   "source": "hand sketch IMG_5243, revision 9",
+   "label": "Final - hand sketch IMG_5243, revision 9",
+   "rooms": [
+    {
+     "uid": 0,
+     "rtype": "master",
+     "name": "Master Bedroom",
+     "tile": {
+      "x0": 0.29165,
+      "y0": 0.29165,
+      "x1": 12.77499,
+      "y1": 9.791616666666666
+     },
+     "group": null
+    },
+    {
+     "uid": 1,
+     "rtype": "suite",
+     "name": "Master Bedroom (entry)",
+     "tile": {
+      "x0": 0.29165,
+      "y0": 9.791616666666666,
+      "x1": 7.583283333333333,
+      "y1": 15.625049999999998
+     },
+     "group": 0
+    },
+    {
+     "uid": 2,
+     "rtype": "bedroom",
+     "name": "Bedroom 3",
+     "tile": {
+      "x0": 12.77499,
+      "y0": 0.29165,
+      "x1": 25.25833,
+      "y1": 9.791616666666666
+     },
+     "group": null
+    },
+    {
+     "uid": 3,
+     "rtype": "stair",
+     "name": "Staircase",
+     "tile": {
+      "x0": 25.25833,
+      "y0": 0.29165,
+      "x1": 37.74167,
+      "y1": 9.791616666666666
+     },
+     "group": null
+    },
+    {
+     "uid": 4,
+     "rtype": "lobby",
+     "name": "Stair Landing",
+     "tile": {
+      "x0": 37.74167,
+      "y0": 0.29165,
+      "x1": 41.32496999999999,
+      "y1": 9.791616666666666
+     },
+     "group": null
+    },
+    {
+     "uid": 5,
+     "rtype": "kitchen",
+     "name": "Kitchen",
+     "tile": {
+      "x0": 41.32496999999999,
+      "y0": 0.29165,
+      "x1": 50.89167666666666,
+      "y1": 9.791616666666666
+     },
+     "group": null
+    },
+    {
+     "uid": 6,
+     "rtype": "dining",
+     "name": "Dining",
+     "tile": {
+      "x0": 50.89167666666666,
+      "y0": 0.29165,
+      "x1": 62.70835,
+      "y1": 9.791616666666666
+     },
+     "group": null
+    },
+    {
+     "uid": 7,
+     "rtype": "passage",
+     "name": "Passage",
+     "tile": {
+      "x0": 7.583283333333333,
+      "y0": 9.791616666666666,
+      "x1": 44.15830333333333,
+      "y1": 14.124916666666667
+     },
+     "group": null
+    },
+    {
+     "uid": 8,
+     "rtype": "bath",
+     "name": "Bath 1",
+     "tile": {
+      "x0": 0.29165,
+      "y0": 15.625049999999998,
+      "x1": 7.583283333333333,
+      "y1": 23.70835
+     },
+     "group": null
+    },
+    {
+     "uid": 9,
+     "rtype": "bath",
+     "name": "Bath 2",
+     "tile": {
+      "x0": 7.583283333333333,
+      "y0": 14.124916666666667,
+      "x1": 13.749916666666667,
+      "y1": 23.70835
+     },
+     "group": null
+    },
+    {
+     "uid": 10,
+     "rtype": "bedroom",
+     "name": "Bedroom 2",
+     "tile": {
+      "x0": 13.749916666666667,
+      "y0": 14.124916666666667,
+      "x1": 28.61670366666667,
+      "y1": 23.70835
+     },
+     "group": null
+    },
+    {
+     "uid": 11,
+     "rtype": "lobby",
+     "name": "Lobby",
+     "tile": {
+      "x0": 28.61670366666667,
+      "y0": 14.124916666666667,
+      "x1": 37.74167,
+      "y1": 23.70835
+     },
+     "group": null
+    },
+    {
+     "uid": 12,
+     "rtype": "puja",
+     "name": "Puja Room",
+     "tile": {
+      "x0": 37.74167,
+      "y0": 14.124916666666667,
+      "x1": 44.15830333333333,
+      "y1": 23.70835
+     },
+     "group": null
+    },
+    {
+     "uid": 13,
+     "rtype": "hall",
+     "name": "Hall",
+     "tile": {
+      "x0": 44.15830333333333,
+      "y0": 9.791616666666666,
+      "x1": 62.70835,
+      "y1": 23.70835
+     },
+     "group": null
+    }
+   ],
+   "links": [
+    {
+     "a": 7,
+     "b": 1,
+     "kind": "door",
+     "into": 1
+    },
+    {
+     "a": 0,
+     "b": 1,
+     "kind": "nowall",
+     "into": 0
+    },
+    {
+     "a": 1,
+     "b": 8,
+     "kind": "door",
+     "into": 8
+    },
+    {
+     "a": 7,
+     "b": 9,
+     "kind": "door",
+     "into": 9
+    },
+    {
+     "a": 10,
+     "b": 9,
+     "kind": "door",
+     "into": 9
+    },
+    {
+     "a": 7,
+     "b": 10,
+     "kind": "door",
+     "into": 10,
+     "hint": {
+      "at": 3,
+      "hinge": "lo"
+     }
+    },
+    {
+     "a": 7,
+     "b": 2,
+     "kind": "door",
+     "into": 2
+    },
+    {
+     "a": 7,
+     "b": 11,
+     "kind": "nowall",
+     "into": 11
+    },
+    {
+     "a": 11,
+     "b": 12,
+     "kind": "open",
+     "into": 11
+    },
+    {
+     "a": 7,
+     "b": 13,
+     "kind": "nowall",
+     "into": 13
+    },
+    {
+     "a": 3,
+     "b": 4,
+     "kind": "nowall",
+     "into": 4
+    },
+    {
+     "a": 4,
+     "b": 7,
+     "kind": "door",
+     "into": 7,
+     "hint": {
+      "at": -0.25,
+      "hinge": "lo"
+     }
+    },
+    {
+     "a": 13,
+     "b": 5,
+     "kind": "door",
+     "into": 5,
+     "hint": {
+      "at": 0.44164999999999566,
+      "hinge": "lo"
+     }
+    },
+    {
+     "a": 5,
+     "b": 6,
+     "kind": "door",
+     "into": 6,
+     "hint": {
+      "at": 5.766666666666666,
+      "hinge": "hi"
+     }
+    },
+    {
+     "a": 13,
+     "b": 6,
+     "kind": "open",
+     "into": 13,
+     "hint": {
+      "w": 6,
+      "end": "hi"
+     }
+    }
+   ],
+   "roadDoor": false,
+   "windows": [
+    {
+     "room": 0,
+     "side": "S",
+     "fit": "max",
+     "sill": 3,
+     "desc": "Window",
+     "keepout": true
+    },
+    {
+     "room": 2,
+     "side": "S",
+     "fit": "max",
+     "sill": 3,
+     "desc": "Window",
+     "keepout": true
+    },
+    {
+     "room": 6,
+     "side": "S",
+     "fit": "max",
+     "sill": 3,
+     "desc": "Window",
+     "keepout": true
+    },
+    {
+     "room": 3,
+     "side": "S",
+     "fit": "max",
+     "sill": null,
+     "desc": "Fixed glazing, non-openable",
+     "keepout": true
+    },
+    {
+     "room": 4,
+     "side": "S",
+     "none": true
+    },
+    {
+     "room": 5,
+     "side": "S",
+     "fit": "max",
+     "sill": 3.5,
+     "desc": "Window (over counter)",
+     "keepout": true
+    },
+    {
+     "room": 6,
+     "side": "E",
+     "fit": "max",
+     "sill": 3,
+     "desc": "Window"
+    },
+    {
+     "room": 0,
+     "side": "W",
+     "w": 3.5,
+     "c": 7.6666333333333325,
+     "sill": 3,
+     "desc": "Window"
+    },
+    {
+     "room": 8,
+     "side": "N",
+     "w": 2,
+     "tag": "V1",
+     "c": 3.4083
+    },
+    {
+     "room": 8,
+     "side": "W",
+     "none": true
+    },
+    {
+     "room": 13,
+     "side": "E",
+     "w": 10,
+     "tag": "W5"
+    }
+   ],
+   "keepouts": [
+    {
+     "room": 0,
+     "rect": {
+      "x0": 0.5833,
+      "y0": 5.8332999999999995,
+      "x1": 2.5833,
+      "y1": 9.499966666666666
+     }
+    }
+   ],
+   "furniture": {
+    "2": {
+     "bedHead": "E"
+    },
+    "5": {
+     "mode": "manual",
+     "items": [
+      {
+       "kind": "counter",
+       "rect": {
+        "x0": 41.61661999999999,
+        "y0": 0.5833,
+        "x1": 43.61661999999999,
+        "y1": 6.999966666666666
+       },
+       "label": "",
+       "tall": false,
+       "side": "W",
+       "meta": {
+        "hob": true,
+        "hob_end": "lo"
+       }
+      },
+      {
+       "kind": "counter",
+       "rect": {
+        "x0": 48.600026666666665,
+        "y0": 0.5833,
+        "x1": 50.600026666666665,
+        "y1": 6.3333
+       },
+       "label": "",
+       "tall": false,
+       "side": "E",
+       "meta": {
+        "sink": true,
+        "sink_end": "lo"
+       }
+      },
+      {
+       "kind": "fridge",
+       "rect": {
+        "x0": 41.61661999999999,
+        "y0": 7.249966666666666,
+        "x1": 43.86661999999999,
+        "y1": 9.499966666666666
+       },
+       "label": "F",
+       "tall": true,
+       "side": "W",
+       "meta": {}
+      }
+     ]
+    },
+    "6": {
+     "mode": "auto",
+     "items": [
+      {
+       "kind": "basin",
+       "rect": {
+        "x0": 51.18332666666666,
+        "y0": 0.5833,
+        "x1": 52.68332666666666,
+        "y1": 2.3333
+       },
+       "label": "WASH BASIN",
+       "tall": false,
+       "side": "W",
+       "meta": {}
+      }
+     ]
+    },
+    "8": {
+     "mode": "manual",
+     "items": [
+      {
+       "kind": "shower",
+       "rect": {
+        "x0": 4.291633333333333,
+        "y0": 15.916699999999999,
+        "x1": 7.291633333333333,
+        "y1": 23.4167
+       },
+       "label": "SHOWER",
+       "tall": false,
+       "side": "",
+       "meta": {}
+      },
+      {
+       "kind": "wc",
+       "rect": {
+        "x0": 0.5833,
+        "y0": 21.0867,
+        "x1": 2.3333,
+        "y1": 23.4167
+       },
+       "label": "WC",
+       "tall": false,
+       "side": "N",
+       "meta": {}
+      },
+      {
+       "kind": "basin",
+       "rect": {
+        "x0": 2.5333,
+        "y0": 21.9167,
+        "x1": 4.2833000000000006,
+        "y1": 23.4167
+       },
+       "label": "",
+       "tall": false,
+       "side": "N",
+       "meta": {}
+      }
+     ]
+    },
+    "10": {
+     "mode": "manual",
+     "items": [
+      {
+       "kind": "bed",
+       "rect": {
+        "x0": 20.041566666666668,
+        "y0": 14.416566666666668,
+        "x1": 24.541566666666668,
+        "y1": 20.666566666666668
+       },
+       "label": "BED",
+       "tall": false,
+       "side": "S",
+       "meta": {
+        "head": "S"
+       }
+      },
+      {
+       "kind": "side_table",
+       "rect": {
+        "x0": 24.541566666666668,
+        "y0": 14.416566666666668,
+        "x1": 26.041566666666668,
+        "y1": 15.916566666666668
+       },
+       "label": "",
+       "tall": false,
+       "side": "",
+       "meta": {}
+      },
+      {
+       "kind": "wardrobe",
+       "rect": {
+        "x0": 26.32505366666667,
+        "y0": 17.4167,
+        "x1": 28.32505366666667,
+        "y1": 23.4167
+       },
+       "label": "WARDROBE",
+       "tall": true,
+       "side": "E",
+       "meta": {}
+      }
+     ],
+     "bedHead": "S",
+     "wardrobeSide": "E"
+    },
+    "11": {
+     "mode": "manual",
+     "items": [
+      {
+       "kind": "wash_area",
+       "rect": {
+        "x0": 33.05002,
+        "y0": 21.1667,
+        "x1": 37.45002,
+        "y1": 23.4167
+       },
+       "label": "",
+       "tall": false,
+       "side": "",
+       "meta": {}
+      },
+      {
+       "kind": "washer",
+       "rect": {
+        "x0": 33.30002,
+        "y0": 21.4167,
+        "x1": 35.30002,
+        "y1": 23.4167
+       },
+       "label": "WM",
+       "tall": false,
+       "side": "N",
+       "meta": {}
+      },
+      {
+       "kind": "basin",
+       "rect": {
+        "x0": 35.45002,
+        "y0": 21.6667,
+        "x1": 37.45002,
+        "y1": 23.4167
+       },
+       "label": "",
+       "tall": false,
+       "side": "N",
+       "meta": {}
+      }
+     ]
+    },
+    "13": {
+     "sofaSide": "S"
+    }
+   },
+   "notes": [
+    "Staircase window (W8): FIXED, NON-OPENABLE glazing, continuous from first-floor level to the roof on all upper floors.\n     Floor beams / slab edges stay (Zone V); glazing runs outside them as spandrel panels."
+   ],
+   "meta": {
+    "revision": 9
+   }
+  }
+ ],
+ "activePlan": 0
+}
