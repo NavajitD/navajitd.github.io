@@ -15,7 +15,7 @@
 - [Numo](https://numo.web.app): AI numerology guide answering life queries, built with Mystics Mentor.
 - [Aria](https://talktoaria.web.app): AI voice sales agent that phones you and roleplays a Hinglish post-demo-class sales call — intent classification, objection handling, and next-step decisions shown in real time. Pipecat, Deepgram Nova-3, Sarvam Bulbul v3, Cloud Run.
 - [ProbashiBangalore](https://probashibangalore.web.app): Editorial guide for Bengalis making a home in Bengaluru — food, festivals, communities, and everyday essentials; currently gathering readers via waitlist.
-- [MyExpenses](https://navajitd.github.io/Projects/MyExpenses/expenses.html): Free AI expense tracker with automated categorization, budget tracking, and spending-pattern insights.
+- [MyExpenses](https://navajitd.github.io/Projects/MyExpenses/expenses.html): Free AI expense tracker with automated categorization, budget tracking, and spending-pattern insights; per-card statement and due dates drive billing cycles, and bank SMS are matched to cards by their last 4 digits.
 - [HealThee](https://navajitd.github.io/Projects/HealThee/health.html): Free AI health tracker (HealthifyMe Plus alternative) — calorie/macro/micronutrient tracking, adaptive meal plans, exercise, sleep, and trend dashboards; installable PWA.
 - [Letter Hunt](https://navajitd.github.io/Projects/Sketches/letter-hunt.html): Free p5.js browser game — find letters hidden in Bengaluru street photography.
 - [Vidur](https://navajitd.github.io/projects.html#vidur): Free, open-source browser extension (Chrome/Edge/Brave/Firefox) that visually redesigns any website with AI while leaving content intact; bring-your-own-key, designs persist across visits.

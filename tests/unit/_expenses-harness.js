@@ -51,7 +51,11 @@ const EPILOGUE = `
   getRagIndex(){ return _ragIndex; },
   getCategoryPaymentStats(){ return _categoryPaymentStats; },
   setAutoInsightInFlight(v){ autoInsightInFlight = v; },
-  setProfileThemes(t){ window._profileThemes = t; }
+  setProfileThemes(t){ window._profileThemes = t; },
+  getUserProfile(){ return userProfile; },
+  getPmEditingCard(){ return _pmEditingCard; },
+  getOnboardCards(){ return onboardCards; },
+  setOnboardCards(a){ onboardCards = a; }
 }; } catch (e) { window.__testError = String(e && e.stack || e); }
 `;
 
@@ -110,7 +114,19 @@ export function createApp() {
     getElementById: getById,
     querySelector: () => null,
     querySelectorAll: () => [],
-    createElement: () => makeEl('_created'),
+    // esc() relies on textContent → innerHTML escaping; mimic a real node.
+    createElement: () => {
+      const el = makeEl('_created');
+      let text = '';
+      Object.defineProperty(el, 'textContent', {
+        get: () => text,
+        set: v => {
+          text = String(v);
+          el.innerHTML = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        },
+      });
+      return el;
+    },
     addEventListener: () => {},
     body: makeEl('body'),
     head: makeEl('head'),
@@ -125,20 +141,31 @@ export function createApp() {
     signOut: () => Promise.resolve(),
     currentUser: null,
   };
+  let docSeq = 0;
   const docRef = {
+    id: 'doc-0',
     set: () => Promise.resolve(), update: () => Promise.resolve(),
     get: () => Promise.resolve({ exists: false, data: () => ({}) }),
     delete: () => Promise.resolve(), onSnapshot: () => () => {},
+    collection: () => colRef, // users/{uid}/expenses
   };
   const colRef = {
-    doc: () => docRef, add: () => Promise.resolve(docRef),
+    doc: () => ({ ...docRef, id: `doc-${++docSeq}` }), add: () => Promise.resolve(docRef),
     where() { return colRef; }, orderBy() { return colRef; },
     get: () => Promise.resolve({ docs: [], forEach() {} }), onSnapshot: () => () => {},
   };
+  // Transactions (onboarding): reads see an empty stats doc unless
+  // txState.userCount is set; every tx.set() is recorded in txWrites.
+  const txWrites = [];
+  const txState = { userCount: 0 };
   const dbStub = {
     enablePersistence: () => ({ catch: () => {} }),
     collection: () => colRef,
     waitForPendingWrites: () => Promise.resolve(),
+    runTransaction: async fn => fn({
+      get: async () => ({ exists: true, data: () => ({ userCount: txState.userCount }) }),
+      set: (ref, data, opts) => { txWrites.push({ data, opts }); },
+    }),
   };
   function GoogleAuthProvider() {}
   GoogleAuthProvider.prototype.addScope = function () {};
@@ -187,5 +214,5 @@ export function createApp() {
     loadError = e;
   }
 
-  return { ctx: sandbox, t: sandbox.__test, localStorage, getById, loadError, testError: sandbox.__testError };
+  return { ctx: sandbox, t: sandbox.__test, localStorage, getById, loadError, testError: sandbox.__testError, txWrites, txState };
 }

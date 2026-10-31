@@ -1516,31 +1516,24 @@
             font-size: 0.9rem;
         }
 
+        .onboard-cc-form {
+            margin-top: 0.6rem;
+        }
+
+        .onboard-add-card-cell {
+            justify-content: flex-end;
+        }
+
+        .onboard-add-card-btn {
+            width: 100%;
+            padding: 0.55rem 0.7rem;
+            font-size: 0.85rem;
+        }
+
         .cc-names-list {
             display: flex;
             flex-direction: column;
-            gap: 0.35rem;
             margin-top: 0.4rem;
-        }
-
-        .cc-name-row {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.82rem;
-        }
-
-        .cc-name-row .remove-cc {
-            font-size: 0.75rem;
-            background: none;
-            border: none;
-            color: var(--muted-color);
-            cursor: pointer;
-            padding: 0.1rem 0.3rem;
-        }
-
-        .cc-name-row .remove-cc:hover {
-            color: var(--danger-color);
         }
 
         /* ─── Modal ─── */
@@ -1834,41 +1827,222 @@
             align-items: center;
         }
 
-        .user-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 0.4rem;
-            background: var(--bg-color);
+        /* ─── Profile sheet ─── */
+        .profile-identity {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .profile-identity img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .profile-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .profile-email {
+            font-size: 0.8rem;
+            color: var(--muted-color);
+            overflow-wrap: anywhere;
+        }
+
+        .profile-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-section-label {
+            font-size: 0.72rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted-color);
+        }
+
+        .profile-add-btn {
+            font-family: var(--font-sans);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.35rem 0.7rem;
+            border-radius: 5px;
+            border: 1px solid var(--accent-color);
+            background: transparent;
+            color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        .profile-add-btn:hover {
+            background: var(--accent-color);
+            color: #fff;
+        }
+
+        [data-theme="colorful"] .profile-add-btn:hover {
+            color: var(--bg-color);
+        }
+
+        .pm-group-label {
+            font-size: 0.72rem;
+            color: var(--muted-color);
+            margin: 0.8rem 0 0.35rem;
+        }
+
+        .pm-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 0.7rem;
+            margin-bottom: 0.4rem;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            box-shadow: var(--shadow-md);
-            padding: 0.3rem;
-            min-width: 140px;
-            display: none;
-            z-index: 50;
-        }
-
-        .user-dropdown.show {
-            display: block;
-        }
-
-        .user-dropdown button {
-            font-family: var(--font-sans);
-            font-size: 0.82rem;
-            width: 100%;
-            text-align: left;
-            padding: 0.5rem 0.7rem;
-            border: none;
-            background: none;
-            cursor: pointer;
-            color: var(--text-color);
-            border-radius: 4px;
-            transition: background 0.15s ease;
-        }
-
-        .user-dropdown button:hover {
             background: var(--card-bg);
+        }
+
+        .pm-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pm-name {
+            font-size: 0.88rem;
+            font-weight: 500;
+            overflow-wrap: anywhere;
+        }
+
+        .pm-meta {
+            font-size: 0.75rem;
+            color: var(--muted-color);
+            margin-top: 0.1rem;
+        }
+
+        .pm-missing {
+            color: var(--warning-color);
+        }
+
+        .pm-action {
+            font-family: var(--font-sans);
+            font-size: 0.78rem;
+            padding: 0.3rem 0.45rem;
+            border: none;
+            border-radius: 4px;
+            background: none;
+            color: var(--muted-color);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .pm-action:hover {
+            color: var(--accent-color);
+        }
+
+        .pm-remove:hover {
+            color: var(--danger-color);
+        }
+
+        .pm-empty {
+            font-size: 0.8rem;
+            color: var(--muted-color);
+            padding: 0.4rem 0;
+        }
+
+        .pm-form {
+            margin-top: 0.8rem;
+            padding: 1rem;
+            border: 1px solid var(--accent-color);
+            border-radius: 8px;
+        }
+
+        .pm-form-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .pm-card-fields {
+            grid-column: 1 / -1;
+        }
+
+        .pm-hint {
+            grid-column: 1 / -1;
+            font-size: 0.75rem;
+            color: var(--muted-color);
+        }
+
+        .field-error {
+            font-size: 0.72rem;
+            color: var(--danger-color);
+        }
+
+        .field-error:empty {
+            display: none;
+        }
+
+        .form-group input.invalid,
+        .form-group select.invalid {
+            border-color: var(--danger-color);
+        }
+
+        .form-group input[readonly],
+        .form-group select:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .pm-form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .pm-form-actions .submit-btn {
+            margin-top: 0;
+            flex: 2;
+        }
+
+        .pm-cancel-btn {
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            flex: 1;
+            padding: 0.7rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .pm-cancel-btn:hover {
+            border-color: var(--accent-color);
+        }
+
+        .profile-signout {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            width: 100%;
+            margin-top: 1.5rem;
+            padding: 0.6rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .profile-signout:hover {
+            border-color: var(--danger-color);
+            color: var(--danger-color);
         }
 
         /* ─── Auth Loading ─── */
@@ -2354,10 +2528,8 @@
                 </svg>
             </button>
             <div class="user-menu" id="userMenu" style="display:none;">
-                <img class="user-avatar" id="userAvatar" src="" alt="User" onclick="toggleUserMenu()">
-                <div class="user-dropdown" id="userDropdown">
-                    <button onclick="signOut()">Sign out</button>
-                </div>
+                <img class="user-avatar" id="userAvatar" src="" alt="Profile" title="Profile" role="button" tabindex="0"
+                    onclick="openProfileSheet()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openProfileSheet();}">
             </div>
         </div>
     </header>
@@ -2418,11 +2590,35 @@
         </div>
         <div class="onboard-section" id="onboardCCSection" style="display:none;">
             <div class="onboard-section-label">Credit Cards</div>
-            <div class="onboard-section-hint">Name your credit cards (shown when you select CC as payment)</div>
+            <div class="onboard-section-hint">Add each card you use. Its statement and due dates set the billing cycle; the last 4 digits (optional) match bank SMS such as “card XX1234” to it.</div>
             <div class="cc-names-list" id="onboardCCNames"></div>
-            <div class="add-custom-row">
-                <input type="text" id="customCCInput" placeholder="e.g. Sapphiro, Neucard...">
-                <button onclick="addCCName()">+ Add Card</button>
+            <div class="onboard-cc-form form-grid">
+                <div class="form-group full-width">
+                    <label for="customCCInput">Card name</label>
+                    <input type="text" id="customCCInput" maxlength="40" autocomplete="off" placeholder="e.g. HDFC Millennia"
+                        onkeydown="if(event.key==='Enter')addOnboardCard()">
+                    <div class="field-error" id="obErr-name"></div>
+                </div>
+                <div class="form-group">
+                    <label for="onboardCCStatement">Statement date</label>
+                    <select id="onboardCCStatement"></select>
+                    <div class="field-error" id="obErr-statementDay"></div>
+                </div>
+                <div class="form-group">
+                    <label for="onboardCCDue">Payment due date</label>
+                    <select id="onboardCCDue"></select>
+                    <div class="field-error" id="obErr-dueDay"></div>
+                </div>
+                <div class="form-group">
+                    <label for="onboardCCLast4">Last 4 digits</label>
+                    <input type="text" id="onboardCCLast4" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off"
+                        placeholder="1234" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)"
+                        onkeydown="if(event.key==='Enter')addOnboardCard()">
+                    <div class="field-error" id="obErr-last4"></div>
+                </div>
+                <div class="form-group onboard-add-card-cell">
+                    <button class="profile-add-btn onboard-add-card-btn" id="onboardAddCardBtn" onclick="addOnboardCard()">+ Add Card</button>
+                </div>
             </div>
         </div>
         <div class="onboard-section">
@@ -2640,6 +2836,71 @@
                     <button class="submit-btn" id="submitBtn" onclick="addExpense()">Add Expense</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ─── PROFILE SHEET ─── -->
+    <div class="sheet-overlay" id="profileSheet" onclick="handleProfileSheetClick(event)">
+        <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="profileSheetTitle">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3 id="profileSheetTitle">Profile</h3>
+                <button class="sheet-close" onclick="closeProfileSheet()" aria-label="Close profile">✕</button>
+            </div>
+            <div class="profile-identity">
+                <img id="profileAvatar" src="" alt="">
+                <div>
+                    <div class="profile-name" id="profileName"></div>
+                    <div class="profile-email" id="profileEmail"></div>
+                </div>
+            </div>
+            <div id="profilePaymentSection">
+                <div class="profile-section-head">
+                    <span class="profile-section-label">Payment methods</span>
+                    <button class="profile-add-btn" id="profileAddPmBtn" onclick="openPaymentMethodForm()">+ Add new</button>
+                </div>
+                <div id="profilePaymentList"></div>
+                <div class="pm-form" id="pmForm" style="display:none;">
+                    <div class="pm-form-title" id="pmFormTitle">New payment method</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="pmType">Type</label>
+                            <select id="pmType" onchange="updatePmFormType()"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pmName" id="pmNameLabel">Card name</label>
+                            <input type="text" id="pmName" maxlength="40" autocomplete="off"
+                                placeholder="e.g. HDFC Millennia" onkeydown="if(event.key==='Enter')saveProfilePaymentMethod()">
+                            <div class="field-error" id="pmErr-name"></div>
+                        </div>
+                        <div class="pm-card-fields form-grid" id="pmCardFields">
+                            <div class="form-group">
+                                <label for="pmStatementDay">Statement date</label>
+                                <select id="pmStatementDay"></select>
+                                <div class="field-error" id="pmErr-statementDay"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pmDueDay">Payment due date</label>
+                                <select id="pmDueDay"></select>
+                                <div class="field-error" id="pmErr-dueDay"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pmLast4">Last 4 digits</label>
+                                <input type="text" id="pmLast4" inputmode="numeric" maxlength="4" pattern="[0-9]{4}"
+                                    autocomplete="off" placeholder="1234" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)"
+                                    onkeydown="if(event.key==='Enter')saveProfilePaymentMethod()">
+                                <div class="field-error" id="pmErr-last4"></div>
+                            </div>
+                            <div class="pm-hint">Day of the month on your card statement. Last 4 digits are optional; they match bank SMS such as “card XX1234” to this card.</div>
+                        </div>
+                        <div class="pm-form-actions">
+                            <button class="pm-cancel-btn" onclick="closePaymentMethodForm()">Cancel</button>
+                            <button class="submit-btn" id="pmSaveBtn" onclick="saveProfilePaymentMethod()">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="profile-signout" onclick="signOut()">Sign out</button>
         </div>
     </div>
 
@@ -2869,6 +3130,8 @@
         };
 
         function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+        // For values inside double-quoted attributes (esc() leaves quotes alone).
+        function escAttr(s) { return esc(s).replace(/"/g, '&quot;'); }
 
         function getTheme(category) {
             const themes = window._profileThemes || DEFAULT_THEMES;
@@ -2878,7 +3141,204 @@
             return 'Other';
         }
 
-        function getBillingCycle(dateObj) {
+        /* ═══════════════════════════════════════════════════
+           CREDIT CARDS — per-card statement day, due day, last 4 digits
+           Profile shape: creditCards: ['Sapphiro', …] (names, unchanged)
+                          cardDetails: [{ name, statementDay, dueDay, last4 }]
+           A card without details keeps the legacy 25th-to-25th cycle.
+           ═══════════════════════════════════════════════════ */
+        const LEGACY_CARD_NAMES = ['Sapphiro', 'Neucard'];
+        const PAYMENT_METHOD_TYPES = ['Credit card', 'UPI', 'Debit card', 'Net banking', 'Cash', 'Wallet', 'Other'];
+
+        // Card names the app treats as the user's cards. Profiles created before
+        // credit cards were configurable have no `creditCards` field at all.
+        function getCardNames(profile = userProfile) {
+            if (profile && Array.isArray(profile.creditCards)) return profile.creditCards;
+            return LEGACY_CARD_NAMES;
+        }
+
+        function getCardDetails(name, profile = userProfile) {
+            if (!name || !profile || !Array.isArray(profile.cardDetails)) return null;
+            const n = String(name).trim().toLowerCase();
+            return profile.cardDetails.find(c => c && String(c.name).toLowerCase() === n) || null;
+        }
+
+        function isValidDayOfMonth(v) {
+            const n = Number(v);
+            return Number.isInteger(n) && n >= 1 && n <= 31;
+        }
+
+        // The given day in (year, month), pulled back to the month's last day
+        // when the month is shorter (statement day 31 → Feb 28/29, Apr 30).
+        // `month` may overflow either way; Date normalises it.
+        function dayInMonth(year, month, day) {
+            const first = new Date(year, month, 1);
+            const y = first.getFullYear(), m = first.getMonth();
+            const last = new Date(y, m + 1, 0).getDate();
+            return new Date(y, m, Math.min(day, last));
+        }
+
+        // Cycle containing dateObj for a card whose statement is generated on
+        // `statementDay`: it runs from the day after the previous statement to
+        // the next statement date (inclusive).
+        function getCardCycleRange(dateObj, statementDay) {
+            const y = dateObj.getFullYear(), m = dateObj.getMonth();
+            const thisMonthStmt = dayInMonth(y, m, statementDay);
+            const end = dateObj.getDate() <= thisMonthStmt.getDate()
+                ? thisMonthStmt
+                : dayInMonth(y, m + 1, statementDay);
+            const prevStmt = dayInMonth(end.getFullYear(), end.getMonth() - 1, statementDay);
+            const start = new Date(prevStmt.getFullYear(), prevStmt.getMonth(), prevStmt.getDate() + 1);
+            return { start, end };
+        }
+
+        // Payment due date for the statement covering dateObj: the first
+        // `dueDay` strictly after that statement date.
+        function getCardDueDate(dateObj, cardName, profile = userProfile) {
+            const det = getCardDetails(cardName, profile);
+            if (!det || !isValidDayOfMonth(det.statementDay) || !isValidDayOfMonth(det.dueDay)) return null;
+            const { end } = getCardCycleRange(dateObj, Number(det.statementDay));
+            const sameMonth = dayInMonth(end.getFullYear(), end.getMonth(), Number(det.dueDay));
+            return sameMonth > end ? sameMonth : dayInMonth(end.getFullYear(), end.getMonth() + 1, Number(det.dueDay));
+        }
+
+        function formatMonthDay(d) {
+            return `${d.toLocaleString('en', { month: 'short' })} ${d.getDate()}`;
+        }
+
+        function ordinalDay(n) {
+            const v = Number(n);
+            const s = (v % 100 >= 11 && v % 100 <= 13) ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[v % 10] || 'th');
+            return v + s;
+        }
+
+        // "Billing Cycle: Feb 16 - Mar 15 · Due Apr 3" (due part only when known)
+        function describeBillingCycle(dateObj, cardName, profile = userProfile) {
+            let text = 'Billing Cycle: ' + getBillingCycle(dateObj, cardName, profile);
+            const due = getCardDueDate(dateObj, cardName, profile);
+            if (due) text += ' · Due ' + formatMonthDay(due);
+            return text;
+        }
+
+        // Validate the "Add payment method" form. `editingName` is set when
+        // editing an existing card (its name is fixed, so it skips the
+        // duplicate check). Returns { ok, errors: {field: msg}, value }.
+        function validatePaymentMethodInput(input, profile = userProfile, editingName = null) {
+            const errors = {};
+            const type = PAYMENT_METHOD_TYPES.includes(input?.type) ? input.type : 'Other';
+            const isCard = type === 'Credit card';
+            const name = String(input?.name ?? '').trim().replace(/\s+/g, ' ');
+            const lower = name.toLowerCase();
+            const cards = getCardNames(profile);
+            const methods = (profile && profile.paymentMethods) || [];
+
+            if (!name) errors.name = isCard ? 'Enter the card name' : 'Enter a name';
+            else if (name.length > 40) errors.name = 'Keep the name under 40 characters';
+            else if (/^cc\s*-/i.test(name)) errors.name = 'Name can’t start with "CC -"';
+            else if (/[<>"`\\]/.test(name)) errors.name = 'Avoid < > " ` and \\ in the name';
+            else if (!isCard && lower === 'credit card') errors.name = 'Pick "Credit card" as the type to add a card';
+            else if (isCard && lower === 'credit card') errors.name = 'Give the card its own name, e.g. HDFC Millennia';
+            else if (isCard && lower !== String(editingName || '').toLowerCase()
+                && cards.some(c => c.toLowerCase() === lower)) errors.name = 'You already have a card with this name';
+            else if (!isCard && methods.some(p => p.toLowerCase() === lower)) errors.name = 'This payment method already exists';
+
+            const value = { type, name };
+            if (isCard) {
+                const sd = String(input?.statementDay ?? '').trim();
+                const dd = String(input?.dueDay ?? '').trim();
+                const last4 = String(input?.last4 ?? '').trim();
+                if (!isValidDayOfMonth(sd)) errors.statementDay = 'Pick the statement date';
+                if (!isValidDayOfMonth(dd)) errors.dueDay = 'Pick the payment due date';
+                if (last4 && !/^\d{4}$/.test(last4)) errors.last4 = 'Enter exactly 4 digits';
+                else if (last4) {
+                    const clash = ((profile && profile.cardDetails) || []).find(c =>
+                        c && c.last4 === last4 && String(c.name).toLowerCase() !== String(editingName || '').toLowerCase());
+                    if (clash) errors.last4 = `${clash.name} already ends in ${last4}`;
+                }
+                value.statementDay = Number(sd);
+                value.dueDay = Number(dd);
+                value.last4 = last4;
+            }
+            return { ok: Object.keys(errors).length === 0, errors, value };
+        }
+
+        // Pure: the Firestore patch that adds (or, with editingName, updates)
+        // a payment method. Never mutates `profile`.
+        function buildPaymentMethodPatch(profile, value, editingName = null) {
+            const paymentMethods = [...((profile && profile.paymentMethods) || DEFAULT_PAYMENTS)];
+            const creditCards = [...getCardNames(profile)];
+            let cardDetails = [...((profile && profile.cardDetails) || [])];
+            if (value.type === 'Credit card') {
+                const name = editingName
+                    ? (creditCards.find(c => c.toLowerCase() === editingName.toLowerCase()) || value.name)
+                    : value.name;
+                if (!creditCards.some(c => c.toLowerCase() === name.toLowerCase())) creditCards.push(name);
+                cardDetails = cardDetails.filter(c => c && String(c.name).toLowerCase() !== name.toLowerCase());
+                cardDetails.push({ name, statementDay: value.statementDay, dueDay: value.dueDay, last4: value.last4 || '' });
+                if (!paymentMethods.some(p => p.toLowerCase() === 'credit card')) paymentMethods.push('Credit card');
+            } else {
+                paymentMethods.push(value.name);
+            }
+            return { paymentMethods, creditCards, cardDetails };
+        }
+
+        // Pure: the patch that removes a method ('method') or card ('card').
+        // Removing the last card also removes the generic "Credit card" option.
+        // Returns { error } instead when it would leave no way to pay.
+        function buildRemovePaymentPatch(profile, kind, name) {
+            const lower = String(name).toLowerCase();
+            let paymentMethods = [...((profile && profile.paymentMethods) || DEFAULT_PAYMENTS)];
+            let creditCards = [...getCardNames(profile)];
+            let cardDetails = [...((profile && profile.cardDetails) || [])];
+            if (kind === 'card') {
+                creditCards = creditCards.filter(c => c.toLowerCase() !== lower);
+                cardDetails = cardDetails.filter(c => c && String(c.name).toLowerCase() !== lower);
+                if (creditCards.length === 0) paymentMethods = paymentMethods.filter(p => p.toLowerCase() !== 'credit card');
+            } else {
+                paymentMethods = paymentMethods.filter(p => p.toLowerCase() !== lower);
+            }
+            if (paymentMethods.length === 0) return { error: 'Keep at least one payment method' };
+            return { paymentMethods, creditCards, cardDetails };
+        }
+
+        // Find the user's card from masked card digits in an SMS / bank alert:
+        // "XX1234", "**1234", "xxxx-xxxx-xxxx-1234", "ending 1234",
+        // "ending in 1234", "ends with 1234", "Card 1234", "Card x1234",
+        // "card no. XX1234". Bare numbers ("Rs 1234", "OTP 1234") never match.
+        function findCardByLast4(text, profile = userProfile) {
+            if (!text || !profile || !Array.isArray(profile.cardDetails)) return null;
+            const cards = profile.cardDetails.filter(c => c && /^\d{4}$/.test(c.last4 || ''));
+            if (!cards.length) return null;
+            const re = /(?:[x*•]{2,}[\s-]?|\bend(?:s|ing)?\s+(?:in\s+|with\s+)?|\bcard\s+(?:(?:no\.?|number|#)\s*:?\s*)?[x*•]*[\s-]?)(\d{4})(?!\d)/gi;
+            let m;
+            while ((m = re.exec(String(text)))) {
+                const hit = cards.find(c => c.last4 === m[1]);
+                if (hit) return hit.name;
+            }
+            return null;
+        }
+
+        // Card digits in the source text are authoritative over the LLM's guess.
+        // Single result: always use the matched card. Several results: only
+        // re-point items the model already put on a credit card.
+        function applyCardLast4Match(parsed, text, profile = userProfile) {
+            const card = findCardByLast4(text, profile);
+            if (!card || parsed == null) return parsed;
+            const pm = 'CC - ' + card;
+            if (!Array.isArray(parsed)) return { ...parsed, paymentMethod: pm };
+            return parsed.map(it => {
+                const cur = String(it?.paymentMethod || '').toLowerCase();
+                return (cur === 'credit card' || cur.startsWith('cc')) ? { ...it, paymentMethod: pm } : it;
+            });
+        }
+
+        function getBillingCycle(dateObj, cardName, profile = userProfile) {
+            const det = cardName ? getCardDetails(cardName, profile) : null;
+            if (det && isValidDayOfMonth(det.statementDay)) {
+                const { start, end } = getCardCycleRange(dateObj, Number(det.statementDay));
+                return `${formatMonthDay(start)} - ${formatMonthDay(end)}`;
+            }
+            // Legacy cycle for cards without a statement day (kept as-is).
             const day = dateObj.getDate();
             let s, e;
             if (day < 16) {
@@ -3343,22 +3803,235 @@
         }
 
         function signOut() {
+            closeProfileSheet();
             auth.signOut();
-            document.getElementById('userDropdown').classList.remove('show');
         }
 
-        function toggleUserMenu() {
-            document.getElementById('userDropdown').classList.toggle('show');
+        /* ═══════════════════════════════════════════════════
+           PROFILE SHEET — opened from the avatar: identity,
+           payment methods (add / edit card details / remove), sign out
+           ═══════════════════════════════════════════════════ */
+        let _pmEditingCard = null; // name of the card being edited, null when adding
+
+        function openProfileSheet() {
+            closePaymentMethodForm();
+            renderProfileSheet();
+            document.getElementById('profileSheet').classList.add('show');
+            document.body.style.overflow = 'hidden';
         }
-        document.addEventListener('click', e => {
-            const m = document.getElementById('userMenu');
-            if (m && !m.contains(e.target)) document.getElementById('userDropdown').classList.remove('show');
-        });
+
+        function closeProfileSheet() {
+            const el = document.getElementById('profileSheet');
+            if (!el || !el.classList.contains('show')) return;
+            el.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function handleProfileSheetClick(e) {
+            if (e.target === document.getElementById('profileSheet')) closeProfileSheet();
+        }
+
+        // "•• 1234 · Statement 15th · Due 3rd", or a prompt when details are missing.
+        function cardMetaHtml(d) {
+            if (!d || !isValidDayOfMonth(d.statementDay)) return '<span class="pm-missing">Add statement &amp; due dates</span>';
+            return [d.last4 ? '•• ' + esc(d.last4) : '', 'Statement ' + ordinalDay(d.statementDay),
+                isValidDayOfMonth(d.dueDay) ? 'Due ' + ordinalDay(d.dueDay) : ''].filter(Boolean).join(' · ');
+        }
+
+        function getOtherPaymentMethods(profile = userProfile) {
+            return ((profile && profile.paymentMethods) || DEFAULT_PAYMENTS).filter(p => p.toLowerCase() !== 'credit card');
+        }
+
+        function renderProfileSheet() {
+            const u = currentUser || {};
+            const avatar = document.getElementById('profileAvatar');
+            avatar.src = u.photoURL || '';
+            avatar.style.display = u.photoURL ? '' : 'none';
+            document.getElementById('profileName').textContent = u.displayName || 'Signed in';
+            document.getElementById('profileEmail').textContent = u.email || '';
+
+            const section = document.getElementById('profilePaymentSection');
+            if (!userProfile) { section.style.display = 'none'; return; }
+            section.style.display = '';
+
+            const cards = getCardNames();
+            const others = getOtherPaymentMethods();
+            const cardRows = cards.map((c, i) => {
+                const meta = cardMetaHtml(getCardDetails(c));
+                return `<div class="pm-row" data-card="${escAttr(c)}">
+                    <span aria-hidden="true">💳</span>
+                    <div class="pm-main"><div class="pm-name">${esc(c)}</div><div class="pm-meta">${meta}</div></div>
+                    <button class="pm-action" onclick="editProfileCard(${i})" aria-label="Edit ${escAttr(c)}">Edit</button>
+                    <button class="pm-action pm-remove" onclick="removeProfilePaymentMethod('card', ${i})" aria-label="Remove ${escAttr(c)}">✕</button>
+                </div>`;
+            }).join('');
+            const otherRows = others.map((m, i) => `<div class="pm-row" data-method="${escAttr(m)}">
+                    <div class="pm-main"><div class="pm-name">${esc(m)}</div></div>
+                    <button class="pm-action pm-remove" onclick="removeProfilePaymentMethod('method', ${i})" aria-label="Remove ${escAttr(m)}">✕</button>
+                </div>`).join('');
+            document.getElementById('profilePaymentList').innerHTML =
+                `<div class="pm-group-label">Credit cards</div>` +
+                (cardRows || '<div class="pm-empty">No credit cards yet</div>') +
+                `<div class="pm-group-label">Other methods</div>` +
+                (otherRows || '<div class="pm-empty">None</div>');
+        }
+
+        function fillDaySelect(sel, value) {
+            if (!sel.dataset.filled) {
+                let html = '<option value="">Select day</option>';
+                for (let d = 1; d <= 31; d++) html += `<option value="${d}">${ordinalDay(d)}</option>`;
+                sel.innerHTML = html;
+                sel.dataset.filled = '1';
+            }
+            sel.value = value ? String(value) : '';
+        }
+
+        function setPmFormFields({ type = 'Credit card', name = '', statementDay = '', dueDay = '', last4 = '', locked = false } = {}) {
+            const typeSel = document.getElementById('pmType');
+            if (!typeSel.dataset.filled) {
+                typeSel.innerHTML = PAYMENT_METHOD_TYPES.map(t => `<option value="${t}">${t}</option>`).join('');
+                typeSel.dataset.filled = '1';
+            }
+            typeSel.value = type;
+            typeSel.disabled = locked;
+            const nameEl = document.getElementById('pmName');
+            nameEl.value = name;
+            nameEl.readOnly = locked;
+            fillDaySelect(document.getElementById('pmStatementDay'), statementDay);
+            fillDaySelect(document.getElementById('pmDueDay'), dueDay);
+            document.getElementById('pmLast4').value = last4 || '';
+            showPmErrors({});
+            updatePmFormType();
+        }
+
+        function openPaymentMethodForm() {
+            _pmEditingCard = null;
+            document.getElementById('pmFormTitle').textContent = 'New payment method';
+            setPmFormFields();
+            document.getElementById('pmForm').style.display = 'block';
+            document.getElementById('profileAddPmBtn').style.display = 'none';
+            setTimeout(() => document.getElementById('pmName').focus(), 50);
+        }
+
+        function editProfileCard(i) {
+            const name = getCardNames()[i];
+            if (!name) return;
+            const d = getCardDetails(name) || {};
+            _pmEditingCard = name;
+            document.getElementById('pmFormTitle').textContent = 'Edit ' + name;
+            setPmFormFields({ type: 'Credit card', name, statementDay: d.statementDay, dueDay: d.dueDay, last4: d.last4, locked: true });
+            document.getElementById('pmForm').style.display = 'block';
+            document.getElementById('profileAddPmBtn').style.display = 'none';
+            setTimeout(() => document.getElementById('pmStatementDay').focus(), 50);
+        }
+
+        function closePaymentMethodForm() {
+            _pmEditingCard = null;
+            const form = document.getElementById('pmForm');
+            if (form) form.style.display = 'none';
+            const add = document.getElementById('profileAddPmBtn');
+            if (add) add.style.display = '';
+            showPmErrors({});
+        }
+
+        function updatePmFormType() {
+            const isCard = document.getElementById('pmType').value === 'Credit card';
+            document.getElementById('pmCardFields').style.display = isCard ? '' : 'none';
+            document.getElementById('pmNameLabel').textContent = isCard ? 'Card name' : 'Name';
+            document.getElementById('pmName').placeholder = isCard ? 'e.g. HDFC Millennia' : 'e.g. PhonePe UPI';
+        }
+
+        function readPmForm() {
+            return {
+                type: document.getElementById('pmType').value,
+                name: document.getElementById('pmName').value,
+                statementDay: document.getElementById('pmStatementDay').value,
+                dueDay: document.getElementById('pmDueDay').value,
+                last4: document.getElementById('pmLast4').value,
+            };
+        }
+
+        const PM_FIELD_IDS = { name: 'pmName', statementDay: 'pmStatementDay', dueDay: 'pmDueDay', last4: 'pmLast4' };
+        function showFieldErrors(errors, fieldIds, errPrefix) {
+            for (const [field, id] of Object.entries(fieldIds)) {
+                const msg = (errors && errors[field]) || '';
+                const errEl = document.getElementById(errPrefix + field);
+                if (errEl) errEl.textContent = msg;
+                const input = document.getElementById(id);
+                if (input) input.classList.toggle('invalid', !!msg);
+            }
+        }
+        function showPmErrors(errors) { showFieldErrors(errors, PM_FIELD_IDS, 'pmErr-'); }
+
+        // Writes only the payment fields of users/{uid}. Separate function so
+        // tests can stub the network write.
+        function persistProfileUpdate(patch) {
+            return db.collection('users').doc(currentUser.uid).update(patch);
+        }
+
+        // Optimistic: update local state + UI now, write in the background
+        // (offline writes stay queued by Firestore), roll back on a real error.
+        function commitProfilePatch(patch, successMsg) {
+            const prev = {
+                paymentMethods: userProfile.paymentMethods,
+                creditCards: userProfile.creditCards,
+                cardDetails: userProfile.cardDetails,
+            };
+            Object.assign(userProfile, patch);
+            applyUserProfile();
+            updateBillingInfo();
+            updateEditBillingInfo();
+            renderProfileSheet();
+            toast(successMsg, 'success');
+            noteWrite();
+            let write;
+            try { write = Promise.resolve(persistProfileUpdate(patch)); }
+            catch (err) { write = Promise.reject(err); }
+            return write.then(() => true, err => {
+                Object.assign(userProfile, prev);
+                applyUserProfile();
+                updateBillingInfo();
+                updateEditBillingInfo();
+                renderProfileSheet();
+                toast('Couldn’t save: ' + (err && err.message || err), 'error');
+                console.error(err);
+                return false;
+            });
+        }
+
+        // Returns a promise of true/false once the write settles, or false at
+        // once if the form doesn't validate.
+        function saveProfilePaymentMethod() {
+            if (!userProfile) return Promise.resolve(false);
+            const res = validatePaymentMethodInput(readPmForm(), userProfile, _pmEditingCard);
+            showPmErrors(res.errors);
+            if (!res.ok) {
+                const first = Object.keys(res.errors)[0];
+                const el = document.getElementById(PM_FIELD_IDS[first]);
+                if (el) el.focus();
+                return Promise.resolve(false);
+            }
+            const editing = _pmEditingCard;
+            const patch = buildPaymentMethodPatch(userProfile, res.value, editing);
+            closePaymentMethodForm();
+            return commitProfilePatch(patch, editing ? `${editing} updated` : `${res.value.name} added`);
+        }
+
+        function removeProfilePaymentMethod(kind, i) {
+            if (!userProfile) return Promise.resolve(false);
+            const name = kind === 'card' ? getCardNames()[i] : getOtherPaymentMethods()[i];
+            if (!name) return Promise.resolve(false);
+            const patch = buildRemovePaymentPatch(userProfile, kind, name);
+            if (patch.error) { toast(patch.error, 'error'); return Promise.resolve(false); }
+            if (!confirm(`Remove ${name}? Expenses already logged with it stay as they are.`)) return Promise.resolve(false);
+            if (_pmEditingCard && _pmEditingCard.toLowerCase() === name.toLowerCase()) closePaymentMethodForm();
+            return commitProfilePatch(patch, `${name} removed`);
+        }
 
         /* ═══════════════════════════════════════════════════
            ONBOARDING
            ═══════════════════════════════════════════════════ */
-        let onboardCCNames = [];
+        let onboardCards = []; // [{ name, statementDay, dueDay, last4 }]
         let onboardThemeMap = {};
 
         function initOnboarding() {
@@ -3366,8 +4039,9 @@
                 DEFAULT_PAYMENTS.map(p => `<span class="chip" onclick="this.classList.toggle('selected'); updateCCVisibility();">${p}</span>`).join('');
             document.getElementById('onboardCategories').innerHTML =
                 DEFAULT_CATEGORIES.map(c => `<span class="chip" onclick="this.classList.toggle('selected'); renderOnboardThemes();">${c}</span>`).join('');
-            onboardCCNames = [];
-            renderCCNames();
+            onboardCards = [];
+            resetOnboardCardForm();
+            renderOnboardCards();
             onboardThemeMap = JSON.parse(JSON.stringify(DEFAULT_THEMES));
             renderOnboardThemes();
             updateCCVisibility();
@@ -3381,8 +4055,9 @@
 
         function addCustomChip(gridId, inputId) {
             const input = document.getElementById(inputId);
-            const val = input.value.trim();
+            const val = input.value.trim().replace(/\s+/g, ' ');
             if (!val) return;
+            if (/[<>"`\\]/.test(val)) { toast('Avoid < > " ` and \\ in names', 'error'); return; }
             const grid = document.getElementById(gridId);
             if ([...grid.querySelectorAll('.chip')].some(c => c.textContent.toLowerCase() === val.toLowerCase())) {
                 toast('Already exists', ''); return;
@@ -3395,20 +4070,68 @@
             input.value = '';
         }
 
-        function addCCName() {
-            const input = document.getElementById('customCCInput');
-            const val = input.value.trim();
-            if (!val) return;
-            if (onboardCCNames.map(n => n.toLowerCase()).includes(val.toLowerCase())) { toast('Already exists', ''); return; }
-            onboardCCNames.push(val);
-            renderCCNames();
-            input.value = '';
+        // Onboarding card form: same fields and rules as Profile → Add payment method.
+        const OB_FIELD_IDS = { name: 'customCCInput', statementDay: 'onboardCCStatement', dueDay: 'onboardCCDue', last4: 'onboardCCLast4' };
+
+        function resetOnboardCardForm() {
+            document.getElementById('customCCInput').value = '';
+            fillDaySelect(document.getElementById('onboardCCStatement'), '');
+            fillDaySelect(document.getElementById('onboardCCDue'), '');
+            document.getElementById('onboardCCLast4').value = '';
+            showFieldErrors({}, OB_FIELD_IDS, 'obErr-');
         }
-        function removeCCName(i) { onboardCCNames.splice(i, 1); renderCCNames(); }
-        function renderCCNames() {
-            document.getElementById('onboardCCNames').innerHTML = onboardCCNames.map((n, i) =>
-                `<div class="cc-name-row"><span>💳 ${esc(n)}</span><button class="remove-cc" onclick="removeCCName(${i})">✕</button></div>`
+
+        function onboardCardFormTouched() {
+            return Object.values(OB_FIELD_IDS).some(id => String(document.getElementById(id).value || '').trim() !== '');
+        }
+
+        // Returns true when a card was added.
+        function addOnboardCard() {
+            const res = validatePaymentMethodInput({
+                type: 'Credit card',
+                name: document.getElementById('customCCInput').value,
+                statementDay: document.getElementById('onboardCCStatement').value,
+                dueDay: document.getElementById('onboardCCDue').value,
+                last4: document.getElementById('onboardCCLast4').value,
+            }, { paymentMethods: [], creditCards: onboardCards.map(c => c.name), cardDetails: onboardCards });
+            showFieldErrors(res.errors, OB_FIELD_IDS, 'obErr-');
+            if (!res.ok) {
+                const el = document.getElementById(OB_FIELD_IDS[Object.keys(res.errors)[0]]);
+                if (el) el.focus();
+                return false;
+            }
+            const { name, statementDay, dueDay, last4 } = res.value;
+            onboardCards.push({ name, statementDay, dueDay, last4: last4 || '' });
+            resetOnboardCardForm();
+            renderOnboardCards();
+            return true;
+        }
+
+        function removeOnboardCard(i) {
+            if (i < 0 || i >= onboardCards.length) return;
+            onboardCards.splice(i, 1);
+            renderOnboardCards();
+        }
+
+        function renderOnboardCards() {
+            document.getElementById('onboardCCNames').innerHTML = onboardCards.map((c, i) =>
+                `<div class="pm-row" data-card="${escAttr(c.name)}">
+                    <span aria-hidden="true">💳</span>
+                    <div class="pm-main"><div class="pm-name">${esc(c.name)}</div><div class="pm-meta">${cardMetaHtml(c)}</div></div>
+                    <button class="pm-action pm-remove" onclick="removeOnboardCard(${i})" aria-label="Remove ${escAttr(c.name)}">✕</button>
+                </div>`
             ).join('');
+        }
+
+        // Pure: payment fields for a brand-new profile.
+        function buildOnboardingPaymentFields(payments, cards) {
+            const hasCC = payments.some(p => p.toLowerCase().includes('credit card'));
+            const list = hasCC ? cards : [];
+            return {
+                paymentMethods: [...payments],
+                creditCards: list.map(c => c.name),
+                cardDetails: list.map(c => ({ name: c.name, statementDay: c.statementDay, dueDay: c.dueDay, last4: c.last4 || '' })),
+            };
         }
 
         function renderOnboardThemes() {
@@ -3450,7 +4173,9 @@
             if (categories.length === 0) { toast('Select at least one category', 'error'); btn.disabled = false; btn.textContent = 'Save & Start Tracking'; return; }
 
             const hasCC = payments.some(p => p.toLowerCase().includes('credit card'));
-            if (hasCC && onboardCCNames.length === 0) { toast('Add at least one credit card name', 'error'); btn.disabled = false; btn.textContent = 'Save & Start Tracking'; return; }
+            // A half-typed card counts: add it, or stop and show what's missing.
+            if (hasCC && onboardCardFormTouched() && !addOnboardCard()) { toast('Finish the card details or clear them', 'error'); btn.disabled = false; btn.textContent = 'Save & Start Tracking'; return; }
+            if (hasCC && onboardCards.length === 0) { toast('Add at least one credit card', 'error'); btn.disabled = false; btn.textContent = 'Save & Start Tracking'; return; }
 
             const themes = {};
             for (const [t, cats] of Object.entries(onboardThemeMap)) {
@@ -3465,8 +4190,7 @@
                 displayName: currentUser.displayName || '',
                 email: currentUser.email || '',
                 photoURL: currentUser.photoURL || '',
-                paymentMethods: payments,
-                creditCards: hasCC ? onboardCCNames : [],
+                ...buildOnboardingPaymentFields(payments, onboardCards),
                 categories: categories,
                 themes: themes,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -3529,37 +4253,43 @@
             if (!userProfile) return;
 
             const catSelect = document.getElementById('expCategory');
-            catSelect.innerHTML = (userProfile.categories || DEFAULT_CATEGORIES).map(c => `<option value="${c}">${c}</option>`).join('');
+            catSelect.innerHTML = (userProfile.categories || DEFAULT_CATEGORIES).map(c => `<option value="${escAttr(c)}">${esc(c)}</option>`).join('');
 
             const paySelect = document.getElementById('expPayment');
-            paySelect.innerHTML = (userProfile.paymentMethods || DEFAULT_PAYMENTS).map(p => `<option value="${p}">${p}</option>`).join('');
+            const prevPay = paySelect.value;
+            paySelect.innerHTML = (userProfile.paymentMethods || DEFAULT_PAYMENTS).map(p => `<option value="${escAttr(p)}">${esc(p)}</option>`).join('');
+            if (prevPay && Array.from(paySelect.options || []).some(o => o.value === prevPay)) paySelect.value = prevPay;
 
-            const ccNames = userProfile.creditCards || ['Sapphiro', 'Neucard'];
-            const lastCard = getLastSelectedCard();
+            const ccNames = getCardNames();
+            const storedCard = getLastSelectedCard();
+            // A remembered card that has since been removed must not leave every radio unchecked.
+            const lastCard = storedCard && ccNames.includes(storedCard) ? storedCard : null;
             document.getElementById('cardPickerRadios').innerHTML = ccNames.map((n, i) => {
                 const isChecked = lastCard ? (n === lastCard) : (i === 0);
                 return `<label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
-                <input type="radio" name="cardType" value="${esc(n)}" style="accent-color:var(--accent-color);" ${isChecked ? 'checked' : ''} onchange="saveLastSelectedCard(this.value)"> ${esc(n)}
+                <input type="radio" name="cardType" value="${escAttr(n)}" style="accent-color:var(--accent-color);" ${isChecked ? 'checked' : ''} onchange="saveLastSelectedCard(this.value); updateBillingInfo();"> ${esc(n)}
             </label>`;
             }).join('');
 
             const editCatSelect = document.getElementById('editExpCategory');
-            editCatSelect.innerHTML = (userProfile.categories || DEFAULT_CATEGORIES).map(c => `<option value="${c}">${c}</option>`).join('');
+            editCatSelect.innerHTML = (userProfile.categories || DEFAULT_CATEGORIES).map(c => `<option value="${escAttr(c)}">${esc(c)}</option>`).join('');
 
             const editPaySelect = document.getElementById('editExpPayment');
+            const prevEditPay = editPaySelect.value;
             const payments = userProfile.paymentMethods || DEFAULT_PAYMENTS;
-            let editPayOptions = payments.map(p => `<option value="${p}">${p}</option>`).join('');
+            let editPayOptions = payments.map(p => `<option value="${escAttr(p)}">${esc(p)}</option>`).join('');
             if (ccNames.length > 0) {
                 ccNames.forEach(n => {
-                    editPayOptions += `<option value="CC - ${n}">CC - ${n}</option>`;
+                    editPayOptions += `<option value="CC - ${escAttr(n)}">CC - ${esc(n)}</option>`;
                 });
             }
             editPaySelect.innerHTML = editPayOptions;
+            if (prevEditPay && Array.from(editPaySelect.options || []).some(o => o.value === prevEditPay)) editPaySelect.value = prevEditPay;
 
             document.getElementById('editCardPickerRadios').innerHTML = ccNames.map((n, i) => {
                 const isChecked = lastCard ? (n === lastCard) : (i === 0);
                 return `<label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.88rem;text-transform:none;">
-                <input type="radio" name="editCardType" value="${esc(n)}" style="accent-color:var(--accent-color);" ${isChecked ? 'checked' : ''} onchange="saveLastSelectedCard(this.value)"> ${esc(n)}
+                <input type="radio" name="editCardType" value="${escAttr(n)}" style="accent-color:var(--accent-color);" ${isChecked ? 'checked' : ''} onchange="saveLastSelectedCard(this.value); updateEditBillingInfo();"> ${esc(n)}
             </label>`;
             }).join('');
 
@@ -3712,9 +4442,10 @@
                 if (s > 0) finalAmount = s;
             }
 
-            const resolvedPayment = payment === 'Credit card'
-                ? 'CC - ' + (document.querySelector('input[name="cardType"]:checked')?.value || 'Card')
-                : payment;
+            const selectedCard = payment === 'Credit card'
+                ? (document.querySelector('input[name="cardType"]:checked')?.value || 'Card')
+                : null;
+            const resolvedPayment = selectedCard ? 'CC - ' + selectedCard : payment;
 
             const docData = {
                 expenseName: name, category, amount: finalAmount, originalAmount,
@@ -3723,7 +4454,7 @@
                 year: dateObj.getFullYear(),
                 paymentMethod: resolvedPayment,
                 shared: shared ? 'Yes' : 'No',
-                billingCycle: payment === 'Credit card' ? getBillingCycle(dateObj) : '',
+                billingCycle: selectedCard ? getBillingCycle(dateObj, selectedCard) : '',
                 manuallyCategorized: userOverrode,
                 timestamp: new Date()
             };
@@ -3816,7 +4547,8 @@
             const el = document.getElementById('billingInfo');
             const cp = document.getElementById('cardPicker');
             if (p === 'Credit card' && d) {
-                el.textContent = 'Billing Cycle: ' + getBillingCycle(new Date(d + 'T00:00:00'));
+                const card = document.querySelector('input[name="cardType"]:checked')?.value || null;
+                el.textContent = describeBillingCycle(new Date(d + 'T00:00:00'), card);
                 el.style.display = 'block';
                 cp.style.display = 'block';
             } else {
@@ -3843,7 +4575,8 @@
             const el = document.getElementById('editBillingInfo');
             const cp = document.getElementById('editCardPicker');
             if (p === 'Credit card' && d) {
-                el.textContent = 'Billing Cycle: ' + getBillingCycle(new Date(d + 'T00:00:00'));
+                const card = document.querySelector('input[name="editCardType"]:checked')?.value || null;
+                el.textContent = describeBillingCycle(new Date(d + 'T00:00:00'), card);
                 el.style.display = 'block';
                 cp.style.display = 'block';
             } else {
@@ -4265,10 +4998,13 @@
             const categories = (userProfile?.categories || DEFAULT_CATEGORIES).join(', ');
             const payments = (userProfile?.paymentMethods || userProfile?.payments || DEFAULT_PAYMENTS).join(', ');
             const ccNames = userProfile?.creditCards || [];
+            const last4Lines = ((userProfile && userProfile.cardDetails) || [])
+                .filter(c => c && /^\d{4}$/.test(c.last4 || '') && ccNames.includes(c.name))
+                .map(c => `${c.name} ends in ${c.last4}`);
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             const ccBlock = ccNames.length
-                ? `\n\nCREDIT CARD EXTRACTION (CRITICAL):\nThe user has these credit cards: ${ccNames.join(', ')}.\n- If the input mentions a specific card by name (exact, partial, or fuzzy — e.g. "neu", "neucard", "HDFC neu", "sapphiro", "saph", "on the sapphiro"), set paymentMethod to "CC - <CardName>" using the EXACT casing from the list above.\n- If the input mentions a credit card / CC / "card" generally without naming one, set paymentMethod to "Credit card" (the app will default to the last-used card).\n- Do NOT invent a card name that isn't in the list. If unsure, use "Credit card".`
+                ? `\n\nCREDIT CARD EXTRACTION (CRITICAL):\nThe user has these credit cards: ${ccNames.join(', ')}.\n- If the input mentions a specific card by name (exact, partial, or fuzzy — e.g. "neu", "neucard", "HDFC neu", "sapphiro", "saph", "on the sapphiro"), set paymentMethod to "CC - <CardName>" using the EXACT casing from the list above.\n- If the input mentions a credit card / CC / "card" generally without naming one, set paymentMethod to "Credit card" (the app will default to the last-used card).\n- Do NOT invent a card name that isn't in the list. If unsure, use "Credit card".${last4Lines.length ? `\n- Card numbers: ${last4Lines.join('; ')}. If the input shows masked card digits (e.g. "XX1234", "ending 1234"), use the card with those last 4 digits.` : ''}`
                 : '';
             return `You are an expense parser for an Indian expense tracker. Extract expense details and return ONLY raw JSON — no markdown fences, no explanation, no extra text.
 
@@ -4330,7 +5066,7 @@ OTHER RULES:
 
         async function callGeminiParseText(text) {
             const system = buildParseSystemInstruction() + ragBuildFewShot(text);
-            return callExpenseLLM(text, system, true);
+            return applyCardLast4Match(await callExpenseLLM(text, system, true), text);
         }
 
         async function callGeminiParseImage(base64Data, mimeType) {
@@ -4683,13 +5419,13 @@ OTHER RULES:
                 document.getElementById('editSplitFields').classList.remove('show');
             }
 
-            updateEditBillingInfo();
-
             if (payVal.startsWith('CC - ')) {
                 const cardName = payVal.replace('CC - ', '');
                 const radio = document.querySelector(`input[name="editCardType"][value="${cardName}"]`);
                 if (radio) radio.checked = true;
             }
+
+            updateEditBillingInfo();
 
             document.getElementById('editExpenseModal').classList.add('show');
         }
@@ -4728,8 +5464,9 @@ OTHER RULES:
             }
 
             let resolvedPayment = payment;
+            let selectedCard = null;
             if (payment === 'Credit card') {
-                const selectedCard = document.querySelector('input[name="editCardType"]:checked')?.value || 'Card';
+                selectedCard = document.querySelector('input[name="editCardType"]:checked')?.value || 'Card';
                 resolvedPayment = 'CC - ' + selectedCard;
                 saveLastSelectedCard(selectedCard);
             }
@@ -4744,7 +5481,7 @@ OTHER RULES:
                 year: dateObj.getFullYear(),
                 paymentMethod: resolvedPayment,
                 shared: shared ? 'Yes' : 'No',
-                billingCycle: payment === 'Credit card' ? getBillingCycle(dateObj) : '',
+                billingCycle: selectedCard ? getBillingCycle(dateObj, selectedCard) : '',
             };
             if (categoryChanged) updateData.manuallyCategorized = true;
             if (shared) {
@@ -6162,6 +6899,7 @@ Rules:
                 document.getElementById('expName').focus();
             }
             if (e.key === 'Escape') {
+                closeProfileSheet();
                 closeEditModal();
                 closeGoalRiskModal();
                 closeMonthlySummary();

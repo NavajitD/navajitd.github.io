@@ -1,4 +1,4 @@
-const CACHE_NAME = 'expense-tracker-v12';
+const CACHE_NAME = 'expense-tracker-v13';
 
 // App shell + critical SDKs precached for offline boot.
 // stale-while-revalidate keeps these fresh in the background.
