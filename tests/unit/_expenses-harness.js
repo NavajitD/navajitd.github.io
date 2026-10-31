@@ -90,10 +90,11 @@ function makeEl(id) {
  *   - t       : the __test seam for reading/writing module state
  *   - getById : grab a stub DOM element by id (same instance the code sees)
  */
-export function createApp() {
+export function createApp({ captureTimers = false } = {}) {
   const html = readFileSync(HTML_PATH, 'utf8');
   const scriptBody = extractInlineScript(html) + EPILOGUE;
 
+  const timers = [];
   const store = new Map();
   const localStorage = {
     getItem: k => (store.has(k) ? store.get(k) : null),
@@ -182,7 +183,10 @@ export function createApp() {
     addEventListener() {}, removeEventListener() {}, dispatchEvent() { return true; },
     scrollTo() {}, alert() {}, confirm() { return true; }, prompt() { return null; },
     console: { log() {}, warn() {}, error() {}, info() {}, debug() {} },
-    setTimeout: () => 0, clearTimeout: () => {}, setInterval: () => 0, clearInterval: () => {},
+    // setTimeout is a no-op unless captureTimers: then callbacks are kept in
+    // `timers` ({ fn, ms }) so a test can run one deliberately.
+    setTimeout: captureTimers ? (fn, ms) => { timers.push({ fn, ms }); return timers.length; } : () => 0,
+    clearTimeout: () => {}, setInterval: () => 0, clearInterval: () => {},
     requestAnimationFrame: () => 0, cancelAnimationFrame: () => {},
     queueMicrotask: cb => Promise.resolve().then(cb),
     localStorage, document, firebase,
@@ -214,5 +218,5 @@ export function createApp() {
     loadError = e;
   }
 
-  return { ctx: sandbox, t: sandbox.__test, localStorage, getById, loadError, testError: sandbox.__testError, txWrites, txState };
+  return { ctx: sandbox, t: sandbox.__test, localStorage, getById, loadError, testError: sandbox.__testError, txWrites, txState, timers };
 }

@@ -3671,35 +3671,34 @@
 
         /* ═══════════════════════════════════════════════════
            AUTH + ROUTING
-           — Dual strategy: popup first, redirect fallback.
-           — iOS standalone PWA cannot open popups, so we
-             detect that and go straight to redirect.
-           — getRedirectResult() is checked on every page
-             load to complete any pending redirect sign-in.
+           — Popup everywhere a popup can open: browser tabs AND
+             home-screen apps (iOS opens it in an in-app browser,
+             Android in a Custom Tab).
+           — Redirect only for in-app browsers or when the popup
+             is blocked. signInWithRedirect relies on storage in a
+             third-party iframe on authDomain (firebaseapp.com ≠
+             navajitd.github.io), which Safari 16.1+, Firefox 109+
+             and Chrome 115+ block: the user comes back from
+             Google to the login screen. Firebase docs:
+             /docs/auth/web/redirect-best-practices
            ═══════════════════════════════════════════════════ */
 
-        /* Detect environments where popups won't work */
+        /* Environments where a popup can't work at all */
         function shouldUseRedirect() {
-            // iOS standalone PWA (added to home screen) — popups are blocked
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                || window.navigator.standalone === true;
             // In-app browsers (Instagram, Facebook, etc.) — popups often fail
             const ua = navigator.userAgent || '';
-            const isInApp = /FBAN|FBAV|Instagram|Line\/|Twitter|MicroMessenger/i.test(ua);
-            return isStandalone || isInApp;
+            return /FBAN|FBAV|Instagram|Line\/|Twitter|MicroMessenger/i.test(ua);
         }
 
         /* Fallback: if Firebase auth doesn't resolve within 5s, show the login screen.
-           NOTE: auth.getRedirectResult() was removed — it blocks onAuthStateChanged indefinitely
-           in Incognito, iOS standalone, and cross-origin cookie-restricted environments,
-           since this app uses GIS (signInWithCredential) not signInWithRedirect. */
+           (auth.getRedirectResult() is deliberately not called — it can block
+           onAuthStateChanged indefinitely in cookie-restricted environments.) */
         let authResolved = false;
         const authFallbackTimer = setTimeout(() => {
             if (!authResolved) {
                 console.warn('[Auth] Timeout — showing login screen as fallback');
                 document.getElementById('authLoading').style.display = 'none';
                 document.getElementById('loginScreen').style.display = 'flex';
-                initGoogleSignIn();
             }
         }, 5000);
 
@@ -3761,7 +3760,7 @@
             if (loginBtn) { loginBtn.disabled = true; loginBtn.style.opacity = '0.6'; }
 
             if (shouldUseRedirect()) {
-                // Standalone PWA / in-app browser: use redirect (popups are blocked)
+                // In-app browser: popups don't work there
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('authLoading').style.display = 'flex';
                 authRedirectPending = true;
@@ -3769,7 +3768,8 @@
                 return;
             }
 
-            // Default: try popup first
+            // Default (browser tabs and home-screen apps): popup, opened
+            // synchronously from the tap so it isn't blocked
             auth.signInWithPopup(provider).then(() => {
                 // onAuthStateChanged handles the rest
             }).catch(e => {
@@ -3788,7 +3788,7 @@
                 }
 
                 // User closed popup — just re-enable button
-                if (code === 'auth/popup-closed-by-browser' || code === 'auth/cancelled-popup-request') {
+                if (code === 'auth/popup-closed-by-user' || code === 'auth/popup-closed-by-browser' || code === 'auth/cancelled-popup-request') {
                     if (loginBtn) { loginBtn.disabled = false; loginBtn.style.opacity = '1'; }
                     return;
                 }
