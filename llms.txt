@@ -1,6 +1,6 @@
 # Navajit D
 
-> AI Product Manager at Pine Labs (Bengaluru). Engineer-turned-PM shipping production AI agents — voice, email, and multimodal chat — with measurable ROI over hype. Also writes essays and builds side projects.
+> AI Product Manager at Zoca (Bengaluru), building and scaling its AI receptionist for salons and spas. Before that, shipped production AI agents (voice, email and multimodal chat) at Pine Labs. IIT Bombay aerospace engineer; also writes essays and builds side projects.
 
 ## Pages
 - [Home](https://navajitd.github.io/): Profile, experience, and contact.

@@ -34,9 +34,10 @@ test('Bengali and Hindi translate every marked element on the page', () => {
   }
 });
 
-test('translations keep the Pine Labs One link and use plain hyphens', () => {
+test('translations keep the Zoca link and use plain hyphens', () => {
   for (const l of ['bn', 'hi']) {
-    assert.match(I18N[l].intro1, /<a href="https:\/\/one\.pinelabs\.com"[^>]*class="merchant-link">Pine Labs One<\/a>/);
+    assert.match(I18N[l].zocaMeta, /<a href="https:\/\/app\.zoca\.com\/"[^>]*class="merchant-link">Zoca<\/a>/);
+    assert.match(I18N[l].zocaLead, /<a href="https:\/\/zoca\.com\/front-desk-agent"[^>]*class="merchant-link">AI [^<]+<\/a>/);
     for (const [k, v] of Object.entries(I18N[l])) assert.doesNotMatch(v, /[\u2013\u2014]/, `${l}.${k}`);
   }
 });

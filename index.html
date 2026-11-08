@@ -14,7 +14,7 @@
     <title>Navajit D, AI Product Manager</title>
 
     <!-- SEO -->
-    <meta name="description" content="AI Product Manager at Pine Labs shipping production AI agents — voice, email, and multimodal chat — with real ROI. Engineer-turned-PM in Bengaluru.">
+    <meta name="description" content="AI Product Manager at Zoca in Bengaluru, building and scaling its AI receptionist for salons and spas. Before that, shipped production AI agents at Pine Labs.">
     <meta name="author" content="Navajit D">
     <meta name="theme-color" content="#2563eb">
     <link rel="canonical" href="https://navajitd.github.io/">
@@ -23,7 +23,7 @@
     <meta property="og:type" content="profile">
     <meta property="og:site_name" content="Navajit D">
     <meta property="og:title" content="Navajit D, AI Product Manager">
-    <meta property="og:description" content="AI Product Manager at Pine Labs shipping production AI agents — voice, email, and multimodal chat — with real ROI.">
+    <meta property="og:description" content="AI Product Manager at Zoca, building and scaling its AI receptionist for salons and spas. Before that, shipped production AI agents at Pine Labs.">
     <meta property="og:url" content="https://navajitd.github.io/">
     <meta property="og:image" content="https://navajitd.github.io/og-image.png">
     <meta property="og:image:width" content="1200">
@@ -35,7 +35,7 @@
     <meta name="twitter:site" content="@solitary_nav">
     <meta name="twitter:creator" content="@solitary_nav">
     <meta name="twitter:title" content="Navajit D, AI Product Manager">
-    <meta name="twitter:description" content="AI Product Manager at Pine Labs shipping production AI agents — voice, email, and multimodal chat — with real ROI.">
+    <meta name="twitter:description" content="AI Product Manager at Zoca, building and scaling its AI receptionist for salons and spas. Before that, shipped production AI agents at Pine Labs.">
     <meta name="twitter:image" content="https://navajitd.github.io/og-image.png">
 
     <!-- Structured data -->
@@ -49,11 +49,12 @@
           "name": "Navajit D",
           "alternateName": "Navjit Debnath",
           "jobTitle": "AI Product Manager",
-          "worksFor": { "@type": "Organization", "name": "Pine Labs" },
+          "worksFor": { "@type": "Organization", "name": "Zoca", "url": "https://zoca.com" },
+          "alumniOf": { "@type": "CollegeOrUniversity", "name": "Indian Institute of Technology Bombay" },
           "address": { "@type": "PostalAddress", "addressLocality": "Bengaluru", "addressCountry": "IN" },
           "url": "https://navajitd.github.io/",
           "image": "https://navajitd.github.io/og-image.png",
-          "description": "AI Product Manager at Pine Labs building production AI agents with measurable ROI.",
+          "description": "AI Product Manager at Zoca, building and scaling its AI receptionist for salons and spas. Previously built production AI agents at Pine Labs.",
           "sameAs": [
             "https://github.com/navajitd",
             "https://linkedin.com/in/navjit-debnath-34b1b5191",
@@ -225,6 +226,86 @@
         .experience-meta { font-size: 0.875rem; color: var(--muted-color); margin-bottom: 0.75rem; }
         [data-theme="colorful"] .experience-meta { color: var(--secondary-color); }
 
+        /* Experience cards: a carousel per role, one result per card. The
+           10 x 10 grid is the result as a share of 100; squares in the accent
+           colour are what moved (filled when gained, hollow when cut). */
+        .xp-carousel {
+            position: relative;
+            --xp-move: var(--accent-color);
+            --xp-kept: #c9ccd1; --xp-kept: color-mix(in srgb, var(--text-color) 28%, transparent);
+            --xp-empty: #eef0f2; --xp-empty: color-mix(in srgb, var(--text-color) 7%, transparent);
+        }
+        .xp-lead { margin-bottom: 1.25rem; }
+        .xp-track {
+            position: relative; list-style: none; margin: 0; padding: 0.125rem 0 0.75rem;
+            display: grid; grid-auto-flow: column; grid-auto-columns: calc(100% - 3.5rem); gap: 0.75rem;
+            overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+        .xp-track::-webkit-scrollbar { display: none; }
+        .xp-track:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 3px; border-radius: 10px; }
+        .xp-card {
+            scroll-snap-align: start; min-width: 0; display: flex; flex-direction: column;
+            padding: 1.25rem 1.25rem 1rem; border: 1px solid var(--border-color); border-radius: 10px;
+            background: var(--bg-color);
+        }
+        [data-theme="colorful"] .xp-card { background: rgba(255, 255, 255, 0.75); }
+        .xp-stat { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.125rem; }
+        .xp-metric {
+            font-size: 0.75rem; line-height: 1.4; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--muted-color); margin-bottom: 0.625rem; text-wrap: balance;
+        }
+        .xp-delta { font-size: 2.5rem; line-height: 1; font-weight: 700; color: var(--xp-move); margin: 0 0 0.5rem; }
+        .xp-values { font-size: 0.9375rem; margin: 0; }
+        .xp-values .xp-before, .xp-values .xp-unit { color: var(--muted-color); }
+        .xp-unit { white-space: nowrap; }
+        .xp-waffle { flex: none; display: grid; grid-template-columns: repeat(10, 0.5rem); gap: 3px; margin-top: 0.125rem; }
+        .xp-waffle i {
+            width: 0.5rem; height: 0.5rem; border-radius: 2px; background: var(--xp-empty);
+            transition: background-color 0.35s ease, box-shadow 0.35s ease; transition-delay: var(--d, 0ms);
+        }
+        .xp-waffle i.is-kept { background: var(--xp-kept); }
+        .xp-waffle i.is-cut { background: var(--xp-move); }
+        .xp-card.is-shown .xp-waffle i.is-gain { background: var(--xp-move); }
+        .xp-card.is-shown .xp-waffle i.is-cut { background: transparent; box-shadow: inset 0 0 0 1.5px var(--xp-move); }
+        .xp-points { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+        .xp-points li { position: relative; padding-left: 1.125rem; font-size: 0.9375rem; line-height: 1.55; text-wrap: pretty; }
+        .xp-points li::before {
+            content: ""; position: absolute; left: 0.125rem; top: 0.6em;
+            width: 0.375rem; height: 0.375rem; border-radius: 1px; background: var(--xp-move);
+        }
+        /* Arrows float on the cards' outer edges, centred on them, and only on
+           a side that has another card to go to. */
+        .xp-btn {
+            position: absolute; top: calc(50% - 0.3125rem); z-index: 1;
+            width: 2.25rem; height: 2.25rem; padding: 0; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); cursor: pointer; transform: translateY(-50%);
+            transition: opacity 0.25s ease, visibility 0.25s, border-color 0.2s ease, color 0.2s ease;
+        }
+        .xp-prev { left: -1.125rem; }
+        .xp-next { right: -1.125rem; }
+        .xp-btn::before {
+            content: ""; width: 0.5rem; height: 0.5rem;
+            border-top: 2px solid currentColor; border-right: 2px solid currentColor;
+        }
+        .xp-next::before { transform: translateX(-0.09rem) rotate(45deg); }
+        .xp-prev::before { transform: translateX(0.09rem) rotate(-135deg); }
+        .xp-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        .xp-btn:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+        .xp-btn:disabled { opacity: 0; visibility: hidden; }
+        .xp-btn[hidden] { display: none; }
+        @media (max-width: 640px) {
+            .xp-track { grid-auto-columns: calc(100% - 2rem); gap: 0.5rem; }
+            .xp-card { padding: 1rem 1rem 0.875rem; }
+            .xp-delta { font-size: 2.125rem; }
+            .xp-btn { width: 2rem; height: 2rem; }
+            .xp-prev { left: -0.875rem; }
+            .xp-next { right: -0.875rem; }
+        }
+        @media (prefers-reduced-motion: reduce) { .xp-waffle i { transition: none; } }
+
         /* Résumé */
         .resume-block { margin-top: 2.5rem; }
         .resume-cta { display: flex; gap: 0.75rem; flex-wrap: wrap; }
@@ -279,7 +360,9 @@
         :lang(hi) { font-family: "Anek Devanagari", var(--font-sans); }
         .intro-title :lang(bn), .intro-title :lang(hi) { font-weight: 600; }
         .read-on:lang(bn), .read-on:lang(hi) { font-size: 0.8125rem; }
-        p:lang(bn), p:lang(hi) { font-size: 1.0625rem; line-height: 1.75; }
+        .xp-metric:lang(bn), .xp-metric:lang(hi) { letter-spacing: 0; font-size: 0.875rem; }
+        .xp-points li:lang(bn), .xp-points li:lang(hi) { font-size: 1rem; line-height: 1.65; }
+        :is(.intro, .experience-item) > p:lang(bn), :is(.intro, .experience-item) > p:lang(hi) { font-size: 1.0625rem; line-height: 1.75; }
         .merchant-link:lang(bn), .merchant-link:lang(hi) {
             border-bottom: 0; text-decoration: underline; text-decoration-color: var(--muted-color);
             text-decoration-thickness: 1px; text-underline-offset: 0.25em;
@@ -325,28 +408,115 @@
             </h1>
             <a class="read-on" id="readOn" href="?lang=bn" hidden></a>
         </div>
-        <p data-i18n="intro1">I'm a Product Manager with an engineering background. At Pine Labs, I have built <a href="https://one.pinelabs.com" target="_blank" rel="noopener noreferrer" class="merchant-link">Pine Labs One</a> into a reliable omnichannel merchant experience platform as well as their AI-enhanced omnichannel digital-native support experience.</p>
-        <p data-i18n="intro2">I love creating, so I tinker with ink, paints, (often AI-generated) code, and verses. Look around and hit me up.</p>
+        <p data-i18n="intro1">I graduated in aerospace engineering from IIT Bombay, with an honours project on tracking algorithms for missile interception and a minor in Systems and Control Engineering.</p>
+        <p data-i18n="intro2">Design has always intrigued me, and I love making things: I write now and then, paint, read and boulder, and lately I’ve been building a lot with AI-⁠generated code. Have a look around.</p>
     </section>
     
     <section id="experience">
         <h2 class="section-title" data-i18n="experience">Experience</h2>
         
+        <div class="experience-item" id="zoca">
+            <h3 class="experience-title" data-i18n="zocaTitle">AI Product Manager</h3>
+            <div class="experience-meta" data-i18n="zocaMeta"><a href="https://app.zoca.com/" target="_blank" rel="noopener noreferrer" class="merchant-link">Zoca</a>, Bengaluru · Aug 2026 - Present</div>
+            <p class="xp-lead" data-i18n="zocaLead">Building and scaling Zoca’s <a href="https://zoca.com/front-desk-agent" target="_blank" rel="noopener noreferrer" class="merchant-link">AI receptionist</a> product for salons and spas.</p>
+            <div class="xp-carousel" aria-roledescription="carousel" aria-label="Results at Zoca" data-i18n-aria="xpRegion">
+                <ol class="xp-track" tabindex="0" aria-label="Results at Zoca, scroll sideways for more" data-i18n-aria="xpTrack">
+                <li class="xp-card" aria-roledescription="slide" aria-label="1 of 5">
+                    <div class="xp-stat">
+                        <div>
+                            <h4 class="xp-metric" data-i18n="zc1Metric">Customer appointments booked for businesses</h4>
+                            <p class="xp-delta" data-i18n="zc1Delta">2×</p>
+                            <p class="xp-values" data-i18n="zc1Values"><span class="xp-before">26%</span> → 53% <span class="xp-unit">of conversations</span></p>
+                        </div>
+                        <div class="xp-waffle" data-before="26" data-after="53" aria-hidden="true"></div>
+                    </div>
+                    <ul class="xp-points">
+                        <li data-i18n="zc1P1">Rebuilt the appointment search to be more intuitive for callers</li>
+                        <li data-i18n="zc1P2">Ensured customer choices flow deterministically across the booking funnel</li>
+                        <li data-i18n="zc1P3">Built extensive observability for booking assurance across 8+ platforms</li>
+                    </ul>
+                </li>
+                <li class="xp-card" aria-roledescription="slide" aria-label="2 of 5">
+                    <div class="xp-stat">
+                        <div>
+                            <h4 class="xp-metric" data-i18n="zc2Metric">Calls where the agent broke trust</h4>
+                            <p class="xp-delta" data-i18n="zc2Delta">−86%</p>
+                            <p class="xp-values" data-i18n="zc2Values"><span class="xp-before">8.9</span> → 1.3 <span class="xp-unit">per 100 calls</span></p>
+                        </div>
+                        <div class="xp-waffle" data-before="9" data-after="1" aria-hidden="true"></div>
+                    </div>
+                    <ul class="xp-points">
+                        <li data-i18n="zc2P1">Shipped a register-callback tool to every production agent, called before any callback promise</li>
+                        <li data-i18n="zc2P2">Fixed the root causes of wrong prices quoted to callers</li>
+                        <li data-i18n="zc2P3">Stopped the agent claiming card links it never sent, or facts it hadn’t verified</li>
+                    </ul>
+                </li>
+                <li class="xp-card" aria-roledescription="slide" aria-label="3 of 5">
+                    <div class="xp-stat">
+                        <div>
+                            <h4 class="xp-metric" data-i18n="zc3Metric">Salons using Brain, the agent’s knowledge base</h4>
+                            <p class="xp-delta" data-i18n="zc3Delta">3×</p>
+                            <p class="xp-values" data-i18n="zc3Values"><span class="xp-before">18%</span> → 53% <span class="xp-unit">of salons</span></p>
+                        </div>
+                        <div class="xp-waffle" data-before="18" data-after="53" aria-hidden="true"></div>
+                    </div>
+                    <ul class="xp-points">
+                        <li data-i18n="zc3P1">Sent salons the questions the agent couldn’t answer, so they could fill in Brain</li>
+                        <li data-i18n="zc3P2">Had account managers email 13 salons a list of their pending questions</li>
+                        <li data-i18n="zc3P3">Turned Brain recall back on, so the agent uses those answers before saying “I don’t know”</li>
+                    </ul>
+                </li>
+                <li class="xp-card" aria-roledescription="slide" aria-label="4 of 5">
+                    <div class="xp-stat">
+                        <div>
+                            <h4 class="xp-metric" data-i18n="zc4Metric">Calls with over 5 seconds of dead air</h4>
+                            <p class="xp-delta" data-i18n="zc4Delta">−44%</p>
+                            <p class="xp-values" data-i18n="zc4Values"><span class="xp-before">69%</span> → 38% <span class="xp-unit">of calls</span></p>
+                        </div>
+                        <div class="xp-waffle" data-before="69" data-after="38" aria-hidden="true"></div>
+                    </div>
+                    <ul class="xp-points">
+                        <li data-i18n="zc4P1">Retuned speech recognition: 500 ms endpointing, noise handling, boosted names</li>
+                        <li data-i18n="zc4P2">Fixed stale MCP connections, cutting tool errors from 3.5% to 1.3%</li>
+                        <li data-i18n="zc4P3">Cut the prompt from 37k to 21k characters, with sections picked per call</li>
+                    </ul>
+                </li>
+                <li class="xp-card" aria-roledescription="slide" aria-label="5 of 5">
+                    <div class="xp-stat">
+                        <div>
+                            <h4 class="xp-metric" data-i18n="zc5Metric">Calls that needed a person</h4>
+                            <p class="xp-delta" data-i18n="zc5Delta">−32%</p>
+                            <p class="xp-values" data-i18n="zc5Values"><span class="xp-before">58%</span> → 39% <span class="xp-unit">of calls</span></p>
+                        </div>
+                        <div class="xp-waffle" data-before="58" data-after="39" aria-hidden="true"></div>
+                    </div>
+                    <ul class="xp-points">
+                        <li data-i18n="zc5P1">Made the agent offer its help once before any cold transfer</li>
+                        <li data-i18n="zc5P2">Shipped take-message and waitlist tools to use instead of transferring</li>
+                    </ul>
+                </li>
+                </ol>
+                <button type="button" class="xp-btn xp-prev" aria-label="Previous result" data-i18n-aria="xpPrev" hidden></button>
+                <button type="button" class="xp-btn xp-next" aria-label="Next result" data-i18n-aria="xpNext" hidden></button>
+                <p class="sr-only xp-status" aria-live="polite">Result 1 of 5</p>
+            </div>
+        </div>
+
         <div class="experience-item">
             <h3 class="experience-title" data-i18n="job1Title">AI Product Manager</h3>
-            <div class="experience-meta" data-i18n="job1Meta">Pine Labs, Bengaluru · May 2025 – Present</div>
+            <div class="experience-meta" data-i18n="job1Meta">Pine Labs, Bengaluru · May 2025 - Jul 2026</div>
             <p data-i18n="job1Body">Founding AI PM shipping production AI agents with ROI over hype — ₹1.6 Cr/year in cost optimisation across a 32-initiative roadmap. A 24×7 multilingual voice agent now authenticates and resolves 44% of incoming calls; email agents auto-triage 59% of inbound (and deflect 56% in Malaysia). Also built a multimodal chat agent with contextual memory that lifted self-serve adoption 15%.</p>
         </div>
 
         <div class="experience-item">
             <h3 class="experience-title" data-i18n="job2Title">Product Owner, Pine Labs One (Platform & Growth)</h3>
-            <div class="experience-meta" data-i18n="job2Meta">Pine Labs, Bengaluru · Sep 2024 – May 2025</div>
+            <div class="experience-meta" data-i18n="job2Meta">Pine Labs, Bengaluru · Sep 2024 - May 2025</div>
             <p data-i18n="job2Body">Grew the merchant super-app from 49k to 100k MAUs with OTP login (+18% activation), vernacular expansion, and seven 0-to-1 features. Launched a merchant referral engine that cut CAC by ₹6 Cr, and replaced a 19-tool support stack with 3 — dropping p95 report time 73% to 90s.</p>
         </div>
 
         <div class="experience-item">
             <h3 class="experience-title" data-i18n="job3Title">Associate Product Manager, Pine Labs One</h3>
-            <div class="experience-meta" data-i18n="job3Meta">Pine Labs, Bengaluru · Jul 2023 – Sep 2024</div>
+            <div class="experience-meta" data-i18n="job3Meta">Pine Labs, Bengaluru · Jul 2023 - Sep 2024</div>
             <p data-i18n="job3Body">Shipped sales lead collection in 2 days — 300+ high-quality leads/month at 77% conversion, a third of all digital sales. Added invoice, bill-payment, and gift-card cross-sells (₹0.24 Cr/year) and drove retention up 22.8% quarter-on-quarter through field verification, call-centre redirection, and latency fixes.</p>
         </div>
 
@@ -387,17 +557,19 @@
     "msgSending": "Sending…",
     "msgThanks": "Thanks — I'll be in touch.",
     "msgSent": "Sent ✓",
-    "msgError": "Something went wrong — try again later."
+    "msgError": "Something went wrong — try again later.",
+    "xpStatus": "Result {n} of {total}",
+    "xpSlide": "{n} of {total}"
   },
   "bn": {
     "name": "বাংলা",
     "greeting": "নমস্কার, আমি নভোজিৎ।",
     "readOn": "বাকিটা বাংলায় পড়ুন →",
-    "intro1": "আমি ইঞ্জিনিয়ারিং ব্যাকগ্রাউন্ডের একজন প্রোডাক্ট ম্যানেজার। পাইন ল্যাবসে আমি <a href=\"https://one.pinelabs.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">Pine Labs One<\/a>-কে একটি নির্ভরযোগ্য অমনিচ্যানেল মার্চেন্ট এক্সপেরিয়েন্স প্ল্যাটফর্ম হিসেবে গড়ে তুলেছি, সেই সঙ্গে তাদের AI-চালিত অমনিচ্যানেল ডিজিটাল সাপোর্ট এক্সপেরিয়েন্সও।",
-    "intro2": "নতুন কিছু গড়তে ভালোবাসি, তাই কালি, রং, (প্রায়ই AI-এর লেখা) কোড আর কবিতা নিয়ে নাড়াচাড়া করি। ঘুরে দেখুন, আর যোগাযোগ করুন।",
+    "intro1": "আমি আইআইটি বম্বে থেকে অ্যারোস্পেস ইঞ্জিনিয়ারিং পাশ করেছি। অনার্স প্রজেক্ট ছিল মিসাইল ইন্টারসেপশনের ট্র্যাকিং অ্যালগরিদম নিয়ে, আর মাইনর সিস্টেমস অ্যান্ড কন্ট্রোল ইঞ্জিনিয়ারিং-এ।",
+    "intro2": "ডিজাইন আমাকে বরাবরই টানে, আর নতুন কিছু বানাতে ভালোবাসি: মাঝে মাঝে লিখি, ছবি আঁকি, পড়ি, বোল্ডারিং করি, আর ইদানীং AI-এর লেখা কোড দিয়ে অনেক কিছু বানাচ্ছি। ঘুরে দেখুন।",
     "experience": "অভিজ্ঞতা",
     "job1Title": "AI প্রোডাক্ট ম্যানেজার",
-    "job1Meta": "পাইন ল্যাবস, বেঙ্গালুরু · মে ২০২৫ থেকে এখন",
+    "job1Meta": "পাইন ল্যাবস, বেঙ্গালুরু · মে ২০২৫ থেকে জুলাই ২০২৬",
     "job1Body": "প্রথম AI PM হিসেবে প্রোডাকশনে AI এজেন্ট চালু করছি, যেখানে হাইপের আগে ROI: ৩২টি উদ্যোগের রোডম্যাপ জুড়ে বছরে ₹১.৬ কোটি খরচ সাশ্রয়। ২৪×৭ বহুভাষিক ভয়েস এজেন্ট এখন ৪৪% ইনকামিং কলে গ্রাহকের পরিচয় যাচাই করে সমস্যার সমাধান করে; ইমেল এজেন্ট ৫৯% ইনবাউন্ড নিজে থেকে বাছাই করে (আর মালয়েশিয়ায় ৫৬% ডিফ্লেক্ট করে)। প্রসঙ্গ মনে রাখতে পারে এমন একটি মাল্টিমোডাল চ্যাট এজেন্টও বানিয়েছি, যাতে সেলফ-সার্ভ ব্যবহার ১৫% বেড়েছে।",
     "job2Title": "প্রোডাক্ট ওনার, Pine Labs One (প্ল্যাটফর্ম ও গ্রোথ)",
     "job2Meta": "পাইন ল্যাবস, বেঙ্গালুরু · সেপ্টেম্বর ২০২৪ থেকে মে ২০২৫",
@@ -413,17 +585,55 @@
     "msgSending": "পাঠানো হচ্ছে…",
     "msgThanks": "ধন্যবাদ, শিগগিরই যোগাযোগ করব।",
     "msgSent": "পাঠানো হয়েছে ✓",
-    "msgError": "কিছু একটা গোলমাল হয়েছে, পরে আবার চেষ্টা করুন।"
+    "msgError": "কিছু একটা গোলমাল হয়েছে, পরে আবার চেষ্টা করুন।",
+    "zocaTitle": "AI প্রোডাক্ট ম্যানেজার",
+    "zocaMeta": "<a href=\"https://app.zoca.com/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">Zoca<\/a>, বেঙ্গালুরু · আগস্ট ২০২৬ থেকে এখন",
+    "zocaLead": "সেলুন ও স্পা-র জন্য Zoca-র <a href=\"https://zoca.com/front-desk-agent\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">AI রিসেপশনিস্ট<\/a> প্রোডাক্ট তৈরি ও স্কেল করছি।",
+    "xpRegion": "Zoca-তে ফলাফল",
+    "xpTrack": "Zoca-তে ফলাফল, আরও দেখতে পাশে স্ক্রল করুন",
+    "xpPrev": "আগের ফলাফল",
+    "xpNext": "পরের ফলাফল",
+    "xpStatus": "{total}টির মধ্যে {n} নম্বর ফলাফল",
+    "xpSlide": "{total}টির মধ্যে {n}",
+    "zc1Metric": "ব্যবসার জন্য বুক হওয়া গ্রাহকের অ্যাপয়েন্টমেন্ট",
+    "zc1Delta": "২×",
+    "zc1Values": "<span class=\"xp-before\">২৬%<\/span> → ৫৩% <span class=\"xp-unit\">কথোপকথনে<\/span>",
+    "zc1P1": "কলারদের জন্য অ্যাপয়েন্টমেন্ট খোঁজার ব্যবস্থা নতুন করে বানিয়েছি, যাতে তা আরও সহজ হয়",
+    "zc1P2": "গ্রাহক যা বেছে নেন, বুকিং ফানেলের প্রতিটি ধাপে তা যেন নির্ধারিতভাবে এগোয়, তা নিশ্চিত করেছি",
+    "zc1P3": "৮টির বেশি প্ল্যাটফর্ম জুড়ে বুকিং নিশ্চিত করতে বিস্তৃত অবজার্ভেবিলিটি তৈরি করেছি",
+    "zc2Metric": "যে কলে এজেন্ট আস্থা ভেঙেছে",
+    "zc2Delta": "−৮৬%",
+    "zc2Values": "<span class=\"xp-before\">৮.৯<\/span> → ১.৩ <span class=\"xp-unit\">প্রতি ১০০ কলে<\/span>",
+    "zc2P1": "প্রতিটি প্রোডাকশন এজেন্টে register-callback টুল চালু করেছি, যা কলব্যাকের প্রতিশ্রুতি দেওয়ার আগে ডাকা হয়",
+    "zc2P2": "কলারদের ভুল দাম বলার মূল কারণগুলো ঠিক করেছি",
+    "zc2P3": "এজেন্টের না-পাঠানো কার্ড লিংক বা যাচাই-না-করা তথ্যের দাবি করা বন্ধ করেছি",
+    "zc3Metric": "Brain (এজেন্টের নলেজ বেস) ব্যবহার করা সেলুন",
+    "zc3Delta": "৩×",
+    "zc3Values": "<span class=\"xp-before\">১৮%<\/span> → ৫৩% <span class=\"xp-unit\">সেলুন<\/span>",
+    "zc3P1": "যে প্রশ্নের উত্তর এজেন্ট দিতে পারেনি, সেগুলো সেলুনদের পাঠিয়েছি, যাতে তারা Brain-এ উত্তর যোগ করতে পারে",
+    "zc3P2": "অ্যাকাউন্ট ম্যানেজারদের দিয়ে ১৩টি সেলুনকে তাদের বাকি প্রশ্নের তালিকা ইমেল করিয়েছি",
+    "zc3P3": "Brain রিকল আবার চালু করেছি, যাতে “জানি না” বলার আগে এজেন্ট সেই উত্তরগুলো কাজে লাগায়",
+    "zc4Metric": "৫ সেকেন্ডের বেশি নীরবতা থাকা কল",
+    "zc4Delta": "−৪৪%",
+    "zc4Values": "<span class=\"xp-before\">৬৯%<\/span> → ৩৮% <span class=\"xp-unit\">কল<\/span>",
+    "zc4P1": "স্পিচ রিকগনিশন নতুন করে টিউন করেছি: ৫০০ ms এন্ডপয়েন্টিং, নয়েজ সামলানো, নামের ওপর জোর",
+    "zc4P2": "MCP-র পুরোনো কানেকশনের সমস্যা ঠিক করেছি, ফলে টুলের ত্রুটি ৩.৫% থেকে ১.৩%-এ নেমেছে",
+    "zc4P3": "প্রম্পট ৩৭ হাজার থেকে ২১ হাজার অক্ষরে নামিয়েছি, প্রতিটি কলের জন্য দরকারি অংশ বেছে নিয়ে",
+    "zc5Metric": "যে কলে মানুষের দরকার পড়েছে",
+    "zc5Delta": "−৩২%",
+    "zc5Values": "<span class=\"xp-before\">৫৮%<\/span> → ৩৯% <span class=\"xp-unit\">কল<\/span>",
+    "zc5P1": "কোল্ড ট্রান্সফারের আগে এজেন্ট যেন একবার নিজে সাহায্যের প্রস্তাব দেয়, সেই ব্যবস্থা করেছি",
+    "zc5P2": "ট্রান্সফারের বদলে take-message আর waitlist টুল চালু করেছি"
   },
   "hi": {
     "name": "हिंदी",
     "greeting": "नमस्ते, मैं नवजीत देबनाथ हूँ।",
     "readOn": "आगे हिंदी में पढ़ें →",
-    "intro1": "मैं इंजीनियरिंग बैकग्राउंड वाला प्रोडक्ट मैनेजर हूँ। पाइन लैब्स में मैंने <a href=\"https://one.pinelabs.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">Pine Labs One<\/a> को एक भरोसेमंद ओमनीचैनल मर्चेंट एक्सपीरियंस प्लेटफ़ॉर्म बनाया है, और साथ ही उनका AI-संचालित ओमनीचैनल डिजिटल सपोर्ट एक्सपीरियंस भी।",
-    "intro2": "मुझे कुछ नया रचना पसंद है, इसलिए स्याही, रंगों, (अक्सर AI से लिखे) कोड और कविताओं के साथ कुछ न कुछ करता रहता हूँ। आसपास देखिए और बेझिझक संपर्क कीजिए।",
+    "intro1": "मैंने आईआईटी बॉम्बे से एयरोस्पेस इंजीनियरिंग की है। मेरा ऑनर्स प्रोजेक्ट मिसाइल इंटरसेप्शन के ट्रैकिंग एल्गोरिदम पर था, और माइनर सिस्टम्स एंड कंट्रोल इंजीनियरिंग में।",
+    "intro2": "डिज़ाइन मुझे हमेशा से खींचता रहा है, और मुझे चीज़ें बनाना पसंद है: कभी-कभी लिखता हूँ, पेंटिंग करता हूँ, पढ़ता हूँ, बोल्डरिंग करता हूँ, और आजकल AI से लिखे कोड से बहुत कुछ बना रहा हूँ। आसपास देखिए।",
     "experience": "अनुभव",
     "job1Title": "AI प्रोडक्ट मैनेजर",
-    "job1Meta": "पाइन लैब्स, बेंगलुरु · मई 2025 से अब तक",
+    "job1Meta": "पाइन लैब्स, बेंगलुरु · मई 2025 से जुलाई 2026",
     "job1Body": "पहले AI PM के रूप में प्रोडक्शन में AI एजेंट उतार रहा हूँ, जहाँ हाइप से पहले ROI: 32 पहलों के रोडमैप में सालाना ₹1.6 करोड़ की लागत बचत। 24×7 बहुभाषी वॉइस एजेंट अब 44% इनकमिंग कॉल में ग्राहक की पहचान सत्यापित करके समस्या हल करता है; ईमेल एजेंट 59% इनबाउंड अपने-आप छाँटते हैं (और मलेशिया में 56% डिफ़्लेक्ट करते हैं)। संदर्भ याद रखने वाला एक मल्टीमोडल चैट एजेंट भी बनाया, जिससे सेल्फ़-सर्व का इस्तेमाल 15% बढ़ा।",
     "job2Title": "प्रोडक्ट ओनर, Pine Labs One (प्लेटफ़ॉर्म और ग्रोथ)",
     "job2Meta": "पाइन लैब्स, बेंगलुरु · सितंबर 2024 से मई 2025",
@@ -439,7 +649,45 @@
     "msgSending": "भेजा जा रहा है…",
     "msgThanks": "धन्यवाद, मैं जल्द संपर्क करूँगा।",
     "msgSent": "भेज दिया ✓",
-    "msgError": "कुछ गड़बड़ हो गई, थोड़ी देर बाद फिर कोशिश करें।"
+    "msgError": "कुछ गड़बड़ हो गई, थोड़ी देर बाद फिर कोशिश करें।",
+    "zocaTitle": "AI प्रोडक्ट मैनेजर",
+    "zocaMeta": "<a href=\"https://app.zoca.com/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">Zoca<\/a>, बेंगलुरु · अगस्त 2026 से अब तक",
+    "zocaLead": "सैलून और स्पा के लिए Zoca का <a href=\"https://zoca.com/front-desk-agent\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">AI रिसेप्शनिस्ट<\/a> प्रोडक्ट बना रहा हूँ और उसे स्केल कर रहा हूँ।",
+    "xpRegion": "Zoca में नतीजे",
+    "xpTrack": "Zoca में नतीजे, और देखने के लिए बगल में स्क्रॉल करें",
+    "xpPrev": "पिछला नतीजा",
+    "xpNext": "अगला नतीजा",
+    "xpStatus": "नतीजा {n}, कुल {total} में से",
+    "xpSlide": "{total} में से {n}",
+    "zc1Metric": "कारोबारों के लिए बुक हुए ग्राहकों के अपॉइंटमेंट",
+    "zc1Delta": "2×",
+    "zc1Values": "<span class=\"xp-before\">26%<\/span> → 53% <span class=\"xp-unit\">बातचीत में<\/span>",
+    "zc1P1": "कॉल करने वालों के लिए अपॉइंटमेंट खोजने का तरीका नए सिरे से बनाया, ताकि वह और आसान हो",
+    "zc1P2": "पक्का किया कि ग्राहक की हर पसंद बुकिंग फ़नल में तय तरीके से आगे बढ़े",
+    "zc1P3": "8+ प्लेटफ़ॉर्म पर बुकिंग पक्की करने के लिए विस्तृत ऑब्ज़र्वेबिलिटी बनाई",
+    "zc2Metric": "कॉल जिनमें एजेंट ने भरोसा तोड़ा",
+    "zc2Delta": "−86%",
+    "zc2Values": "<span class=\"xp-before\">8.9<\/span> → 1.3 <span class=\"xp-unit\">प्रति 100 कॉल<\/span>",
+    "zc2P1": "हर प्रोडक्शन एजेंट में register-callback टूल शुरू किया, जिसे कॉलबैक का वादा करने से पहले बुलाया जाता है",
+    "zc2P2": "कॉल करने वालों को गलत दाम बताने की असली वजहें ठीक कीं",
+    "zc2P3": "एजेंट का बिना भेजे कार्ड लिंक या बिना जाँचे तथ्यों का दावा करना बंद किया",
+    "zc3Metric": "Brain (एजेंट का नॉलेज बेस) इस्तेमाल करने वाले सैलून",
+    "zc3Delta": "3×",
+    "zc3Values": "<span class=\"xp-before\">18%<\/span> → 53% <span class=\"xp-unit\">सैलून<\/span>",
+    "zc3P1": "जिन सवालों का जवाब एजेंट नहीं दे पाया, वे सैलून को भेजे, ताकि वे Brain में जवाब भर सकें",
+    "zc3P2": "अकाउंट मैनेजरों से 13 सैलून को उनके बाकी सवालों की सूची ईमेल करवाई",
+    "zc3P3": "Brain रिकॉल फिर से चालू किया, ताकि “मुझे नहीं पता” कहने से पहले एजेंट उन जवाबों का इस्तेमाल करे",
+    "zc4Metric": "5 सेकंड से ज़्यादा खामोशी वाली कॉल",
+    "zc4Delta": "−44%",
+    "zc4Values": "<span class=\"xp-before\">69%<\/span> → 38% <span class=\"xp-unit\">कॉल<\/span>",
+    "zc4P1": "स्पीच रिकग्निशन फिर से ट्यून किया: 500 ms एंडपॉइंटिंग, शोर से निपटना, नामों पर ज़ोर",
+    "zc4P2": "पुराने MCP कनेक्शन की दिक्कतें ठीक कीं, जिससे टूल की गड़बड़ियाँ 3.5% से घटकर 1.3% रह गईं",
+    "zc4P3": "प्रॉम्प्ट 37 हज़ार से घटाकर 21 हज़ार अक्षरों का किया, हर कॉल के लिए ज़रूरी हिस्से चुनकर",
+    "zc5Metric": "कॉल जिनमें किसी इंसान की ज़रूरत पड़ी",
+    "zc5Delta": "−32%",
+    "zc5Values": "<span class=\"xp-before\">58%<\/span> → 39% <span class=\"xp-unit\">कॉल<\/span>",
+    "zc5P1": "कोल्ड ट्रांसफ़र से पहले एजेंट एक बार खुद मदद की पेशकश करे, ऐसा बनाया",
+    "zc5P2": "ट्रांसफ़र की जगह take-message और waitlist टूल शुरू किए"
   }
 }
     </script>
@@ -481,6 +729,11 @@
         const T = (k) => (I18N[pageLang] && I18N[pageLang][k]) || I18N.en[k];
         const i18nEls = [...document.querySelectorAll('[data-i18n]')];
         i18nEls.forEach(el => { el.dataset.en = el.innerHTML.trim(); });
+        const ariaEls = [...document.querySelectorAll('[data-i18n-aria]')];
+        ariaEls.forEach(el => { el.dataset.enAria = el.getAttribute('aria-label'); });
+        const onLangChange = [];
+        const num = (n) => n.toLocaleString(pageLang);
+        const fill = (k, n, total) => T(k).replace('{n}', num(n)).replace('{total}', num(total));
         const langScopes = [document.querySelector('.intro .sr-only'), ...document.querySelectorAll('.intro > p, #experience')];
         let pageLang = 'en';
 
@@ -491,7 +744,12 @@
                 const v = lang === 'en' ? el.dataset.en : I18N[lang][el.dataset.i18n];
                 if (v != null) el.innerHTML = v;
             });
+            ariaEls.forEach(el => {
+                const v = lang === 'en' ? el.dataset.enAria : I18N[lang][el.dataset.i18nAria];
+                if (v != null) el.setAttribute('aria-label', v);
+            });
             langScopes.forEach(el => el && el.setAttribute('lang', lang));
+            onLangChange.forEach(f => f());
             if (save) {
                 try { localStorage.setItem('lang', lang); } catch (e) {}
                 const u = new URL(location.href);
@@ -558,7 +816,7 @@
         const graphemes = (s) => seg ? [...seg.segment(s)].map(x => x.segment) : Array.from(s);
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-        const TYPE_MS = 230, ERASE_MS = 75, HOLD_MS = 3500, GAP_MS = 700;
+        const TYPE_MS = 215, JITTER_MS = 93, ERASE_MS = 70, HOLD_MS = 3270, GAP_MS = 655;
 
         async function typeLoop() {
             for (let i = 0; ; i = (i + 1) % LANGS.length) {
@@ -578,7 +836,7 @@
                 for (let n = 1; n <= g.length; n++) {
                     typedText.textContent = g.slice(0, n).join('');
                     alignReadOn();
-                    await sleep(TYPE_MS + Math.random() * 100);
+                    await sleep(TYPE_MS + Math.random() * JITTER_MS);
                 }
                 typed.classList.add('is-waiting');
                 await sleep(HOLD_MS);
@@ -594,6 +852,79 @@
         document.documentElement.classList.add('js');
         typedText.textContent = '';
         typeLoop();
+
+        // ─── Experience carousels ───
+        document.querySelectorAll('.xp-waffle').forEach((w) => {
+            const before = +w.dataset.before, after = +w.dataset.after;
+            const lo = Math.min(before, after), hi = Math.max(before, after);
+            for (let i = 0; i < 100; i++) {
+                const cell = document.createElement('i');
+                if (i < lo) cell.className = 'is-kept';
+                else if (i < hi) {
+                    cell.className = after > before ? 'is-gain' : 'is-cut';
+                    cell.style.setProperty('--d', (i - lo) * 18 + 'ms');
+                }
+                w.appendChild(cell);
+            }
+        });
+        const xpCards = document.querySelectorAll('.xp-card');
+        if (reduceMotion.matches || !('IntersectionObserver' in window)) {
+            xpCards.forEach(c => c.classList.add('is-shown'));
+        } else {
+            // Fill each card's grid the first time most of it is on screen.
+            const seen = new IntersectionObserver((entries) => entries.forEach((e) => {
+                if (e.isIntersecting) { e.target.classList.add('is-shown'); seen.unobserve(e.target); }
+            }), { threshold: 0.6 });
+            xpCards.forEach(c => seen.observe(c));
+        }
+        document.querySelectorAll('.xp-carousel').forEach((carousel) => {
+            const track = carousel.querySelector('.xp-track');
+            const cards = [...track.children];
+            const prev = carousel.querySelector('.xp-prev');
+            const next = carousel.querySelector('.xp-next');
+            const status = carousel.querySelector('.xp-status');
+            let index = 0, announced = 0;
+            const maxScroll = () => track.scrollWidth - track.clientWidth;
+            const offset = (i) => cards[i].offsetLeft - cards[0].offsetLeft;
+            function update() {
+                const left = track.scrollLeft;
+                if (left >= maxScroll() - 2) index = cards.length - 1;
+                else index = cards.reduce((best, c, i) => Math.abs(offset(i) - left) < Math.abs(offset(best) - left) ? i : best, 0);
+                prev.disabled = index === 0;
+                next.disabled = index === cards.length - 1;
+                if (index !== announced) {
+                    announced = index;
+                    status.textContent = fill('xpStatus', index + 1, cards.length);
+                }
+                // A hidden arrow can't keep focus; hand it to the cards.
+                if (document.activeElement === prev && prev.disabled || document.activeElement === next && next.disabled) {
+                    track.focus({ preventScroll: true });
+                }
+            }
+            function go(i) {
+                i = Math.max(0, Math.min(cards.length - 1, i));
+                track.scrollTo({ left: Math.min(offset(i), maxScroll()), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+            }
+            prev.addEventListener('click', () => go(index - 1));
+            next.addEventListener('click', () => go(index + 1));
+            track.addEventListener('keydown', (e) => {
+                const to = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: cards.length - 1 }[e.key];
+                if (to === undefined) return;
+                e.preventDefault();
+                go(to);
+            });
+            let frame = 0;
+            track.addEventListener('scroll', () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); }, { passive: true });
+            window.addEventListener('resize', update);
+            prev.hidden = next.hidden = false;
+            function relabel() {
+                cards.forEach((c, i) => c.setAttribute('aria-label', fill('xpSlide', i + 1, cards.length)));
+                status.textContent = fill('xpStatus', index + 1, cards.length);
+            }
+            onLangChange.push(relabel);
+            relabel();
+            update();
+        });
 
         // Lead capture writes to the JobHunt Firestore project over REST (no SDK,
         // so the homepage stays SDK-free). Download works regardless — email is optional.
