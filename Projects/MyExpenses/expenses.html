@@ -6316,7 +6316,12 @@ Rules:
            Per-category monthly spend targets. Baseline = the
            MINIMUM month total across the 3 completed months
            before this one; target = a chosen % of that (80%
-           default). Goals surface as an offer in the Logs view
+           default). A goal is only OFFERED after a rise: last
+           month's spend must be ≥ GOAL.minRisePct above the
+           month before (₹1,000 → ₹1,100+). Without that gate,
+           every month you held a goal became the next baseline
+           and targets ratcheted down forever (1,000 → 800 → 640).
+           Goals surface as an offer in the Logs view
            while still achievable, then drive two in-app nudges:
            (1) an at-risk pop-up on open, and (2) pace alerts
            after logging in the goal's category.
@@ -6326,6 +6331,7 @@ Rules:
         const GOAL = {
             defaultPct: 80,
             lookbackMonths: 3,        // completed prior months forming the baseline
+            minRisePct: 10,           // offer only if last month rose ≥ this % over the month before
             achieveFloor: 0.80,       // remaining/day may dip to 20% below daily pace and still count as reachable
             riskLevels: [0.90, 0.75, 0.50], // escalating at-risk pop-up thresholds (share of target), high→low
             approachBufferFrac: 0.5,  // warn when within this × daily pace of the pace line
@@ -6366,6 +6372,29 @@ Rules:
             }
             if (totals.some(t => t <= 0)) return null;
             return Math.min(...totals);
+        }
+
+        // Last completed month vs the month before it, for one category.
+        function categoryRecentTrend(category) {
+            const now = new Date();
+            const last = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const prev = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+            const lastTotal = categorySpendInMonth(category, last.getFullYear(), last.getMonth());
+            const prevTotal = categorySpendInMonth(category, prev.getFullYear(), prev.getMonth());
+            return {
+                lastTotal, prevTotal,
+                lastName: last.toLocaleString('en', { month: 'long' }),
+                prevName: prev.toLocaleString('en', { month: 'long' }),
+                rosePct: prevTotal > 0 ? (lastTotal - prevTotal) / prevTotal * 100 : null,
+            };
+        }
+
+        // Did spend rise by at least minRisePct %? Compared in whole paise so
+        // the boundary is exact (₹1,000 → ₹1,100 counts as a 10% rise).
+        function spendRoseEnough(prevTotal, lastTotal, minRisePct = GOAL.minRisePct) {
+            if (!(prevTotal > 0) || !(lastTotal > 0)) return false;
+            const prevP = Math.round(prevTotal * 100), lastP = Math.round(lastTotal * 100);
+            return lastP * 100 >= prevP * (100 + minRisePct);
         }
 
         /* ── storage ── */
@@ -6458,11 +6487,13 @@ Rules:
                 if (GOAL.excluded.includes(category)) continue;
                 if (activeGoalFor(category)) continue;        // already has a goal this month
                 if (isOfferDismissed(category)) continue;     // user said "not now"
+                const trend = categoryRecentTrend(category);
+                if (!spendRoseEnough(trend.prevTotal, trend.lastTotal)) continue; // no rise ⇒ nothing to cut back
                 const baseMin = categoryBaselineMin(category);
                 if (!baseMin) continue;                       // < 3 recurring months of history
                 const target = Math.round(baseMin * GOAL.defaultPct / 100);
                 if (target <= 0) continue;
-                if (!best || baseMin > best.baseMin) best = { category, baseMin, target };
+                if (!best || baseMin > best.baseMin) best = { category, baseMin, target, ...trend };
             }
             return best;
         }
@@ -6591,7 +6622,7 @@ Rules:
         function goalOfferHTML(cand, enc) {
             return `<div class="goal-offer">
                 <div class="goal-offer-title">Set a goal for ${esc(cand.category)}?</div>
-                <div class="goal-offer-sub">Your lowest spend here in the last 3 months was ₹${fmtInt(cand.baseMin)}. Set a target below that and I'll help you hold it.</div>
+                <div class="goal-offer-sub">Up ${Math.round(cand.rosePct)}% last month: ₹${fmtInt(cand.prevTotal)} in ${cand.prevName} → ₹${fmtInt(cand.lastTotal)} in ${cand.lastName}. Your lowest in the last 3 months was ₹${fmtInt(cand.baseMin)}. Set a target below that and I'll help you hold it.</div>
                 <div class="goal-offer-controls">
                     <label>Target</label>
                     <input type="number" class="goal-pct-input" id="goalPct-${enc}" min="10" max="100" step="5" value="${GOAL.defaultPct}" oninput="updateOfferTarget('${enc}', ${cand.baseMin})">
