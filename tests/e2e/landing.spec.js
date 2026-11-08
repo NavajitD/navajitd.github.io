@@ -57,7 +57,9 @@ test('every card fills its 10 x 10 grid from its numbers', async ({ page }) => {
 test('Bengali page translates the cards and the arrow labels', async ({ page }) => {
   const errors = await open(page, '/?lang=bn');
   await expect(page.locator('#experience')).toHaveAttribute('lang', 'bn');
-  await expect(page.locator('[data-i18n="zc1Metric"]')).toHaveText('ব্যবসার জন্য বুক হওয়া গ্রাহকের অ্যাপয়েন্টমেন্ট');
+  await expect(page.locator('[data-i18n="x.zoca.bookings.metric"]')).toHaveText('ব্যবসার জন্য বুক হওয়া গ্রাহকের অ্যাপয়েন্টমেন্ট');
+  await expect(page.locator('#zoca .xp-carousel')).toHaveAttribute('aria-label', 'Zoca-তে ফলাফল');
+  await expect(page.locator('[data-i18n="x.pine-labs-ai-pm.meta"]')).toHaveText('পাইন ল্যাবস, বেঙ্গালুরু · মে ২০২৫ থেকে জুলাই ২০২৬');
   await expect(page.locator('#zoca .xp-next')).toHaveAttribute('aria-label', 'পরের ফলাফল');
   await expect(page.locator('#zoca .xp-card').first()).toHaveAttribute('aria-label', /^৫টির মধ্যে ১$/);
   // The big change figure keeps its size in Bengali (a p:lang() rule once shrank it).

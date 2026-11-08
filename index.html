@@ -414,87 +414,88 @@
     
     <section id="experience">
         <h2 class="section-title" data-i18n="experience">Experience</h2>
-        
+
+        <!-- @experience:start hash=00bfac1be7e7 · Built from content/experience.json by scripts/build-experience.mjs. Edit the JSON or use /admin.html (Experience), not this HTML. -->
         <div class="experience-item" id="zoca">
-            <h3 class="experience-title" data-i18n="zocaTitle">AI Product Manager</h3>
-            <div class="experience-meta" data-i18n="zocaMeta"><a href="https://app.zoca.com/" target="_blank" rel="noopener noreferrer" class="merchant-link">Zoca</a>, Bengaluru · Aug 2026 - Present</div>
-            <p class="xp-lead" data-i18n="zocaLead">Building and scaling Zoca’s <a href="https://zoca.com/front-desk-agent" target="_blank" rel="noopener noreferrer" class="merchant-link">AI receptionist</a> product for salons and spas.</p>
-            <div class="xp-carousel" aria-roledescription="carousel" aria-label="Results at Zoca" data-i18n-aria="xpRegion">
-                <ol class="xp-track" tabindex="0" aria-label="Results at Zoca, scroll sideways for more" data-i18n-aria="xpTrack">
-                <li class="xp-card" aria-roledescription="slide" aria-label="1 of 5">
-                    <div class="xp-stat">
-                        <div>
-                            <h4 class="xp-metric" data-i18n="zc1Metric">Customer appointments booked for businesses</h4>
-                            <p class="xp-delta" data-i18n="zc1Delta">2×</p>
-                            <p class="xp-values" data-i18n="zc1Values"><span class="xp-before">26%</span> → 53% <span class="xp-unit">of conversations</span></p>
+            <h3 class="experience-title" data-i18n="x.zoca.title">AI Product Manager</h3>
+            <div class="experience-meta" data-i18n="x.zoca.meta"><a href="https://app.zoca.com/" target="_blank" rel="noopener noreferrer" class="merchant-link">Zoca</a>, Bengaluru · Aug 2026 - Present</div>
+            <p class="xp-lead" data-i18n="x.zoca.description">Building and scaling Zoca’s <a href="https://zoca.com/front-desk-agent" target="_blank" rel="noopener noreferrer" class="merchant-link">AI receptionist</a> product for salons and spas.</p>
+            <div class="xp-carousel" aria-roledescription="carousel" aria-label="Results at Zoca" data-i18n-aria="x.zoca.region">
+                <ol class="xp-track" tabindex="0" aria-label="Results at Zoca, scroll sideways for more" data-i18n-aria="x.zoca.track">
+                    <li class="xp-card" aria-roledescription="slide" aria-label="1 of 5">
+                        <div class="xp-stat">
+                            <div>
+                                <h4 class="xp-metric" data-i18n="x.zoca.bookings.metric">Customer appointments booked for businesses</h4>
+                                <p class="xp-delta" data-i18n="x.zoca.bookings.delta">2×</p>
+                                <p class="xp-values" data-i18n="x.zoca.bookings.values"><span class="xp-before">26%</span> → 53% <span class="xp-unit">of conversations</span></p>
+                            </div>
+                            <div class="xp-waffle" data-before="26" data-after="53" aria-hidden="true"></div>
                         </div>
-                        <div class="xp-waffle" data-before="26" data-after="53" aria-hidden="true"></div>
-                    </div>
-                    <ul class="xp-points">
-                        <li data-i18n="zc1P1">Rebuilt the appointment search to be more intuitive for callers</li>
-                        <li data-i18n="zc1P2">Ensured customer choices flow deterministically across the booking funnel</li>
-                        <li data-i18n="zc1P3">Built extensive observability for booking assurance across 8+ platforms</li>
-                    </ul>
-                </li>
-                <li class="xp-card" aria-roledescription="slide" aria-label="2 of 5">
-                    <div class="xp-stat">
-                        <div>
-                            <h4 class="xp-metric" data-i18n="zc2Metric">Calls where the agent broke trust</h4>
-                            <p class="xp-delta" data-i18n="zc2Delta">−86%</p>
-                            <p class="xp-values" data-i18n="zc2Values"><span class="xp-before">8.9</span> → 1.3 <span class="xp-unit">per 100 calls</span></p>
+                        <ul class="xp-points">
+                            <li data-i18n="x.zoca.bookings.p1">Rebuilt the appointment search to be more intuitive for callers</li>
+                            <li data-i18n="x.zoca.bookings.p2">Ensured customer choices flow deterministically across the booking funnel</li>
+                            <li data-i18n="x.zoca.bookings.p3">Built extensive observability for booking assurance across 8+ platforms</li>
+                        </ul>
+                    </li>
+                    <li class="xp-card" aria-roledescription="slide" aria-label="2 of 5">
+                        <div class="xp-stat">
+                            <div>
+                                <h4 class="xp-metric" data-i18n="x.zoca.trust.metric">Calls where the agent broke trust</h4>
+                                <p class="xp-delta" data-i18n="x.zoca.trust.delta">−86%</p>
+                                <p class="xp-values" data-i18n="x.zoca.trust.values"><span class="xp-before">8.9</span> → 1.3 <span class="xp-unit">per 100 calls</span></p>
+                            </div>
+                            <div class="xp-waffle" data-before="9" data-after="1" aria-hidden="true"></div>
                         </div>
-                        <div class="xp-waffle" data-before="9" data-after="1" aria-hidden="true"></div>
-                    </div>
-                    <ul class="xp-points">
-                        <li data-i18n="zc2P1">Shipped a register-callback tool to every production agent, called before any callback promise</li>
-                        <li data-i18n="zc2P2">Fixed the root causes of wrong prices quoted to callers</li>
-                        <li data-i18n="zc2P3">Stopped the agent claiming card links it never sent, or facts it hadn’t verified</li>
-                    </ul>
-                </li>
-                <li class="xp-card" aria-roledescription="slide" aria-label="3 of 5">
-                    <div class="xp-stat">
-                        <div>
-                            <h4 class="xp-metric" data-i18n="zc3Metric">Salons using Brain, the agent’s knowledge base</h4>
-                            <p class="xp-delta" data-i18n="zc3Delta">3×</p>
-                            <p class="xp-values" data-i18n="zc3Values"><span class="xp-before">18%</span> → 53% <span class="xp-unit">of salons</span></p>
+                        <ul class="xp-points">
+                            <li data-i18n="x.zoca.trust.p1">Shipped a register-callback tool to every production agent, called before any callback promise</li>
+                            <li data-i18n="x.zoca.trust.p2">Fixed the root causes of wrong prices quoted to callers</li>
+                            <li data-i18n="x.zoca.trust.p3">Stopped the agent claiming card links it never sent, or facts it hadn’t verified</li>
+                        </ul>
+                    </li>
+                    <li class="xp-card" aria-roledescription="slide" aria-label="3 of 5">
+                        <div class="xp-stat">
+                            <div>
+                                <h4 class="xp-metric" data-i18n="x.zoca.brain.metric">Salons using Brain, the agent’s knowledge base</h4>
+                                <p class="xp-delta" data-i18n="x.zoca.brain.delta">3×</p>
+                                <p class="xp-values" data-i18n="x.zoca.brain.values"><span class="xp-before">18%</span> → 53% <span class="xp-unit">of salons</span></p>
+                            </div>
+                            <div class="xp-waffle" data-before="18" data-after="53" aria-hidden="true"></div>
                         </div>
-                        <div class="xp-waffle" data-before="18" data-after="53" aria-hidden="true"></div>
-                    </div>
-                    <ul class="xp-points">
-                        <li data-i18n="zc3P1">Sent salons the questions the agent couldn’t answer, so they could fill in Brain</li>
-                        <li data-i18n="zc3P2">Had account managers email 13 salons a list of their pending questions</li>
-                        <li data-i18n="zc3P3">Turned Brain recall back on, so the agent uses those answers before saying “I don’t know”</li>
-                    </ul>
-                </li>
-                <li class="xp-card" aria-roledescription="slide" aria-label="4 of 5">
-                    <div class="xp-stat">
-                        <div>
-                            <h4 class="xp-metric" data-i18n="zc4Metric">Calls with over 5 seconds of dead air</h4>
-                            <p class="xp-delta" data-i18n="zc4Delta">−44%</p>
-                            <p class="xp-values" data-i18n="zc4Values"><span class="xp-before">69%</span> → 38% <span class="xp-unit">of calls</span></p>
+                        <ul class="xp-points">
+                            <li data-i18n="x.zoca.brain.p1">Sent salons the questions the agent couldn’t answer, so they could fill in Brain</li>
+                            <li data-i18n="x.zoca.brain.p2">Had account managers email 13 salons a list of their pending questions</li>
+                            <li data-i18n="x.zoca.brain.p3">Turned Brain recall back on, so the agent uses those answers before saying “I don’t know”</li>
+                        </ul>
+                    </li>
+                    <li class="xp-card" aria-roledescription="slide" aria-label="4 of 5">
+                        <div class="xp-stat">
+                            <div>
+                                <h4 class="xp-metric" data-i18n="x.zoca.dead-air.metric">Calls with over 5 seconds of dead air</h4>
+                                <p class="xp-delta" data-i18n="x.zoca.dead-air.delta">−44%</p>
+                                <p class="xp-values" data-i18n="x.zoca.dead-air.values"><span class="xp-before">69%</span> → 38% <span class="xp-unit">of calls</span></p>
+                            </div>
+                            <div class="xp-waffle" data-before="69" data-after="38" aria-hidden="true"></div>
                         </div>
-                        <div class="xp-waffle" data-before="69" data-after="38" aria-hidden="true"></div>
-                    </div>
-                    <ul class="xp-points">
-                        <li data-i18n="zc4P1">Retuned speech recognition: 500 ms endpointing, noise handling, boosted names</li>
-                        <li data-i18n="zc4P2">Fixed stale MCP connections, cutting tool errors from 3.5% to 1.3%</li>
-                        <li data-i18n="zc4P3">Cut the prompt from 37k to 21k characters, with sections picked per call</li>
-                    </ul>
-                </li>
-                <li class="xp-card" aria-roledescription="slide" aria-label="5 of 5">
-                    <div class="xp-stat">
-                        <div>
-                            <h4 class="xp-metric" data-i18n="zc5Metric">Calls that needed a person</h4>
-                            <p class="xp-delta" data-i18n="zc5Delta">−32%</p>
-                            <p class="xp-values" data-i18n="zc5Values"><span class="xp-before">58%</span> → 39% <span class="xp-unit">of calls</span></p>
+                        <ul class="xp-points">
+                            <li data-i18n="x.zoca.dead-air.p1">Retuned speech recognition: 500 ms endpointing, noise handling, boosted names</li>
+                            <li data-i18n="x.zoca.dead-air.p2">Fixed stale MCP connections, cutting tool errors from 3.5% to 1.3%</li>
+                            <li data-i18n="x.zoca.dead-air.p3">Cut the prompt from 37k to 21k characters, with sections picked per call</li>
+                        </ul>
+                    </li>
+                    <li class="xp-card" aria-roledescription="slide" aria-label="5 of 5">
+                        <div class="xp-stat">
+                            <div>
+                                <h4 class="xp-metric" data-i18n="x.zoca.handoffs.metric">Calls that needed a person</h4>
+                                <p class="xp-delta" data-i18n="x.zoca.handoffs.delta">−32%</p>
+                                <p class="xp-values" data-i18n="x.zoca.handoffs.values"><span class="xp-before">58%</span> → 39% <span class="xp-unit">of calls</span></p>
+                            </div>
+                            <div class="xp-waffle" data-before="58" data-after="39" aria-hidden="true"></div>
                         </div>
-                        <div class="xp-waffle" data-before="58" data-after="39" aria-hidden="true"></div>
-                    </div>
-                    <ul class="xp-points">
-                        <li data-i18n="zc5P1">Made the agent offer its help once before any cold transfer</li>
-                        <li data-i18n="zc5P2">Shipped take-message and waitlist tools to use instead of transferring</li>
-                    </ul>
-                </li>
+                        <ul class="xp-points">
+                            <li data-i18n="x.zoca.handoffs.p1">Made the agent offer its help once before any cold transfer</li>
+                            <li data-i18n="x.zoca.handoffs.p2">Shipped take-message and waitlist tools to use instead of transferring</li>
+                        </ul>
+                    </li>
                 </ol>
                 <button type="button" class="xp-btn xp-prev" aria-label="Previous result" data-i18n-aria="xpPrev" hidden></button>
                 <button type="button" class="xp-btn xp-next" aria-label="Next result" data-i18n-aria="xpNext" hidden></button>
@@ -502,23 +503,118 @@
             </div>
         </div>
 
-        <div class="experience-item">
-            <h3 class="experience-title" data-i18n="job1Title">AI Product Manager</h3>
-            <div class="experience-meta" data-i18n="job1Meta">Pine Labs, Bengaluru · May 2025 - Jul 2026</div>
-            <p data-i18n="job1Body">Founding AI PM shipping production AI agents with ROI over hype — ₹1.6 Cr/year in cost optimisation across a 32-initiative roadmap. A 24×7 multilingual voice agent now authenticates and resolves 44% of incoming calls; email agents auto-triage 59% of inbound (and deflect 56% in Malaysia). Also built a multimodal chat agent with contextual memory that lifted self-serve adoption 15%.</p>
+        <div class="experience-item" id="pine-labs-ai-pm">
+            <h3 class="experience-title" data-i18n="x.pine-labs-ai-pm.title">AI Product Manager</h3>
+            <div class="experience-meta" data-i18n="x.pine-labs-ai-pm.meta">Pine Labs, Bengaluru · May 2025 - Jul 2026</div>
+            <p data-i18n="x.pine-labs-ai-pm.description">Founding AI PM shipping production AI agents with ROI over hype — ₹1.6 Cr/year in cost optimisation across a 32-initiative roadmap. A 24×7 multilingual voice agent now authenticates and resolves 44% of incoming calls; email agents auto-triage 59% of inbound (and deflect 56% in Malaysia). Also built a multimodal chat agent with contextual memory that lifted self-serve adoption 15%.</p>
         </div>
 
-        <div class="experience-item">
-            <h3 class="experience-title" data-i18n="job2Title">Product Owner, Pine Labs One (Platform & Growth)</h3>
-            <div class="experience-meta" data-i18n="job2Meta">Pine Labs, Bengaluru · Sep 2024 - May 2025</div>
-            <p data-i18n="job2Body">Grew the merchant super-app from 49k to 100k MAUs with OTP login (+18% activation), vernacular expansion, and seven 0-to-1 features. Launched a merchant referral engine that cut CAC by ₹6 Cr, and replaced a 19-tool support stack with 3 — dropping p95 report time 73% to 90s.</p>
+        <div class="experience-item" id="pine-labs-product-owner">
+            <h3 class="experience-title" data-i18n="x.pine-labs-product-owner.title">Product Owner, Pine Labs One (Platform &amp; Growth)</h3>
+            <div class="experience-meta" data-i18n="x.pine-labs-product-owner.meta">Pine Labs, Bengaluru · Sep 2024 - May 2025</div>
+            <p data-i18n="x.pine-labs-product-owner.description">Grew the merchant super-app from 49k to 100k MAUs with OTP login (+18% activation), vernacular expansion, and seven 0-to-1 features. Launched a merchant referral engine that cut CAC by ₹6 Cr, and replaced a 19-tool support stack with 3 — dropping p95 report time 73% to 90s.</p>
         </div>
 
-        <div class="experience-item">
-            <h3 class="experience-title" data-i18n="job3Title">Associate Product Manager, Pine Labs One</h3>
-            <div class="experience-meta" data-i18n="job3Meta">Pine Labs, Bengaluru · Jul 2023 - Sep 2024</div>
-            <p data-i18n="job3Body">Shipped sales lead collection in 2 days — 300+ high-quality leads/month at 77% conversion, a third of all digital sales. Added invoice, bill-payment, and gift-card cross-sells (₹0.24 Cr/year) and drove retention up 22.8% quarter-on-quarter through field verification, call-centre redirection, and latency fixes.</p>
+        <div class="experience-item" id="pine-labs-apm">
+            <h3 class="experience-title" data-i18n="x.pine-labs-apm.title">Associate Product Manager, Pine Labs One</h3>
+            <div class="experience-meta" data-i18n="x.pine-labs-apm.meta">Pine Labs, Bengaluru · Jul 2023 - Sep 2024</div>
+            <p data-i18n="x.pine-labs-apm.description">Shipped sales lead collection in 2 days — 300+ high-quality leads/month at 77% conversion, a third of all digital sales. Added invoice, bill-payment, and gift-card cross-sells (₹0.24 Cr/year) and drove retention up 22.8% quarter-on-quarter through field verification, call-centre redirection, and latency fixes.</p>
         </div>
+        <script type="application/json" id="i18n-xp">
+        {
+          "bn": {
+            "x.zoca.title": "AI প্রোডাক্ট ম্যানেজার",
+            "x.zoca.meta": "\u003ca href=\"https://app.zoca.com/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">Zoca\u003c/a>, বেঙ্গালুরু · আগস্ট ২০২৬ থেকে এখন",
+            "x.zoca.description": "সেলুন ও স্পা-র জন্য Zoca-র \u003ca href=\"https://zoca.com/front-desk-agent\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">AI রিসেপশনিস্ট\u003c/a> প্রোডাক্ট তৈরি ও স্কেল করছি।",
+            "x.zoca.region": "Zoca-তে ফলাফল",
+            "x.zoca.track": "Zoca-তে ফলাফল, আরও দেখতে পাশে স্ক্রল করুন",
+            "x.zoca.bookings.metric": "ব্যবসার জন্য বুক হওয়া গ্রাহকের অ্যাপয়েন্টমেন্ট",
+            "x.zoca.bookings.delta": "২×",
+            "x.zoca.bookings.values": "\u003cspan class=\"xp-before\">২৬%\u003c/span> → ৫৩% \u003cspan class=\"xp-unit\">কথোপকথনে\u003c/span>",
+            "x.zoca.bookings.p1": "কলারদের জন্য অ্যাপয়েন্টমেন্ট খোঁজার ব্যবস্থা নতুন করে বানিয়েছি, যাতে তা আরও সহজ হয়",
+            "x.zoca.bookings.p2": "গ্রাহক যা বেছে নেন, বুকিং ফানেলের প্রতিটি ধাপে তা যেন নির্ধারিতভাবে এগোয়, তা নিশ্চিত করেছি",
+            "x.zoca.bookings.p3": "৮টির বেশি প্ল্যাটফর্ম জুড়ে বুকিং নিশ্চিত করতে বিস্তৃত অবজার্ভেবিলিটি তৈরি করেছি",
+            "x.zoca.trust.metric": "যে কলে এজেন্ট আস্থা ভেঙেছে",
+            "x.zoca.trust.delta": "−৮৬%",
+            "x.zoca.trust.values": "\u003cspan class=\"xp-before\">৮.৯\u003c/span> → ১.৩ \u003cspan class=\"xp-unit\">প্রতি ১০০ কলে\u003c/span>",
+            "x.zoca.trust.p1": "প্রতিটি প্রোডাকশন এজেন্টে register-callback টুল চালু করেছি, যা কলব্যাকের প্রতিশ্রুতি দেওয়ার আগে ডাকা হয়",
+            "x.zoca.trust.p2": "কলারদের ভুল দাম বলার মূল কারণগুলো ঠিক করেছি",
+            "x.zoca.trust.p3": "এজেন্টের না-পাঠানো কার্ড লিংক বা যাচাই-না-করা তথ্যের দাবি করা বন্ধ করেছি",
+            "x.zoca.brain.metric": "Brain (এজেন্টের নলেজ বেস) ব্যবহার করা সেলুন",
+            "x.zoca.brain.delta": "৩×",
+            "x.zoca.brain.values": "\u003cspan class=\"xp-before\">১৮%\u003c/span> → ৫৩% \u003cspan class=\"xp-unit\">সেলুন\u003c/span>",
+            "x.zoca.brain.p1": "যে প্রশ্নের উত্তর এজেন্ট দিতে পারেনি, সেগুলো সেলুনদের পাঠিয়েছি, যাতে তারা Brain-এ উত্তর যোগ করতে পারে",
+            "x.zoca.brain.p2": "অ্যাকাউন্ট ম্যানেজারদের দিয়ে ১৩টি সেলুনকে তাদের বাকি প্রশ্নের তালিকা ইমেল করিয়েছি",
+            "x.zoca.brain.p3": "Brain রিকল আবার চালু করেছি, যাতে “জানি না” বলার আগে এজেন্ট সেই উত্তরগুলো কাজে লাগায়",
+            "x.zoca.dead-air.metric": "৫ সেকেন্ডের বেশি নীরবতা থাকা কল",
+            "x.zoca.dead-air.delta": "−৪৪%",
+            "x.zoca.dead-air.values": "\u003cspan class=\"xp-before\">৬৯%\u003c/span> → ৩৮% \u003cspan class=\"xp-unit\">কল\u003c/span>",
+            "x.zoca.dead-air.p1": "স্পিচ রিকগনিশন নতুন করে টিউন করেছি: ৫০০ ms এন্ডপয়েন্টিং, নয়েজ সামলানো, নামের ওপর জোর",
+            "x.zoca.dead-air.p2": "MCP-র পুরোনো কানেকশনের সমস্যা ঠিক করেছি, ফলে টুলের ত্রুটি ৩.৫% থেকে ১.৩%-এ নেমেছে",
+            "x.zoca.dead-air.p3": "প্রম্পট ৩৭ হাজার থেকে ২১ হাজার অক্ষরে নামিয়েছি, প্রতিটি কলের জন্য দরকারি অংশ বেছে নিয়ে",
+            "x.zoca.handoffs.metric": "যে কলে মানুষের দরকার পড়েছে",
+            "x.zoca.handoffs.delta": "−৩২%",
+            "x.zoca.handoffs.values": "\u003cspan class=\"xp-before\">৫৮%\u003c/span> → ৩৯% \u003cspan class=\"xp-unit\">কল\u003c/span>",
+            "x.zoca.handoffs.p1": "কোল্ড ট্রান্সফারের আগে এজেন্ট যেন একবার নিজে সাহায্যের প্রস্তাব দেয়, সেই ব্যবস্থা করেছি",
+            "x.zoca.handoffs.p2": "ট্রান্সফারের বদলে take-message আর waitlist টুল চালু করেছি",
+            "x.pine-labs-ai-pm.title": "AI প্রোডাক্ট ম্যানেজার",
+            "x.pine-labs-ai-pm.meta": "পাইন ল্যাবস, বেঙ্গালুরু · মে ২০২৫ থেকে জুলাই ২০২৬",
+            "x.pine-labs-ai-pm.description": "প্রথম AI PM হিসেবে প্রোডাকশনে AI এজেন্ট চালু করছি, যেখানে হাইপের আগে ROI: ৩২টি উদ্যোগের রোডম্যাপ জুড়ে বছরে ₹১.৬ কোটি খরচ সাশ্রয়। ২৪×৭ বহুভাষিক ভয়েস এজেন্ট এখন ৪৪% ইনকামিং কলে গ্রাহকের পরিচয় যাচাই করে সমস্যার সমাধান করে; ইমেল এজেন্ট ৫৯% ইনবাউন্ড নিজে থেকে বাছাই করে (আর মালয়েশিয়ায় ৫৬% ডিফ্লেক্ট করে)। প্রসঙ্গ মনে রাখতে পারে এমন একটি মাল্টিমোডাল চ্যাট এজেন্টও বানিয়েছি, যাতে সেলফ-সার্ভ ব্যবহার ১৫% বেড়েছে।",
+            "x.pine-labs-product-owner.title": "প্রোডাক্ট ওনার, Pine Labs One (প্ল্যাটফর্ম ও গ্রোথ)",
+            "x.pine-labs-product-owner.meta": "পাইন ল্যাবস, বেঙ্গালুরু · সেপ্টেম্বর ২০২৪ থেকে মে ২০২৫",
+            "x.pine-labs-product-owner.description": "OTP লগইন (+১৮% অ্যাক্টিভেশন), আঞ্চলিক ভাষায় সম্প্রসারণ আর সাতটি একেবারে নতুন ফিচার দিয়ে মার্চেন্ট সুপার-অ্যাপের MAU ৪৯ হাজার থেকে ১ লাখে নিয়ে গেছি। একটি মার্চেন্ট রেফারেল ইঞ্জিন চালু করেছি, যাতে CAC কমেছে ₹৬ কোটি, আর ১৯টি টুলের সাপোর্ট স্ট্যাক ৩টিতে নামিয়ে এনেছি, ফলে p95 রিপোর্ট টাইম ৭৩% কমে ৯০ সেকেন্ডে দাঁড়িয়েছে।",
+            "x.pine-labs-apm.title": "অ্যাসোসিয়েট প্রোডাক্ট ম্যানেজার, Pine Labs One",
+            "x.pine-labs-apm.meta": "পাইন ল্যাবস, বেঙ্গালুরু · জুলাই ২০২৩ থেকে সেপ্টেম্বর ২০২৪",
+            "x.pine-labs-apm.description": "মাত্র ২ দিনে সেলস লিড সংগ্রহের ফিচার চালু করেছি: মাসে ৩০০+ ভালো মানের লিড, ৭৭% কনভার্শনে, যা মোট ডিজিটাল বিক্রির এক-তৃতীয়াংশ। ইনভয়েস, বিল-পেমেন্ট আর গিফট-কার্ডের ক্রস-সেল যোগ করেছি (বছরে ₹০.২৪ কোটি), আর ফিল্ড ভেরিফিকেশন, কল-সেন্টার রিডিরেকশন ও লেটেন্সি ঠিক করে ত্রৈমাসিক রিটেনশন ২২.৮% বাড়িয়েছি।"
+          },
+          "hi": {
+            "x.zoca.title": "AI प्रोडक्ट मैनेजर",
+            "x.zoca.meta": "\u003ca href=\"https://app.zoca.com/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">Zoca\u003c/a>, बेंगलुरु · अगस्त 2026 से अब तक",
+            "x.zoca.description": "सैलून और स्पा के लिए Zoca का \u003ca href=\"https://zoca.com/front-desk-agent\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">AI रिसेप्शनिस्ट\u003c/a> प्रोडक्ट बना रहा हूँ और उसे स्केल कर रहा हूँ।",
+            "x.zoca.region": "Zoca में नतीजे",
+            "x.zoca.track": "Zoca में नतीजे, और देखने के लिए बगल में स्क्रॉल करें",
+            "x.zoca.bookings.metric": "कारोबारों के लिए बुक हुए ग्राहकों के अपॉइंटमेंट",
+            "x.zoca.bookings.delta": "2×",
+            "x.zoca.bookings.values": "\u003cspan class=\"xp-before\">26%\u003c/span> → 53% \u003cspan class=\"xp-unit\">बातचीत में\u003c/span>",
+            "x.zoca.bookings.p1": "कॉल करने वालों के लिए अपॉइंटमेंट खोजने का तरीका नए सिरे से बनाया, ताकि वह और आसान हो",
+            "x.zoca.bookings.p2": "पक्का किया कि ग्राहक की हर पसंद बुकिंग फ़नल में तय तरीके से आगे बढ़े",
+            "x.zoca.bookings.p3": "8+ प्लेटफ़ॉर्म पर बुकिंग पक्की करने के लिए विस्तृत ऑब्ज़र्वेबिलिटी बनाई",
+            "x.zoca.trust.metric": "कॉल जिनमें एजेंट ने भरोसा तोड़ा",
+            "x.zoca.trust.delta": "−86%",
+            "x.zoca.trust.values": "\u003cspan class=\"xp-before\">8.9\u003c/span> → 1.3 \u003cspan class=\"xp-unit\">प्रति 100 कॉल\u003c/span>",
+            "x.zoca.trust.p1": "हर प्रोडक्शन एजेंट में register-callback टूल शुरू किया, जिसे कॉलबैक का वादा करने से पहले बुलाया जाता है",
+            "x.zoca.trust.p2": "कॉल करने वालों को गलत दाम बताने की असली वजहें ठीक कीं",
+            "x.zoca.trust.p3": "एजेंट का बिना भेजे कार्ड लिंक या बिना जाँचे तथ्यों का दावा करना बंद किया",
+            "x.zoca.brain.metric": "Brain (एजेंट का नॉलेज बेस) इस्तेमाल करने वाले सैलून",
+            "x.zoca.brain.delta": "3×",
+            "x.zoca.brain.values": "\u003cspan class=\"xp-before\">18%\u003c/span> → 53% \u003cspan class=\"xp-unit\">सैलून\u003c/span>",
+            "x.zoca.brain.p1": "जिन सवालों का जवाब एजेंट नहीं दे पाया, वे सैलून को भेजे, ताकि वे Brain में जवाब भर सकें",
+            "x.zoca.brain.p2": "अकाउंट मैनेजरों से 13 सैलून को उनके बाकी सवालों की सूची ईमेल करवाई",
+            "x.zoca.brain.p3": "Brain रिकॉल फिर से चालू किया, ताकि “मुझे नहीं पता” कहने से पहले एजेंट उन जवाबों का इस्तेमाल करे",
+            "x.zoca.dead-air.metric": "5 सेकंड से ज़्यादा खामोशी वाली कॉल",
+            "x.zoca.dead-air.delta": "−44%",
+            "x.zoca.dead-air.values": "\u003cspan class=\"xp-before\">69%\u003c/span> → 38% \u003cspan class=\"xp-unit\">कॉल\u003c/span>",
+            "x.zoca.dead-air.p1": "स्पीच रिकग्निशन फिर से ट्यून किया: 500 ms एंडपॉइंटिंग, शोर से निपटना, नामों पर ज़ोर",
+            "x.zoca.dead-air.p2": "पुराने MCP कनेक्शन की दिक्कतें ठीक कीं, जिससे टूल की गड़बड़ियाँ 3.5% से घटकर 1.3% रह गईं",
+            "x.zoca.dead-air.p3": "प्रॉम्प्ट 37 हज़ार से घटाकर 21 हज़ार अक्षरों का किया, हर कॉल के लिए ज़रूरी हिस्से चुनकर",
+            "x.zoca.handoffs.metric": "कॉल जिनमें किसी इंसान की ज़रूरत पड़ी",
+            "x.zoca.handoffs.delta": "−32%",
+            "x.zoca.handoffs.values": "\u003cspan class=\"xp-before\">58%\u003c/span> → 39% \u003cspan class=\"xp-unit\">कॉल\u003c/span>",
+            "x.zoca.handoffs.p1": "कोल्ड ट्रांसफ़र से पहले एजेंट एक बार खुद मदद की पेशकश करे, ऐसा बनाया",
+            "x.zoca.handoffs.p2": "ट्रांसफ़र की जगह take-message और waitlist टूल शुरू किए",
+            "x.pine-labs-ai-pm.title": "AI प्रोडक्ट मैनेजर",
+            "x.pine-labs-ai-pm.meta": "पाइन लैब्स, बेंगलुरु · मई 2025 से जुलाई 2026",
+            "x.pine-labs-ai-pm.description": "पहले AI PM के रूप में प्रोडक्शन में AI एजेंट उतार रहा हूँ, जहाँ हाइप से पहले ROI: 32 पहलों के रोडमैप में सालाना ₹1.6 करोड़ की लागत बचत। 24×7 बहुभाषी वॉइस एजेंट अब 44% इनकमिंग कॉल में ग्राहक की पहचान सत्यापित करके समस्या हल करता है; ईमेल एजेंट 59% इनबाउंड अपने-आप छाँटते हैं (और मलेशिया में 56% डिफ़्लेक्ट करते हैं)। संदर्भ याद रखने वाला एक मल्टीमोडल चैट एजेंट भी बनाया, जिससे सेल्फ़-सर्व का इस्तेमाल 15% बढ़ा।",
+            "x.pine-labs-product-owner.title": "प्रोडक्ट ओनर, Pine Labs One (प्लेटफ़ॉर्म और ग्रोथ)",
+            "x.pine-labs-product-owner.meta": "पाइन लैब्स, बेंगलुरु · सितंबर 2024 से मई 2025",
+            "x.pine-labs-product-owner.description": "OTP लॉगिन (+18% एक्टिवेशन), क्षेत्रीय भाषाओं में विस्तार और सात बिल्कुल नए फ़ीचर्स के ज़रिए मर्चेंट सुपर-ऐप के MAU 49 हज़ार से 1 लाख तक पहुँचाए। एक मर्चेंट रेफ़रल इंजन लॉन्च किया, जिससे CAC में ₹6 करोड़ की कमी आई, और 19 टूल वाले सपोर्ट स्टैक को 3 में समेटा, जिससे p95 रिपोर्ट टाइम 73% घटकर 90 सेकंड रह गया।",
+            "x.pine-labs-apm.title": "एसोसिएट प्रोडक्ट मैनेजर, Pine Labs One",
+            "x.pine-labs-apm.meta": "पाइन लैब्स, बेंगलुरु · जुलाई 2023 से सितंबर 2024",
+            "x.pine-labs-apm.description": "सिर्फ़ 2 दिनों में सेल्स लीड कलेक्शन शुरू किया: हर महीने 300+ अच्छी क्वालिटी की लीड, 77% कन्वर्ज़न के साथ, जो कुल डिजिटल बिक्री का एक-तिहाई है। इनवॉइस, बिल-पेमेंट और गिफ़्ट-कार्ड क्रॉस-सेल जोड़े (सालाना ₹0.24 करोड़), और फ़ील्ड वेरिफ़िकेशन, कॉल-सेंटर रीडायरेक्शन और लेटेंसी सुधारों से तिमाही-दर-तिमाही रिटेंशन 22.8% बढ़ाया।"
+          }
+        }
+        </script>
+        <!-- @experience:end -->
 
         <div class="resume-block">
             <div class="resume-cta">
@@ -568,15 +664,6 @@
     "intro1": "আমি আইআইটি বম্বে থেকে অ্যারোস্পেস ইঞ্জিনিয়ারিং পাশ করেছি। অনার্স প্রজেক্ট ছিল মিসাইল ইন্টারসেপশনের ট্র্যাকিং অ্যালগরিদম নিয়ে, আর মাইনর সিস্টেমস অ্যান্ড কন্ট্রোল ইঞ্জিনিয়ারিং-এ।",
     "intro2": "ডিজাইন আমাকে বরাবরই টানে, আর নতুন কিছু বানাতে ভালোবাসি: মাঝে মাঝে লিখি, ছবি আঁকি, পড়ি, বোল্ডারিং করি, আর ইদানীং AI-এর লেখা কোড দিয়ে অনেক কিছু বানাচ্ছি। ঘুরে দেখুন।",
     "experience": "অভিজ্ঞতা",
-    "job1Title": "AI প্রোডাক্ট ম্যানেজার",
-    "job1Meta": "পাইন ল্যাবস, বেঙ্গালুরু · মে ২০২৫ থেকে জুলাই ২০২৬",
-    "job1Body": "প্রথম AI PM হিসেবে প্রোডাকশনে AI এজেন্ট চালু করছি, যেখানে হাইপের আগে ROI: ৩২টি উদ্যোগের রোডম্যাপ জুড়ে বছরে ₹১.৬ কোটি খরচ সাশ্রয়। ২৪×৭ বহুভাষিক ভয়েস এজেন্ট এখন ৪৪% ইনকামিং কলে গ্রাহকের পরিচয় যাচাই করে সমস্যার সমাধান করে; ইমেল এজেন্ট ৫৯% ইনবাউন্ড নিজে থেকে বাছাই করে (আর মালয়েশিয়ায় ৫৬% ডিফ্লেক্ট করে)। প্রসঙ্গ মনে রাখতে পারে এমন একটি মাল্টিমোডাল চ্যাট এজেন্টও বানিয়েছি, যাতে সেলফ-সার্ভ ব্যবহার ১৫% বেড়েছে।",
-    "job2Title": "প্রোডাক্ট ওনার, Pine Labs One (প্ল্যাটফর্ম ও গ্রোথ)",
-    "job2Meta": "পাইন ল্যাবস, বেঙ্গালুরু · সেপ্টেম্বর ২০২৪ থেকে মে ২০২৫",
-    "job2Body": "OTP লগইন (+১৮% অ্যাক্টিভেশন), আঞ্চলিক ভাষায় সম্প্রসারণ আর সাতটি একেবারে নতুন ফিচার দিয়ে মার্চেন্ট সুপার-অ্যাপের MAU ৪৯ হাজার থেকে ১ লাখে নিয়ে গেছি। একটি মার্চেন্ট রেফারেল ইঞ্জিন চালু করেছি, যাতে CAC কমেছে ₹৬ কোটি, আর ১৯টি টুলের সাপোর্ট স্ট্যাক ৩টিতে নামিয়ে এনেছি, ফলে p95 রিপোর্ট টাইম ৭৩% কমে ৯০ সেকেন্ডে দাঁড়িয়েছে।",
-    "job3Title": "অ্যাসোসিয়েট প্রোডাক্ট ম্যানেজার, Pine Labs One",
-    "job3Meta": "পাইন ল্যাবস, বেঙ্গালুরু · জুলাই ২০২৩ থেকে সেপ্টেম্বর ২০২৪",
-    "job3Body": "মাত্র ২ দিনে সেলস লিড সংগ্রহের ফিচার চালু করেছি: মাসে ৩০০+ ভালো মানের লিড, ৭৭% কনভার্শনে, যা মোট ডিজিটাল বিক্রির এক-তৃতীয়াংশ। ইনভয়েস, বিল-পেমেন্ট আর গিফট-কার্ডের ক্রস-সেল যোগ করেছি (বছরে ₹০.২৪ কোটি), আর ফিল্ড ভেরিফিকেশন, কল-সেন্টার রিডিরেকশন ও লেটেন্সি ঠিক করে ত্রৈমাসিক রিটেনশন ২২.৮% বাড়িয়েছি।",
     "resumeView": "রেজিউমে দেখুন",
     "resumeDownload": "রেজিউমে ডাউনলোড করুন",
     "resumeLeadLabel": "নিয়োগ দিচ্ছেন, নাকি শুধুই কৌতূহল? ইমেল রেখে যান, খবর দেব (ঐচ্ছিক)।",
@@ -586,44 +673,10 @@
     "msgThanks": "ধন্যবাদ, শিগগিরই যোগাযোগ করব।",
     "msgSent": "পাঠানো হয়েছে ✓",
     "msgError": "কিছু একটা গোলমাল হয়েছে, পরে আবার চেষ্টা করুন।",
-    "zocaTitle": "AI প্রোডাক্ট ম্যানেজার",
-    "zocaMeta": "<a href=\"https://app.zoca.com/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">Zoca<\/a>, বেঙ্গালুরু · আগস্ট ২০২৬ থেকে এখন",
-    "zocaLead": "সেলুন ও স্পা-র জন্য Zoca-র <a href=\"https://zoca.com/front-desk-agent\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">AI রিসেপশনিস্ট<\/a> প্রোডাক্ট তৈরি ও স্কেল করছি।",
-    "xpRegion": "Zoca-তে ফলাফল",
-    "xpTrack": "Zoca-তে ফলাফল, আরও দেখতে পাশে স্ক্রল করুন",
     "xpPrev": "আগের ফলাফল",
     "xpNext": "পরের ফলাফল",
     "xpStatus": "{total}টির মধ্যে {n} নম্বর ফলাফল",
-    "xpSlide": "{total}টির মধ্যে {n}",
-    "zc1Metric": "ব্যবসার জন্য বুক হওয়া গ্রাহকের অ্যাপয়েন্টমেন্ট",
-    "zc1Delta": "২×",
-    "zc1Values": "<span class=\"xp-before\">২৬%<\/span> → ৫৩% <span class=\"xp-unit\">কথোপকথনে<\/span>",
-    "zc1P1": "কলারদের জন্য অ্যাপয়েন্টমেন্ট খোঁজার ব্যবস্থা নতুন করে বানিয়েছি, যাতে তা আরও সহজ হয়",
-    "zc1P2": "গ্রাহক যা বেছে নেন, বুকিং ফানেলের প্রতিটি ধাপে তা যেন নির্ধারিতভাবে এগোয়, তা নিশ্চিত করেছি",
-    "zc1P3": "৮টির বেশি প্ল্যাটফর্ম জুড়ে বুকিং নিশ্চিত করতে বিস্তৃত অবজার্ভেবিলিটি তৈরি করেছি",
-    "zc2Metric": "যে কলে এজেন্ট আস্থা ভেঙেছে",
-    "zc2Delta": "−৮৬%",
-    "zc2Values": "<span class=\"xp-before\">৮.৯<\/span> → ১.৩ <span class=\"xp-unit\">প্রতি ১০০ কলে<\/span>",
-    "zc2P1": "প্রতিটি প্রোডাকশন এজেন্টে register-callback টুল চালু করেছি, যা কলব্যাকের প্রতিশ্রুতি দেওয়ার আগে ডাকা হয়",
-    "zc2P2": "কলারদের ভুল দাম বলার মূল কারণগুলো ঠিক করেছি",
-    "zc2P3": "এজেন্টের না-পাঠানো কার্ড লিংক বা যাচাই-না-করা তথ্যের দাবি করা বন্ধ করেছি",
-    "zc3Metric": "Brain (এজেন্টের নলেজ বেস) ব্যবহার করা সেলুন",
-    "zc3Delta": "৩×",
-    "zc3Values": "<span class=\"xp-before\">১৮%<\/span> → ৫৩% <span class=\"xp-unit\">সেলুন<\/span>",
-    "zc3P1": "যে প্রশ্নের উত্তর এজেন্ট দিতে পারেনি, সেগুলো সেলুনদের পাঠিয়েছি, যাতে তারা Brain-এ উত্তর যোগ করতে পারে",
-    "zc3P2": "অ্যাকাউন্ট ম্যানেজারদের দিয়ে ১৩টি সেলুনকে তাদের বাকি প্রশ্নের তালিকা ইমেল করিয়েছি",
-    "zc3P3": "Brain রিকল আবার চালু করেছি, যাতে “জানি না” বলার আগে এজেন্ট সেই উত্তরগুলো কাজে লাগায়",
-    "zc4Metric": "৫ সেকেন্ডের বেশি নীরবতা থাকা কল",
-    "zc4Delta": "−৪৪%",
-    "zc4Values": "<span class=\"xp-before\">৬৯%<\/span> → ৩৮% <span class=\"xp-unit\">কল<\/span>",
-    "zc4P1": "স্পিচ রিকগনিশন নতুন করে টিউন করেছি: ৫০০ ms এন্ডপয়েন্টিং, নয়েজ সামলানো, নামের ওপর জোর",
-    "zc4P2": "MCP-র পুরোনো কানেকশনের সমস্যা ঠিক করেছি, ফলে টুলের ত্রুটি ৩.৫% থেকে ১.৩%-এ নেমেছে",
-    "zc4P3": "প্রম্পট ৩৭ হাজার থেকে ২১ হাজার অক্ষরে নামিয়েছি, প্রতিটি কলের জন্য দরকারি অংশ বেছে নিয়ে",
-    "zc5Metric": "যে কলে মানুষের দরকার পড়েছে",
-    "zc5Delta": "−৩২%",
-    "zc5Values": "<span class=\"xp-before\">৫৮%<\/span> → ৩৯% <span class=\"xp-unit\">কল<\/span>",
-    "zc5P1": "কোল্ড ট্রান্সফারের আগে এজেন্ট যেন একবার নিজে সাহায্যের প্রস্তাব দেয়, সেই ব্যবস্থা করেছি",
-    "zc5P2": "ট্রান্সফারের বদলে take-message আর waitlist টুল চালু করেছি"
+    "xpSlide": "{total}টির মধ্যে {n}"
   },
   "hi": {
     "name": "हिंदी",
@@ -632,15 +685,6 @@
     "intro1": "मैंने आईआईटी बॉम्बे से एयरोस्पेस इंजीनियरिंग की है। मेरा ऑनर्स प्रोजेक्ट मिसाइल इंटरसेप्शन के ट्रैकिंग एल्गोरिदम पर था, और माइनर सिस्टम्स एंड कंट्रोल इंजीनियरिंग में।",
     "intro2": "डिज़ाइन मुझे हमेशा से खींचता रहा है, और मुझे चीज़ें बनाना पसंद है: कभी-कभी लिखता हूँ, पेंटिंग करता हूँ, पढ़ता हूँ, बोल्डरिंग करता हूँ, और आजकल AI से लिखे कोड से बहुत कुछ बना रहा हूँ। आसपास देखिए।",
     "experience": "अनुभव",
-    "job1Title": "AI प्रोडक्ट मैनेजर",
-    "job1Meta": "पाइन लैब्स, बेंगलुरु · मई 2025 से जुलाई 2026",
-    "job1Body": "पहले AI PM के रूप में प्रोडक्शन में AI एजेंट उतार रहा हूँ, जहाँ हाइप से पहले ROI: 32 पहलों के रोडमैप में सालाना ₹1.6 करोड़ की लागत बचत। 24×7 बहुभाषी वॉइस एजेंट अब 44% इनकमिंग कॉल में ग्राहक की पहचान सत्यापित करके समस्या हल करता है; ईमेल एजेंट 59% इनबाउंड अपने-आप छाँटते हैं (और मलेशिया में 56% डिफ़्लेक्ट करते हैं)। संदर्भ याद रखने वाला एक मल्टीमोडल चैट एजेंट भी बनाया, जिससे सेल्फ़-सर्व का इस्तेमाल 15% बढ़ा।",
-    "job2Title": "प्रोडक्ट ओनर, Pine Labs One (प्लेटफ़ॉर्म और ग्रोथ)",
-    "job2Meta": "पाइन लैब्स, बेंगलुरु · सितंबर 2024 से मई 2025",
-    "job2Body": "OTP लॉगिन (+18% एक्टिवेशन), क्षेत्रीय भाषाओं में विस्तार और सात बिल्कुल नए फ़ीचर्स के ज़रिए मर्चेंट सुपर-ऐप के MAU 49 हज़ार से 1 लाख तक पहुँचाए। एक मर्चेंट रेफ़रल इंजन लॉन्च किया, जिससे CAC में ₹6 करोड़ की कमी आई, और 19 टूल वाले सपोर्ट स्टैक को 3 में समेटा, जिससे p95 रिपोर्ट टाइम 73% घटकर 90 सेकंड रह गया।",
-    "job3Title": "एसोसिएट प्रोडक्ट मैनेजर, Pine Labs One",
-    "job3Meta": "पाइन लैब्स, बेंगलुरु · जुलाई 2023 से सितंबर 2024",
-    "job3Body": "सिर्फ़ 2 दिनों में सेल्स लीड कलेक्शन शुरू किया: हर महीने 300+ अच्छी क्वालिटी की लीड, 77% कन्वर्ज़न के साथ, जो कुल डिजिटल बिक्री का एक-तिहाई है। इनवॉइस, बिल-पेमेंट और गिफ़्ट-कार्ड क्रॉस-सेल जोड़े (सालाना ₹0.24 करोड़), और फ़ील्ड वेरिफ़िकेशन, कॉल-सेंटर रीडायरेक्शन और लेटेंसी सुधारों से तिमाही-दर-तिमाही रिटेंशन 22.8% बढ़ाया।",
     "resumeView": "रिज़्यूमे देखें",
     "resumeDownload": "रिज़्यूमे डाउनलोड करें",
     "resumeLeadLabel": "भर्ती कर रहे हैं या बस जिज्ञासा है? अपना ईमेल छोड़ दीजिए, मैं ख़बर देता रहूँगा (वैकल्पिक)।",
@@ -650,44 +694,10 @@
     "msgThanks": "धन्यवाद, मैं जल्द संपर्क करूँगा।",
     "msgSent": "भेज दिया ✓",
     "msgError": "कुछ गड़बड़ हो गई, थोड़ी देर बाद फिर कोशिश करें।",
-    "zocaTitle": "AI प्रोडक्ट मैनेजर",
-    "zocaMeta": "<a href=\"https://app.zoca.com/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">Zoca<\/a>, बेंगलुरु · अगस्त 2026 से अब तक",
-    "zocaLead": "सैलून और स्पा के लिए Zoca का <a href=\"https://zoca.com/front-desk-agent\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"merchant-link\">AI रिसेप्शनिस्ट<\/a> प्रोडक्ट बना रहा हूँ और उसे स्केल कर रहा हूँ।",
-    "xpRegion": "Zoca में नतीजे",
-    "xpTrack": "Zoca में नतीजे, और देखने के लिए बगल में स्क्रॉल करें",
     "xpPrev": "पिछला नतीजा",
     "xpNext": "अगला नतीजा",
     "xpStatus": "नतीजा {n}, कुल {total} में से",
-    "xpSlide": "{total} में से {n}",
-    "zc1Metric": "कारोबारों के लिए बुक हुए ग्राहकों के अपॉइंटमेंट",
-    "zc1Delta": "2×",
-    "zc1Values": "<span class=\"xp-before\">26%<\/span> → 53% <span class=\"xp-unit\">बातचीत में<\/span>",
-    "zc1P1": "कॉल करने वालों के लिए अपॉइंटमेंट खोजने का तरीका नए सिरे से बनाया, ताकि वह और आसान हो",
-    "zc1P2": "पक्का किया कि ग्राहक की हर पसंद बुकिंग फ़नल में तय तरीके से आगे बढ़े",
-    "zc1P3": "8+ प्लेटफ़ॉर्म पर बुकिंग पक्की करने के लिए विस्तृत ऑब्ज़र्वेबिलिटी बनाई",
-    "zc2Metric": "कॉल जिनमें एजेंट ने भरोसा तोड़ा",
-    "zc2Delta": "−86%",
-    "zc2Values": "<span class=\"xp-before\">8.9<\/span> → 1.3 <span class=\"xp-unit\">प्रति 100 कॉल<\/span>",
-    "zc2P1": "हर प्रोडक्शन एजेंट में register-callback टूल शुरू किया, जिसे कॉलबैक का वादा करने से पहले बुलाया जाता है",
-    "zc2P2": "कॉल करने वालों को गलत दाम बताने की असली वजहें ठीक कीं",
-    "zc2P3": "एजेंट का बिना भेजे कार्ड लिंक या बिना जाँचे तथ्यों का दावा करना बंद किया",
-    "zc3Metric": "Brain (एजेंट का नॉलेज बेस) इस्तेमाल करने वाले सैलून",
-    "zc3Delta": "3×",
-    "zc3Values": "<span class=\"xp-before\">18%<\/span> → 53% <span class=\"xp-unit\">सैलून<\/span>",
-    "zc3P1": "जिन सवालों का जवाब एजेंट नहीं दे पाया, वे सैलून को भेजे, ताकि वे Brain में जवाब भर सकें",
-    "zc3P2": "अकाउंट मैनेजरों से 13 सैलून को उनके बाकी सवालों की सूची ईमेल करवाई",
-    "zc3P3": "Brain रिकॉल फिर से चालू किया, ताकि “मुझे नहीं पता” कहने से पहले एजेंट उन जवाबों का इस्तेमाल करे",
-    "zc4Metric": "5 सेकंड से ज़्यादा खामोशी वाली कॉल",
-    "zc4Delta": "−44%",
-    "zc4Values": "<span class=\"xp-before\">69%<\/span> → 38% <span class=\"xp-unit\">कॉल<\/span>",
-    "zc4P1": "स्पीच रिकग्निशन फिर से ट्यून किया: 500 ms एंडपॉइंटिंग, शोर से निपटना, नामों पर ज़ोर",
-    "zc4P2": "पुराने MCP कनेक्शन की दिक्कतें ठीक कीं, जिससे टूल की गड़बड़ियाँ 3.5% से घटकर 1.3% रह गईं",
-    "zc4P3": "प्रॉम्प्ट 37 हज़ार से घटाकर 21 हज़ार अक्षरों का किया, हर कॉल के लिए ज़रूरी हिस्से चुनकर",
-    "zc5Metric": "कॉल जिनमें किसी इंसान की ज़रूरत पड़ी",
-    "zc5Delta": "−32%",
-    "zc5Values": "<span class=\"xp-before\">58%<\/span> → 39% <span class=\"xp-unit\">कॉल<\/span>",
-    "zc5P1": "कोल्ड ट्रांसफ़र से पहले एजेंट एक बार खुद मदद की पेशकश करे, ऐसा बनाया",
-    "zc5P2": "ट्रांसफ़र की जगह take-message और waitlist टूल शुरू किए"
+    "xpSlide": "{total} में से {n}"
   }
 }
     </script>
@@ -725,6 +735,13 @@
 
         // ─── Languages: typed greeting + "Read on in …" + page text ───
         const I18N = JSON.parse(document.getElementById('i18n').textContent);
+        // The Experience section carries its own Bengali and Hindi strings, built
+        // with it from content/experience.json (scripts/build-experience.mjs).
+        const xpStrings = document.getElementById('i18n-xp');
+        if (xpStrings) {
+            const x = JSON.parse(xpStrings.textContent);
+            for (const l in x) I18N[l] = Object.assign(I18N[l] || {}, x[l]);
+        }
         const LANGS = ['bn', 'en', 'hi'];          // typing order, then round again
         const T = (k) => (I18N[pageLang] && I18N[pageLang][k]) || I18N.en[k];
         const i18nEls = [...document.querySelectorAll('[data-i18n]')];

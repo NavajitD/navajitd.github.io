@@ -1,0 +1,287 @@
+{
+  "roles": [
+    {
+      "id": "zoca",
+      "archived": false,
+      "title": {
+        "en": "AI Product Manager",
+        "bn": "AI প্রোডাক্ট ম্যানেজার",
+        "hi": "AI प्रोडक्ट मैनेजर"
+      },
+      "company": {
+        "en": "Zoca",
+        "bn": "Zoca",
+        "hi": "Zoca"
+      },
+      "companyUrl": "https://app.zoca.com/",
+      "location": {
+        "en": "Bengaluru",
+        "bn": "বেঙ্গালুরু",
+        "hi": "बेंगलुरु"
+      },
+      "start": "2026-08",
+      "end": "",
+      "description": {
+        "en": "Building and scaling Zoca’s [AI receptionist](https://zoca.com/front-desk-agent) product for salons and spas.",
+        "bn": "সেলুন ও স্পা-র জন্য Zoca-র [AI রিসেপশনিস্ট](https://zoca.com/front-desk-agent) প্রোডাক্ট তৈরি ও স্কেল করছি।",
+        "hi": "सैलून और स्पा के लिए Zoca का [AI रिसेप्शनिस्ट](https://zoca.com/front-desk-agent) प्रोडक्ट बना रहा हूँ और उसे स्केल कर रहा हूँ।"
+      },
+      "cards": [
+        {
+          "id": "bookings",
+          "archived": false,
+          "metric": {
+            "en": "Customer appointments booked for businesses",
+            "bn": "ব্যবসার জন্য বুক হওয়া গ্রাহকের অ্যাপয়েন্টমেন্ট",
+            "hi": "कारोबारों के लिए बुक हुए ग्राहकों के अपॉइंटमेंट"
+          },
+          "before": "26%",
+          "after": "53%",
+          "delta": "2×",
+          "unit": {
+            "en": "of conversations",
+            "bn": "কথোপকথনে",
+            "hi": "बातचीत में"
+          },
+          "grid": true,
+          "bullets": [
+            {
+              "en": "Rebuilt the appointment search to be more intuitive for callers",
+              "bn": "কলারদের জন্য অ্যাপয়েন্টমেন্ট খোঁজার ব্যবস্থা নতুন করে বানিয়েছি, যাতে তা আরও সহজ হয়",
+              "hi": "कॉल करने वालों के लिए अपॉइंटमेंट खोजने का तरीका नए सिरे से बनाया, ताकि वह और आसान हो"
+            },
+            {
+              "en": "Ensured customer choices flow deterministically across the booking funnel",
+              "bn": "গ্রাহক যা বেছে নেন, বুকিং ফানেলের প্রতিটি ধাপে তা যেন নির্ধারিতভাবে এগোয়, তা নিশ্চিত করেছি",
+              "hi": "पक्का किया कि ग्राहक की हर पसंद बुकिंग फ़नल में तय तरीके से आगे बढ़े"
+            },
+            {
+              "en": "Built extensive observability for booking assurance across 8+ platforms",
+              "bn": "৮টির বেশি প্ল্যাটফর্ম জুড়ে বুকিং নিশ্চিত করতে বিস্তৃত অবজার্ভেবিলিটি তৈরি করেছি",
+              "hi": "8+ प्लेटफ़ॉर्म पर बुकिंग पक्की करने के लिए विस्तृत ऑब्ज़र्वेबिलिटी बनाई"
+            }
+          ]
+        },
+        {
+          "id": "trust",
+          "archived": false,
+          "metric": {
+            "en": "Calls where the agent broke trust",
+            "bn": "যে কলে এজেন্ট আস্থা ভেঙেছে",
+            "hi": "कॉल जिनमें एजेंट ने भरोसा तोड़ा"
+          },
+          "before": "8.9",
+          "after": "1.3",
+          "delta": "−86%",
+          "unit": {
+            "en": "per 100 calls",
+            "bn": "প্রতি ১০০ কলে",
+            "hi": "प्रति 100 कॉल"
+          },
+          "grid": true,
+          "bullets": [
+            {
+              "en": "Shipped a register-callback tool to every production agent, called before any callback promise",
+              "bn": "প্রতিটি প্রোডাকশন এজেন্টে register-callback টুল চালু করেছি, যা কলব্যাকের প্রতিশ্রুতি দেওয়ার আগে ডাকা হয়",
+              "hi": "हर प्रोडक्शन एजेंट में register-callback टूल शुरू किया, जिसे कॉलबैक का वादा करने से पहले बुलाया जाता है"
+            },
+            {
+              "en": "Fixed the root causes of wrong prices quoted to callers",
+              "bn": "কলারদের ভুল দাম বলার মূল কারণগুলো ঠিক করেছি",
+              "hi": "कॉल करने वालों को गलत दाम बताने की असली वजहें ठीक कीं"
+            },
+            {
+              "en": "Stopped the agent claiming card links it never sent, or facts it hadn’t verified",
+              "bn": "এজেন্টের না-পাঠানো কার্ড লিংক বা যাচাই-না-করা তথ্যের দাবি করা বন্ধ করেছি",
+              "hi": "एजेंट का बिना भेजे कार्ड लिंक या बिना जाँचे तथ्यों का दावा करना बंद किया"
+            }
+          ]
+        },
+        {
+          "id": "brain",
+          "archived": false,
+          "metric": {
+            "en": "Salons using Brain, the agent’s knowledge base",
+            "bn": "Brain (এজেন্টের নলেজ বেস) ব্যবহার করা সেলুন",
+            "hi": "Brain (एजेंट का नॉलेज बेस) इस्तेमाल करने वाले सैलून"
+          },
+          "before": "18%",
+          "after": "53%",
+          "delta": "3×",
+          "unit": {
+            "en": "of salons",
+            "bn": "সেলুন",
+            "hi": "सैलून"
+          },
+          "grid": true,
+          "bullets": [
+            {
+              "en": "Sent salons the questions the agent couldn’t answer, so they could fill in Brain",
+              "bn": "যে প্রশ্নের উত্তর এজেন্ট দিতে পারেনি, সেগুলো সেলুনদের পাঠিয়েছি, যাতে তারা Brain-এ উত্তর যোগ করতে পারে",
+              "hi": "जिन सवालों का जवाब एजेंट नहीं दे पाया, वे सैलून को भेजे, ताकि वे Brain में जवाब भर सकें"
+            },
+            {
+              "en": "Had account managers email 13 salons a list of their pending questions",
+              "bn": "অ্যাকাউন্ট ম্যানেজারদের দিয়ে ১৩টি সেলুনকে তাদের বাকি প্রশ্নের তালিকা ইমেল করিয়েছি",
+              "hi": "अकाउंट मैनेजरों से 13 सैलून को उनके बाकी सवालों की सूची ईमेल करवाई"
+            },
+            {
+              "en": "Turned Brain recall back on, so the agent uses those answers before saying “I don’t know”",
+              "bn": "Brain রিকল আবার চালু করেছি, যাতে “জানি না” বলার আগে এজেন্ট সেই উত্তরগুলো কাজে লাগায়",
+              "hi": "Brain रिकॉल फिर से चालू किया, ताकि “मुझे नहीं पता” कहने से पहले एजेंट उन जवाबों का इस्तेमाल करे"
+            }
+          ]
+        },
+        {
+          "id": "dead-air",
+          "archived": false,
+          "metric": {
+            "en": "Calls with over 5 seconds of dead air",
+            "bn": "৫ সেকেন্ডের বেশি নীরবতা থাকা কল",
+            "hi": "5 सेकंड से ज़्यादा खामोशी वाली कॉल"
+          },
+          "before": "69%",
+          "after": "38%",
+          "delta": "−44%",
+          "unit": {
+            "en": "of calls",
+            "bn": "কল",
+            "hi": "कॉल"
+          },
+          "grid": true,
+          "bullets": [
+            {
+              "en": "Retuned speech recognition: 500 ms endpointing, noise handling, boosted names",
+              "bn": "স্পিচ রিকগনিশন নতুন করে টিউন করেছি: ৫০০ ms এন্ডপয়েন্টিং, নয়েজ সামলানো, নামের ওপর জোর",
+              "hi": "स्पीच रिकग्निशन फिर से ट्यून किया: 500 ms एंडपॉइंटिंग, शोर से निपटना, नामों पर ज़ोर"
+            },
+            {
+              "en": "Fixed stale MCP connections, cutting tool errors from 3.5% to 1.3%",
+              "bn": "MCP-র পুরোনো কানেকশনের সমস্যা ঠিক করেছি, ফলে টুলের ত্রুটি ৩.৫% থেকে ১.৩%-এ নেমেছে",
+              "hi": "पुराने MCP कनेक्शन की दिक्कतें ठीक कीं, जिससे टूल की गड़बड़ियाँ 3.5% से घटकर 1.3% रह गईं"
+            },
+            {
+              "en": "Cut the prompt from 37k to 21k characters, with sections picked per call",
+              "bn": "প্রম্পট ৩৭ হাজার থেকে ২১ হাজার অক্ষরে নামিয়েছি, প্রতিটি কলের জন্য দরকারি অংশ বেছে নিয়ে",
+              "hi": "प्रॉम्प्ट 37 हज़ार से घटाकर 21 हज़ार अक्षरों का किया, हर कॉल के लिए ज़रूरी हिस्से चुनकर"
+            }
+          ]
+        },
+        {
+          "id": "handoffs",
+          "archived": false,
+          "metric": {
+            "en": "Calls that needed a person",
+            "bn": "যে কলে মানুষের দরকার পড়েছে",
+            "hi": "कॉल जिनमें किसी इंसान की ज़रूरत पड़ी"
+          },
+          "before": "58%",
+          "after": "39%",
+          "delta": "−32%",
+          "unit": {
+            "en": "of calls",
+            "bn": "কল",
+            "hi": "कॉल"
+          },
+          "grid": true,
+          "bullets": [
+            {
+              "en": "Made the agent offer its help once before any cold transfer",
+              "bn": "কোল্ড ট্রান্সফারের আগে এজেন্ট যেন একবার নিজে সাহায্যের প্রস্তাব দেয়, সেই ব্যবস্থা করেছি",
+              "hi": "कोल्ड ट्रांसफ़र से पहले एजेंट एक बार खुद मदद की पेशकश करे, ऐसा बनाया"
+            },
+            {
+              "en": "Shipped take-message and waitlist tools to use instead of transferring",
+              "bn": "ট্রান্সফারের বদলে take-message আর waitlist টুল চালু করেছি",
+              "hi": "ट्रांसफ़र की जगह take-message और waitlist टूल शुरू किए"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pine-labs-ai-pm",
+      "archived": false,
+      "title": {
+        "en": "AI Product Manager",
+        "bn": "AI প্রোডাক্ট ম্যানেজার",
+        "hi": "AI प्रोडक्ट मैनेजर"
+      },
+      "company": {
+        "en": "Pine Labs",
+        "bn": "পাইন ল্যাবস",
+        "hi": "पाइन लैब्स"
+      },
+      "companyUrl": "",
+      "location": {
+        "en": "Bengaluru",
+        "bn": "বেঙ্গালুরু",
+        "hi": "बेंगलुरु"
+      },
+      "start": "2025-05",
+      "end": "2026-07",
+      "description": {
+        "en": "Founding AI PM shipping production AI agents with ROI over hype — ₹1.6 Cr/year in cost optimisation across a 32-initiative roadmap. A 24×7 multilingual voice agent now authenticates and resolves 44% of incoming calls; email agents auto-triage 59% of inbound (and deflect 56% in Malaysia). Also built a multimodal chat agent with contextual memory that lifted self-serve adoption 15%.",
+        "bn": "প্রথম AI PM হিসেবে প্রোডাকশনে AI এজেন্ট চালু করছি, যেখানে হাইপের আগে ROI: ৩২টি উদ্যোগের রোডম্যাপ জুড়ে বছরে ₹১.৬ কোটি খরচ সাশ্রয়। ২৪×৭ বহুভাষিক ভয়েস এজেন্ট এখন ৪৪% ইনকামিং কলে গ্রাহকের পরিচয় যাচাই করে সমস্যার সমাধান করে; ইমেল এজেন্ট ৫৯% ইনবাউন্ড নিজে থেকে বাছাই করে (আর মালয়েশিয়ায় ৫৬% ডিফ্লেক্ট করে)। প্রসঙ্গ মনে রাখতে পারে এমন একটি মাল্টিমোডাল চ্যাট এজেন্টও বানিয়েছি, যাতে সেলফ-সার্ভ ব্যবহার ১৫% বেড়েছে।",
+        "hi": "पहले AI PM के रूप में प्रोडक्शन में AI एजेंट उतार रहा हूँ, जहाँ हाइप से पहले ROI: 32 पहलों के रोडमैप में सालाना ₹1.6 करोड़ की लागत बचत। 24×7 बहुभाषी वॉइस एजेंट अब 44% इनकमिंग कॉल में ग्राहक की पहचान सत्यापित करके समस्या हल करता है; ईमेल एजेंट 59% इनबाउंड अपने-आप छाँटते हैं (और मलेशिया में 56% डिफ़्लेक्ट करते हैं)। संदर्भ याद रखने वाला एक मल्टीमोडल चैट एजेंट भी बनाया, जिससे सेल्फ़-सर्व का इस्तेमाल 15% बढ़ा।"
+      },
+      "cards": []
+    },
+    {
+      "id": "pine-labs-product-owner",
+      "archived": false,
+      "title": {
+        "en": "Product Owner, Pine Labs One (Platform & Growth)",
+        "bn": "প্রোডাক্ট ওনার, Pine Labs One (প্ল্যাটফর্ম ও গ্রোথ)",
+        "hi": "प्रोडक्ट ओनर, Pine Labs One (प्लेटफ़ॉर्म और ग्रोथ)"
+      },
+      "company": {
+        "en": "Pine Labs",
+        "bn": "পাইন ল্যাবস",
+        "hi": "पाइन लैब्स"
+      },
+      "companyUrl": "",
+      "location": {
+        "en": "Bengaluru",
+        "bn": "বেঙ্গালুরু",
+        "hi": "बेंगलुरु"
+      },
+      "start": "2024-09",
+      "end": "2025-05",
+      "description": {
+        "en": "Grew the merchant super-app from 49k to 100k MAUs with OTP login (+18% activation), vernacular expansion, and seven 0-to-1 features. Launched a merchant referral engine that cut CAC by ₹6 Cr, and replaced a 19-tool support stack with 3 — dropping p95 report time 73% to 90s.",
+        "bn": "OTP লগইন (+১৮% অ্যাক্টিভেশন), আঞ্চলিক ভাষায় সম্প্রসারণ আর সাতটি একেবারে নতুন ফিচার দিয়ে মার্চেন্ট সুপার-অ্যাপের MAU ৪৯ হাজার থেকে ১ লাখে নিয়ে গেছি। একটি মার্চেন্ট রেফারেল ইঞ্জিন চালু করেছি, যাতে CAC কমেছে ₹৬ কোটি, আর ১৯টি টুলের সাপোর্ট স্ট্যাক ৩টিতে নামিয়ে এনেছি, ফলে p95 রিপোর্ট টাইম ৭৩% কমে ৯০ সেকেন্ডে দাঁড়িয়েছে।",
+        "hi": "OTP लॉगिन (+18% एक्टिवेशन), क्षेत्रीय भाषाओं में विस्तार और सात बिल्कुल नए फ़ीचर्स के ज़रिए मर्चेंट सुपर-ऐप के MAU 49 हज़ार से 1 लाख तक पहुँचाए। एक मर्चेंट रेफ़रल इंजन लॉन्च किया, जिससे CAC में ₹6 करोड़ की कमी आई, और 19 टूल वाले सपोर्ट स्टैक को 3 में समेटा, जिससे p95 रिपोर्ट टाइम 73% घटकर 90 सेकंड रह गया।"
+      },
+      "cards": []
+    },
+    {
+      "id": "pine-labs-apm",
+      "archived": false,
+      "title": {
+        "en": "Associate Product Manager, Pine Labs One",
+        "bn": "অ্যাসোসিয়েট প্রোডাক্ট ম্যানেজার, Pine Labs One",
+        "hi": "एसोसिएट प्रोडक्ट मैनेजर, Pine Labs One"
+      },
+      "company": {
+        "en": "Pine Labs",
+        "bn": "পাইন ল্যাবস",
+        "hi": "पाइन लैब्स"
+      },
+      "companyUrl": "",
+      "location": {
+        "en": "Bengaluru",
+        "bn": "বেঙ্গালুরু",
+        "hi": "बेंगलुरु"
+      },
+      "start": "2023-07",
+      "end": "2024-09",
+      "description": {
+        "en": "Shipped sales lead collection in 2 days — 300+ high-quality leads/month at 77% conversion, a third of all digital sales. Added invoice, bill-payment, and gift-card cross-sells (₹0.24 Cr/year) and drove retention up 22.8% quarter-on-quarter through field verification, call-centre redirection, and latency fixes.",
+        "bn": "মাত্র ২ দিনে সেলস লিড সংগ্রহের ফিচার চালু করেছি: মাসে ৩০০+ ভালো মানের লিড, ৭৭% কনভার্শনে, যা মোট ডিজিটাল বিক্রির এক-তৃতীয়াংশ। ইনভয়েস, বিল-পেমেন্ট আর গিফট-কার্ডের ক্রস-সেল যোগ করেছি (বছরে ₹০.২৪ কোটি), আর ফিল্ড ভেরিফিকেশন, কল-সেন্টার রিডিরেকশন ও লেটেন্সি ঠিক করে ত্রৈমাসিক রিটেনশন ২২.৮% বাড়িয়েছি।",
+        "hi": "सिर्फ़ 2 दिनों में सेल्स लीड कलेक्शन शुरू किया: हर महीने 300+ अच्छी क्वालिटी की लीड, 77% कन्वर्ज़न के साथ, जो कुल डिजिटल बिक्री का एक-तिहाई है। इनवॉइस, बिल-पेमेंट और गिफ़्ट-कार्ड क्रॉस-सेल जोड़े (सालाना ₹0.24 करोड़), और फ़ील्ड वेरिफ़िकेशन, कॉल-सेंटर रीडायरेक्शन और लेटेंसी सुधारों से तिमाही-दर-तिमाही रिटेंशन 22.8% बढ़ाया।"
+      },
+      "cards": []
+    }
+  ]
+}

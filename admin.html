@@ -142,6 +142,66 @@
         .size-meter.warn .bar i{background:#d97706}
         .size-meter.over{color:var(--danger);font-weight:600}
         .size-meter.over .bar i{background:var(--danger)}
+
+        /* ─── Experience editor ─── */
+        .xp-intro{font-size:.875rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;max-width:46rem}
+        .xp-connect{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;font-size:.8125rem;color:var(--muted);padding:.625rem .875rem;border:1px solid var(--border);border-radius:8px;margin-bottom:1rem}
+        .xp-connect .btn{margin-left:auto}
+        .xp-dot{width:.5rem;height:.5rem;border-radius:50%;background:#d1d5db;flex:none}
+        .xp-dot.is-on{background:var(--success)}
+        .xp-toolbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;position:sticky;top:0;z-index:2;background:var(--bg);padding:.625rem 0;margin-bottom:1rem;border-bottom:1px solid var(--border)}
+        .xp-spacer{flex:1}
+        .xp-status{font-size:.8125rem;color:var(--muted)}
+        .xp-alert{margin:0 0 1rem}
+        .xp-roles{display:grid;gap:1rem}
+        .xp-role{border:1px solid var(--border);border-radius:10px;padding:1rem 1.125rem}
+        .xp-role.is-archived{background:var(--bg-subtle)}
+        .xp-role.is-archived .xp-role-title{color:var(--muted)}
+        .xp-item{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+        .xp-item-main{min-width:0}
+        .xp-role-title{font-weight:700;font-size:1rem}
+        .xp-item-title{font-weight:600;font-size:.875rem}
+        .xp-item-meta{font-size:.8125rem;color:var(--muted);margin-top:.2rem}
+        .xp-actions{display:flex;gap:.375rem;flex:none}
+        .xp-actions .btn{padding:.3rem .6rem}
+        .xp-actions .xp-archive:hover{border-color:var(--danger);color:var(--danger)}
+        .xp-cards{list-style:none;margin:.875rem 0 .75rem;border-top:1px solid var(--border)}
+        .xp-cards>.xp-item{padding:.625rem 0;border-bottom:1px solid var(--border)}
+        .xp-item.is-archived .xp-item-main{opacity:.55}
+        .xp-badge{display:inline-block;margin-left:.5rem;padding:.05rem .45rem;border:1px solid var(--border);border-radius:999px;background:var(--bg);font-size:.6875rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);vertical-align:.1em}
+        .xp-muted{font-size:.8125rem;color:var(--muted);margin:.75rem 0}
+        .xp-loading{display:flex;align-items:center;gap:.75rem;color:var(--muted);padding:2rem 0}
+        .xp-dialog{width:min(56rem,94vw);max-height:92vh;margin:auto;padding:0;border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font)}
+        .xp-dialog::backdrop{background:rgba(15,23,42,.35)}
+        .xp-form{padding:1.5rem}
+        .xp-form p{font-size:.875rem;line-height:1.6;margin-bottom:.75rem}
+        .xp-form code{font-family:var(--font);font-size:.875rem;background:var(--bg-subtle);padding:0 .25rem;border-radius:3px}
+        .xp-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.25rem}
+        .xp-dialog-head h3{font-size:1.0625rem}
+        .xp-tri-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;align-items:start}
+        @media(max-width:700px){.xp-tri-grid,.xp-values-grid{grid-template-columns:1fr}}
+        .xp-lang{display:flex;flex-direction:column;gap:.25rem;min-width:0}
+        .xp-lang-tag{display:block;height:1.125rem;font-size:.6875rem;line-height:1.125rem;color:var(--muted);overflow:hidden}
+        .xp-lang textarea{min-height:3.5rem;resize:vertical;overflow:hidden;line-height:1.6}
+        .xp-lang input:lang(bn),.xp-lang input:lang(hi),.xp-lang textarea:lang(bn),.xp-lang textarea:lang(hi){font-family:system-ui,sans-serif;font-size:.875rem}
+        .xp-lang-note{margin:-.75rem 0 1.25rem}
+        .xp-hint{font-size:.75rem;color:var(--muted);margin-top:.375rem;line-height:1.5}
+        .xp-warn{font-size:.75rem;color:#b45309}
+        .xp-values-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+        .xp-to{display:flex;align-items:center;gap:.75rem}
+        label.xp-check{display:flex;align-items:center;gap:.5rem;margin:0 0 1.25rem;font-size:.875rem;font-weight:400;color:var(--text)}
+        .xp-to label.xp-check{margin:0;white-space:nowrap}
+        .xp-check input{width:auto}
+        .xp-section-label{font-size:.8125rem;font-weight:700;margin:.25rem 0 .75rem}
+        .xp-bullet{border-left:2px solid var(--border);padding-left:.875rem;margin-bottom:1rem}
+        .xp-bullet .form-row{margin-bottom:.5rem}
+        .xp-errors{font-size:.8125rem;color:var(--danger);line-height:1.5}
+        .xp-errors ul{margin:.375rem 0 0 1.25rem}
+        .xp-steps{margin:.25rem 0 1rem 1.25rem;font-size:.875rem;line-height:1.7}
+        .xp-preview{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:rgba(15,23,42,.45)}
+        .xp-preview-bar{display:flex;align-items:center;gap:1rem;padding:.625rem 1rem;background:var(--bg);border-bottom:1px solid var(--border);font-size:.875rem}
+        .xp-preview-stage{flex:1;display:flex;justify-content:center;background:var(--bg-subtle);overflow:hidden}
+        .xp-frame{width:100%;height:100%;border:0;background:#fff;box-shadow:0 0 0 1px var(--border)}
     </style>
 </head>
 <body>
@@ -171,6 +231,7 @@
 
     <div class="tabs">
         <button class="tab active" data-tab="metrics">Metrics</button>
+        <button class="tab" data-tab="experience">Experience</button>
         <button class="tab" data-tab="upload">Upload Post</button>
         <button class="tab" data-tab="posts">All Posts</button>
         <button class="tab" data-tab="recipeUpload">Upload Recipe</button>
@@ -381,6 +442,9 @@
         <div class="mx-note">Images are compressed in your browser and stored inline with the recipe (no separate storage needed). Keep the total under ~1 MB — one hero plus a few gallery shots is fine. Recipes appear on <code>/recipes.html</code> right away; no rebuild step.</div>
     </div>
 
+    <!-- ─── Experience Tab: roles and result cards on the landing page ─── -->
+    <div class="tab-panel" id="tabExperience"><div id="xpAdmin"></div></div>
+
     <!-- ─── All Recipes Tab ─── -->
     <div class="tab-panel" id="tabRecipes">
         <div class="alert alert-error" id="rcListError"></div>
@@ -470,6 +534,7 @@ document.querySelectorAll('.tab').forEach(tab => {
         if (tab.dataset.tab === 'posts') loadPosts();
         if (tab.dataset.tab === 'recipes') loadRecipes();
         if (tab.dataset.tab === 'metrics' && !mxLoaded) loadMetrics();
+        if (tab.dataset.tab === 'experience' && window.xpAdminOpen) window.xpAdminOpen();
     });
 });
 
@@ -1347,6 +1412,8 @@ async function loadRecipes() {
 }
 
 </script>
+<!-- Experience editor (admin-experience.js); it shares its renderer with scripts/build-experience.mjs. -->
+<script type="module" src="/admin-experience.js?v=e02134e1"></script>
 
 </body>
 </html>

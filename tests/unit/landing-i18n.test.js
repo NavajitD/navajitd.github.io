@@ -6,6 +6,9 @@ import { readFileSync } from 'node:fs';
 const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
 const json = html.match(/<script type="application\/json" id="i18n">([\s\S]*?)<\/script>/);
 const I18N = JSON.parse(json[1]);
+// The Experience section ships its own strings (built from content/experience.json).
+const XP = JSON.parse(html.match(/<script type="application\/json" id="i18n-xp">([\s\S]*?)<\/script>/)[1]);
+const ALL = Object.fromEntries(['en', 'bn', 'hi'].map(l => [l, { ...I18N[l], ...(XP[l] || {}) }]));
 const keys = [...html.matchAll(/data-i18n="([^"]+)"/g)].map(m => m[1]);
 const LANGS = ['bn', 'en', 'hi'];
 
@@ -30,14 +33,14 @@ test('the invisible sizing copies match the typed greetings', () => {
 test('Bengali and Hindi translate every marked element on the page', () => {
   assert.ok(keys.length >= 15, `only ${keys.length} data-i18n elements`);
   for (const l of ['bn', 'hi']) {
-    for (const k of keys) assert.ok(I18N[l][k], `${l} is missing ${k}`);
+    for (const k of keys) assert.ok(ALL[l][k], `${l} is missing ${k}`);
   }
 });
 
-test('translations keep the Zoca link and use plain hyphens', () => {
+test('translations keep the Zoca links, and the page-wide strings use plain hyphens', () => {
   for (const l of ['bn', 'hi']) {
-    assert.match(I18N[l].zocaMeta, /<a href="https:\/\/app\.zoca\.com\/"[^>]*class="merchant-link">Zoca<\/a>/);
-    assert.match(I18N[l].zocaLead, /<a href="https:\/\/zoca\.com\/front-desk-agent"[^>]*class="merchant-link">AI [^<]+<\/a>/);
+    assert.match(XP[l]['x.zoca.meta'], /<a href="https:\/\/app\.zoca\.com\/"[^>]*class="merchant-link">Zoca<\/a>/);
+    assert.match(XP[l]['x.zoca.description'], /<a href="https:\/\/zoca\.com\/front-desk-agent"[^>]*class="merchant-link">AI [^<]+<\/a>/);
     for (const [k, v] of Object.entries(I18N[l])) assert.doesNotMatch(v, /[\u2013\u2014]/, `${l}.${k}`);
   }
 });
