@@ -427,8 +427,10 @@ test('the site deploys from a workflow: Jekyll as before, the blog from Firestor
   assert.match(wf, /run: node scripts\/build-blog\.mjs --site _site\n        env:\n          FIRESTORE_TOKEN: \$\{\{ steps\.gcp\.outputs\.access_token \}\}/);
   assert.match(wf, /uses: actions\/upload-pages-artifact@v3\n        with:\n          path: _site\n          retention-days: 1/);
   assert.match(wf, /uses: actions\/deploy-pages@v5/);
-  assert.match(wf, /- name: Delete the upload[\s\S]*?if: always\(\)[\s\S]*?gh api -X DELETE "repos\/\$\{\{ github\.repository \}\}\/actions\/artifacts\/\$id"/);
-  assert.match(wf, /actions: write # to delete the upload afterwards/);
+  // The upload is deleted by its own job, which runs however the deploy ended (even if it never started).
+  assert.match(wf, /  delete-upload:\n    needs: \[build, deploy\]\n    if: always\(\)\n    runs-on: ubuntu-latest\n    permissions:\n      actions: write\n/);
+  assert.match(wf, /gh api -X DELETE "repos\/\$\{\{ github\.repository \}\}\/actions\/artifacts\/\$id"/);
+  assert.match(wf, /  deploy:\n    needs: build\n    runs-on: ubuntu-latest\n    permissions:\n      pages: write\n      id-token: write\n    environment:/, 'the deploy job asks only for what Pages needs');
   assert.match(wf, /^permissions:\n  contents: read$/m);
   assert.doesNotMatch(wf, /git (add|commit|push)|contents: write/);
   assert.match(wf, /concurrency:\n  group: pages\n  cancel-in-progress: false/);

@@ -86,7 +86,6 @@ jobs:
     permissions:
       pages: write
       id-token: write
-      actions: write # to delete the upload afterwards
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -95,11 +94,18 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v5
 
+  # The upload is the whole built site, posts included, and anyone signed in
+  # to GitHub can download a public repository's uploads. Pages keeps its own
+  # copy, so the upload goes as soon as the deploy is over: whether it worked,
+  # failed, or never started.
+  delete-upload:
+    needs: [build, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
       - name: Delete the upload
-        # The upload is the whole built site, posts included, and anyone signed
-        # in to GitHub can download a public repository's uploads. Pages keeps
-        # its own copy, so the upload goes as soon as the deploy is done (or failed).
-        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
