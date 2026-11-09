@@ -68,5 +68,5 @@ async function migrate(coll) {
 let total = 0;
 for (const coll of COLLECTIONS) total += await migrate(coll);
 console.log(`\n${dryRun ? 'Would migrate' : 'Migrated'} ${total} docs total.`);
-console.log('Next: run `npm run build:blog` (now pointed at recipes-7dc22) to regenerate posts.json.');
+console.log('Done. The site\'s deploy (.github/workflows/deploy.yml) builds the blog from recipes-7dc22.');
 process.exit(0);

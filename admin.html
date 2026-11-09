@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin — Navajit D</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=Inconsolata:wght@400;500;600;700&family=Tiro+Bangla&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -58,6 +58,7 @@
         .btn-secondary{background:var(--bg-subtle);color:var(--text);border:1px solid var(--border)} .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
         .btn-danger{background:#fef2f2;color:var(--danger);border:1px solid #fecaca} .btn-danger:hover{background:#fee2e2}
         .btn:disabled{opacity:.5;cursor:not-allowed}
+        a.btn{text-decoration:none}
         .btn-row{display:flex;gap:.75rem;margin-top:1.5rem;flex-wrap:wrap}
 
         /* ─── Preview ─── */
@@ -142,6 +143,36 @@
         .size-meter.warn .bar i{background:#d97706}
         .size-meter.over{color:var(--danger);font-weight:600}
         .size-meter.over .bar i{background:var(--danger)}
+
+        /* ─── Blog posts editor ─── */
+        .bl-toolbar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
+        .bl-filters{display:flex;flex-wrap:wrap;gap:.375rem}
+        .bl-chip{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .7rem;border:1px solid var(--border);border-radius:999px;background:var(--bg);font-family:var(--font);font-size:.8125rem;color:var(--muted);cursor:pointer}
+        .bl-chip:hover{color:var(--text);border-color:var(--accent)}
+        .bl-chip.is-on{color:var(--accent);border-color:var(--accent);font-weight:600}
+        .bl-count{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+        .bl-notice a{color:inherit;font-weight:600}
+        .bl-notice .bl-link{color:inherit;font-weight:600}
+        .bl-spin{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:.4rem}
+        .bl-list .post-item-title:lang(bn){font-family:"Tiro Bangla",var(--font)}
+        .bl-list .post-item-title:lang(hi){font-family:"Tiro Devanagari Hindi",var(--font)}
+        .bl-row-main{min-width:0}
+        .bl-editor-title{font-size:.9375rem}
+        .bl-seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+        .bl-seg-item{margin:0;display:block;font-size:.875rem;font-weight:600;color:var(--muted);cursor:pointer}
+        .bl-seg-item input{position:absolute;opacity:0;pointer-events:none}
+        .bl-seg-item span{display:block;padding:.5rem 1rem;border-left:1px solid var(--border)}
+        .bl-seg-item:first-child span{border-left:none}
+        .bl-seg-item input:checked+span{background:var(--accent);color:#fff}
+        .bl-seg-item input:focus-visible+span{outline:2px solid var(--accent);outline-offset:-4px}
+        .bl-grid-3{grid-template-columns:2fr 1fr 1fr}
+        @media(max-width:700px){.bl-grid-3{grid-template-columns:1fr}}
+        .bl-prose{min-height:14rem;max-height:32rem;margin-top:.75rem}
+        .bl-poem{font-family:"EB Garamond",Georgia,serif;font-size:1.125rem;line-height:1.6;min-height:18rem}
+        .bl-poem:lang(bn){font-family:"Tiro Bangla",Georgia,serif}
+        .bl-poem:lang(hi){font-family:"Tiro Devanagari Hindi",Georgia,serif}
+        .bl-restored{font-size:.8125rem;color:#1e40af;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:.625rem .875rem;margin-bottom:1rem}
+        .bl-link{background:none;border:none;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
 
         /* ─── Experience editor ─── */
         .xp-intro{font-size:.875rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;max-width:46rem}
@@ -232,10 +263,7 @@
     <div class="tabs">
         <button class="tab active" data-tab="metrics">Metrics</button>
         <button class="tab" data-tab="experience">Experience</button>
-        <button class="tab" data-tab="upload">Upload Post</button>
-        <button class="tab" data-tab="posts">All Posts</button>
-        <button class="tab" data-tab="recipeUpload">Upload Recipe</button>
-        <button class="tab" data-tab="recipes">All Recipes</button>
+        <button class="tab" data-tab="blog">Blog posts</button>
     </div>
 
     <!-- ─── Metrics Tab ─── -->
@@ -281,179 +309,12 @@
         </div>
     </div>
 
-    <!-- ─── Upload Tab ─── -->
-    <div class="tab-panel" id="tabUpload">
-        <div class="alert alert-success" id="uploadSuccess"></div>
-        <div class="alert alert-error" id="uploadError"></div>
-
-        <div class="form-row">
-            <div class="drop-zone" id="dropZone">
-                <input type="file" id="fileInput" accept=".docx,.md,.markdown">
-                <strong>Drop a .docx or .md file here</strong>
-                <span>or click to browse</span>
-            </div>
-            <div id="fileStatus" style="margin-top:.5rem;font-size:.8125rem;color:var(--muted)"></div>
-        </div>
-
-        <div class="form-grid">
-            <div class="form-row">
-                <label for="postTitle">Title</label>
-                <input type="text" id="postTitle" placeholder="Post title">
-            </div>
-            <div class="form-row">
-                <label for="postDate">Date</label>
-                <input type="date" id="postDate">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <label for="postExcerpt">Excerpt <span style="font-weight:400">(shown on blog list)</span></label>
-            <textarea id="postExcerpt" rows="3" placeholder="Short preview of the post…"></textarea>
-        </div>
-
-        <div class="form-row">
-            <label for="postAuthor">Author</label>
-            <input type="text" id="postAuthor" value="Navajit D">
-        </div>
-
-        <div id="previewSection" style="display:none">
-            <div class="preview-label">Content <span style="font-weight:400">(click below to edit directly)</span></div>
-            <div class="preview-box" id="htmlPreview" contenteditable="true"></div>
-            <div style="font-size:.8125rem;color:var(--muted);margin-top:.5rem" id="readTimeDisplay"></div>
-        </div>
-
-        <div class="btn-row">
-            <button class="btn btn-primary" id="submitBtn" disabled>
-                <span id="submitBtnText">Publish post</span>
-            </button>
-            <button class="btn btn-secondary" id="clearBtn">Clear</button>
-        </div>
-        <div class="mx-note">After publishing, run <strong>Rebuild blog index</strong> (GitHub Actions) or <code>npm run build:blog</code> so the static blog list picks up the change.</div>
-    </div>
-
-    <!-- ─── Posts Tab ─── -->
-    <div class="tab-panel" id="tabPosts">
-        <div class="alert alert-error" id="listError"></div>
-        <div id="postList">
-            <div style="text-align:center;padding:3rem;color:var(--muted)">
-                <div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading posts…
-            </div>
-        </div>
-    </div>
-
-    <!-- ─── Upload Recipe Tab ─── -->
-    <div class="tab-panel" id="tabRecipeUpload">
-        <div class="alert alert-success" id="rcSuccess"></div>
-        <div class="alert alert-error" id="rcError"></div>
-
-        <div class="form-grid">
-            <div class="form-row">
-                <label for="rcTitle">Title</label>
-                <input type="text" id="rcTitle" placeholder="Recipe name">
-            </div>
-            <div class="form-row">
-                <label for="rcDate">Date</label>
-                <input type="date" id="rcDate">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <label for="rcDescription">Description <span style="font-weight:400">(shown on the card & detail)</span></label>
-            <textarea id="rcDescription" rows="3" placeholder="A line or two about the dish…"></textarea>
-        </div>
-
-        <div class="form-grid">
-            <div class="form-row">
-                <label for="rcCuisine">Cuisine</label>
-                <input type="text" id="rcCuisine" placeholder="e.g. Bengali, Italian">
-            </div>
-            <div class="form-row">
-                <label for="rcDifficulty">Difficulty</label>
-                <select id="rcDifficulty">
-                    <option value="">—</option>
-                    <option>Easy</option>
-                    <option>Medium</option>
-                    <option>Hard</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-grid">
-            <div class="form-row">
-                <label for="rcPrep">Prep time</label>
-                <input type="text" id="rcPrep" placeholder="e.g. 15 min">
-            </div>
-            <div class="form-row">
-                <label for="rcCook">Cook time</label>
-                <input type="text" id="rcCook" placeholder="e.g. 30 min">
-            </div>
-        </div>
-
-        <div class="form-grid">
-            <div class="form-row">
-                <label for="rcServings">Servings</label>
-                <input type="text" id="rcServings" placeholder="e.g. 4">
-            </div>
-            <div class="form-row">
-                <label for="rcTags">Tags <span style="font-weight:400">(comma-separated)</span></label>
-                <input type="text" id="rcTags" placeholder="vegetarian, quick, spicy">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <label for="rcIngredients">Ingredients <span style="font-weight:400">(one per line)</span></label>
-            <textarea id="rcIngredients" rows="6" placeholder="2 cups basmati rice&#10;1 tsp salt&#10;3 tbsp ghee"></textarea>
-        </div>
-
-        <div class="form-row">
-            <label for="rcSteps">Method <span style="font-weight:400">(one step per line)</span></label>
-            <textarea id="rcSteps" rows="8" placeholder="Rinse the rice until the water runs clear&#10;Bring 4 cups of water to a boil…"></textarea>
-        </div>
-
-        <div class="form-row">
-            <label>Hero image <span style="font-weight:400">(main photo)</span></label>
-            <div class="drop-zone sm" id="rcHeroZone">
-                <input type="file" id="rcHeroInput" accept="image/*">
-                <strong>Drop the main photo</strong>
-                <span>or click to browse</span>
-            </div>
-            <div class="img-grid" id="rcHeroPreview"></div>
-        </div>
-
-        <div class="form-row">
-            <label>Gallery images <span style="font-weight:400">(optional, multiple)</span></label>
-            <div class="drop-zone sm" id="rcGalleryZone">
-                <input type="file" id="rcGalleryInput" accept="image/*" multiple>
-                <strong>Drop step / extra photos</strong>
-                <span>or click to browse</span>
-            </div>
-            <div class="img-grid" id="rcGalleryPreview"></div>
-        </div>
-
-        <div class="size-meter" id="rcSizeMeter">
-            Payload: <span id="rcSizeText">0 KB</span> of ~1 MB Firestore limit
-            <div class="bar"><i id="rcSizeBar" style="width:0%"></i></div>
-        </div>
-
-        <div class="btn-row">
-            <button class="btn btn-primary" id="rcSubmitBtn"><span id="rcSubmitText">Publish recipe</span></button>
-            <button class="btn btn-secondary" id="rcClearBtn">Clear</button>
-        </div>
-        <div class="mx-note">Images are compressed in your browser and stored inline with the recipe (no separate storage needed). Keep the total under ~1 MB — one hero plus a few gallery shots is fine. Recipes appear on <code>/recipes.html</code> right away; no rebuild step.</div>
-    </div>
-
     <!-- ─── Experience Tab: roles and result cards on the landing page ─── -->
     <div class="tab-panel" id="tabExperience"><div id="xpAdmin"></div></div>
 
-    <!-- ─── All Recipes Tab ─── -->
-    <div class="tab-panel" id="tabRecipes">
-        <div class="alert alert-error" id="rcListError"></div>
-        <div id="recipeList">
-            <div style="text-align:center;padding:3rem;color:var(--muted)">
-                <div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading recipes…
-            </div>
-        </div>
-    </div>
+    <!-- ─── Blog posts: Tech, Poetry, Makha-bhat and Recipe (admin-blog.js) ─── -->
+    <div class="tab-panel" id="tabBlog"><div id="blogAdmin"></div></div>
+
 </div>
 
 <script>
@@ -471,26 +332,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-async function ensureMammoth() {
-    if (window.mammoth) return;
-    await new Promise((res, rej) => {
-        const s = document.createElement('script');
-        s.src = 'https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js';
-        s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-    });
-}
-
-async function ensureMarked() {
-    if (window.marked) return;
-    await new Promise((res, rej) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js';
-        s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-    });
-}
-
 const ALLOWED_EMAIL = 'navjitdebnath5@gmail.com';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -500,7 +341,6 @@ auth.onAuthStateChanged(user => {
         document.getElementById('adminApp').style.display = 'block';
         document.getElementById('userEmail').textContent = user.email;
         loadMetrics();   // default tab
-        loadPosts();
     } else {
         if (user) { auth.signOut(); showAlert(document.getElementById('loginError'), 'Access restricted to ' + ALLOWED_EMAIL); }
         document.getElementById('loginScreen').style.display = 'flex';
@@ -531,8 +371,7 @@ document.querySelectorAll('.tab').forEach(tab => {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById('tab' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
-        if (tab.dataset.tab === 'posts') loadPosts();
-        if (tab.dataset.tab === 'recipes') loadRecipes();
+        if (tab.dataset.tab === 'blog' && window.blogAdminOpen) window.blogAdminOpen();
         if (tab.dataset.tab === 'metrics' && !mxLoaded) loadMetrics();
         if (tab.dataset.tab === 'experience' && window.xpAdminOpen) window.xpAdminOpen();
     });
@@ -550,7 +389,7 @@ function fmtBytes(b) { return b > 1e6 ? (b/1e6).toFixed(1) + ' MB' : Math.round(
 // ════════════════════════════════════════════════════════════════════════════
 let mxRaw = [];          // raw events in the current window (in-memory cache)
 let mxLoaded = false;
-let mxPostTitles = {};   // id -> title (from posts.json)
+let mxPostTitles = {};   // id -> title (read from Firestore)
 
 const mxWindowSel  = document.getElementById('mxWindow');
 const mxOsSel      = document.getElementById('mxOs');
@@ -594,8 +433,10 @@ async function loadMetrics(force) {
     // Load post titles once (best-effort) for nicer labels.
     if (!Object.keys(mxPostTitles).length) {
         try {
-            const r = await fetch('/posts.json', { cache: 'no-cache' });
-            if (r.ok) { (await r.json()).posts.forEach(p => { mxPostTitles[p.id] = p.title; }); }
+            // Listing posts needs the owner's sign-in (firestore.rules).
+            const idToken = await auth.currentUser.getIdToken();
+            const r = await fetch('https://firestore.googleapis.com/v1/projects/' + firebaseConfig.projectId + '/databases/(default)/documents/posts?key=' + firebaseConfig.apiKey + '&pageSize=300&mask.fieldPaths=title', { headers: { Authorization: 'Bearer ' + idToken } });
+            if (r.ok) { ((await r.json()).documents || []).forEach(d => { mxPostTitles[d.name.split('/').pop()] = d.fields?.title?.stringValue || ''; }); }
         } catch (e) {}
     }
 
@@ -980,440 +821,12 @@ async function runBackfill() {
 }
 document.getElementById('mxBackfill').addEventListener('click', runBackfill);
 
-// ─── Blog: File Drop & Upload ─────────────────────────────────────────────────
-let convertedHtml = '';
-
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('over'); handleFile(e.dataTransfer.files[0]); });
-fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
-
-async function handleFile(file) {
-    const name = file?.name?.toLowerCase() || '';
-    const isDocx = name.endsWith('.docx');
-    const isMd = name.endsWith('.md') || name.endsWith('.markdown');
-    if (!file || (!isDocx && !isMd)) {
-        document.getElementById('fileStatus').textContent = 'Please select a .docx or .md file.';
-        return;
-    }
-    document.getElementById('fileStatus').textContent = 'Converting…';
-    document.getElementById('submitBtn').disabled = true;
-
-    try {
-        let conversionNotes = 0;
-        if (isDocx) {
-            const arrayBuffer = await file.arrayBuffer();
-            await ensureMammoth();
-            const result = await mammoth.convertToHtml({ arrayBuffer });
-            convertedHtml = result.value;
-            conversionNotes = result.messages.length;
-        } else {
-            const text = await file.text();
-            await ensureMarked();
-            convertedHtml = marked.parse(text, { gfm: true, breaks: false });
-        }
-
-        const tmp = document.createElement('div');
-        tmp.innerHTML = convertedHtml;
-        const firstHeading = tmp.querySelector('h1, h2, h3');
-        if (firstHeading && !document.getElementById('postTitle').value) {
-            document.getElementById('postTitle').value = firstHeading.textContent.trim();
-            firstHeading.remove();
-            convertedHtml = tmp.innerHTML;
-        }
-
-        if (!document.getElementById('postExcerpt').value) {
-            const firstPara = tmp.querySelector('p');
-            if (firstPara) document.getElementById('postExcerpt').value = firstPara.textContent.trim().slice(0, 300);
-        }
-
-        if (!document.getElementById('postDate').value) {
-            document.getElementById('postDate').value = todayISO();
-        }
-
-        const rt = readTime(tmp.textContent);
-        document.getElementById('htmlPreview').innerHTML = convertedHtml;
-        document.getElementById('readTimeDisplay').textContent = rt + ' · ' + (conversionNotes ? conversionNotes + ' conversion note(s)' : 'Clean conversion');
-        document.getElementById('previewSection').style.display = 'block';
-        document.getElementById('fileStatus').textContent = '✓ ' + file.name;
-        document.getElementById('submitBtn').disabled = false;
-    } catch(e) {
-        document.getElementById('fileStatus').textContent = 'Conversion failed: ' + e.message;
-    }
-}
-
-// ─── Blog: Submit ─────────────────────────────────────────────────────────────
-document.getElementById('submitBtn').addEventListener('click', async () => {
-    const title = document.getElementById('postTitle').value.trim();
-    const dateStr = document.getElementById('postDate').value;
-    const excerpt = document.getElementById('postExcerpt').value.trim();
-    const author = document.getElementById('postAuthor').value.trim() || 'Navajit D';
-    const successEl = document.getElementById('uploadSuccess');
-    const errorEl = document.getElementById('uploadError');
-
-    // Capture any inline edits made directly in the editable content preview.
-    if (document.getElementById('previewSection').style.display !== 'none') {
-        convertedHtml = document.getElementById('htmlPreview').innerHTML.trim();
-    }
-
-    if (!title) { showAlert(errorEl, 'Title is required.'); return; }
-    if (!convertedHtml) { showAlert(errorEl, 'No content — upload a .docx/.md file or type some content first.'); return; }
-
-    const btnText = document.getElementById('submitBtnText');
-    btnText.innerHTML = '<span class="spinner"></span> Publishing…';
-    document.getElementById('submitBtn').disabled = true;
-
-    try {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = convertedHtml;
-        const rt = readTime(tmp.textContent);
-
-        const editingId = document.getElementById('submitBtn').dataset.editId;
-        const postData = {
-            title, author,
-            date: dateStr ? firebase.firestore.Timestamp.fromDate(new Date(dateStr)) : firebase.firestore.FieldValue.serverTimestamp(),
-            excerpt: excerpt || tmp.textContent.trim().slice(0, 300),
-            readTime: rt,
-            html: convertedHtml,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        if (editingId) {
-            await db.collection('posts').doc(editingId).update(postData);
-            showAlert(successEl, 'Post updated successfully.');
-            delete document.getElementById('submitBtn').dataset.editId;
-            document.getElementById('submitBtnText').textContent = 'Publish post';
-        } else {
-            postData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-            const ref = await db.collection('posts').add(postData);
-            showAlert(successEl, 'Post published! ID: ' + ref.id);
-        }
-
-        clearForm();
-    } catch(e) {
-        showAlert(document.getElementById('uploadError'), 'Failed: ' + e.message);
-    } finally {
-        btnText.textContent = document.getElementById('submitBtn').dataset.editId ? 'Update post' : 'Publish post';
-        document.getElementById('submitBtn').disabled = false;
-    }
-});
-
-document.getElementById('clearBtn').addEventListener('click', clearForm);
-
-function clearForm() {
-    convertedHtml = '';
-    document.getElementById('postTitle').value = '';
-    document.getElementById('postDate').value = '';
-    document.getElementById('postExcerpt').value = '';
-    document.getElementById('postAuthor').value = 'Navajit D';
-    document.getElementById('fileStatus').textContent = '';
-    document.getElementById('htmlPreview').innerHTML = '';
-    document.getElementById('previewSection').style.display = 'none';
-    document.getElementById('submitBtn').disabled = true;
-    document.getElementById('fileInput').value = '';
-    delete document.getElementById('submitBtn').dataset.editId;
-    document.getElementById('submitBtnText').textContent = 'Publish post';
-}
-
-// ─── Blog: Post List ──────────────────────────────────────────────────────────
-async function loadPosts() {
-    const listEl = document.getElementById('postList');
-    listEl.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading…</div>';
-    try {
-        const snap = await db.collection('posts').orderBy('date', 'desc').get();
-        if (snap.empty) { listEl.innerHTML = '<div style="padding:2rem;color:var(--muted);text-align:center">No posts yet.</div>'; return; }
-
-        listEl.innerHTML = '';
-        snap.docs.forEach(doc => {
-            const d = doc.data();
-            const dateVal = d.date?.toDate ? d.date.toDate() : new Date(d.date);
-            const fmtD = dateVal.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
-            const item = document.createElement('div');
-            item.className = 'post-item';
-            item.innerHTML = `
-                <div>
-                    <div class="post-item-title">${escHtml(d.title || 'Untitled')}</div>
-                    <div class="post-item-meta">${fmtD} · ${escHtml(d.readTime || '')} · ID: ${doc.id}</div>
-                </div>
-                <div class="post-item-actions">
-                    <button class="btn btn-secondary btn-sm" data-id="${doc.id}" data-action="edit">Edit</button>
-                    <button class="btn btn-danger btn-sm" data-id="${doc.id}" data-action="delete">Delete</button>
-                </div>`;
-            listEl.appendChild(item);
-        });
-
-        listEl.querySelectorAll('[data-action="delete"]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (!confirm('Delete this post? This cannot be undone.')) return;
-                try {
-                    await db.collection('posts').doc(btn.dataset.id).delete();
-                    loadPosts();
-                } catch(e) {
-                    showAlert(document.getElementById('listError'), 'Delete failed: ' + e.message);
-                }
-            });
-        });
-
-        listEl.querySelectorAll('[data-action="edit"]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const snap = await db.collection('posts').doc(btn.dataset.id).get();
-                if (!snap.exists) return;
-                const d = snap.data();
-                const dateVal = d.date?.toDate ? d.date.toDate() : new Date(d.date);
-
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                document.querySelector('[data-tab="upload"]').classList.add('active');
-                document.getElementById('tabUpload').classList.add('active');
-
-                document.getElementById('postTitle').value = d.title || '';
-                document.getElementById('postDate').value = dateVal.toISOString().slice(0, 10);
-                document.getElementById('postExcerpt').value = d.excerpt || '';
-                document.getElementById('postAuthor').value = d.author || 'Navajit D';
-                convertedHtml = d.html || '';
-                document.getElementById('htmlPreview').innerHTML = convertedHtml;
-                document.getElementById('previewSection').style.display = 'block';
-                document.getElementById('readTimeDisplay').textContent = d.readTime || '';
-                document.getElementById('fileStatus').textContent = '✓ Loaded from Firestore';
-                document.getElementById('submitBtn').disabled = false;
-                document.getElementById('submitBtn').dataset.editId = btn.dataset.id;
-                document.getElementById('submitBtnText').textContent = 'Update post';
-                window.scrollTo(0, 0);
-            });
-        });
-    } catch(e) {
-        showAlert(document.getElementById('listError'), 'Failed to load posts: ' + e.message);
-    }
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-//  RECIPES
-// ════════════════════════════════════════════════════════════════════════════
-const FIRESTORE_DOC_LIMIT = 1048487; // hard cap per Firestore document
-let rcHero = '';        // hero image as compressed data URL
-let rcGallery = [];     // gallery images as compressed data URLs
-let rcEditId = null;
-
-// Resize + re-encode an image client-side so it fits inline in a Firestore doc.
-function compressImage(file, maxDim, quality) {
-    return new Promise((resolve, reject) => {
-        if (!file || !file.type.startsWith('image/')) { reject(new Error('not an image')); return; }
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = () => {
-            URL.revokeObjectURL(url);
-            let w = img.naturalWidth, h = img.naturalHeight;
-            if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
-            else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
-            const c = document.createElement('canvas');
-            c.width = w; c.height = h;
-            c.getContext('2d').drawImage(img, 0, 0, w, h);
-            resolve(c.toDataURL('image/jpeg', quality));
-        };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('could not decode image')); };
-        img.src = url;
-    });
-}
-
-function wireDropZone(zone, input, onFiles) {
-    zone.addEventListener('click', () => input.click());
-    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('over'));
-    zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('over'); onFiles(e.dataTransfer.files); });
-    input.addEventListener('change', () => onFiles(input.files));
-}
-
-wireDropZone(document.getElementById('rcHeroZone'), document.getElementById('rcHeroInput'), async files => {
-    if (!files || !files[0]) return;
-    try { rcHero = await compressImage(files[0], 1280, 0.78); renderRcImages(); }
-    catch (e) { showAlert(document.getElementById('rcError'), 'Hero image failed: ' + e.message); }
-});
-wireDropZone(document.getElementById('rcGalleryZone'), document.getElementById('rcGalleryInput'), async files => {
-    for (const f of Array.from(files || [])) {
-        try { rcGallery.push(await compressImage(f, 1000, 0.72)); }
-        catch (e) { showAlert(document.getElementById('rcError'), 'Image failed: ' + e.message); }
-    }
-    renderRcImages();
-});
-
-function renderRcImages() {
-    const heroEl = document.getElementById('rcHeroPreview');
-    heroEl.innerHTML = rcHero
-        ? `<div class="img-thumb hero"><img src="${rcHero}" alt=""><button type="button" title="Remove">✕</button></div>` : '';
-    const galEl = document.getElementById('rcGalleryPreview');
-    galEl.innerHTML = rcGallery.map((src, i) =>
-        `<div class="img-thumb"><img src="${src}" alt=""><button type="button" data-i="${i}" title="Remove">✕</button></div>`).join('');
-    heroEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { rcHero = ''; renderRcImages(); }));
-    galEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { rcGallery.splice(+b.dataset.i, 1); renderRcImages(); }));
-    updateRcSize();
-}
-
-function rcPayloadBytes() {
-    const text = ['rcTitle','rcDescription','rcCuisine','rcPrep','rcCook','rcServings','rcTags','rcIngredients','rcSteps']
-        .reduce((n, id) => n + (document.getElementById(id).value || '').length, 0);
-    return rcHero.length + rcGallery.reduce((s, x) => s + x.length, 0) + text + 512;
-}
-function updateRcSize() {
-    const bytes = rcPayloadBytes();
-    const pct = Math.min(100, Math.round(bytes / FIRESTORE_DOC_LIMIT * 100));
-    const m = document.getElementById('rcSizeMeter');
-    document.getElementById('rcSizeText').textContent = fmtBytes(bytes);
-    document.getElementById('rcSizeBar').style.width = pct + '%';
-    m.classList.toggle('warn', pct >= 75 && pct < 92);
-    m.classList.toggle('over', pct >= 92);
-}
-['rcTitle','rcDescription','rcCuisine','rcPrep','rcCook','rcServings','rcTags','rcIngredients','rcSteps']
-    .forEach(id => document.getElementById(id).addEventListener('input', updateRcSize));
-
-document.getElementById('rcSubmitBtn').addEventListener('click', async () => {
-    const title = document.getElementById('rcTitle').value.trim();
-    const errorEl = document.getElementById('rcError');
-    const successEl = document.getElementById('rcSuccess');
-    if (!title) { showAlert(errorEl, 'Title is required.'); return; }
-
-    const bytes = rcPayloadBytes();
-    if (bytes > FIRESTORE_DOC_LIMIT - 8192) {
-        showAlert(errorEl, 'Too large (' + fmtBytes(bytes) + '). Remove or shrink images — a recipe is capped at ~1 MB.');
-        return;
-    }
-
-    const lines = id => document.getElementById(id).value.split('\n').map(s => s.trim()).filter(Boolean);
-    const dateStr = document.getElementById('rcDate').value;
-    const data = {
-        title,
-        description: document.getElementById('rcDescription').value.trim(),
-        cuisine: document.getElementById('rcCuisine').value.trim(),
-        difficulty: document.getElementById('rcDifficulty').value,
-        prepTime: document.getElementById('rcPrep').value.trim(),
-        cookTime: document.getElementById('rcCook').value.trim(),
-        servings: document.getElementById('rcServings').value.trim(),
-        tags: document.getElementById('rcTags').value.split(',').map(s => s.trim()).filter(Boolean),
-        ingredients: lines('rcIngredients'),
-        steps: lines('rcSteps'),
-        heroImage: rcHero,
-        images: rcGallery,
-        author: 'Navajit D',
-        date: dateStr ? firebase.firestore.Timestamp.fromDate(new Date(dateStr)) : firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    const btn = document.getElementById('rcSubmitBtn');
-    const txt = document.getElementById('rcSubmitText');
-    btn.disabled = true;
-    txt.innerHTML = '<span class="spinner"></span> Saving…';
-    try {
-        if (rcEditId) {
-            await db.collection('recipes').doc(rcEditId).update(data);
-            showAlert(successEl, 'Recipe updated.');
-        } else {
-            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-            const ref = await db.collection('recipes').add(data);
-            showAlert(successEl, 'Recipe published! ID: ' + ref.id);
-        }
-        clearRecipeForm();
-    } catch (e) {
-        showAlert(errorEl, 'Failed: ' + e.message);
-    } finally {
-        btn.disabled = false;
-        txt.textContent = rcEditId ? 'Update recipe' : 'Publish recipe';
-    }
-});
-
-document.getElementById('rcClearBtn').addEventListener('click', clearRecipeForm);
-
-function clearRecipeForm() {
-    rcHero = ''; rcGallery = []; rcEditId = null;
-    ['rcTitle','rcDate','rcDescription','rcCuisine','rcPrep','rcCook','rcServings','rcTags','rcIngredients','rcSteps']
-        .forEach(id => document.getElementById(id).value = '');
-    document.getElementById('rcDifficulty').value = '';
-    document.getElementById('rcHeroInput').value = '';
-    document.getElementById('rcGalleryInput').value = '';
-    document.getElementById('rcSubmitText').textContent = 'Publish recipe';
-    renderRcImages();
-}
-
-async function loadRecipes() {
-    const listEl = document.getElementById('recipeList');
-    listEl.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div class="spinner spinner-dark" style="margin:0 auto 1rem"></div>Loading…</div>';
-    try {
-        const snap = await db.collection('recipes').orderBy('date', 'desc').get();
-        if (snap.empty) { listEl.innerHTML = '<div style="padding:2rem;color:var(--muted);text-align:center">No recipes yet.</div>'; return; }
-
-        listEl.innerHTML = '';
-        snap.docs.forEach(doc => {
-            const d = doc.data();
-            const dateVal = d.date?.toDate ? d.date.toDate() : new Date(d.date);
-            const fmtD = dateVal.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
-            const thumb = d.heroImage ? `<img src="${d.heroImage}" alt="" style="width:3rem;height:3rem;object-fit:cover;border-radius:6px;flex-shrink:0">` : '';
-            const bits = [fmtD, d.cuisine, d.difficulty, (d.ingredients||[]).length + ' ingredients', (d.steps||[]).length + ' steps'].filter(Boolean);
-            const item = document.createElement('div');
-            item.className = 'post-item';
-            item.innerHTML = `
-                <div style="display:flex;gap:.75rem;align-items:flex-start">
-                    ${thumb}
-                    <div>
-                        <div class="post-item-title">${escHtml(d.title || 'Untitled')}</div>
-                        <div class="post-item-meta">${escHtml(bits.join(' · '))}</div>
-                    </div>
-                </div>
-                <div class="post-item-actions">
-                    <button class="btn btn-secondary btn-sm" data-id="${doc.id}" data-action="edit">Edit</button>
-                    <button class="btn btn-danger btn-sm" data-id="${doc.id}" data-action="delete">Delete</button>
-                </div>`;
-            listEl.appendChild(item);
-        });
-
-        listEl.querySelectorAll('[data-action="delete"]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (!confirm('Delete this recipe? This cannot be undone.')) return;
-                try { await db.collection('recipes').doc(btn.dataset.id).delete(); loadRecipes(); }
-                catch (e) { showAlert(document.getElementById('rcListError'), 'Delete failed: ' + e.message); }
-            });
-        });
-
-        listEl.querySelectorAll('[data-action="edit"]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const snap = await db.collection('recipes').doc(btn.dataset.id).get();
-                if (!snap.exists) return;
-                const d = snap.data();
-                const dateVal = d.date?.toDate ? d.date.toDate() : new Date(d.date);
-
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                document.querySelector('[data-tab="recipeUpload"]').classList.add('active');
-                document.getElementById('tabRecipeUpload').classList.add('active');
-
-                document.getElementById('rcTitle').value = d.title || '';
-                document.getElementById('rcDate').value = dateVal.toISOString().slice(0, 10);
-                document.getElementById('rcDescription').value = d.description || '';
-                document.getElementById('rcCuisine').value = d.cuisine || '';
-                document.getElementById('rcDifficulty').value = d.difficulty || '';
-                document.getElementById('rcPrep').value = d.prepTime || '';
-                document.getElementById('rcCook').value = d.cookTime || '';
-                document.getElementById('rcServings').value = d.servings || '';
-                document.getElementById('rcTags').value = (d.tags || []).join(', ');
-                document.getElementById('rcIngredients').value = (d.ingredients || []).join('\n');
-                document.getElementById('rcSteps').value = (d.steps || []).join('\n');
-                rcHero = d.heroImage || '';
-                rcGallery = Array.isArray(d.images) ? d.images.slice() : [];
-                rcEditId = btn.dataset.id;
-                document.getElementById('rcSubmitText').textContent = 'Update recipe';
-                renderRcImages();
-                window.scrollTo(0, 0);
-            });
-        });
-    } catch (e) {
-        showAlert(document.getElementById('rcListError'), 'Failed to load recipes: ' + e.message);
-    }
-}
 
 </script>
+<!-- Blog posts editor (admin-blog.js); it shares blog-core.js with the blog pages. -->
+<script type="module" src="/admin-blog.js?v=0438b132"></script>
 <!-- Experience editor (admin-experience.js); it shares its renderer with scripts/build-experience.mjs. -->
-<script type="module" src="/admin-experience.js?v=e02134e1"></script>
+<script type="module" src="/admin-experience.js?v=2597fb2d"></script>
 
 </body>
 </html>

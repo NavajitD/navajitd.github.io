@@ -3,7 +3,9 @@ name: Build experience
 # The admin console (admin.html → Experience) commits content/experience.json.
 # This rebuilds the Experience section of index.html from it and commits the
 # page, so GitHub Pages serves plain HTML with nothing fetched at load time.
-# Editing the JSON on github.com goes through here too.
+# Editing the JSON on github.com goes through here too. A push made with this
+# workflow's token starts no other workflow, so it then asks "Deploy site"
+# (deploy.yml) to put the page live.
 
 on:
   push:
@@ -31,7 +33,9 @@ jobs:
           node-version: 20
       - name: Rebuild index.html from content/experience.json
         run: node scripts/build-experience.mjs
-      - name: Commit if changed
+      - name: Commit if changed, then deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "experience-bot"
           git config user.email "actions@users.noreply.github.com"
@@ -41,9 +45,12 @@ jobs:
             exit 0
           fi
           git commit -m "chore: rebuild experience from content/experience.json [skip ci]"
-          # The blog bot pushes to main too; rebase onto whatever landed meanwhile.
+          # Rebase onto whatever landed on main meanwhile.
           for attempt in 1 2 3; do
-            git pull --rebase -q origin main && git push -q origin HEAD:main && exit 0
+            if git pull --rebase -q origin main && git push -q origin HEAD:main; then
+              gh api "repos/${{ github.repository }}/dispatches" -f event_type=site-deploy
+              exit 0
+            fi
             sleep 5
           done
           exit 1

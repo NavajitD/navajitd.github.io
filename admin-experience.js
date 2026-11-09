@@ -542,6 +542,7 @@ function openConnect(reason) {
       localStorage.setItem(TOKEN_KEY, token);
       state.user = await whoAmI(token);
       closeDialog();
+      dispatchEvent(new CustomEvent('xp-github-connected')); // the Blog tab waits for this to deploy
       await load(); // from GitHub now; a draft made against the same version comes back with it
     } catch (err) {
       fail(`Couldn’t reach GitHub: ${err.message}`);
@@ -625,4 +626,6 @@ async function watchLive(hash, started, log) {
 
 // The tab handler in admin.html calls this the first time Experience opens.
 window.xpAdminOpen = () => { if (!state.draft) load(); };
+// The Blog tab deploys the site with the same token, and offers this dialog when there is none.
+window.xpConnect = (reason) => openConnect(reason);
 if (document.getElementById('tabExperience')?.classList.contains('active')) load();

@@ -178,7 +178,7 @@ test('the GitHub Action rebuilds index.html whenever the JSON changes', () => {
 });
 
 test('the admin console loads its scripts with current content stamps', () => {
-  execFileSync(process.execPath, [new URL('scripts/stamp-admin.mjs', ROOT).pathname, '--check'], { stdio: 'pipe' });
+  execFileSync(process.execPath, [new URL('scripts/stamp-scripts.mjs', ROOT).pathname, '--check'], { stdio: 'pipe' });
   const admin = read('admin.html');
   assert.match(admin, /<button class="tab" data-tab="experience">Experience<\/button>/);
   assert.match(admin, /<script type="module" src="\/admin-experience\.js\?v=[0-9a-f]{8}"><\/script>/);

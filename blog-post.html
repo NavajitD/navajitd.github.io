@@ -3,49 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- @live -->
+    <!-- Every post has a static page, /blog/<slug>.html, built from this file
+         when the site deploys (scripts/build-blog.mjs): it fills in the post
+         and drops the parts marked @live. With them, this page reads a post
+         from Firestore: one published since the last deploy, or the admin's
+         preview. Old ?id= links go on to the static page. -->
+    <script type="application/json" id="blogSlugs">{}</script>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <script>
+        (function () {
+            var q = new URLSearchParams(location.search);
+            var s = window.__post = { id: q.get('id') || '', preview: q.has('preview') };
+            if (!s.id || s.preview) return;
+            // The deploy lists every post that has a static page (id → slug).
+            if (!q.has('live')) {
+                try {
+                    var slug = JSON.parse(document.getElementById('blogSlugs').textContent)[s.id];
+                    if (slug) { s.moved = true; location.replace('/blog/' + slug + '.html' + location.hash); return; }
+                } catch (e) {}
+            }
+            var base = 'https://firestore.googleapis.com/v1/projects/recipes-7dc22/databases/(default)/documents/posts/' + encodeURIComponent(s.id) + '?key=AIzaSyCM8XiZ9tLn7jtVNcx0D6iZwYOGXBOLdjU';
+            function get(fields, priority) {
+                var p = fetch(base + fields.map(function (f) { return '&mask.fieldPaths=' + f; }).join(''), { priority: priority })
+                    .then(function (r) { if (r.ok) return r.json(); var e = new Error('Firestore ' + r.status); e.status = r.status; throw e; });
+                p.catch(function () {});
+                return p;
+            }
+            s.text = get(['type', 'title', 'author', 'date', 'updatedAt', 'lang', 'excerpt', 'readTime', 'html', 'poem', 'note', 'description', 'cuisine', 'difficulty', 'prepTime', 'cookTime', 'servings', 'tags', 'ingredients', 'steps', 'notes', 'hasHero', 'galleryCount'], 'high');
+            s.media = get(['media', 'heroImage', 'images'], 'low');
+        })();
+    </script>
+    <!-- /@live -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&display=swap"></noscript>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;family=Inconsolata:wght@400;500;600;700&amp;family=Noto+Serif+Bengali:wght@400..700&amp;family=Noto+Serif+Devanagari:wght@400..700&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&amp;family=Tiro+Bangla:ital@0;1&amp;family=Tiro+Devanagari+Hindi:ital@0;1&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;family=Inconsolata:wght@400;500;600;700&amp;family=Noto+Serif+Bengali:wght@400..700&amp;family=Noto+Serif+Devanagari:wght@400..700&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&amp;family=Tiro+Bangla:ital@0;1&amp;family=Tiro+Devanagari+Hindi:ital@0;1&amp;display=swap"></noscript>
+    <!-- @live --><link rel="modulepreload" href="/blog-core.js?v=db4c4ef6"><!-- /@live -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
-    <title id="pageTitle">Blog — Navajit D</title>
+    <!-- @meta: a static page gets the post's own title, description, share tags and structured data here; on this page the script fills them in. -->
+    <title>Blog - Navajit D</title>
 
-    <!-- SEO — generic shell; per-post title/description/canonical/Article JSON-LD come with the prerender (Phase 3). -->
-    <meta name="description" content="Essays by Navajit D on building AI products, personal projects, and a life beyond them.">
+    <meta name="description" content="Writing by Navajit D: Tech, Poetry, Makha-bhat and Recipe.">
     <meta name="author" content="Navajit D">
     <meta name="theme-color" content="#2563eb">
 
     <!-- Open Graph -->
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Navajit D">
-    <meta property="og:title" content="Blog — Navajit D">
-    <meta property="og:description" content="Essays by Navajit D on building AI products, personal projects, and a life beyond them.">
+    <meta property="og:title" content="Blog - Navajit D">
+    <meta property="og:description" content="Writing by Navajit D: Tech, Poetry, Makha-bhat and Recipe.">
     <meta property="og:image" content="https://navajitd.github.io/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Navajit D — AI Product Manager">
+    <meta property="og:image:alt" content="Navajit D - AI Product Manager">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@solitary_nav">
     <meta name="twitter:creator" content="@solitary_nav">
-    <meta name="twitter:title" content="Blog — Navajit D">
-    <meta name="twitter:description" content="Essays by Navajit D on building AI products, personal projects, and a life beyond them.">
+    <meta name="twitter:title" content="Blog - Navajit D">
+    <meta name="twitter:description" content="Writing by Navajit D: Tech, Poetry, Makha-bhat and Recipe.">
     <meta name="twitter:image" content="https://navajitd.github.io/og-image.png">
+    <!-- /@meta -->
 
     <script defer src="/analytics.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --text: #1a1a1a; --text-secondary: #525252; --bg: #fff; --bg-subtle: #fafafa;
             --accent: #2563eb; --border: #e5e7eb; --muted: #6b7280;
             --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+            --font-poem: "EB Garamond", Georgia, "Times New Roman", serif;
             --font-mono: "Inconsolata", monospace;
             --reading-width: 680px;
         }
         *{box-sizing:border-box;margin:0;padding:0} html{font-size:18px;scroll-behavior:smooth}
         body{font-family:var(--font-serif);color:var(--text);background:var(--bg);line-height:1.8;-webkit-font-smoothing:antialiased}
+        [hidden]{display:none !important}
 
         /* ─── Top Bar ────────────────────────────────── */
         .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:box-shadow .2s}
@@ -60,7 +94,7 @@
         /* ─── Article ────────────────────────────────── */
         .article-container{max-width:var(--reading-width);margin:0 auto;padding:0 1.5rem}
         .article-header{padding:3.5rem 0 2rem;border-bottom:1px solid var(--border);margin-bottom:2.5rem}
-        .article-title{font-family:var(--font-serif);font-size:2.25rem;font-weight:700;line-height:1.25;letter-spacing:-.02em;margin-bottom:1rem}
+        .article-title{font-family:var(--font-serif);font-size:2.25rem;font-weight:700;line-height:1.25;letter-spacing:-.02em;margin-bottom:1rem;text-wrap:balance}
         .article-meta{font-family:var(--font-mono);font-size:.8125rem;color:var(--text-secondary);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
         .article-meta-divider{width:3px;height:3px;border-radius:50%;background:var(--text-secondary);opacity:.5}
         .article-author{font-weight:600;color:var(--text)}
@@ -81,7 +115,7 @@
         .article-body li{margin-bottom:.375rem} .article-body li p{margin-bottom:.375rem}
         .article-body blockquote{border-left:3px solid var(--accent);padding:.25rem 0 .25rem 1.25rem;margin:1.75rem 0;color:var(--text-secondary);font-style:italic}
         .article-body blockquote p{margin-bottom:.5rem} .article-body blockquote p:last-child{margin-bottom:0}
-        .article-body img{max-width:100%;height:auto;border-radius:6px;margin:1.5rem 0;display:block}
+        .article-body img{max-width:100%;height:auto;border-radius:6px;margin:1.5rem 0;display:block;background:var(--bg-subtle)}
         .article-body table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.9375rem}
         .article-body th,.article-body td{border:1px solid var(--border);padding:.625rem .875rem;text-align:left;line-height:1.5}
         .article-body th{background:var(--bg-subtle);font-weight:600}
@@ -92,6 +126,43 @@
         .article-body hr{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
         .article-body span>img{display:block;margin:1.5rem auto}
 
+        /* Bengali and Hindi prose: serifs with the same moderate contrast as Source Serif 4. */
+        .article-header:lang(bn) .article-title, .article-body:lang(bn){font-family:"Noto Serif Bengali",var(--font-serif)}
+        .article-header:lang(hi) .article-title, .article-body:lang(hi){font-family:"Noto Serif Devanagari",var(--font-serif)}
+        .article-body:lang(bn) p,.article-body:lang(hi) p{line-height:1.9}
+
+        /* ─── Poems: EB Garamond; Tiro Bangla and Tiro Devanagari Hindi for Bengali and Hindi ─── */
+        .is-poetry .article-header{border-bottom:none;padding-bottom:.5rem;margin-bottom:2rem}
+        .is-poetry .article-title{font-family:var(--font-poem);font-weight:400;font-size:2.375rem;letter-spacing:0;line-height:1.2;font-synthesis:none}
+        .is-poetry .article-header:lang(bn) .article-title{font-family:"Tiro Bangla",var(--font-poem);font-size:2.125rem;line-height:1.35}
+        .is-poetry .article-header:lang(hi) .article-title{font-family:"Tiro Devanagari Hindi",var(--font-poem);font-size:2.125rem;line-height:1.35}
+        .poem{font-family:var(--font-poem);font-size:1.25rem;line-height:1.55;font-synthesis:none;font-variant-ligatures:common-ligatures}
+        .article-body.poem:lang(bn){font-family:"Tiro Bangla",var(--font-poem);font-size:1.125rem;line-height:1.85}
+        .article-body.poem:lang(hi){font-family:"Tiro Devanagari Hindi",var(--font-poem);font-size:1.125rem;line-height:1.85}
+        .poem .stanza{font-size:inherit;line-height:inherit;margin:0 0 1.35em}
+        /* One line per row; a line too long for the column wraps with a hanging indent. */
+        .poem .ln{display:block;padding-left:calc(1.5em + var(--indent, 0) * .5ch);text-indent:-1.5em}
+        .poem-note{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border);max-width:32rem;font-style:italic;color:var(--text-secondary)}
+        .poem .poem-note p{font-size:1.0625rem;line-height:1.6;margin-bottom:.75rem}
+
+        /* ─── Recipes ────────────────────────────────── */
+        .recipe-facts{display:flex;flex-wrap:wrap;gap:.75rem 2rem;margin-top:1.5rem;font-family:var(--font-mono)}
+        .recipe-facts dt{font-size:.6875rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)}
+        .recipe-facts dd{font-size:.9375rem;font-weight:600;font-variant-numeric:tabular-nums}
+        .article-body .recipe-lead p{font-size:1.0625rem}
+        .article-body .recipe-hero{margin:0 0 2.25rem}
+        .article-body .recipe-hero img{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;margin:0}
+        .article-body.recipe h2{font-size:1.25rem;margin:2.25rem 0 .75rem}
+        .article-body.recipe h3{font-size:1rem;margin:1.25rem 0 .25rem;color:var(--text-secondary)}
+        .article-body .ingredients{list-style:none;margin:0 0 1rem}
+        .article-body .ingredients li{margin:0;padding:.4rem 0;border-bottom:1px solid var(--border);line-height:1.6}
+        .article-body .steps{list-style:none;margin:0 0 1.5rem;counter-reset:step}
+        .article-body .steps li{counter-increment:step;position:relative;padding-left:2.5rem;margin-bottom:1rem}
+        .article-body .steps li::before{content:counter(step);position:absolute;left:0;top:.2rem;width:1.625rem;height:1.625rem;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.75rem;font-weight:700;color:var(--accent)}
+        .article-body .recipe-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(9rem,1fr));gap:.5rem;margin:2rem 0}
+        .article-body .recipe-gallery img{width:100%;height:auto;aspect-ratio:1;object-fit:cover;margin:0;border-radius:4px}
+        .recipe-tags{font-family:var(--font-mono) !important;font-size:.8125rem !important;color:var(--text-secondary)}
+
         /* ─── Footer (matches site nav) ──────────────── */
         .post-footer{max-width:var(--reading-width);margin:0 auto;padding:2rem 1.5rem 3rem;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:.875rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
         .footer-links{display:flex;gap:1.5rem}
@@ -100,40 +171,29 @@
         /* ─── States ─────────────────────────────────── */
         .loading-article{max-width:var(--reading-width);margin:0 auto;padding:4rem 1.5rem;text-align:center;font-family:var(--font-mono);color:var(--text-secondary);font-size:.875rem}
         .loading-article .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+        .loading-article a{color:var(--accent)}
         @keyframes spin{to{transform:rotate(360deg)}}
 
-        @media(max-width:640px){html{font-size:17px}.article-header{padding:2.5rem 0 1.5rem}.article-title{font-size:1.75rem}.article-container{padding:0 1rem}.topbar-inner{padding:.625rem 1rem}.post-footer{padding:2rem 1rem;flex-direction:column;gap:1rem;text-align:center}}
+        @media(max-width:640px){html{font-size:17px}.article-header{padding:2.5rem 0 1.5rem}.article-title{font-size:1.75rem}.is-poetry .article-title{font-size:1.875rem}.poem{font-size:1.1875rem}.article-container{padding:0 1rem}.topbar-inner{padding:.625rem 1rem}.post-footer{padding:2rem 1rem;flex-direction:column;gap:1rem;text-align:center}}
     </style>
 </head>
 <body>
     <div class="topbar" id="topbar">
         <div class="topbar-inner">
-            <a href="/blog.html" class="topbar-back">
-                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> All posts
+            <a href="/blog.html" class="topbar-back" id="backLink">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> <span id="backLabel">Blog</span>
             </a>
             <a href="/" class="topbar-home">Home</a>
         </div>
     </div>
 
-    <div class="loading-article" id="loadingState"><div class="spinner"></div>Loading post…</div>
+    <!-- @live --><div class="loading-article" id="loadingState" role="status"><div class="spinner"></div>Loading the post…</div><!-- /@live -->
 
-    <article class="article-container" id="articleContainer" style="display:none">
-        <header class="article-header">
-            <h1 class="article-title" id="articleTitle"></h1>
-            <div class="article-meta">
-                <span class="article-author" id="articleAuthor"></span>
-                <span class="article-meta-divider"></span>
-                <span id="articleDate"></span>
-                <span class="article-meta-divider"></span>
-                <span id="articleReadTime"></span>
-            </div>
-        </header>
-        <div class="article-body" id="articleBody"></div>
-    </article>
+    <article class="article-container" id="article" hidden></article>
     <!-- read-till-end sentinel (observed by analytics.js) -->
     <div id="articleEnd" style="height:1px"></div>
 
-    <footer class="post-footer" id="postFooter" style="display:none">
+    <footer class="post-footer" id="postFooter" hidden>
         <div class="footer-links">
             <a href="https://github.com/navajitd">GitHub</a>
             <a href="https://linkedin.com/in/navjit-debnath-34b1b5191">LinkedIn</a>
@@ -145,108 +205,105 @@
     </footer>
 
 <script>
-// ─── Firebase Config (Numo) ───────────────────────────────────────────────────
-const firebaseConfig = {
-    apiKey: "AIzaSyCM8XiZ9tLn7jtVNcx0D6iZwYOGXBOLdjU",
-    authDomain: "recipes-7dc22.firebaseapp.com",
-    projectId: "recipes-7dc22",
-    storageBucket: "recipes-7dc22.firebasestorage.app",
-    messagingSenderId: "631868594925",
-    appId: "1:631868594925:web:929dc5fe91253e7a0f4ae4"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+(function () {
+    var t = document.getElementById('topbar');
+    addEventListener('scroll', function () { t.classList.toggle('scrolled', scrollY > 8); }, { passive: true });
+})();
+</script>
+<!-- @live -->
+<script type="module">
+import { normalize, articleHtml, fromRest, docUrl, TEXT_FIELDS, MEDIA_FIELDS, mediaSources, describePost, jsonLd, ldJson, typeName } from '/blog-core.js?v=db4c4ef6';
 
-const CONTENT_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 h
+const s = window.__post || {};
+const $ = (id) => document.getElementById(id);
 
-const topbar = document.getElementById('topbar');
-window.addEventListener('scroll', () => { topbar.classList.toggle('scrolled', window.scrollY > 8); }, { passive: true });
-
-function getFileId() { return new URLSearchParams(location.search).get('id') || ''; }
-function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-IN', { year:'numeric', month:'long', day:'numeric' }); }
-
-// ─── localStorage Cache ───────────────────────────────────────────────────────
-function getCached(id) {
-    try {
-        const r = localStorage.getItem('bpost_' + id);
-        if (!r) return null;
-        const p = JSON.parse(r);
-        return (Date.now() - p.ts < CONTENT_CACHE_TTL) ? p : null;
-    } catch(e) { return null; }
-}
-function setCache(id, d) {
-    try { localStorage.setItem('bpost_' + id, JSON.stringify({ ...d, ts: Date.now() })); } catch(e) {}
+function show(post) {
+    const p = normalize(post);
+    const a = $('article');
+    a.innerHTML = articleHtml(p);
+    a.className = `article-container is-${p.type}`;
+    a.hidden = false;
+    $('loadingState').hidden = true;
+    $('postFooter').hidden = false;
+    describe(p);
 }
 
-// ─── Load Post from Firestore ─────────────────────────────────────────────────
-async function loadPost(fileId) {
-    if (!fileId) { showError('No post ID. <a href="/blog.html">Back to blog</a>'); return; }
+// Title, description, canonical address (the static page) and structured data.
+function describe(p) {
+    const d = describePost(p);
+    $('backLink').href = `/blog.html#${p.type}`;
+    $('backLabel').textContent = typeName(p.type);
+    document.title = d.pageTitle;
+    for (const [sel, value] of [
+        ['meta[name="description"]', d.description], ['meta[property="og:description"]', d.description], ['meta[name="twitter:description"]', d.description],
+        ['meta[property="og:title"]', d.title], ['meta[name="twitter:title"]', d.title],
+    ]) document.querySelector(sel)?.setAttribute('content', value);
+    if (s.preview) return;
+    let link = document.querySelector('link[rel="canonical"]');
+    if (!link) { link = document.createElement('link'); link.rel = 'canonical'; document.head.append(link); }
+    link.href = d.url;
+    let ld = $('postLd');
+    if (!ld) { ld = document.createElement('script'); ld.type = 'application/ld+json'; ld.id = 'postLd'; document.head.append(ld); }
+    ld.textContent = ldJson(jsonLd(p));
+}
 
-    const cached = getCached(fileId);
-    if (cached) { renderPost(cached); return; }
-
-    try {
-        const snap = await db.collection('posts').doc(fileId).get();
-        if (!snap.exists) throw new Error('Post not found');
-        const d = snap.data();
-        const dateVal = d.date?.toDate ? d.date.toDate().toISOString() : (d.date || new Date().toISOString());
-        const data = {
-            id: fileId,
-            title: d.title || 'Untitled',
-            author: d.author || 'Navajit D',
-            date: dateVal,
-            html: d.html || '',
-            readTime: d.readTime || ''
-        };
-        setCache(fileId, data);
-        renderPost(data);
-    } catch(e) {
-        showError('Failed to load post: ' + e.message);
+function fillMedia(m) {
+    const src = mediaSources(m);
+    for (const img of document.querySelectorAll('#article img[data-media]')) {
+        const v = src[img.dataset.media];
+        if (v && img.getAttribute('src') !== v) img.src = v;
     }
 }
 
-function renderPost(data) {
-    document.getElementById('pageTitle').textContent = data.title + ' - Navajit D';
-    document.getElementById('articleTitle').textContent = data.title;
-    document.getElementById('articleAuthor').textContent = data.author || 'Navajit D';
-    document.getElementById('articleDate').textContent = fmtDate(data.date);
-    document.getElementById('articleReadTime').textContent = data.readTime;
-    document.getElementById('articleBody').innerHTML = data.html;
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('articleContainer').style.display = 'block';
-    document.getElementById('postFooter').style.display = 'flex';
-
-    // Notify analytics the article is in the DOM (handles either script order).
-    window.__nvPostReadyId = data.id;
-    if (window.__nvPostReady) window.__nvPostReady(data.id);
+function fail(title, text) {
+    const el = $('loadingState');
+    const line = (tag, value, css) => Object.assign(document.createElement(tag), { textContent: value, style: css || '' });
+    const back = Object.assign(document.createElement('a'), { href: '/blog.html', textContent: '← Back to the blog' });
+    const nav = line('div', '', 'margin-top:1rem');
+    nav.append(back);
+    el.replaceChildren(line('div', title, 'color:var(--text);font-weight:600;margin-bottom:.5rem'), line('div', text), nav);
+    el.hidden = false;
 }
 
-function showError(msg) {
-    document.getElementById('loadingState').innerHTML = `<div style="color:#dc2626">${msg}</div><div style="margin-top:1rem"><a href="/blog.html" style="color:var(--accent);font-family:var(--font-mono);font-size:.8125rem">← Back to blog</a></div>`;
+// Let analytics.js know the article is on the page (read-to-end and time spent).
+function announce(id) {
+    window.__nvPostReadyId = id;
+    if (window.__nvPostReady) window.__nvPostReady(id);
 }
 
-// Back-compat: old /blog-post.html?id=<id> links now redirect to the prerendered
-// static page /blog/<slug>.html. If the post isn't in posts.json yet (just
-// published, not built), fall through to rendering it live from Firestore.
-async function redirectToStatic(id) {
-    if (!id) return false;
+const getJson = (url) => fetch(url).then((r) => {
+    if (r.ok) return r.json();
+    const e = new Error(`Firestore ${r.status}`); e.status = r.status; throw e;
+});
+
+if (s.moved) {
+    // On its way to the post's static page.
+} else if (s.preview) {
+    // The admin console shows a draft here before it is published.
+    document.head.append(Object.assign(document.createElement('meta'), { name: 'robots', content: 'noindex' }));
+    addEventListener('message', (e) => {
+        if (e.origin !== location.origin || e.data?.type !== 'blog-preview') return;
+        const post = { id: 'preview', ...e.data.post };
+        show(post);
+        fillMedia(post);
+    });
+    parent.postMessage({ type: 'blog-preview-ready' }, location.origin);
+} else if (!s.id) {
+    fail('There is no post at this address.', 'The link may be incomplete.');
+} else {
+    const media = s.media || getJson(docUrl(s.id, MEDIA_FIELDS));
+    media.catch(() => {});
     try {
-        const res = await fetch('/posts.json', { cache: 'no-cache' });
-        if (!res.ok) return false;
-        const { posts } = await res.json();
-        const p = (posts || []).find((x) => x.id === id);
-        if (p && p.slug) { location.replace('/blog/' + p.slug + '.html'); return true; }
-    } catch (e) {}
-    return false;
+        const post = fromRest(await (s.text || getJson(docUrl(s.id, TEXT_FIELDS))));
+        show(post);
+        announce(post.id);
+    } catch (e) {
+        if (e.status === 404) fail('This post isn’t here.', 'It may have been taken down.');
+        else fail('The post didn’t load.', 'Check your connection and reload the page.');
+    }
+    try { fillMedia(fromRest(await media)); } catch { /* images are optional; the text is already up */ }
 }
-
-(async () => {
-    const id = getFileId();
-    if (await redirectToStatic(id)) return;
-    loadPost(id);
-})();
 </script>
-
+<!-- /@live -->
 </body>
 </html>

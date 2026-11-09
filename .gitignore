@@ -4,6 +4,10 @@ playwright-report/
 playwright/.cache/
 .DS_Store
 
+# The deployed site, built by .github/workflows/deploy.yml with the blog's posts
+# from Firestore in it. It is never committed: the writing stays out of the repo.
+_site/
+
 # Firebase service-account keys — NEVER commit
 *serviceAccount*.json
 *service-account*.json

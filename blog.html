@@ -3,15 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // The section to show comes from the address (/blog.html#poetry), set before the first paint.
+        (function () {
+            var t = location.hash.slice(1);
+            if (/^(tech|poetry|makha-bhat|recipe)$/.test(t)) document.documentElement.setAttribute('data-filter', t);
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap"></noscript>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wdth,wght@75..125,400..700&amp;family=Anek+Devanagari:wdth,wght@75..125,400..700&amp;family=EB+Garamond:ital,wght@0,400;1,400&amp;family=Inconsolata:wght@400;500;600;700&amp;family=Tiro+Bangla&amp;family=Tiro+Devanagari+Hindi&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wdth,wght@75..125,400..700&amp;family=Anek+Devanagari:wdth,wght@75..125,400..700&amp;family=EB+Garamond:ital,wght@0,400;1,400&amp;family=Inconsolata:wght@400;500;600;700&amp;family=Tiro+Bangla&amp;family=Tiro+Devanagari+Hindi&amp;display=swap"></noscript>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232563eb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%2316a34a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ea580c;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23grad)'/%3E%3Ctext x='16' y='22' font-family='system-ui,-apple-system,sans-serif' font-size='16' font-weight='500' text-anchor='middle' fill='white'%3EN%3C/text%3E%3C/svg%3E">
-    <title>Blog — Navajit D</title>
+    <title>Blog - Navajit D</title>
 
     <!-- SEO -->
-    <meta name="description" content="Essays by Navajit D on building AI products, personal projects, and a life beyond them — including lessons from shipping a Hinglish voice agent.">
+    <meta name="description" content="Writing by Navajit D in four sections: Tech, Poetry, Makha-bhat (movie reviews, short stories and observations on life) and Recipe.">
     <meta name="author" content="Navajit D">
     <meta name="theme-color" content="#2563eb">
     <link rel="canonical" href="https://navajitd.github.io/blog.html">
@@ -19,28 +26,30 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Navajit D">
-    <meta property="og:title" content="Blog — Navajit D">
-    <meta property="og:description" content="Essays by Navajit D on building AI products, personal projects, and a life beyond them.">
+    <meta property="og:title" content="Blog - Navajit D">
+    <meta property="og:description" content="Writing by Navajit D in four sections: Tech, Poetry, Makha-bhat and Recipe.">
     <meta property="og:url" content="https://navajitd.github.io/blog.html">
     <meta property="og:image" content="https://navajitd.github.io/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Navajit D — AI Product Manager">
+    <meta property="og:image:alt" content="Navajit D - AI Product Manager">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@solitary_nav">
     <meta name="twitter:creator" content="@solitary_nav">
-    <meta name="twitter:title" content="Blog — Navajit D">
-    <meta name="twitter:description" content="Essays by Navajit D on building AI products, personal projects, and a life beyond them.">
+    <meta name="twitter:title" content="Blog - Navajit D">
+    <meta name="twitter:description" content="Writing by Navajit D in four sections: Tech, Poetry, Makha-bhat and Recipe.">
     <meta name="twitter:image" content="https://navajitd.github.io/og-image.png">
 
+    <!-- @blog:ld -->
     <script defer src="/analytics.js"></script>
     <style>
         :root {
             --text-color: #0a1f00; --bg-color: #fff; --accent-color: #2563eb;
             --muted-color: #6b7280; --border-color: #e5e7eb;
             --font-sans: "Inconsolata", monospace; --secondary-color: #374151;
+            --font-poem: "EB Garamond", Georgia, "Times New Roman", serif;
         }
         [data-theme="colorful"] {
             --text-color: #0f2e00; --bg-color: #fefffe; --accent-color: #15803d;
@@ -62,9 +71,42 @@
         .logo{font-weight:600;font-size:1rem} .logo a{color:var(--text-color)} .logo a:hover{color:var(--accent-color);text-decoration:none}
         nav ul{display:flex;gap:1.5rem;list-style:none} nav a{color:var(--text-color);font-size:1rem} nav a:hover{color:var(--accent-color);text-decoration:none} nav a.current{color:var(--accent-color);font-weight:600}
 
-        .page-header{margin-bottom:2.5rem} .page-title{font-size:2.3rem;line-height:1.3;font-weight:700;margin-bottom:.5rem} .page-description{color:var(--muted-color);margin-bottom:0}
+        .page-title{font-size:2.3rem;line-height:1.3;font-weight:700;margin-bottom:1rem}
+
+        /* ─── Filters: All and the four sections, marked like the current page in the top nav ─── */
+        .filters{margin-bottom:1.75rem}
+        .filters ul{flex-wrap:wrap;row-gap:.5rem}
+        html:not([data-filter]) .filters a[data-filter="all"],
+        html[data-filter="tech"] .filters a[data-filter="tech"],
+        html[data-filter="poetry"] .filters a[data-filter="poetry"],
+        html[data-filter="makha-bhat"] .filters a[data-filter="makha-bhat"],
+        html[data-filter="recipe"] .filters a[data-filter="recipe"]{color:var(--accent-color);font-weight:600}
+
+        /* The chosen section's description on top, its posts below. */
+        .filter-description{display:none;color:var(--muted-color);max-width:36rem;margin-bottom:1.25rem;text-wrap:pretty}
+        html[data-filter="tech"] .filter-description[data-for="tech"],
+        html[data-filter="poetry"] .filter-description[data-for="poetry"],
+        html[data-filter="makha-bhat"] .filter-description[data-for="makha-bhat"],
+        html[data-filter="recipe"] .filter-description[data-for="recipe"]{display:block}
         @keyframes gradient-shift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-        [data-theme="colorful"] .page-description{background:linear-gradient(90deg,#16a34a,#059669,#eab308,#ea580c,#dc2626,#ea580c,#eab308,#059669,#16a34a);background-size:200% auto;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradient-shift 6s ease infinite}
+        [data-theme="colorful"] .filter-description{background:linear-gradient(90deg,#16a34a,#059669,#eab308,#ea580c,#dc2626,#ea580c,#eab308,#059669,#16a34a);background-size:200% auto;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradient-shift 6s ease infinite}
+        @media (prefers-reduced-motion: reduce){[data-theme="colorful"] .filter-description{animation:none}}
+
+        html[data-filter="tech"] .blog-card:not([data-type="tech"]),
+        html[data-filter="poetry"] .blog-card:not([data-type="poetry"]),
+        html[data-filter="makha-bhat"] .blog-card:not([data-type="makha-bhat"]),
+        html[data-filter="recipe"] .blog-card:not([data-type="recipe"]){display:none}
+        /* Under All, each card names its section after the date. */
+        html[data-filter] .blog-card-section{display:none}
+
+        .post-list{border-top:1px solid var(--border-color)}
+        [data-theme="colorful"] .post-list{border-top:none}
+        .list-empty{display:none;color:var(--muted-color);font-size:.9375rem;padding:1rem 0;margin:0}
+        html:not([data-filter]) .post-list:not(:has(.blog-card)) + .list-empty,
+        html[data-filter="tech"] .post-list:not(:has(.blog-card[data-type="tech"])) + .list-empty,
+        html[data-filter="poetry"] .post-list:not(:has(.blog-card[data-type="poetry"])) + .list-empty,
+        html[data-filter="makha-bhat"] .post-list:not(:has(.blog-card[data-type="makha-bhat"])) + .list-empty,
+        html[data-filter="recipe"] .post-list:not(:has(.blog-card[data-type="recipe"])) + .list-empty{display:block}
 
         .blog-card{display:block;padding:1.5rem 0;border-bottom:1px solid var(--border-color);text-decoration:none;color:inherit;transition:all .2s}
         .blog-card:hover{text-decoration:none} .blog-card:hover .blog-card-title{color:var(--accent-color)}
@@ -74,13 +116,17 @@
         [data-theme="colorful"] .blog-card-date{color:var(--secondary-color)}
         .blog-card-title{font-size:1.125rem;font-weight:600;line-height:1.4;margin-bottom:.375rem;transition:color .2s}
         .blog-card-excerpt{font-size:.9375rem;color:var(--muted-color);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-clamp:2}
+        /* A poem's card quotes its opening lines, in the poems' serif. */
+        .blog-card-excerpt.poem-lines{font-family:var(--font-poem);font-size:1.0625rem;line-height:1.5;color:var(--secondary-color);-webkit-line-clamp:4;line-clamp:4;font-synthesis:none}
+        [data-theme="colorful"] .blog-card-excerpt.poem-lines{color:var(--text-color)}
         .blog-card-reading{font-size:.75rem;color:var(--muted-color);margin-top:.375rem}
 
-        .loading-state,.error-state,.empty-state{text-align:center;padding:4rem 1rem;color:var(--muted-color)}
-        .loading-state .spinner{width:24px;height:24px;border:2px solid var(--border-color);border-top-color:var(--accent-color);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .error-state{color:#dc2626} .error-state code{display:block;margin-top:.75rem;font-size:.8125rem;color:var(--muted-color);word-break:break-all}
-        .sentinel{height:1px}
+        /* Bengali and Hindi posts: Anek for titles and blurbs (as on the home page), Tiro for poems. */
+        .blog-card:lang(bn) :is(.blog-card-title, .blog-card-excerpt){font-family:"Anek Bangla",var(--font-sans)}
+        .blog-card:lang(hi) :is(.blog-card-title, .blog-card-excerpt){font-family:"Anek Devanagari",var(--font-sans)}
+        .blog-card:lang(bn) .blog-card-excerpt.poem-lines{font-family:"Tiro Bangla",var(--font-poem);font-size:1rem;line-height:1.7}
+        .blog-card:lang(hi) .blog-card-excerpt.poem-lines{font-family:"Tiro Devanagari Hindi",var(--font-poem);font-size:1rem;line-height:1.7}
+        .blog-card [lang="en"]{font-family:var(--font-sans)}
 
         footer{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border-color);font-size:.875rem;color:var(--muted-color);display:flex;justify-content:space-between;align-items:center}
         .footer-links{display:flex;gap:1.5rem}
@@ -105,15 +151,27 @@
         </ul></nav>
     </header>
 
-    <div class="page-header">
+    <main>
         <h1 class="page-title">Blog</h1>
-        <p class="page-description">Pieces on building products, personal projects, and a life beyond them.</p>
-    </div>
-
-    <div id="blogContainer">
-        <div class="loading-state" id="loadingState"><div class="spinner"></div><div>Loading posts…</div></div>
-    </div>
-    <div class="sentinel" id="sentinel"></div>
+        <nav class="filters" aria-label="Blog sections">
+            <ul>
+                <li><a href="/blog.html" data-filter="all">All</a></li>
+                <li><a href="#tech" data-filter="tech">Tech</a></li>
+                <li><a href="#poetry" data-filter="poetry">Poetry</a></li>
+                <li><a href="#makha-bhat" data-filter="makha-bhat">Makha-bhat</a></li>
+                <li><a href="#recipe" data-filter="recipe">Recipe</a></li>
+            </ul>
+        </nav>
+        <p class="filter-description" data-for="tech">Building AI products, and what shipping them teaches me.</p>
+        <p class="filter-description" data-for="poetry">Poems, in whichever language they arrive in.</p>
+        <p class="filter-description" data-for="makha-bhat">Makha-bhat is what Bengalis make of the leftovers from a bhog: everything mixed into one plate. Here that means movie reviews, short stories and smaller observations on life.</p>
+        <p class="filter-description" data-for="recipe">Dishes I cook at home, written down with their ingredients and steps.</p>
+        <!-- The posts live only in Firestore, never in this repository. The site's
+             deploy (scripts/build-blog.mjs) puts every post here as a card, newest
+             first; the filters above show one section at a time. -->
+        <div class="post-list" id="posts"><!-- @blog:cards --></div>
+        <p class="list-empty">Nothing here yet.</p>
+    </main>
 
     <footer>
         <div class="footer-links">
@@ -127,137 +185,52 @@
     </footer>
 
 <script>
-// ─── Constants ────────────────────────────────────────────────────────────────
-// The post list is served as a prebuilt static file (posts.json), regenerated on
-// publish by scripts/build-blog-index.mjs + a GitHub Action. No Firebase SDK is
-// loaded here, so the list renders almost instantly. Firestore REST is only a
-// silent fallback if posts.json is ever missing.
-const POSTS_PER_BATCH = 5;
-const LIST_CACHE_TTL = 30 * 60 * 1000; // 30 min
-const POSTS_JSON_URL = '/posts.json';
-const FIRESTORE_REST = 'https://firestore.googleapis.com/v1/projects/recipes-7dc22/databases/(default)/documents/posts?key=AIzaSyCM8XiZ9tLn7jtVNcx0D6iZwYOGXBOLdjU&pageSize=300';
-
-let allPosts = [], renderedCount = 0, isLoadingMore = false;
-
-// ─── Theme Toggle ─────────────────────────────────────────────────────────────
-const themeToggle = document.getElementById('themeToggle');
-const savedTheme = localStorage.getItem('theme') || 'original';
-if (savedTheme === 'colorful') document.body.setAttribute('data-theme', 'colorful');
-themeToggle.addEventListener('click', () => {
-    const c = document.body.getAttribute('data-theme');
-    if (c === 'colorful') { document.body.removeAttribute('data-theme'); localStorage.setItem('theme', 'original'); }
-    else { document.body.setAttribute('data-theme', 'colorful'); localStorage.setItem('theme', 'colorful'); }
-});
-
-// ─── Utils ────────────────────────────────────────────────────────────────────
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-IN', { year:'numeric', month:'long', day:'numeric' }); }
-
-// ─── Post List Cache (localStorage, 30 min) ───────────────────────────────────
-function getCachedList() {
-    try {
-        const r = localStorage.getItem('blog_list');
-        if (!r) return null;
-        const p = JSON.parse(r);
-        return (Date.now() - p.ts < LIST_CACHE_TTL) ? p.posts : null;
-    } catch(e) { return null; }
-}
-function setCachedList(posts) {
-    try { localStorage.setItem('blog_list', JSON.stringify({ posts, ts: Date.now() })); } catch(e) {}
-}
-
-// ─── Fetch Post List (static JSON first, REST fallback) ───────────────────────
-function normalize(posts) {
-    return posts.map(p => ({
-        id: p.id,
-        slug: p.slug || '',
-        title: p.title || 'Untitled',
-        date: p.date || new Date().toISOString(),
-        excerpt: p.excerpt || '',
-        readTime: p.readTime || ''
-    })).sort((a, b) => new Date(b.date) - new Date(a.date));
-}
-
-// Fallback only: parse Firestore REST typed values into the same shape.
-function fromRest(documents) {
-    const v = f => f ? (f.stringValue ?? f.timestampValue ?? f.integerValue ?? '') : '';
-    return (documents || []).map(doc => {
-        const f = doc.fields || {};
-        return {
-            id: doc.name.split('/').pop(),
-            title: v(f.title),
-            date: v(f.date) ? new Date(v(f.date)).toISOString() : new Date().toISOString(),
-            excerpt: v(f.excerpt),
-            readTime: v(f.readTime)
-        };
+// Theme toggle.
+(function () {
+    var toggle = document.getElementById('themeToggle');
+    if ((localStorage.getItem('theme') || 'original') === 'colorful') document.body.setAttribute('data-theme', 'colorful');
+    toggle.addEventListener('click', function () {
+        var on = document.body.getAttribute('data-theme') === 'colorful';
+        if (on) document.body.removeAttribute('data-theme'); else document.body.setAttribute('data-theme', 'colorful');
+        localStorage.setItem('theme', on ? 'original' : 'colorful');
     });
-}
-
-async function fetchPostList() {
-    const cached = getCachedList();
-    if (cached) return cached;
-    let posts;
-    try {
-        const res = await fetch(POSTS_JSON_URL, { cache: 'no-cache' });
-        if (!res.ok) throw new Error('posts.json ' + res.status);
-        const data = await res.json();
-        posts = normalize(data.posts || []);
-        if (!posts.length) throw new Error('empty index');
-    } catch (e) {
-        const res = await fetch(FIRESTORE_REST);
-        if (!res.ok) throw new Error('Firestore REST ' + res.status);
-        const data = await res.json();
-        posts = normalize(fromRest(data.documents));
+})();
+// Filters: one list of posts, shown a section at a time. The address keeps
+// the choice (/blog.html#poetry), so links and the post pages' back links
+// open the same section.
+(function () {
+    var root = document.documentElement;
+    var links = document.querySelectorAll('.filters a');
+    var SECTIONS = /^(tech|poetry|makha-bhat|recipe)$/;
+    function select(f) {
+        if (f === 'all') root.removeAttribute('data-filter'); else root.setAttribute('data-filter', f);
+        links.forEach(function (a) {
+            if (a.getAttribute('data-filter') === f) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+        });
     }
-    setCachedList(posts);
-    return posts;
-}
-
-// ─── Render ───────────────────────────────────────────────────────────────────
-function renderCard(post) {
-    const card = document.createElement('a');
-    card.className = 'blog-card';
-    // Prefer the prerendered static page; fall back to the dynamic shell for any
-    // post not yet built (slug missing from posts.json).
-    card.href = post.slug ? `/blog/${post.slug}.html` : `/blog-post.html?id=${post.id}`;
-    card.innerHTML = `
-        <div class="blog-card-date">${fmtDate(post.date)}</div>
-        <div class="blog-card-title">${esc(post.title)}</div>
-        <div class="blog-card-excerpt">${esc(post.excerpt)}${post.excerpt.length >= 240 ? '…' : ''}</div>
-        ${post.readTime ? `<div class="blog-card-reading">${esc(post.readTime)}</div>` : ''}`;
-    return card;
-}
-
-function renderBatch() {
-    if (renderedCount >= allPosts.length || isLoadingMore) return;
-    isLoadingMore = true;
-    const c = document.getElementById('blogContainer');
-    const end = Math.min(renderedCount + POSTS_PER_BATCH, allPosts.length);
-    for (let i = renderedCount; i < end; i++) { c.appendChild(renderCard(allPosts[i])); }
-    renderedCount = end;
-    isLoadingMore = false;
-}
-
-function setupScroll() {
-    new IntersectionObserver((e) => {
-        if (e[0].isIntersecting && renderedCount < allPosts.length) renderBatch();
-    }, { rootMargin: '200px' }).observe(document.getElementById('sentinel'));
-}
-
-// ─── Init ─────────────────────────────────────────────────────────────────────
-(async () => {
-    try {
-        allPosts = await fetchPostList();
-        if (location.hash === '#latest' && allPosts.length) { location.replace(`/blog-post.html?id=${allPosts[0].id}`); return; }
-        document.getElementById('loadingState')?.remove();
-        if (!allPosts.length) { document.getElementById('blogContainer').innerHTML = '<div class="empty-state">No posts yet.</div>'; return; }
-        renderBatch();
-        setupScroll();
-    } catch(e) {
-        document.getElementById('blogContainer').innerHTML = `<div class="error-state">Failed to load posts<code>${esc(e.message)}</code></div>`;
+    links.forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            if (e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // a new tab or window
+            e.preventDefault();
+            var f = a.getAttribute('data-filter');
+            select(f);
+            history.replaceState(null, '', f === 'all' ? location.pathname + location.search : '#' + f);
+        });
+    });
+    addEventListener('hashchange', function () {
+        var t = location.hash.slice(1);
+        select(SECTIONS.test(t) ? t : 'all');
+    });
+    select(root.getAttribute('data-filter') || 'all');
+    // Old links to /blog.html#latest open the newest post.
+    if (location.hash === '#latest') {
+        var first = document.querySelector('.blog-card');
+        if (first) location.replace(first.href);
     }
 })();
 </script>
-
+<script type="speculationrules">
+{"prerender": [{"where": {"selector_matches": "a.blog-card"}, "eagerness": "moderate"}]}
+</script>
 </body>
 </html>

@@ -18,6 +18,9 @@
 (function () {
   'use strict';
 
+  // The admin console's previews of unpublished posts are not visits.
+  if (/[?&]preview(?:[=&]|$)/.test(location.search)) return;
+
   var PROJECT = 'recipes-7dc22';
   var API_KEY = 'AIzaSyCM8XiZ9tLn7jtVNcx0D6iZwYOGXBOLdjU';
   var EVENTS_URL =
@@ -228,6 +231,12 @@
     if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 3000 });
     else setTimeout(start, 0);
   }
-  if (document.readyState === 'complete') deferred();
-  else window.addEventListener('load', deferred);
+  // The blog prerenders a post when the pointer rests on it; a prerendered
+  // page counts only once the visitor actually opens it.
+  function whenShown(fn) {
+    if (document.prerendering) document.addEventListener('prerenderingchange', fn, { once: true });
+    else fn();
+  }
+  if (document.readyState === 'complete') whenShown(deferred);
+  else window.addEventListener('load', function () { whenShown(deferred); });
 })();

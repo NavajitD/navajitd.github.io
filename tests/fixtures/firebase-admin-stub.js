@@ -1,23 +1,40 @@
 // Stands in for the Firebase compat SDK on admin.html in tests: the admin
-// (navjitdebnath5@gmail.com) is signed in and every Firestore read is empty.
+// (navjitdebnath5@gmail.com) is signed in (getIdToken gives 'test-id-token'
+// for REST reads), every Firestore read through the SDK is empty, and
+// writes are recorded in window.__fsWrites instead of being sent anywhere.
 // Load it with page.addInitScript and block the real SDK from gstatic.com.
 (() => {
+  const writes = (window.__fsWrites = []);
   const snap = { empty: true, size: 0, docs: [], forEach() {} };
-  const docRef = { get: async () => ({ exists: false, data: () => ({}) }), update: async () => {}, delete: async () => {}, set: async () => {} };
-  const query = {
-    where: () => query, orderBy: () => query, limit: () => query, startAfter: () => query,
-    get: async () => snap, doc: () => docRef, add: async () => ({ id: 'test' }),
+  const docRef = (path) => ({
+    id: path.split('/').pop(),
+    get: async () => ({ exists: (window.__fsExisting || []).includes(path), data: () => ({}) }),
+    set: async (data) => { writes.push({ op: 'set', path, data }); },
+    update: async (data) => { writes.push({ op: 'update', path, data }); },
+    delete: async () => { writes.push({ op: 'delete', path }); },
+  });
+  const query = (name) => {
+    const q = {
+      where: () => q, orderBy: () => q, limit: () => q, startAfter: () => q,
+      get: async () => snap,
+      doc: (id) => docRef(`${name}/${id}`),
+      add: async (data) => { writes.push({ op: 'add', path: `${name}/test`, data }); return { id: 'test' }; },
+    };
+    return q;
   };
-  const user = { email: 'navjitdebnath5@gmail.com' };
+  const user = { email: 'navjitdebnath5@gmail.com', getIdToken: async () => 'test-id-token' };
   window.firebase = {
     initializeApp() {},
     auth: Object.assign(
-      () => ({ onAuthStateChanged(cb) { setTimeout(() => cb(user), 0); }, signOut() {}, signInWithPopup: async () => ({ user }) }),
+      () => ({ currentUser: user, onAuthStateChanged(cb) { setTimeout(() => cb(user), 0); }, signOut() {}, signInWithPopup: async () => ({ user }) }),
       { GoogleAuthProvider: function GoogleAuthProvider() { this.setCustomParameters = () => {}; } },
     ),
     firestore: Object.assign(
-      () => ({ collection: () => query, batch: () => ({ update() {}, commit: async () => {} }) }),
-      { Timestamp: { fromDate: (d) => d }, FieldValue: { serverTimestamp: () => null } },
+      () => ({ collection: (name) => query(name), batch: () => ({ update() {}, commit: async () => {} }) }),
+      {
+        Timestamp: { fromDate: (d) => ({ __ts: new Date(d).toISOString() }) },
+        FieldValue: { serverTimestamp: () => ({ __serverTimestamp: true }) },
+      },
     ),
   };
 })();

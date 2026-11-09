@@ -1,0 +1,108 @@
+name: Deploy site
+
+# GitHub Pages serves the site from this workflow (Settings → Pages → Source:
+# GitHub Actions). It builds the repository with Jekyll, the same step and
+# settings GitHub's own Pages build used, then adds the blog: every post is
+# read from Firestore and built into a static page (scripts/build-blog.mjs).
+# The posts are deployed, never committed; the owner keeps his writing out of
+# this public repository.
+#
+# It runs on every push to main; when the admin console publishes or deletes
+# a post, or the Experience bot commits (repository_dispatch); on demand; and
+# every 6 hours, for anything published without the admin's GitHub connection.
+
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [blog-publish, site-deploy]
+  workflow_dispatch:
+  schedule:
+    - cron: '23 */6 * * *'
+
+permissions:
+  contents: read
+
+# One deploy at a time; a newer request waits for the one in flight.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # sign in to Google Cloud without a stored key
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with Jekyll, as GitHub Pages does
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: .
+          destination: ./_site
+          future: false
+          build_revision: ${{ github.sha }}
+          verbose: true
+          token: ${{ github.token }}
+
+      - name: Let the next steps write into _site
+        # The Jekyll step runs in Docker as root.
+        run: sudo chown -R "$(id -u):$(id -g)" _site
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sign in to Google Cloud as the blog's read-only reader
+        id: gcp
+        uses: google-github-actions/auth@v3
+        with:
+          # Only this workflow, on main of this repository, may use it
+          # (the provider's attribute condition), and the account can only read Firestore.
+          workload_identity_provider: projects/631868594925/locations/global/workloadIdentityPools/github/providers/navajitd-site
+          service_account: blog-build@recipes-7dc22.iam.gserviceaccount.com
+          token_format: access_token
+          access_token_lifetime: 600s
+          access_token_scopes: https://www.googleapis.com/auth/datastore
+          create_credentials_file: false
+          export_environment_variables: false
+
+      - name: Build the blog from Firestore
+        run: node scripts/build-blog.mjs --site _site
+        env:
+          FIRESTORE_TOKEN: ${{ steps.gcp.outputs.access_token }}
+
+      - name: Upload the site for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+      actions: write # to delete the upload afterwards
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+      - name: Delete the upload
+        # The upload is the whole built site, posts included, and anyone signed
+        # in to GitHub can download a public repository's uploads. Pages keeps
+        # its own copy, so the upload goes as soon as the deploy is done (or failed).
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ids=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" --jq '.artifacts[].id')
+          for id in $ids; do gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id"; done
+          echo "Deleted $(echo $ids | wc -w) upload(s)."

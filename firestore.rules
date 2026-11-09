@@ -9,15 +9,14 @@ service cloud.firestore {
         && request.auth.token.email == 'navjitdebnath5@gmail.com';
     }
 
-    // Blog posts — anyone can read; only the admin can create/edit/delete.
+    // Blog posts (recipes included). The site's deploy builds a static page for
+    // each, reading them with a read-only Google Cloud account (IAM, which
+    // these rules don't govern). Visitors get one post at a time: the page for
+    // a post published since the last deploy reads it by its id. Only the
+    // admin can list them all, or create, edit and delete.
     match /posts/{postId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Recipes — anyone can read; only the admin can create/edit/delete.
-    match /recipes/{recipeId} {
-      allow read: if true;
+      allow get: if true;
+      allow list: if isAdmin();
       allow write: if isAdmin();
     }
 

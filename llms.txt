@@ -5,8 +5,7 @@
 ## Pages
 - [Home](https://navajitd.github.io/): Profile, experience, and contact.
 - [Projects](https://navajitd.github.io/projects.html): Personal builds — Mrs Font, ArchiHelp, Will you?, Numo, Aria, ProbashiBangalore, MyExpenses, HealThee, Letter Hunt, and Vidur.
-- [Blog](https://navajitd.github.io/blog.html): Essays on building AI products and personal projects.
-- [Recipes](https://navajitd.github.io/recipes.html): Field notes from the kitchen.
+- [Blog](https://navajitd.github.io/blog.html): Writing in four sections: Tech (building AI products), Poetry, Makha-bhat (movie reviews, short stories and observations on life) and Recipe.
 
 ## Projects
 - [Mrs Font](https://mrsfont.web.app): Free font identifier and browser extension (Chrome, Edge, Firefox) — names the font on any web page, screenshot, PDF or font file, including the one the browser actually rendered, with free look-alikes first; plus a font pairing generator scored on Ellen Lupton's type classification and whole-site font scans.
@@ -19,9 +18,6 @@
 - [HealThee](https://navajitd.github.io/Projects/HealThee/health.html): Free AI health tracker (HealthifyMe Plus alternative) — calorie/macro/micronutrient tracking, adaptive meal plans, exercise, sleep, and trend dashboards; installable PWA.
 - [Letter Hunt](https://navajitd.github.io/Projects/Sketches/letter-hunt.html): Free p5.js browser game — find letters hidden in Bengaluru street photography.
 - [Vidur](https://navajitd.github.io/projects.html#vidur): Free, open-source browser extension (Chrome/Edge/Brave/Firefox) that visually redesigns any website with AI while leaving content intact; bring-your-own-key, designs persist across visits.
-
-## Writing
-- [Evals before Features: What Building a Hinglish Voice Agent Taught Me about AI Product Roadmaps](https://navajitd.github.io/blog-post.html?id=0cdHWExSKMxsEwd63rtT)
 
 ## Contact
 - GitHub: https://github.com/navajitd
