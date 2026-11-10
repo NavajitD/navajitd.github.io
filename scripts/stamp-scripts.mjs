@@ -22,6 +22,7 @@ export const LINKS = [
   { file: 'admin-blog.js', target: 'blog-core.js' },
   { file: 'admin.html', target: 'admin-experience.js' },
   { file: 'admin.html', target: 'admin-blog.js' },
+  { file: 'admin.html', target: 'admin-jobs.js' },
   { file: 'blog-post.html', target: 'blog-core.js' },
 ];
 

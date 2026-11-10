@@ -448,7 +448,7 @@ test('analytics skips admin previews and counts a prerendered post only once it 
 
 test('the admin console writes every kind of post from one Blog posts tab, then deploys the site', () => {
   const tabs = [...admin.matchAll(/<button class="tab[^"]*" data-tab="([^"]+)">([^<]+)<\/button>/g)].map((m) => [m[1], m[2]]);
-  assert.deepEqual(tabs, [['metrics', 'Metrics'], ['experience', 'Experience'], ['blog', 'Blog posts']]);
+  assert.deepEqual(tabs, [['metrics', 'Metrics'], ['experience', 'Experience'], ['blog', 'Blog posts'], ['jobs', 'Jobs']]);
   assert.match(admin, /<div class="tab-panel" id="tabBlog"><div id="blogAdmin"><\/div><\/div>/);
   assert.match(admin, /<script type="module" src="\/admin-blog\.js\?v=[0-9a-f]{8}"><\/script>/);
   assert.doesNotMatch(admin, /Upload Recipe|All Recipes|Upload Post|collection\('recipes'\)/);

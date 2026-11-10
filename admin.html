@@ -233,6 +233,53 @@
         .xp-preview-bar{display:flex;align-items:center;gap:1rem;padding:.625rem 1rem;background:var(--bg);border-bottom:1px solid var(--border);font-size:.875rem}
         .xp-preview-stage{flex:1;display:flex;justify-content:center;background:var(--bg-subtle);overflow:hidden}
         .xp-frame{width:100%;height:100%;border:0;background:#fff;box-shadow:0 0 0 1px var(--border)}
+
+        /* ─── Jobs ─── */
+        .jb-day{width:auto;padding:.4rem .6rem;font-size:.8125rem}
+        .jb-funnel{font-size:.8125rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6}
+        .jb-funnel summary{cursor:pointer}
+        .jb-sources{display:flex;flex-wrap:wrap;gap:.25rem .875rem;margin:.5rem 0}
+        .jb-list{display:grid;gap:1rem}
+        .jb-job{border:1px solid var(--border);border-radius:10px;padding:1rem 1.125rem}
+        .jb-job.is-applied{border-color:#bbf7d0;background:#f7fef9}
+        .jb-job.is-skipped{background:var(--bg-subtle)}
+        .jb-job.is-skipped .jb-job-head,.jb-job.is-skipped .jb-why,.jb-job.is-skipped .jb-gap{opacity:.55}
+        .jb-job-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+        .jb-job-main{min-width:0}
+        .jb-title{font-size:1rem;font-weight:700;line-height:1.4}
+        .jb-title a{color:var(--text);text-decoration:none}
+        .jb-title a:hover{color:var(--accent);text-decoration:underline}
+        .jb-rank{color:var(--muted);font-weight:400}
+        .jb-meta{font-size:.8125rem;color:var(--muted);margin-top:.2rem;line-height:1.5}
+        .jb-meta a{color:var(--muted)}
+        .jb-score{flex:none;min-width:2.75rem;text-align:center;font-size:1.25rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;padding:.375rem .5rem;border:1px solid var(--border);border-radius:8px}
+        .jb-score-note{display:block;font-size:.625rem;font-weight:400;color:var(--muted)}
+        .jb-why{margin:.75rem 0 0 1.125rem;font-size:.875rem;line-height:1.6}
+        .jb-gap{font-size:.875rem;line-height:1.6;margin-top:.375rem;color:#92400e}
+        .jb-desc{margin-top:.625rem;font-size:.8125rem}
+        .jb-desc summary{cursor:pointer;color:var(--muted)}
+        .jb-desc-text{white-space:pre-wrap;line-height:1.6;max-height:22rem;overflow-y:auto;margin-top:.5rem;padding:.75rem;border:1px solid var(--border);border-radius:6px;background:var(--bg-subtle)}
+        .jb-actions{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.875rem}
+        .jb-actions .btn.is-on{border-color:var(--success);color:var(--success)}
+        .jb-draft{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+        .jb-wait{padding:.5rem 0;font-size:.875rem}
+        .jb-draft-head{display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;font-size:.875rem}
+        .jb-count{font-size:.8125rem;color:var(--muted);font-variant-numeric:tabular-nums}
+        .jb-letter{font-family:Georgia,"Times New Roman",serif;font-size:1rem;line-height:1.6;min-height:20rem}
+        .jb-plan{font-size:.8125rem;color:var(--muted);margin-top:.5rem;line-height:1.6}
+        .jb-plan summary{cursor:pointer}
+        .jb-plan ul{margin:.375rem 0 .375rem 1.125rem}
+        .jb-redraft{display:flex;gap:.5rem;margin:.875rem 0 1.25rem}
+        .jb-redraft .btn{flex:none}
+        .jb-contacts{font-size:.875rem}
+        .jb-contact{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.625rem 0;border-bottom:1px solid var(--border)}
+        .jb-contact-main{min-width:0}
+        .jb-email{font-weight:600;overflow-wrap:anywhere}
+        .xp-badge.jb-ok{border-color:#bbf7d0;color:#166534;background:#f0fdf4}
+        .xp-badge.jb-warn{border-color:#fde68a;color:#92400e;background:#fffbeb}
+        .jb-geos{display:grid;grid-template-columns:repeat(auto-fill,minmax(12rem,1fr));gap:.25rem 1rem;margin-bottom:.75rem}
+        .jb-geos label.xp-check{margin:0}
+        @media(max-width:600px){.jb-contact{flex-direction:column;align-items:flex-start}.jb-redraft{flex-direction:column}}
     </style>
 </head>
 <body>
@@ -264,6 +311,7 @@
         <button class="tab active" data-tab="metrics">Metrics</button>
         <button class="tab" data-tab="experience">Experience</button>
         <button class="tab" data-tab="blog">Blog posts</button>
+        <button class="tab" data-tab="jobs">Jobs</button>
     </div>
 
     <!-- ─── Metrics Tab ─── -->
@@ -314,6 +362,9 @@
 
     <!-- ─── Blog posts: Tech, Poetry, Makha-bhat and Recipe (admin-blog.js) ─── -->
     <div class="tab-panel" id="tabBlog"><div id="blogAdmin"></div></div>
+
+    <!-- ─── Jobs: the day's ten curated PM postings, from the private jobhunt repository (admin-jobs.js) ─── -->
+    <div class="tab-panel" id="tabJobs"><div id="jobsAdmin"></div></div>
 
 </div>
 
@@ -374,6 +425,7 @@ document.querySelectorAll('.tab').forEach(tab => {
         if (tab.dataset.tab === 'blog' && window.blogAdminOpen) window.blogAdminOpen();
         if (tab.dataset.tab === 'metrics' && !mxLoaded) loadMetrics();
         if (tab.dataset.tab === 'experience' && window.xpAdminOpen) window.xpAdminOpen();
+        if (tab.dataset.tab === 'jobs' && window.jobsAdminOpen) window.jobsAdminOpen();
     });
 });
 
@@ -826,6 +878,8 @@ document.getElementById('mxBackfill').addEventListener('click', runBackfill);
 <!-- Blog posts editor (admin-blog.js); it shares blog-core.js with the blog pages. -->
 <script type="module" src="/admin-blog.js?v=0438b132"></script>
 <!-- Experience editor (admin-experience.js); it shares its renderer with scripts/build-experience.mjs. -->
+<!-- Jobs (admin-jobs.js): reads and writes the private jobhunt repository through the GitHub API. -->
+<script type="module" src="/admin-jobs.js?v=9b568309"></script>
 <script type="module" src="/admin-experience.js?v=2597fb2d"></script>
 
 </body>
