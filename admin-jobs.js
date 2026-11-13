@@ -17,7 +17,7 @@ const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
 const ACTIONS_URL = `https://github.com/${OWNER}/${REPO}/actions`;
 const TOKEN_KEYS = ['jobs.githubToken', 'xp.githubToken']; // its own token, else the Experience tab's
 const TOKEN_HELP = 'https://github.com/settings/personal-access-tokens';
-const DRAFT_WAIT_MS = 6 * 60 * 1000;
+const DRAFT_WAIT_MS = 10 * 60 * 1000;
 
 // The geographies the backend can search. Keep in step with src/geo.js in the
 // jobhunt repository (its tests compare the two).
@@ -220,7 +220,7 @@ async function requestDraft(job, steer) {
   const update = (note) => { p.note = note; if (state.pending[job.id] === p) renderJob(job.id); };
   try {
     await dispatch('draft.yml', { job_id: job.id, steer: steer || '' });
-    update('Started. Reading the posting, planning, writing and checking the letter, and looking for contacts. About a minute.');
+    update('Started. Reading the posting, planning, writing and checking the letter, and looking for contacts. Usually two to five minutes.');
     let failed = null;
     while (Date.now() - since < DRAFT_WAIT_MS && state.pending[job.id] === p) {
       await sleep(Number(localStorage.getItem('jobs.pollMs')) || 5000);
@@ -239,7 +239,7 @@ async function requestDraft(job, steer) {
       }
       update(`Working… ${Math.round((Date.now() - since) / 1000)}s`);
     }
-    if (failed === null && state.pending[job.id] === p) state.drafts[job.id] = { status: 'error', errors: ['No draft after six minutes. Check the run on GitHub.'], runUrl: ACTIONS_URL };
+    if (failed === null && state.pending[job.id] === p) state.drafts[job.id] = { status: 'error', errors: ['No draft after ten minutes. It may still arrive: check the run on GitHub, then reload this tab.'], runUrl: ACTIONS_URL };
     localStorage.removeItem(`jobs.letter.${job.id}`);
   } catch (e) {
     state.drafts[job.id] = { status: 'error', errors: [e.status === 403 || e.status === 404 ? 'The token can’t start workflows. Give it Actions: Read and write on the jobhunt repository.' : explain(e)] };
